@@ -11,6 +11,7 @@ import (
 
 	"go.uber.org/zap"
 	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
@@ -24,6 +25,8 @@ func Gorm() *gorm.DB {
 	switch global.GVA_CONFIG.System.DbType {
 	case "mysql":
 		return GormMysql()
+	case "postgreSQL":
+		return GormPostgreSQL()
 	default:
 		return GormMysql()
 	}
@@ -82,6 +85,34 @@ func GormMysql() *gorm.DB {
 		SkipInitializeWithVersion: false, // 根据版本自动配置
 	}
 	if db, err := gorm.Open(mysql.New(mysqlConfig), gormConfig()); err != nil {
+		//global.GVA_LOG.Error("MySQL启动异常", zap.Any("err", err))
+		//os.Exit(0)
+		//return nil
+		return nil
+	} else {
+		sqlDB, _ := db.DB()
+		sqlDB.SetMaxIdleConns(m.MaxIdleConns)
+		sqlDB.SetMaxOpenConns(m.MaxOpenConns)
+		return db
+	}
+}
+
+//@author: piexlmax
+//@function: GormPostgreSQL
+//@description: 初始化PostgreSQL数据库
+//@return: *gorm.DB
+
+func GormPostgreSQL() *gorm.DB {
+	m := global.GVA_CONFIG.PostgreSQL
+	if m.Dbname == "" {
+		return nil
+	}
+	dns := "host=" + m.Host + " user=" + m.Username + " password=" + m.Password + " dbname=" + m.Dbname + " port=" + m.Port + " sslmode=" + m.Sslmode + " TimeZone=" + m.TimeZone
+	postgresConfig := postgres.Config{
+		DSN:                  dns,  // DSN data source name
+		PreferSimpleProtocol: true, // disables implicit prepared statement usage
+	}
+	if db, err := gorm.Open(postgres.New(postgresConfig), gormConfig()); err != nil {
 		//global.GVA_LOG.Error("MySQL启动异常", zap.Any("err", err))
 		//os.Exit(0)
 		//return nil

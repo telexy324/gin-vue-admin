@@ -3,6 +3,7 @@ package system
 import (
 	"database/sql"
 	"fmt"
+	"gorm.io/driver/postgres"
 	"path/filepath"
 
 	uuid "github.com/satori/go.uuid"
@@ -29,8 +30,10 @@ import (
 type InitDBService struct {
 }
 
-func (initDBService *InitDBService) writeConfig(viper *viper.Viper, mysql config.Mysql) error {
+func (initDBService *InitDBService) writeConfig(viper *viper.Viper, mysql config.Mysql, pgsql config.PostgreSQL, system config.System) error {
 	global.GVA_CONFIG.Mysql = mysql
+	global.GVA_CONFIG.PostgreSQL = pgsql
+	global.GVA_CONFIG.System = system
 	cs := utils.StructToMap(global.GVA_CONFIG)
 	for k, v := range cs {
 		viper.Set(k, v)
@@ -75,12 +78,11 @@ func (initDBService *InitDBService) initDB(InitDBFunctions ...system.InitDBFunc)
 
 //@author: [songzhibin97](https://github.com/songzhibin97)
 //@function: InitDB
-//@description: 创建数据库并初始化
+//@description: 创建数据库并初始化(mysql)
 //@param: conf request.InitDB
 //@return: error
 
-func (initDBService *InitDBService) InitDB(conf request.InitDB) error {
-
+func (initDBService *InitDBService) initMysqlDB(conf request.InitDB) (config.Mysql, error) {
 	if conf.Host == "" {
 		conf.Host = "127.0.0.1"
 	}
@@ -91,9 +93,8 @@ func (initDBService *InitDBService) InitDB(conf request.InitDB) error {
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/", conf.UserName, conf.Password, conf.Host, conf.Port)
 	createSql := fmt.Sprintf("CREATE DATABASE IF NOT EXISTS `%s` DEFAULT CHARACTER SET utf8mb4 DEFAULT COLLATE utf8mb4_general_ci;", conf.DBName)
 	if err := initDBService.createTable(dsn, "mysql", createSql); err != nil {
-		return err
+		return config.Mysql{}, err
 	}
-
 	MysqlConfig := config.Mysql{
 		Path:     fmt.Sprintf("%s:%s", conf.Host, conf.Port),
 		Dbname:   conf.DBName,
@@ -103,7 +104,7 @@ func (initDBService *InitDBService) InitDB(conf request.InitDB) error {
 	}
 
 	if MysqlConfig.Dbname == "" {
-		return nil
+		return MysqlConfig, nil
 	}
 
 	linkDns := MysqlConfig.Username + ":" + MysqlConfig.Password + "@tcp(" + MysqlConfig.Path + ")/" + MysqlConfig.Dbname + "?" + MysqlConfig.Config
@@ -116,15 +117,92 @@ func (initDBService *InitDBService) InitDB(conf request.InitDB) error {
 		SkipInitializeWithVersion: false,   // 根据版本自动配置
 	}
 	if db, err := gorm.Open(mysql.New(mysqlConfig), &gorm.Config{DisableForeignKeyConstraintWhenMigrating: true}); err != nil {
-		return nil
+		return MysqlConfig, nil
 	} else {
 		sqlDB, _ := db.DB()
 		sqlDB.SetMaxIdleConns(MysqlConfig.MaxIdleConns)
 		sqlDB.SetMaxOpenConns(MysqlConfig.MaxOpenConns)
 		global.GVA_DB = db
 	}
+	return MysqlConfig, nil
+}
 
-	err := global.GVA_DB.AutoMigrate(
+// 初始化pgsql
+func (initDBService *InitDBService) initPostgreSQL(conf request.InitDB) (config.PostgreSQL, error) {
+	if conf.Host == "" {
+		conf.Host = "127.0.0.1"
+	}
+
+	if conf.Port == "" {
+		conf.Port = "9920"
+	}
+	dsn := "host=" + conf.Host + " user=" + conf.UserName + " password=" + conf.Password + " dbname=" + conf.DBName + " port=" + conf.Port + " sslmode=disable TimeZone=Asia/Shanghai"
+
+	createSql := fmt.Sprintf("CREATE DATABASE IF NOT EXISTS `%s` DEFAULT CHARACTER SET utf8mb4 DEFAULT COLLATE utf8mb4_general_ci;", conf.DBName)
+	if err := initDBService.createTable(dsn, "mysql", createSql); err != nil {
+		return config.PostgreSQL{}, err
+	}
+	PostgresConfig := config.PostgreSQL{
+		Host:     conf.Host,
+		Dbname:   conf.DBName,
+		Username: conf.UserName,
+		Password: conf.Password,
+		TimeZone: "Asia/Shanghai",
+	}
+
+	if PostgresConfig.Dbname == "" {
+		return PostgresConfig, nil
+	}
+	postgresConfig := postgres.Config{
+		DSN:                  dsn,  // DSN data source name
+		PreferSimpleProtocol: true, // disables implicit prepared statement usage
+	}
+
+	if db, err := gorm.Open(postgres.New(postgresConfig), &gorm.Config{DisableForeignKeyConstraintWhenMigrating: true}); err != nil {
+		return PostgresConfig, nil
+	} else {
+		sqlDB, _ := db.DB()
+		sqlDB.SetMaxIdleConns(PostgresConfig.MaxIdleConns)
+		sqlDB.SetMaxOpenConns(PostgresConfig.MaxOpenConns)
+		global.GVA_DB = db
+	}
+	return PostgresConfig, nil
+}
+
+func (initDBService *InitDBService) InitDB(conf request.InitDB) error {
+	var mysqlConf config.Mysql
+	var pgsqlConf config.PostgreSQL
+	var err error
+	systemConfig := config.System{
+		Env:           "public",
+		Addr:          8888,
+		DbType:        "",
+		OssType:       "local",
+		UseMultipoint: false,
+	}
+	switch conf.DbType {
+	case "mysql":
+		systemConfig.DbType = "mysql"
+		mysqlConf, err = initDBService.initMysqlDB(conf)
+		if err != nil {
+			return err
+		}
+		break
+	case "postgreSQL":
+		systemConfig.DbType = "postgreSQL"
+		pgsqlConf, err = initDBService.initPostgreSQL(conf)
+		if err != nil {
+			return err
+		}
+	default:
+		mysqlConf, err = initDBService.initMysqlDB(conf)
+		if err != nil {
+			return err
+		}
+		break
+	}
+
+	err = global.GVA_DB.AutoMigrate(
 		system.SysUser{},
 		system.SysAuthority{},
 		system.SysApi{},
@@ -163,7 +241,7 @@ func (initDBService *InitDBService) InitDB(conf request.InitDB) error {
 		return err
 	}
 
-	if err = initDBService.writeConfig(global.GVA_VP, MysqlConfig); err != nil {
+	if err = initDBService.writeConfig(global.GVA_VP, mysqlConf, pgsqlConf, systemConfig); err != nil {
 		return err
 	}
 	global.GVA_CONFIG.AutoCode.Root, _ = filepath.Abs("..")
