@@ -3,10 +3,10 @@ package system
 import (
 	"database/sql"
 	"fmt"
+	_ "github.com/lib/pq"
+	uuid "github.com/satori/go.uuid"
 	"gorm.io/driver/postgres"
 	"path/filepath"
-
-	uuid "github.com/satori/go.uuid"
 
 	"github.com/flipped-aurora/gin-vue-admin/server/config"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
@@ -44,7 +44,7 @@ func (initDBService *InitDBService) writeConfig(viper *viper.Viper, mysql config
 
 //@author: [songzhibin97](https://github.com/songzhibin97)
 //@function: createTable
-//@description: 创建数据库(mysql)
+//@description: 创建数据库
 //@param: dsn string, driver string, createSql
 //@return: error
 
@@ -134,12 +134,12 @@ func (initDBService *InitDBService) initPostgreSQL(conf request.InitDB) (config.
 	}
 
 	if conf.Port == "" {
-		conf.Port = "9920"
+		conf.Port = "5432"
 	}
-	dsn := "host=" + conf.Host + " user=" + conf.UserName + " password=" + conf.Password + " dbname=" + conf.DBName + " port=" + conf.Port + " sslmode=disable TimeZone=Asia/Shanghai"
+	dsn := "host=" + conf.Host + " user=" + conf.UserName + " password=" + conf.Password + " port=" + conf.Port + " sslmode=disable TimeZone=Asia/Shanghai"
 
-	createSql := fmt.Sprintf("CREATE DATABASE IF NOT EXISTS `%s` DEFAULT CHARACTER SET utf8mb4 DEFAULT COLLATE utf8mb4_general_ci;", conf.DBName)
-	if err := initDBService.createTable(dsn, "mysql", createSql); err != nil {
+	createSql := fmt.Sprintf("CREATE DATABASE %s", conf.DBName)
+	if err := initDBService.createTable(dsn, "postgres", createSql); err != nil {
 		return config.PostgreSQL{}, err
 	}
 	PostgresConfig := config.PostgreSQL{
@@ -173,7 +173,7 @@ func (initDBService *InitDBService) InitDB(conf request.InitDB) error {
 	var mysqlConf config.Mysql
 	var pgsqlConf config.PostgreSQL
 	var err error
-	systemConfig := config.System{
+	systemConfig := &config.System{
 		Env:           "public",
 		Addr:          8888,
 		DbType:        "",
@@ -241,7 +241,7 @@ func (initDBService *InitDBService) InitDB(conf request.InitDB) error {
 		return err
 	}
 
-	if err = initDBService.writeConfig(global.GVA_VP, mysqlConf, pgsqlConf, systemConfig); err != nil {
+	if err = initDBService.writeConfig(global.GVA_VP, mysqlConf, pgsqlConf, *systemConfig); err != nil {
 		return err
 	}
 	global.GVA_CONFIG.AutoCode.Root, _ = filepath.Abs("..")

@@ -22,8 +22,9 @@
       <div v-if="hello > 0 " :class="[(hello > 0 && !out)? 'slide-in-left' : '' , out ? 'slide-out-right' : '']" class=" form">
         <el-form ref="form" :model="form" label-width="100px">
           <el-form-item label="数据库类型">
-            <el-select v-model="form.sqlType" disabled placeholder="请选择">
-              <el-option key="mysql" label="mysql(目前只支持mysql)" value="mysql" />
+            <el-select v-model="form.dbType" placeholder="请选择" @change="changeSql">
+              <el-option key="mysql" label="mysql" value="mysql" />
+              <el-option key="mysql" label="postgreSQL" value="postgreSQL" />
             </el-select>
           </el-form-item>
           <el-form-item label="host">
@@ -63,7 +64,7 @@ export default {
       hello: 0,
       out: false,
       form: {
-        sqlType: 'mysql',
+        dbType: 'mysql',
         host: '127.0.0.1',
         port: '3306',
         userName: 'root',
@@ -80,6 +81,15 @@ export default {
     // }, 2000)
   },
   methods: {
+    changeSql(e) {
+      if (e === 'mysql') {
+        this.form.port = '3306'
+        this.form.userName = 'root'
+      } else {
+        this.form.port = '5432'
+        this.form.userName = 'postgres'
+      }
+    },
     showNext() {
       this.hello = this.hello + 1
     },

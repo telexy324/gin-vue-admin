@@ -5,7 +5,7 @@
     <div class="form-card in-three a-fadeinB">
       <el-form ref="form" :model="form" label-width="100px">
         <el-form-item label="数据库类型">
-          <el-select v-model="form.sqlType" disabled placeholder="请选择">
+          <el-select v-model="form.dbType" disabled placeholder="请选择">
             <el-option key="mysql" label="mysql(目前只支持mysql)" value="mysql" />
           </el-select>
         </el-form-item>
@@ -44,7 +44,7 @@ export default {
   data() {
     return {
       form: {
-        sqlType: 'mysql',
+        dbType: 'mysql',
         host: '127.0.0.1',
         port: '3306',
         userName: 'root',
