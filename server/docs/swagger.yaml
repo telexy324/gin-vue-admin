@@ -126,6 +126,9 @@ definitions:
       expiresTime:
         description: 过期时间
         type: integer
+      issuer:
+        description: 签发者
+        type: string
       signingKey:
         description: jwt签名
         type: string
@@ -249,6 +252,10 @@ definitions:
       env:
         description: 环境值
         type: string
+      iplimitCount:
+        type: integer
+      iplimitTime:
+        type: integer
       ossType:
         description: Oss类型
         type: string
@@ -297,9 +304,6 @@ definitions:
         type: string
       level:
         description: 级别
-        type: string
-      linkName:
-        description: 软链接名称
         type: string
       logInConsole:
         description: 输出控制台
