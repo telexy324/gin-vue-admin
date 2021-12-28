@@ -6,4 +6,4 @@ type ApiGroup struct {
 	CmdbApi
 }
 
-var cmdbService = service.ServiceGroupApp.SystemServiceGroup.MenuService
+var cmdbService = service.ServiceGroupApp.ApplicationServiceGroup.CmdbService

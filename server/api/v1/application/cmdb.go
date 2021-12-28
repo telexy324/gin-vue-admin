@@ -2,6 +2,7 @@ package application
 
 import (
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/application"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/response"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/system"
@@ -36,25 +37,21 @@ func (a *CmdbApi) GetMenu(c *gin.Context) {
 }
 
 // @Tags Menu
-// @Summary 新增菜单
+// @Summary 新增服务器
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
 // @Param data body system.SysBaseMenu true "路由path, 父菜单ID, 路由name, 对应前端文件路径, 排序标记"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"添加成功"}"
-// @Router /menu/addBaseMenu [post]
-func (a *CmdbApi) AddBaseMenu(c *gin.Context) {
-	var menu system.SysBaseMenu
-	_ = c.ShouldBindJSON(&menu)
-	if err := utils.Verify(menu, utils.MenuVerify); err != nil {
+// @Router /cmdb/addServer [post]
+func (a *CmdbApi) AddServer(c *gin.Context) {
+	var server application.ApplicationServer
+	_ = c.ShouldBindJSON(&server)
+	if err := utils.Verify(server, utils.ServerVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err := utils.Verify(menu.Meta, utils.MenuMetaVerify); err != nil {
-		response.FailWithMessage(err.Error(), c)
-		return
-	}
-	if err := menuService.AddBaseMenu(menu); err != nil {
+	if err := cmdbService.AddServer(server); err != nil {
 		global.GVA_LOG.Error("添加失败!", zap.Any("err", err))
 
 		response.FailWithMessage("添加失败", c)
@@ -64,21 +61,21 @@ func (a *CmdbApi) AddBaseMenu(c *gin.Context) {
 }
 
 // @Tags Menu
-// @Summary 删除菜单
+// @Summary 删除服务器
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
 // @Param data body request.GetById true "菜单id"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"删除成功"}"
-// @Router /menu/deleteBaseMenu [post]
-func (a *CmdbApi) DeleteBaseMenu(c *gin.Context) {
-	var menu request.GetById
-	_ = c.ShouldBindJSON(&menu)
-	if err := utils.Verify(menu, utils.IdVerify); err != nil {
+// @Router /menu/deleteServer [post]
+func (a *CmdbApi) DeleteServer(c *gin.Context) {
+	var server request.GetById
+	_ = c.ShouldBindJSON(&server)
+	if err := utils.Verify(server, utils.IdVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err := baseMenuService.DeleteBaseMenu(menu.ID); err != nil {
+	if err := cmdbService.DeleteServer(server.ID); err != nil {
 		global.GVA_LOG.Error("删除失败!", zap.Any("err", err))
 		response.FailWithMessage("删除失败", c)
 	} else {
