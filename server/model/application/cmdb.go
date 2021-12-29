@@ -6,7 +6,6 @@ import (
 
 type ApplicationServer struct {
 	global.GVA_MODEL
-	Id           uint   `json:"Id" gorm:"column:id"`                // ID
 	Hostname     string `json:"parentId" gorm:"column:hostname"`    // 主机名
 	Architecture int    `json:"path" gorm:"column:architecture"`    // 架构
 	ManageIp     string `json:"name" gorm:"column:manage_ip"`       // 管理ip

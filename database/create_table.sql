@@ -8,3 +8,10 @@ CREATE TABLE `application_server`
     `os_version`   varchar(50)  NOT NULL DEFAULT '' COMMENT '系统版本',
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE `sys_authority_menus`
+(
+    `application_server_id`           bigint UNSIGNED NOT NULL,
+    `sys_authority_authority_id` varchar(90) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '角色ID',
+    PRIMARY KEY (`sys_base_menu_id`, `sys_authority_authority_id`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;

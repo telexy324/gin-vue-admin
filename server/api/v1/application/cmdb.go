@@ -17,26 +17,7 @@ import (
 type CmdbApi struct {
 }
 
-// @Tags AuthorityMenu
-// @Summary 获取用户动态路由
-// @Security ApiKeyAuth
-// @Produce  application/json
-// @Param data body request.Empty true "空"
-// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /menu/getMenu [post]
-func (a *CmdbApi) GetMenu(c *gin.Context) {
-	if err, menus := menuService.GetMenuTree(utils.GetUserAuthorityId(c)); err != nil {
-		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
-		response.FailWithMessage("获取失败", c)
-	} else {
-		if menus == nil {
-			menus = []system.SysMenu{}
-		}
-		response.OkWithDetailed(systemRes.SysMenusResponse{Menus: menus}, "获取成功", c)
-	}
-}
-
-// @Tags Menu
+// @Tags Server
 // @Summary 新增服务器
 // @Security ApiKeyAuth
 // @accept application/json
@@ -60,14 +41,14 @@ func (a *CmdbApi) AddServer(c *gin.Context) {
 	}
 }
 
-// @Tags Menu
+// @Tags Server
 // @Summary 删除服务器
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
 // @Param data body request.GetById true "菜单id"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"删除成功"}"
-// @Router /menu/deleteServer [post]
+// @Router /cmdb/deleteServer [post]
 func (a *CmdbApi) DeleteServer(c *gin.Context) {
 	var server request.GetById
 	_ = c.ShouldBindJSON(&server)
@@ -83,26 +64,22 @@ func (a *CmdbApi) DeleteServer(c *gin.Context) {
 	}
 }
 
-// @Tags Menu
-// @Summary 更新菜单
+// @Tags Server
+// @Summary 更新服务器
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body system.SysBaseMenu true "路由path, 父菜单ID, 路由name, 对应前端文件路径, 排序标记"
+// @Param data body application.ApplicationServer true "路由path, 父菜单ID, 路由name, 对应前端文件路径, 排序标记"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"更新成功"}"
-// @Router /menu/updateBaseMenu [post]
-func (a *CmdbApi) UpdateBaseMenu(c *gin.Context) {
-	var menu system.SysBaseMenu
-	_ = c.ShouldBindJSON(&menu)
-	if err := utils.Verify(menu, utils.MenuVerify); err != nil {
+// @Router /cmdb/updateServer [post]
+func (a *CmdbApi) UpdateServer(c *gin.Context) {
+	var server application.ApplicationServer
+	_ = c.ShouldBindJSON(&server)
+	if err := utils.Verify(server, utils.ServerVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err := utils.Verify(menu.Meta, utils.MenuMetaVerify); err != nil {
-		response.FailWithMessage(err.Error(), c)
-		return
-	}
-	if err := baseMenuService.UpdateBaseMenu(menu); err != nil {
+	if err := cmdbService.UpdateServer(server); err != nil {
 		global.GVA_LOG.Error("更新失败!", zap.Any("err", err))
 		response.FailWithMessage("更新失败", c)
 	} else {
@@ -118,14 +95,14 @@ func (a *CmdbApi) UpdateBaseMenu(c *gin.Context) {
 // @Param data body request.GetById true "菜单id"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
 // @Router /menu/getBaseMenuById [post]
-func (a *CmdbApi) GetBaseMenuById(c *gin.Context) {
+func (a *CmdbApi) GetServerById(c *gin.Context) {
 	var idInfo request.GetById
 	_ = c.ShouldBindJSON(&idInfo)
 	if err := utils.Verify(idInfo, utils.IdVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err, menu := baseMenuService.GetBaseMenuById(idInfo.ID); err != nil {
+	if err, menu := cmdbService.GetBaseMenuById(idInfo.ID); err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 		response.FailWithMessage("获取失败", c)
 	} else {
