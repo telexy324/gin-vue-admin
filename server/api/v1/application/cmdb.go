@@ -3,11 +3,9 @@ package application
 import (
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/application"
+	applicationRes "github.com/flipped-aurora/gin-vue-admin/server/model/application/response"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/response"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/system"
-	systemReq "github.com/flipped-aurora/gin-vue-admin/server/model/system/request"
-	systemRes "github.com/flipped-aurora/gin-vue-admin/server/model/system/response"
 	"github.com/flipped-aurora/gin-vue-admin/server/utils"
 
 	"github.com/gin-gonic/gin"
@@ -87,14 +85,14 @@ func (a *CmdbApi) UpdateServer(c *gin.Context) {
 	}
 }
 
-// @Tags Menu
-// @Summary 根据id获取菜单
+// @Tags Server
+// @Summary 根据id获取服务器
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body request.GetById true "菜单id"
+// @Param data body request.GetById true "服务器id"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /menu/getBaseMenuById [post]
+// @Router /cmdb/getServerById [post]
 func (a *CmdbApi) GetServerById(c *gin.Context) {
 	var idInfo request.GetById
 	_ = c.ShouldBindJSON(&idInfo)
@@ -102,35 +100,39 @@ func (a *CmdbApi) GetServerById(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err, menu := cmdbService.GetBaseMenuById(idInfo.ID); err != nil {
+	if err, server := cmdbService.GetServerById(idInfo.ID); err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 		response.FailWithMessage("获取失败", c)
 	} else {
-		response.OkWithDetailed(systemRes.SysBaseMenuResponse{Menu: menu}, "获取成功", c)
+		servers := make([]application.ApplicationServer, 0)
+		servers = append(servers, server)
+		response.OkWithDetailed(applicationRes.ApplicationServerResponse{
+			Servers: servers,
+		}, "获取成功", c)
 	}
 }
 
-// @Tags Menu
-// @Summary 分页获取基础menu列表
+// @Tags Server
+// @Summary 分页获取基础server列表
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
 // @Param data body request.PageInfo true "页码, 每页大小"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /menu/getMenuList [post]
-func (a *CmdbApi) GetMenuList(c *gin.Context) {
+// @Router /cmdb/getServerList [post]
+func (a *CmdbApi) GetServerList(c *gin.Context) {
 	var pageInfo request.PageInfo
 	_ = c.ShouldBindJSON(&pageInfo)
 	if err := utils.Verify(pageInfo, utils.PageInfoVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err, menuList, total := menuService.GetInfoList(); err != nil {
+	if err, serverList, total := cmdbService.GetServerList(); err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 		response.FailWithMessage("获取失败", c)
 	} else {
 		response.OkWithDetailed(response.PageResult{
-			List:     menuList,
+			List:     serverList,
 			Total:    total,
 			Page:     pageInfo.Page,
 			PageSize: pageInfo.PageSize,

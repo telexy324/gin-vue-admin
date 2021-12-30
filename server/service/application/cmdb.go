@@ -79,3 +79,25 @@ func (cmdbService *CmdbService) UpdateServer(server application.ApplicationServe
 	})
 	return err
 }
+
+//@author: [piexlmax](https://github.com/piexlmax)
+//@function: GetServerById
+//@description: 返回当前选中server
+//@param: id float64
+//@return: err error, server model.ApplicationServer
+
+func (cmdbService *CmdbService) GetServerById(id float64) (err error, server application.ApplicationServer) {
+	err = global.GVA_DB.Where("id = ?", id).First(&server).Error
+	return
+}
+
+//@author: [piexlmax](https://github.com/piexlmax)
+//@function: GetServerList
+//@description: 获取路由分页
+//@return: err error, list interface{}, total int64
+
+func (cmdbService *CmdbService) GetServerList() (err error, list interface{}, total int64) {
+	var serverList []application.ApplicationServer
+	err = global.GVA_DB.Find(&serverList).Error
+	return err, serverList, int64(len(serverList))
+}
