@@ -9,18 +9,18 @@ import (
 type CmdbRouter struct {
 }
 
-func (s *CmdbRouter) InitMenuRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
+func (s *CmdbRouter) InitCmdbRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 	cmdbRouter := Router.Group("cmdb").Use(middleware.OperationRecord())
 	cmdbRouterWithoutRecord := Router.Group("cmdb")
-	var authorityMenuApi = v1.ApiGroupApp.SystemApiGroup.AuthorityMenuApi
+	var authorityServerApi = v1.ApiGroupApp.ApplicationApiGroup.CmdbApi
 	{
-		cmdbRouter.POST("addAsset", authorityMenuApi.AddBaseMenu)           // 新增菜单
-		cmdbRouter.POST("deleteAsset", authorityMenuApi.DeleteBaseMenu)     // 删除菜单
-		cmdbRouter.POST("updateAsset", authorityMenuApi.UpdateBaseMenu)     // 更新菜单
+		cmdbRouterWithoutRecord.POST("addServer", authorityServerApi.AddServer)       // 新增菜单
+		cmdbRouter.POST("deleteServer", authorityServerApi.DeleteServer)              // 删除菜单
+		cmdbRouterWithoutRecord.POST("updateServer", authorityServerApi.UpdateServer) // 更新菜单
 	}
 	{
-		cmdbRouterWithoutRecord.POST("getAsset", authorityMenuApi.GetMenu)                   // 获取菜单树
-		cmdbRouterWithoutRecord.POST("getAssetList", authorityMenuApi.GetMenuList)           // 分页获取基础menu列表
+		cmdbRouterWithoutRecord.POST("getServer", authorityServerApi.GetServerById)     // 获取菜单树
+		cmdbRouterWithoutRecord.POST("getServerList", authorityServerApi.GetServerList) // 分页获取基础menu列表
 	}
 	return cmdbRouter
 }

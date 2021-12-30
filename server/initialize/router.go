@@ -40,6 +40,7 @@ func Routers() *gin.Engine {
 	systemRouter := router.RouterGroupApp.System
 	exampleRouter := router.RouterGroupApp.Example
 	autocodeRouter := router.RouterGroupApp.Autocode
+	applicationRouter := router.RouterGroupApp.Application
 	PublicGroup := Router.Group("")
 	{
 		// 健康监测
@@ -50,6 +51,8 @@ func Routers() *gin.Engine {
 	{
 		systemRouter.InitBaseRouter(PublicGroup) // 注册基础功能路由 不做鉴权
 		systemRouter.InitInitRouter(PublicGroup) // 自动初始化相关
+
+		applicationRouter.InitCmdbRouter(PublicGroup)
 	}
 	PrivateGroup := Router.Group("")
 	PrivateGroup.Use(middleware.JWTAuth()).Use(middleware.CasbinHandler())
