@@ -18,7 +18,7 @@ type CmdbService struct {
 
 var CmdbServiceApp = new(CmdbService)
 
-//@author: [piexlmax](https://github.com/piexlmax)
+//@author: [telexy324](https://github.com/telexy324)
 //@function: AddServer
 //@description: 添加服务器
 //@param: menu model.ApplicationServer
@@ -31,7 +31,7 @@ func (cmdbService *CmdbService) AddServer(server application.ApplicationServer) 
 	return global.GVA_DB.Create(&server).Error
 }
 
-//@author: [piexlmax](https://github.com/piexlmax)
+//@author: [telexy324](https://github.com/telexy324)
 //@function: DeleteServer
 //@description: 删除服务器
 //@param: id float64
@@ -46,7 +46,7 @@ func (cmdbService *CmdbService) DeleteServer(id float64) (err error) {
 	return global.GVA_DB.Where("id = ?", id).First(&server).Delete(&server).Error
 }
 
-//@author: [piexlmax](https://github.com/piexlmax)
+//@author: [telexy324](https://github.com/telexy324)
 //@function: UpdateServer
 //@description: 更新路由
 //@param: server model.ApplicationServer
@@ -80,7 +80,7 @@ func (cmdbService *CmdbService) UpdateServer(server application.ApplicationServe
 	return err
 }
 
-//@author: [piexlmax](https://github.com/piexlmax)
+//@author: [telexy324](https://github.com/telexy324)
 //@function: GetServerById
 //@description: 返回当前选中server
 //@param: id float64
@@ -91,7 +91,7 @@ func (cmdbService *CmdbService) GetServerById(id float64) (err error, server app
 	return
 }
 
-//@author: [piexlmax](https://github.com/piexlmax)
+//@author: [telexy324](https://github.com/telexy324)
 //@function: GetServerList
 //@description: 获取路由分页
 //@return: err error, list interface{}, total int64

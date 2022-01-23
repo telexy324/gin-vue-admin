@@ -53,6 +53,7 @@ func Routers() *gin.Engine {
 		systemRouter.InitInitRouter(PublicGroup) // 自动初始化相关
 
 		applicationRouter.InitCmdbRouter(PublicGroup)
+		//systemRouter.InitMenuRouter(PublicGroup)                   // 注册menu路由
 	}
 	PrivateGroup := Router.Group("")
 	PrivateGroup.Use(middleware.JWTAuth()).Use(middleware.CasbinHandler())

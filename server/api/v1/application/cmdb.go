@@ -20,12 +20,13 @@ type CmdbApi struct {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body system.SysBaseMenu true "路由path, 父菜单ID, 路由name, 对应前端文件路径, 排序标记"
+// @Param data body application.ApplicationServer true "主机名, 架构, 管理ip, 系统, 系统版本"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"添加成功"}"
 // @Router /cmdb/addServer [post]
 func (a *CmdbApi) AddServer(c *gin.Context) {
 	var server application.ApplicationServer
-	_ = c.ShouldBindJSON(&server)
+	e := c.ShouldBindJSON(&server)
+	global.GVA_LOG.Info("error",zap.Any("err", e))
 	if err := utils.Verify(server, utils.ServerVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -44,7 +45,7 @@ func (a *CmdbApi) AddServer(c *gin.Context) {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body request.GetById true "菜单id"
+// @Param data body request.GetById true "服务器id"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"删除成功"}"
 // @Router /cmdb/deleteServer [post]
 func (a *CmdbApi) DeleteServer(c *gin.Context) {
@@ -67,7 +68,7 @@ func (a *CmdbApi) DeleteServer(c *gin.Context) {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body application.ApplicationServer true "路由path, 父菜单ID, 路由name, 对应前端文件路径, 排序标记"
+// @Param data body application.ApplicationServer true "主机名, 架构, 管理ip, 系统, 系统版本"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"更新成功"}"
 // @Router /cmdb/updateServer [post]
 func (a *CmdbApi) UpdateServer(c *gin.Context) {
