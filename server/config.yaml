@@ -43,7 +43,7 @@ jwt:
 local:
   path: uploads/file
 mysql:
-  path: 192.168.31.253:3306
+  path: 192.168.248.140:3306
   config: charset=utf8mb4&parseTime=True&loc=Local
   db-name: gva
   username: root
