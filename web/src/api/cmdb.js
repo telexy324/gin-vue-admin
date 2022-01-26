@@ -6,10 +6,10 @@ import service from '@/utils/request'
 //  page     int
 //	pageSize int
 // }
-// @Router /menu/getServerList [post]
+// @Router /cmdb/getServerList [post]
 export const getServerList = (data) => {
   return service({
-    url: '/menu/getServerList',
+    url: '/cmdb/getServerList',
     method: 'post',
     data
   })
@@ -18,10 +18,10 @@ export const getServerList = (data) => {
 // @Summary 新增server
 // @Produce  application/json
 // @Param menu Object
-// @Router /menu/addServer [post]
+// @Router /cmdb/addServer [post]
 export const addServer = (data) => {
   return service({
-    url: '/menu/addServer',
+    url: '/cmdb/addServer',
     method: 'post',
     data
   })
@@ -30,10 +30,10 @@ export const addServer = (data) => {
 // @Summary 删除server
 // @Produce  application/json
 // @Param ID float64
-// @Router /menu/deleteServer [post]
+// @Router /cmdb/deleteServer [post]
 export const deleteServer = (data) => {
   return service({
-    url: '/menu/deleteServer',
+    url: '/cmdb/deleteServer',
     method: 'post',
     data
   })
@@ -42,10 +42,10 @@ export const deleteServer = (data) => {
 // @Summary 修改server
 // @Produce  application/json
 // @Param server Object
-// @Router /menu/updateServer [post]
+// @Router /cmdb/updateServer [post]
 export const updateServer = (data) => {
   return service({
-    url: '/menu/updateServer',
+    url: '/cmdb/updateServer',
     method: 'post',
     data
   })
@@ -58,10 +58,10 @@ export const updateServer = (data) => {
 // @Produce application/json
 // @Param data body api.GetById true "根据id获取服务器"
 // @Success 200 {string} json "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /menu/getServerById [post]
+// @Router /cmdb/getServerById [post]
 export const getServerById = (data) => {
   return service({
-    url: '/menu/getServerById',
+    url: '/cmdb/getServerById',
     method: 'post',
     data
   })
