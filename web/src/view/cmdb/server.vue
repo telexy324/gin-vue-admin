@@ -51,7 +51,7 @@
               icon="el-icon-delete"
               size="small"
               type="text"
-              @click="deleteApi(scope.row)"
+              @click="deleteServer(scope.row)"
             >删除</el-button>
           </template>
         </el-table-column>
@@ -72,7 +72,7 @@
 
     <el-dialog v-model="dialogFormVisible" :before-close="closeDialog" :title="dialogTitle">
       <warning-bar title="新增API，需要在角色管理内篇日志权限才可使用" />
-      <el-form ref="apiForm" :model="form" :rules="rules" label-width="80px">
+      <el-form ref="serverForm" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="路径" prop="path">
           <el-input v-model="form.path" autocomplete="off" />
         </el-form-item>
@@ -223,7 +223,7 @@ export default {
       this.getTableData()
     },
     initForm() {
-      this.$refs.apiForm.resetFields()
+      this.$refs.serverForm.resetFields()
       this.form = {
         path: '',
         apiGroup: '',
@@ -249,19 +249,19 @@ export default {
       this.type = type
       this.dialogFormVisible = true
     },
-    async editApi(row) {
+    async editServer(row) {
       const res = await getServerById({ id: row.ID })
       this.form = res.data.api
       this.openDialog('edit')
     },
-    async deleteApi(row) {
+    async deleteServer(row) {
       this.$confirm('此操作将永久删除所有角色下该api, 是否继续?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       })
         .then(async() => {
-          const res = await deleteApi(row)
+          const res = await deleteServer(row)
           if (res.code === 0) {
             this.$message({
               type: 'success',
