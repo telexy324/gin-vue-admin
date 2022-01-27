@@ -34,11 +34,11 @@
           width="55"
         />
         <el-table-column align="left" label="id" min-width="60" prop="ID" sortable="custom" />
-        <el-table-column align="left" label="服务器名" min-width="150" prop="path" sortable="custom" />
-        <el-table-column align="left" label="架构" min-width="150" prop="apiGroup" sortable="custom" />
-        <el-table-column align="left" label="管理IP" min-width="150" prop="description" sortable="custom" />
-        <el-table-column align="left" label="系统" min-width="150" prop="description" sortable="custom" />
-        <el-table-column align="left" label="系统版本" min-width="150" prop="description" sortable="custom" />
+        <el-table-column align="left" label="服务器名" min-width="150" prop="hostname" sortable="custom" />
+        <el-table-column align="left" label="架构" min-width="150" prop="architecture" sortable="custom" />
+        <el-table-column align="left" label="管理IP" min-width="150" prop="manageIP" sortable="custom" />
+        <el-table-column align="left" label="系统" min-width="150" prop="os" sortable="custom" />
+        <el-table-column align="left" label="系统版本" min-width="150" prop="osVersion" sortable="custom" />
         <el-table-column align="left" fixed="right" label="操作" width="200">
           <template #default="scope">
             <el-button
@@ -71,26 +71,22 @@
     </div>
 
     <el-dialog v-model="dialogFormVisible" :before-close="closeDialog" :title="dialogTitle">
-      <warning-bar title="新增API，需要在角色管理内篇日志权限才可使用" />
+      <warning-bar title="新增服务器" />
       <el-form ref="serverForm" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="路径" prop="path">
-          <el-input v-model="form.path" autocomplete="off" />
+        <el-form-item label="服务器名" prop="hostname">
+          <el-input v-model="form.hostname" autocomplete="off" />
         </el-form-item>
-        <el-form-item label="请求" prop="method">
-          <el-select v-model="form.method" placeholder="请选择" style="width:100%">
-            <el-option
-              v-for="item in methodOptions"
-              :key="item.value"
-              :label="`${item.label}(${item.value})`"
-              :value="item.value"
-            />
-          </el-select>
+        <el-form-item label="架构" prop="architecture">
+          <el-input v-model="form.architecture" autocomplete="off" />
         </el-form-item>
-        <el-form-item label="api分组" prop="apiGroup">
-          <el-input v-model="form.apiGroup" autocomplete="off" />
+        <el-form-item label="管理IP" prop="manageIP">
+          <el-input v-model="form.manageIp" autocomplete="off" />
         </el-form-item>
-        <el-form-item label="api简介" prop="description">
-          <el-input v-model="form.description" autocomplete="off" />
+        <el-form-item label="系统" prop="os">
+          <el-input v-model="form.os" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="版本" prop="osVersion">
+          <el-input v-model="form.osVersion" autocomplete="off" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -148,15 +144,16 @@ export default {
   data() {
     return {
       deleteVisible: false,
-      listApi: getApiList,
+      listApi: getServerList,
       dialogFormVisible: false,
-      dialogTitle: '新增Api',
-      apis: [],
+      dialogTitle: '新增server',
+      servers: [],
       form: {
-        path: '',
-        apiGroup: '',
-        method: '',
-        description: ''
+        hostname: '',
+        architecture: '',
+        manageIp: '',
+        os: '',
+        osVersion: ''
       },
       methodOptions: methodOptions,
       type: '',
@@ -275,12 +272,12 @@ export default {
         })
     },
     async enterDialog() {
-      this.$refs.apiForm.validate(async valid => {
+      this.$refs.serverForm.validate(async valid => {
         if (valid) {
           switch (this.type) {
-            case 'addApi':
+            case 'addServer':
               {
-                const res = await createApi(this.form)
+                const res = await addServer(this.form)
                 if (res.code === 0) {
                   this.$message({
                     type: 'success',
@@ -295,7 +292,7 @@ export default {
               break
             case 'edit':
               {
-                const res = await updateApi(this.form)
+                const res = await updateServer(this.form)
                 if (res.code === 0) {
                   this.$message({
                     type: 'success',
