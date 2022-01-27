@@ -112,31 +112,9 @@ import {
 import infoList from '@/mixins/infoList'
 import { toSQLLine } from '@/utils/stringFun'
 import warningBar from '@/components/warningBar/warningBar.vue'
-const methodOptions = [
-  {
-    value: 'POST',
-    label: '创建',
-    type: 'success'
-  },
-  {
-    value: 'GET',
-    label: '查看',
-    type: ''
-  },
-  {
-    value: 'PUT',
-    label: '更新',
-    type: 'warning'
-  },
-  {
-    value: 'DELETE',
-    label: '删除',
-    type: 'danger'
-  }
-]
 
 export default {
-  name: 'Api',
+  name: 'Server',
   components: {
     warningBar
   },
@@ -155,18 +133,20 @@ export default {
         os: '',
         osVersion: ''
       },
-      methodOptions: methodOptions,
       type: '',
       rules: {
-        path: [{ required: true, message: '请输入api路径', trigger: 'blur' }],
-        apiGroup: [
-          { required: true, message: '请输入组名称', trigger: 'blur' }
+        hostname: [{ required: true, message: '请输入机器名', trigger: 'blur' }],
+        architecture: [
+          { required: true, message: '请输入架构', trigger: 'blur' }
         ],
-        method: [
-          { required: true, message: '请选择请求方式', trigger: 'blur' }
+        manageIP: [
+          { required: true, message: '请输入管理IP', trigger: 'blur' }
         ],
-        description: [
-          { required: true, message: '请输入api介绍', trigger: 'blur' }
+        os: [
+          { required: true, message: '请输入系统名称', trigger: 'blur' }
+        ],
+        osVersion: [
+          { required: true, message: '请输入系统版本', trigger: 'blur' }
         ]
       }
     }
@@ -175,20 +155,12 @@ export default {
     this.getTableData()
   },
   methods: {
-    methodFiletr(value) {
-      const target = methodOptions.filter(item => item.value === value)[0]
-      return target && `${target.label}`
-    },
-    tagTypeFiletr(value) {
-      const target = methodOptions.filter(item => item.value === value)[0]
-      return target && `${target.type}`
-    },
     //  选中api
     handleSelectionChange(val) {
-      this.apis = val
+      this.servers = val
     },
     async onDelete() {
-      const ids = this.apis.map(item => item.ID)
+      const ids = this.servers.map(item => item.ID)
       const res = await deleteServer({ ids })
       if (res.code === 0) {
         this.$message({
@@ -222,10 +194,11 @@ export default {
     initForm() {
       this.$refs.serverForm.resetFields()
       this.form = {
-        path: '',
-        apiGroup: '',
-        method: '',
-        description: ''
+        hostname: '',
+        architecture: '',
+        manageIp: '',
+        os: '',
+        osVersion: ''
       }
     },
     closeDialog() {
@@ -252,7 +225,7 @@ export default {
       this.openDialog('edit')
     },
     async deleteServer(row) {
-      this.$confirm('此操作将永久删除所有角色下该api, 是否继续?', '提示', {
+      this.$confirm('此操作将永久删除服务器?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
