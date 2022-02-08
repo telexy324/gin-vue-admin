@@ -108,7 +108,12 @@ func (cmdbService *CmdbService) GetServerList() (err error, list interface{}, to
 //@param: id float64
 //@return: err error, server model.ApplicationServer
 
-func (cmdbService *CmdbService) GetServerById(id float64) (err error, server application.ApplicationServer) {
-	err = global.GVA_DB.Where("id = ?", id).First(&server).Error
+func (cmdbService *CmdbService) SystemRelations(id float64) (err error, relations []application.SystemRelation) {
+	relationOneSrc := make([]application.SystemRelation,0)
+	relationOneDest := make([]application.SystemRelation,0)
+	relationTwoSrc := make([]application.SystemRelation,0)
+	relationTwoDest := make([]application.SystemRelation,0)
+	err = global.GVA_DB.Where("start_server_id = ?", id).Find(&relations).Error
+	err = global.GVA_DB.Where("end_server_id = ?", id).Find(&relations).Error
 	return
 }

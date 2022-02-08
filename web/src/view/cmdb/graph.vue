@@ -49,7 +49,7 @@ export default {
     this.screenHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight
   },
   mounted() {
-    const { companyId, companyName } = this.$route.query
+    const {companyId, companyName} = this.$route.query
     this.cid = companyId
     this.cname = decodeURIComponent(companyName || '')
     this.getData()
@@ -73,9 +73,9 @@ export default {
     handleData(res) {
       console.time('数据处理耗时')
       const {
-        data: { path },
+        data: {path},
       } = res
-      if (path.nodes.length == 0) this.err = { message: 'No data' }
+      if (path.nodes.length == 0) this.err = {message: 'No data'}
       // 目录
       let categories = []
       // 缓存关系数据，有重合路线的曲线展示
@@ -120,7 +120,7 @@ export default {
         }
       })
 
-      categories = categories.map(name => ({ name }))
+      categories = categories.map(name => ({name}))
 
       this.path = path
       this.categories = categories
@@ -134,7 +134,7 @@ export default {
     },
     initChart(reset) {
       const chartData = this.path
-      const { myChart, categories } = this
+      const {myChart, categories} = this
       if (reset) {
         this.myChart.dispose()
         this.myChart = null
@@ -157,7 +157,7 @@ export default {
             type: 'graph',
             layout: 'force',
             // 节点大小
-            symbolSize(value, { data }) {
+            symbolSize(value, {data}) {
               // 根节点大小
               if (data.id == cid) return 88
               // 其它节点大小
@@ -183,7 +183,7 @@ export default {
               textStyle: {
                 fontSize: 10,
               },
-              formatter({ data }) {
+              formatter({data}) {
                 let name = data.name
                 // 点击节点
                 if (data.id) {
@@ -206,7 +206,7 @@ export default {
               // },
             },
             itemStyle: {
-              color({ data }) {
+              color({data}) {
                 // 主节点
                 if (data.id == cid) return '#288bff'
                 // 公司
@@ -233,7 +233,7 @@ export default {
       this.myChart.setOption(option)
     },
     // 处理节点名字换行
-    handleNode({ data }) {
+    handleNode({data}) {
       // 最多显示3行
       let row = 3,
           // 每行的字符数量
@@ -248,14 +248,14 @@ export default {
       return newName
     },
   },
-  components: { NoData, Loading },
+  components: {NoData, Loading},
 }
 </script>
 
 <style scoped lang="stylus">
 .relation {
   #chart {
-    position fixed!important
+    position fixed !important
     left 0
     top 0
     width 100%
