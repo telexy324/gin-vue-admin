@@ -101,3 +101,14 @@ func (cmdbService *CmdbService) GetServerList() (err error, list interface{}, to
 	err = global.GVA_DB.Find(&serverList).Error
 	return err, serverList, int64(len(serverList))
 }
+
+//@author: [telexy324](https://github.com/telexy324)
+//@function: SystemRelations
+//@description: 返回当前选中server的关系路径
+//@param: id float64
+//@return: err error, server model.ApplicationServer
+
+func (cmdbService *CmdbService) GetServerById(id float64) (err error, server application.ApplicationServer) {
+	err = global.GVA_DB.Where("id = ?", id).First(&server).Error
+	return
+}

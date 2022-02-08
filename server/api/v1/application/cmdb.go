@@ -141,6 +141,33 @@ func (a *CmdbApi) GetServerList(c *gin.Context) {
 	}
 }
 
+// @Tags Server
+// @Summary 获取关系图
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body request.GetById true "服务器id"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
+// @Router /cmdb/system/relations [post]
+func (a *CmdbApi) SystemRelations(c *gin.Context) {
+	var idInfo request.GetById
+	_ = c.ShouldBindJSON(&idInfo)
+	if err := utils.Verify(idInfo, utils.IdVerify); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err, server := cmdbService.SystemRelations(idInfo.ID); err != nil {
+		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
+		response.FailWithMessage("获取失败", c)
+	} else {
+		servers := make([]application.ApplicationServer, 0)
+		servers = append(servers, server)
+		response.OkWithDetailed(applicationRes.ApplicationServerResponse{
+			Servers: servers,
+		}, "获取成功", c)
+	}
+}
+
 // 企业关系图
 message GetEnterpriseRelationChartReq {
 int64 company_id = 1;
