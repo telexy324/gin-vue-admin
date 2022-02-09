@@ -11,17 +11,22 @@ type ApplicationServer struct {
 	ManageIp     string `json:"manageIp" gorm:"column:manage_ip"`        // 管理ip
 	Os           int    `json:"os" gorm:"column:os"`                     // 系统
 	OsVersion    string `json:"osVersion" gorm:"column:os_version"`      // 系统版本
+	Position     int    `json:"position" gorm:"column:position"`         // 系统位置
 }
 
 type SystemRelation struct {
 	global.GVA_MODEL
-	StartServerId       int    `json:"startServerId" gorm:"column:start_server_id"`             // 源节点id
-	StartServerName     string `json:"startServerName" gorm:"column:start_server_name"`         // 源节点名称',
-	StartServerPosition int    `json:"startServerPosition" gorm:"column:start_server_position"` // 源节点是否系统外 0 系统外, 1 系统内',
-	EndServerId         int    `json:"endServerId" gorm:"column:end_server_id"`                 // 目的节点id',
-	EndServerName       string `json:"endServerName" gorm:"column:end_server_name"`             // 目的节点名称',
-	EndServerPosition   int    `json:"endServerPosition" gorm:"column:end_server_position"`     // 目的节点是否系统外 0 系统外, 1 系统内',
-	EndServerIp         string `json:"endServerIp" gorm:"column:end_server_ip"`                 // 目的节点ip',
-	EndServerPort       int    `json:"endServerPort" gorm:"column:end_server_port"`             // 目的节点端口',
-	Relation            string `json:"relation" gorm:"column:relation"`                         // 调用关系',
+	StartServerId int               `json:"startServerId" gorm:"column:start_server_id"` // 源节点id
+	EndServerId   int               `json:"endServerId" gorm:"column:end_server_id"`     // 目的节点id',
+	EndServerUrl  string            `json:"endServerUrl" gorm:"column:end_server_url"`   // 目的节点url',
+	Relation      string            `json:"relation" gorm:"column:relation"`             // 调用关系',
+	StartServer   ApplicationServer `json:"startServer"`
+	EndServer     ApplicationServer `json:"endServer"`
+}
+
+type Node struct {
+	Id    int    `json:"id"`
+	Type  int    `json:"type"` //0 outer 1 inner
+	Name  string `json:"name"`
+	Value int    `json:"value"`
 }

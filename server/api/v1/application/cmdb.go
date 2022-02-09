@@ -156,7 +156,7 @@ func (a *CmdbApi) SystemRelations(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err, relations := cmdbService.SystemRelations(idInfo.ID); err != nil {
+	if err, nodes, relations := cmdbService.SystemRelations(idInfo.ID); err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 		response.FailWithMessage("获取失败", c)
 	} else {
