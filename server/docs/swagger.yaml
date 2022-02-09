@@ -23,6 +23,37 @@ definitions:
       osVersion:
         description: 系统版本
         type: string
+      position:
+        description: 系统位置
+        type: integer
+      updatedAt:
+        description: 更新时间
+        type: string
+    type: object
+  application.SystemRelation:
+    properties:
+      createdAt:
+        description: 创建时间
+        type: string
+      endServer:
+        $ref: '#/definitions/application.ApplicationServer'
+      endServerId:
+        description: 目的节点id',
+        type: integer
+      endServerUrl:
+        description: 目的节点url',
+        type: string
+      id:
+        description: 主键ID
+        type: integer
+      relation:
+        description: 调用关系',
+        type: string
+      startServer:
+        $ref: '#/definitions/application.ApplicationServer'
+      startServerId:
+        description: 源节点id
+        type: integer
       updatedAt:
         description: 更新时间
         type: string
@@ -1763,6 +1794,52 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: 分页获取基础server列表
+      tags:
+      - Server
+  /cmdb/system/addRelation:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: ' '
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/application.SystemRelation'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"添加成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 新增联系
+      tags:
+      - Server
+  /cmdb/system/relations:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 服务器id
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetById'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 获取关系图
       tags:
       - Server
   /cmdb/updateServer:

@@ -142,6 +142,31 @@ func (a *CmdbApi) GetServerList(c *gin.Context) {
 }
 
 // @Tags Server
+// @Summary 新增联系
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body application.SystemRelation true " "
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"添加成功"}"
+// @Router /cmdb/system/addRelation [post]
+func (a *CmdbApi) AddRelation(c *gin.Context) {
+	var relation application.SystemRelation
+	e := c.ShouldBindJSON(&relation)
+	global.GVA_LOG.Info("error", zap.Any("err", e))
+	if err := utils.Verify(relation, utils.SystemRelationVerify); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err := cmdbService.AddRelation(relation); err != nil {
+		global.GVA_LOG.Error("添加失败!", zap.Any("err", err))
+
+		response.FailWithMessage("添加失败", c)
+	} else {
+		response.OkWithMessage("添加成功", c)
+	}
+}
+
+// @Tags Server
 // @Summary 获取关系图
 // @Security ApiKeyAuth
 // @accept application/json

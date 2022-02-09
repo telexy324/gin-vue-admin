@@ -22,7 +22,7 @@ var CmdbServiceApp = new(CmdbService)
 //@author: [telexy324](https://github.com/telexy324)
 //@function: AddServer
 //@description: 添加服务器
-//@param: menu model.ApplicationServer
+//@param: server model.ApplicationServer
 //@return: error
 
 func (cmdbService *CmdbService) AddServer(server application.ApplicationServer) error {
@@ -101,6 +101,19 @@ func (cmdbService *CmdbService) GetServerList() (err error, list interface{}, to
 	var serverList []application.ApplicationServer
 	err = global.GVA_DB.Find(&serverList).Error
 	return err, serverList, int64(len(serverList))
+}
+
+//@author: [telexy324](https://github.com/telexy324)
+//@function: AddRelation
+//@description: 添加联系
+//@param: relation model.SystemRelation
+//@return: error
+
+func (cmdbService *CmdbService) AddRelation(relation application.SystemRelation) error {
+	if !errors.Is(global.GVA_DB.Where("start_server_id = ? and end_server_id = ?", relation.StartServerId, relation.EndServerId).First(&application.SystemRelation{}).Error, gorm.ErrRecordNotFound) {
+		return errors.New("存在重复关系")
+	}
+	return global.GVA_DB.Create(&relation).Error
 }
 
 //@author: [telexy324](https://github.com/telexy324)

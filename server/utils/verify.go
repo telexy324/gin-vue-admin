@@ -16,4 +16,5 @@ var (
 	ChangePasswordVerify   = Rules{"Username": {NotEmpty()}, "Password": {NotEmpty()}, "NewPassword": {NotEmpty()}}
 	SetUserAuthorityVerify = Rules{"AuthorityId": {NotEmpty()}}
 	ServerVerify           = Rules{"Hostname": {NotEmpty()}}
+	SystemRelationVerify   = Rules{"StartServerId": {NotEmpty()}, "EndServerId": {NotEmpty()}}
 )
