@@ -34,8 +34,7 @@ type Link struct {
 
 type Property struct {
 	Relation         string `json:"relation"`
-	Ip               string `json:"ip"`
-	Port             string `json:"port"`
+	Url              string `json:"url"`
 	ServerUpdateDate string `json:"server_update_date"`
 }
 

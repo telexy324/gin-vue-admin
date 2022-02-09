@@ -26,7 +26,7 @@ type CmdbApi struct {
 func (a *CmdbApi) AddServer(c *gin.Context) {
 	var server application.ApplicationServer
 	e := c.ShouldBindJSON(&server)
-	global.GVA_LOG.Info("error",zap.Any("err", e))
+	global.GVA_LOG.Info("error", zap.Any("err", e))
 	if err := utils.Verify(server, utils.ServerVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -156,15 +156,29 @@ func (a *CmdbApi) SystemRelations(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err, nodes, relations := cmdbService.SystemRelations(idInfo.ID); err != nil {
+	if err, relations, nodes := cmdbService.SystemRelations(idInfo.ID); err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 		response.FailWithMessage("获取失败", c)
 	} else {
-		paths:=applicationRes.RelationPath{}
-		nodes:=make([]applicationRes.Node,0)
-		links:=make([]applicationRes.Link,0)
-		for _,relation:=range relations {
-			relation.
+		paths := applicationRes.RelationPath{}
+		resNodes := make([]applicationRes.Node, 0)
+		if err = utils.ConvertStruct(nodes, resNodes); err != nil {
+			response.FailWithMessage("获取失败", c)
+		}
+		paths.Nodes = resNodes
+		links := make([]applicationRes.Link, 0)
+		for _, relation := range relations {
+			links = append(links, applicationRes.Link{
+				VectorType:     0,
+				VectorStrValue: "",
+				Property: applicationRes.Property{
+					Relation:         relation.Relation,
+					Url:              relation.EndServerUrl,
+					ServerUpdateDate: relation.UpdatedAt.Format("2006-01-02 15:04:05"),
+				},
+				StartNodeId: relation.StartServerId,
+				EndNodeId:   relation.EndServerId,
+			})
 		}
 		response.OkWithDetailed(applicationRes.SystemRelationsResponse{
 			Paths: paths,
