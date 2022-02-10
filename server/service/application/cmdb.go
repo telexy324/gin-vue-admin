@@ -2,7 +2,6 @@ package application
 
 import (
 	"errors"
-	"github.com/flipped-aurora/gin-vue-admin/server/consts"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/application"
 	"gorm.io/gorm"
@@ -113,6 +112,17 @@ func (cmdbService *CmdbService) AddRelation(relation application.SystemRelation)
 	if !errors.Is(global.GVA_DB.Where("start_server_id = ? and end_server_id = ?", relation.StartServerId, relation.EndServerId).First(&application.SystemRelation{}).Error, gorm.ErrRecordNotFound) {
 		return errors.New("存在重复关系")
 	}
+
+	startServer := application.ApplicationServer{}
+	endServer := application.ApplicationServer{}
+	err := global.GVA_DB.Where("id = ?", relation.StartServerId).First(&startServer).Error
+	if err != nil {
+		return err
+	}
+	err = global.GVA_DB.Where("id = ?", relation.EndServerId).First(&endServer).Error
+	if err != nil {
+		return err
+	}
 	return global.GVA_DB.Create(&relation).Error
 }
 
@@ -128,80 +138,99 @@ func (cmdbService *CmdbService) SystemRelations(id float64) (err error, relation
 	if err != nil {
 		return
 	}
+	mapNodes := make(map[int]bool)
 	nodes = append(nodes, application.Node{
 		Id:   int(server.ID),
-		Type: consts.Inner,
+		Type: server.Position,
 		Name: server.Hostname,
 	})
-
+	mapNodes[int(server.ID)] = true
 	relationOneSrc := make([]application.SystemRelation, 0)
 	relationOneDest := make([]application.SystemRelation, 0)
-	err = global.GVA_DB.Preload("StartServer").Where("start_server_id = ?", id).Find(&relationOneSrc).Error
-	err = global.GVA_DB.Preload("EndServer").Where("end_server_id = ?", id).Find(&relationOneDest).Error
+	err = global.GVA_DB.Preload("EndServer").Where("start_server_id = ?", id).Find(&relationOneSrc).Error
+	err = global.GVA_DB.Preload("StartServer").Where("end_server_id = ?", id).Find(&relationOneDest).Error
 	if len(relationOneSrc) > 0 {
 		relations = append(relations, relationOneSrc...)
-		for _,relation:=range relationOneSrc {
-			nodes = append(nodes, application.Node{
-				Id:   relation.EndServerId,
-				Type: relation.EndServer.Position,
-				Name: relation.EndServer.Hostname,
-			})
+		for _, relation := range relationOneSrc {
+			if mapNodes[relation.EndServerId] == false {
+				nodes = append(nodes, application.Node{
+					Id:   relation.EndServerId,
+					Type: relation.EndServer.Position,
+					Name: relation.EndServer.Hostname,
+				})
+				mapNodes[relation.EndServerId] = true
+			}
 			relationTwoSrc := make([]application.SystemRelation, 0)
 			relationTwoDest := make([]application.SystemRelation, 0)
-			err = global.GVA_DB.Preload("StartServer").Where("start_server_id = ?", relation.EndServerId).Find(&relationTwoSrc).Error
-			err = global.GVA_DB.Preload("EndServer").Where("end_server_id = ?", relation.EndServerId).Find(&relationTwoDest).Error
+			err = global.GVA_DB.Preload("EndServer").Where("start_server_id = ?", relation.EndServerId).Find(&relationTwoSrc).Error
+			err = global.GVA_DB.Preload("StartServer").Where("end_server_id = ?", relation.EndServerId).Find(&relationTwoDest).Error
 			if len(relationTwoSrc) > 0 {
 				relations = append(relations, relationTwoSrc...)
-				for _,relation:=range relationTwoSrc {
-					nodes = append(nodes, application.Node{
-						Id:   relation.EndServerId,
-						Type: relation.EndServer.Position,
-						Name: relation.EndServer.Hostname,
-					})
+				for _, relation := range relationTwoSrc {
+					if mapNodes[relation.EndServerId] == false {
+						nodes = append(nodes, application.Node{
+							Id:   relation.EndServerId,
+							Type: relation.EndServer.Position,
+							Name: relation.EndServer.Hostname,
+						})
+						mapNodes[relation.EndServerId] = true
+					}
 				}
 			}
 			if len(relationTwoDest) > 0 {
 				relations = append(relations, relationTwoDest...)
-				for _,relation:=range relationTwoDest {
-					nodes = append(nodes, application.Node{
-						Id:   relation.StartServerId,
-						Type: relation.StartServer.Position,
-						Name: relation.StartServer.Hostname,
-					})
+				for _, relation := range relationTwoDest {
+					if mapNodes[relation.StartServerId] == false {
+						nodes = append(nodes, application.Node{
+							Id:   relation.StartServerId,
+							Type: relation.StartServer.Position,
+							Name: relation.StartServer.Hostname,
+						})
+						mapNodes[relation.StartServerId] = true
+					}
 				}
 			}
 		}
 	}
 	if len(relationOneDest) > 0 {
 		relations = append(relations, relationOneDest...)
-		for _,relation:=range relationOneDest {
-			nodes = append(nodes, application.Node{
-				Id:   relation.StartServerId,
-				Type: relation.StartServer.Position,
-				Name: relation.StartServer.Hostname,
-			})
+		for _, relation := range relationOneDest {
+			if mapNodes[relation.StartServerId] == false {
+				nodes = append(nodes, application.Node{
+					Id:   relation.StartServerId,
+					Type: relation.StartServer.Position,
+					Name: relation.StartServer.Hostname,
+				})
+				mapNodes[relation.StartServerId] = true
+			}
 			relationTwoSrc := make([]application.SystemRelation, 0)
 			relationTwoDest := make([]application.SystemRelation, 0)
-			err = global.GVA_DB.Preload("StartServer").Where("start_server_id = ?", relation.StartServerId).Find(&relationTwoSrc).Error
-			err = global.GVA_DB.Preload("EndServer").Where("end_server_id = ?", relation.StartServerId).Find(&relationTwoDest).Error
+			err = global.GVA_DB.Preload("EndServer").Where("start_server_id = ?", relation.StartServerId).Find(&relationTwoSrc).Error
+			err = global.GVA_DB.Preload("StartServer").Where("end_server_id = ?", relation.StartServerId).Find(&relationTwoDest).Error
 			if len(relationTwoSrc) > 0 {
 				relations = append(relations, relationTwoSrc...)
-				for _,relation:=range relationTwoSrc {
-					nodes = append(nodes, application.Node{
-						Id:   relation.EndServerId,
-						Type: relation.EndServer.Position,
-						Name: relation.EndServer.Hostname,
-					})
+				for _, relation := range relationTwoSrc {
+					if mapNodes[relation.EndServerId] == false {
+						nodes = append(nodes, application.Node{
+							Id:   relation.EndServerId,
+							Type: relation.EndServer.Position,
+							Name: relation.EndServer.Hostname,
+						})
+						mapNodes[relation.EndServerId] = true
+					}
 				}
 			}
 			if len(relationTwoDest) > 0 {
 				relations = append(relations, relationTwoDest...)
-				for _,relation:=range relationTwoDest {
-					nodes = append(nodes, application.Node{
-						Id:   relation.StartServerId,
-						Type: relation.StartServer.Position,
-						Name: relation.StartServer.Hostname,
-					})
+				for _, relation := range relationTwoDest {
+					if mapNodes[relation.StartServerId] == false {
+						nodes = append(nodes, application.Node{
+							Id:   relation.StartServerId,
+							Type: relation.StartServer.Position,
+							Name: relation.StartServer.Hostname,
+						})
+						mapNodes[relation.StartServerId] = true
+					}
 				}
 			}
 		}

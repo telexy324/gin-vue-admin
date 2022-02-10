@@ -187,24 +187,29 @@ func (a *CmdbApi) SystemRelations(c *gin.Context) {
 	} else {
 		paths := applicationRes.RelationPath{}
 		resNodes := make([]applicationRes.Node, 0)
-		if err = utils.ConvertStruct(nodes, resNodes); err != nil {
+		if err = utils.ConvertStruct(&nodes, &resNodes); err != nil {
 			response.FailWithMessage("获取失败", c)
 		}
 		paths.Nodes = resNodes
 		links := make([]applicationRes.Link, 0)
+		mapLinks := make(map[int]bool)
 		for _, relation := range relations {
-			links = append(links, applicationRes.Link{
-				VectorType:     0,
-				VectorStrValue: "",
-				Property: applicationRes.Property{
-					Relation:         relation.Relation,
-					Url:              relation.EndServerUrl,
-					ServerUpdateDate: relation.UpdatedAt.Format("2006-01-02 15:04:05"),
-				},
-				StartNodeId: relation.StartServerId,
-				EndNodeId:   relation.EndServerId,
-			})
+			if mapLinks[int(relation.ID)] == false {
+				links = append(links, applicationRes.Link{
+					VectorType:     0,
+					VectorStrValue: relation.Relation,
+					Property: applicationRes.Property{
+						Relation:         relation.Relation,
+						Url:              relation.EndServerUrl,
+						ServerUpdateDate: relation.UpdatedAt.Format("2006-01-02 15:04:05"),
+					},
+					StartNodeId: relation.StartServerId,
+					EndNodeId:   relation.EndServerId,
+				})
+				mapLinks[int(relation.ID)] = true
+			}
 		}
+		paths.Links = links
 		response.OkWithDetailed(applicationRes.SystemRelationsResponse{
 			Paths: paths,
 		}, "获取成功", c)

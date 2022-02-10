@@ -24,6 +24,10 @@ type SystemRelation struct {
 	EndServer     ApplicationServer `json:"endServer"`
 }
 
+func (SystemRelation) TableName() string {
+	return "application_server_relations"
+}
+
 type Node struct {
 	Id    int    `json:"id"`
 	Type  int    `json:"type"` //0 outer 1 inner
