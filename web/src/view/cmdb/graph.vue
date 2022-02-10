@@ -2,20 +2,20 @@
   .relation.common
     .box(v-if='!err')
       //- 移动端操作工具栏
-      .toolbar-mobile(v-if="isMobile" :class="isRotate ? 'rotate-y' : 'rotate-x'" :style="isRotate ? toolbarStyle : ''")
-        ul
-          li(@click="onExitPage")
-            img(src="@common/assets/image/exit.png")
-            span Exit
-          li
-          li(@click="onReset")
-            img(src="@common/assets/image/reset.png")
-            span Reset
-          li
-          li(@click="onRotate")
-            img(v-if="isRotate" src="@common/assets/image/vertical.png")
-            img(v-else src="@common/assets/image/horizontal.png")
-            span {{ isRotate ? 'Vertical' : 'Horizontal' }}
+      //.toolbar-mobile(v-if="isMobile" :class="isRotate ? 'rotate-y' : 'rotate-x'" :style="isRotate ? toolbarStyle : ''")
+      //  ul
+      //    li(@click="onExitPage")
+      //      img(src="@common/assets/image/exit.png")
+      //      span Exit
+      //    li
+      //    li(@click="onReset")
+      //      img(src="@common/assets/image/reset.png")
+      //      span Reset
+      //    li
+      //    li(@click="onRotate")
+      //      img(v-if="isRotate" src="@common/assets/image/vertical.png")
+      //      img(v-else src="@common/assets/image/horizontal.png")
+      //      span {{ isRotate ? 'Vertical' : 'Horizontal' }}
       #chart(ref='chart' :style='{ height: `${screenHeight-10}px` }')
     NoData(v-if='err && err.message' :title='err.message')
     Loading(:loading="loading")
