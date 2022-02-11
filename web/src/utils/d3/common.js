@@ -3,8 +3,8 @@ const commonCreateModule = {
   // 创建水印组件
   createWatemark(that) {
     // 添加水印
-    const width = 92 * 1.4,
-      height = 70 * 1.4
+    const width = 92 * 1.4
+    const height = 70 * 1.4
     const imageG = that.SVG.append('defs')
       .append('pattern')
       .attr('id', 'watermark')

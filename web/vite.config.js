@@ -46,6 +46,9 @@ export default ({
     server: {
       open:true,
       port: process.env.VITE_CLI_PORT,
+      fs: {
+        strict: false
+      },
       proxy:{
        // 把key的路径代理到target位置
       // detail: https://cli.vuejs.org/config/#devserver-proxy

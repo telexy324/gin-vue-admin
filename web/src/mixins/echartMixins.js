@@ -1,7 +1,8 @@
 /**
  * echart基础功能
  */
-import { commonCreateModule } from '@common/d3/common'
+import { commonCreateModule } from '@/util/d3/common'
+import * as d3 from 'd3'
 
 export default element => {
   return {
@@ -67,15 +68,15 @@ export default element => {
         if (this.isRotate) {
           setTimeout(() => {
             const padding = 20
-            const toolWidth = document.querySelector('.toolbar-mobile').clientWidth,
-              toolHeight = document.querySelector('.toolbar-mobile').clientHeight
+            const toolWidth = document.querySelector('.toolbar-mobile').clientWidth
+            const toolHeight = document.querySelector('.toolbar-mobile').clientHeight
             this.toolbarStyle = `
                         right: ${-toolWidth + toolHeight + padding}px;
                         bottom: ${(this.screenHeight - toolWidth) / 2 - toolHeight}px
                     `
           }, 0)
         }
-        let chartEle = element || '#myChart'
+        const chartEle = element || '#myChart'
         const myChart = document.querySelector(chartEle)
         const realWidth = this.isRotate ? this.screenHeight : this.screenWidth
         const realHeight = this.isRotate ? this.screenWidth : this.screenHeight

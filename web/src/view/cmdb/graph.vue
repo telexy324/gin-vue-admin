@@ -1,44 +1,30 @@
 <template lang="pug">
-  .relation.common
-    .box(v-if='!err')
-      //- 移动端操作工具栏
-      //.toolbar-mobile(v-if="isMobile" :class="isRotate ? 'rotate-y' : 'rotate-x'" :style="isRotate ? toolbarStyle : ''")
-      //  ul
-      //    li(@click="onExitPage")
-      //      img(src="@common/assets/image/exit.png")
-      //      span Exit
-      //    li
-      //    li(@click="onReset")
-      //      img(src="@common/assets/image/reset.png")
-      //      span Reset
-      //    li
-      //    li(@click="onRotate")
-      //      img(v-if="isRotate" src="@common/assets/image/vertical.png")
-      //      img(v-else src="@common/assets/image/horizontal.png")
-      //      span {{ isRotate ? 'Vertical' : 'Horizontal' }}
-      #chart(ref='chart' :style='{ height: `${screenHeight-10}px` }')
-    NoData(v-if='err && err.message' :title='err.message')
-    Loading(:loading="loading")
+.relation.common
+  .box(v-if='!err')
+    #chart(ref='chart' :style='{ height: `${screenHeight-10}px` }')
+  NoData(v-if='err && err.message' :title='err.message')
+  Loading(:loading="loading")
 </template>
 
 <script>
-import API from '@api'
-import echartMixins from '@common/mixins/echartMixins'
-import NoData from '@components/NoData'
-import Loading from '@components/loading'
-import { isMobile } from '@common/utils/util'
+import { getSystemRelations } from '@/api/graph'
+import echartMixins from '@/mixins/echartMixins'
+import NoData from '@/components/NoData.vue'
+import Loading from '@/components/loading.vue'
+import echarts from 'echarts'
+// import { isMobile } from '@common/utils/util'
 
 export default {
   name: 'relation',
   mixins: [echartMixins('#chart')],
   data() {
     return {
-      isMobile: isMobile(), // 设备类型判断
+      isMobile: false, // 设备类型判断
       toolbarStyle: '', // 工具栏样式
       screenHeight: 500,
       err: null,
       loading: false,
-      cid: null,
+      cid: 2,
       cname: null,
       // echarts 实例
       myChart: null,
@@ -49,7 +35,7 @@ export default {
     this.screenHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight
   },
   mounted() {
-    const {companyId, companyName} = this.$route.query
+    const { companyId, companyName } = this.$route.query
     this.cid = companyId
     this.cname = decodeURIComponent(companyName || '')
     this.getData()
@@ -59,23 +45,23 @@ export default {
     getData() {
       const body = {
         // cid: '819430495192022480',
-        cid: this.cid,
+        id: this.cid
       }
       this.loading = true
-      API.SEARCH_COMPANY_RELATION(body)
-          .then(this.handleData)
-          .catch(err => {
-            this.err = err
-          })
-          .finally(() => (this.loading = false))
+      getSystemRelations(body)
+        .then(this.handleData)
+        .catch(err => {
+          this.err = err
+        })
+        .finally(() => (this.loading = false))
     },
     // 处理数据为echarts需要的格式
     handleData(res) {
       console.time('数据处理耗时')
       const {
-        data: {path},
+        data: { path },
       } = res
-      if (path.nodes.length == 0) this.err = {message: 'No data'}
+      if (path.nodes.length === 0) this.err = { message: 'No data' }
       // 目录
       let categories = []
       // 缓存关系数据，有重合路线的曲线展示
@@ -92,14 +78,10 @@ export default {
         // } else {
         //     linkCache[link.source + link.target] = 1
         // }
-        if (link.vector_type == 'gv_shareholder') {
-          link.value = link.property.shareholding_name || link.vector_str_value
-        } else {
-          link.lineStyle = {
-            curveness: 0.1,
-          }
-          link.value = link.property.position || link.vector_str_value
+        link.lineStyle = {
+          curveness: 0.1,
         }
+        link.value = link.vector_str_value
       })
       // 节点数组处理
       path.nodes.forEach((node, index) => {
@@ -116,11 +98,11 @@ export default {
         for (let i = index + 1; i < path.nodes.length; i++) {
           const element = path.nodes[i]
           // 防止name重复，echarts 需要name唯一
-          if (element.name == node.name) node.name = node.name + ++index
+          if (element.name === node.name) node.name = node.name + ++index
         }
       })
 
-      categories = categories.map(name => ({name}))
+      categories = categories.map(name => ({ name }))
 
       this.path = path
       this.categories = categories
@@ -134,7 +116,7 @@ export default {
     },
     initChart(reset) {
       const chartData = this.path
-      const {myChart, categories} = this
+      const { myChart, categories } = this
       if (reset) {
         this.myChart.dispose()
         this.myChart = null
@@ -157,9 +139,9 @@ export default {
             type: 'graph',
             layout: 'force',
             // 节点大小
-            symbolSize(value, {data}) {
+            symbolSize(value, { data }) {
               // 根节点大小
-              if (data.id == cid) return 88
+              if (data.id === cid) return 88
               // 其它节点大小
               return 70
             },
@@ -183,7 +165,7 @@ export default {
               textStyle: {
                 fontSize: 10,
               },
-              formatter({data}) {
+              formatter({ data }) {
                 let name = data.name
                 // 点击节点
                 if (data.id) {
@@ -193,7 +175,7 @@ export default {
                   return name
                 }
                 // 点击线
-                if (data.property && data.property.shareholding_ratio) return `${data.value}: ${data.property.shareholding_ratio}%`
+                if (data.property && data.property.url) return `${data.value}: ${data.property.url}%`
                 return data.value
               },
             },
@@ -206,11 +188,11 @@ export default {
               // },
             },
             itemStyle: {
-              color({data}) {
+              color({ data }) {
                 // 主节点
-                if (data.id == cid) return '#288bff'
+                if (data.id === cid) return '#288bff'
                 // 公司
-                if (data.type == 'gn_company') return '#3ea3ff'
+                if (data.type === 'gn_company') return '#3ea3ff'
                 // 人物
                 return '#19cc9d'
               },
@@ -233,14 +215,14 @@ export default {
       this.myChart.setOption(option)
     },
     // 处理节点名字换行
-    handleNode({data}) {
+    handleNode({ data }) {
       // 最多显示3行
-      let row = 3,
-          // 每行的字符数量
-          num = 9,
-          name = data.name,
-          newName = '',
-          index = 0
+      const row = 3
+      // 每行的字符数量
+      const num = 9
+      const name = data.name
+      let newName = ''
+      let index = 0
 
       while (name.length > num * index && index < row) newName += name.substring(num * index, num * ++index) + '\n'
       newName = newName.replace(/\n$/g, '')
@@ -248,7 +230,7 @@ export default {
       return newName
     },
   },
-  components: {NoData, Loading},
+  components: { NoData, Loading },
 }
 </script>
 

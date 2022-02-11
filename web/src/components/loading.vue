@@ -1,12 +1,12 @@
 <template lang="pug">
-  transition(name="fade")
-    .loading(v-if="loading" )
-      img(src="@/assets/loading-coffee.svg" alt="" :class="loading?'':'hide'")
+transition(name="fade")
+  .loading(v-if="loading" )
+    img(src="@/assets/loading-coffee.svg" alt="" :class="loading?'':'hide'")
 </template>
 
 <script>
 export default {
-  name: 'loading',
+  name: 'Loading',
   props: {
     loading: {
       type: Boolean,
