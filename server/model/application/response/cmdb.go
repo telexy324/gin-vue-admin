@@ -9,7 +9,7 @@ type ApplicationServerResponse struct {
 }
 
 type SystemRelationsResponse struct {
-	Paths RelationPath `json:"paths"`
+	Path RelationPath `json:"path"`
 }
 
 type RelationPath struct {

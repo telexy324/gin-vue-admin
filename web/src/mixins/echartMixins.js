@@ -1,7 +1,6 @@
 /**
  * echart基础功能
  */
-import { commonCreateModule } from '@/util/d3/common'
 import * as d3 from 'd3'
 
 export default element => {
@@ -35,8 +34,6 @@ export default element => {
           .append('svg') // 添加画布
           .attr('width', this.screenWidth) // 设置宽度
           .attr('height', this.screenHeight) // 设置高度
-        // 创建水印组件
-        commonCreateModule.createWatemark(this)
       },
       // 退出页面
       onExitPage() {

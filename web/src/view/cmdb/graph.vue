@@ -36,7 +36,7 @@ export default {
   },
   mounted() {
     const { companyId, companyName } = this.$route.query
-    this.cid = companyId
+    this.cid = 2
     this.cname = decodeURIComponent(companyName || '')
     this.getData()
   },

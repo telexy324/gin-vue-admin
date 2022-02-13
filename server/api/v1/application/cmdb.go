@@ -185,12 +185,12 @@ func (a *CmdbApi) SystemRelations(c *gin.Context) {
 		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 		response.FailWithMessage("获取失败", c)
 	} else {
-		paths := applicationRes.RelationPath{}
+		path := applicationRes.RelationPath{}
 		resNodes := make([]applicationRes.Node, 0)
 		if err = utils.ConvertStruct(&nodes, &resNodes); err != nil {
 			response.FailWithMessage("获取失败", c)
 		}
-		paths.Nodes = resNodes
+		path.Nodes = resNodes
 		links := make([]applicationRes.Link, 0)
 		mapLinks := make(map[int]bool)
 		for _, relation := range relations {
@@ -209,9 +209,9 @@ func (a *CmdbApi) SystemRelations(c *gin.Context) {
 				mapLinks[int(relation.ID)] = true
 			}
 		}
-		paths.Links = links
+		path.Links = links
 		response.OkWithDetailed(applicationRes.SystemRelationsResponse{
-			Paths: paths,
+			Path: path,
 		}, "获取成功", c)
 	}
 }
