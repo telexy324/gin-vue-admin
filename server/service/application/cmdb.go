@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/application"
+	request2 "github.com/flipped-aurora/gin-vue-admin/server/model/application/request"
 	"gorm.io/gorm"
 )
 
@@ -96,10 +97,17 @@ func (cmdbService *CmdbService) GetServerById(id float64) (err error, server app
 //@description: 获取路由分页
 //@return: err error, list interface{}, total int64
 
-func (cmdbService *CmdbService) GetServerList() (err error, list interface{}, total int64) {
+func (cmdbService *CmdbService) GetServerList(info request2.ServerSearch) (err error, list interface{}, total int64) {
+	limit := info.PageSize
+	offset := info.PageSize * (info.Page - 1)
 	var serverList []application.ApplicationServer
-	err = global.GVA_DB.Find(&serverList).Error
-	return err, serverList, int64(len(serverList))
+	db := global.GVA_DB.Model(&application.ApplicationServer{})
+	err = db.Count(&total).Error
+	if err != nil {
+		return
+	}
+	err = global.GVA_DB.Limit(limit).Offset(offset).Find(&serverList).Error
+	return err, serverList, total
 }
 
 //@author: [telexy324](https://github.com/telexy324)

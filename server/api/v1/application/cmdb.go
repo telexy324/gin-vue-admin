@@ -3,6 +3,7 @@ package application
 import (
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/application"
+	request2 "github.com/flipped-aurora/gin-vue-admin/server/model/application/request"
 	applicationRes "github.com/flipped-aurora/gin-vue-admin/server/model/application/response"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/response"
@@ -122,13 +123,13 @@ func (a *CmdbApi) GetServerById(c *gin.Context) {
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
 // @Router /cmdb/getServerList [post]
 func (a *CmdbApi) GetServerList(c *gin.Context) {
-	var pageInfo request.PageInfo
+	var pageInfo request2.ServerSearch
 	_ = c.ShouldBindJSON(&pageInfo)
-	if err := utils.Verify(pageInfo, utils.PageInfoVerify); err != nil {
+	if err := utils.Verify(pageInfo.PageInfo, utils.PageInfoVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err, serverList, total := cmdbService.GetServerList(); err != nil {
+	if err, serverList, total := cmdbService.GetServerList(pageInfo); err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 		response.FailWithMessage("获取失败", c)
 	} else {
