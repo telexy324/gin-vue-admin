@@ -106,10 +106,8 @@ func (a *CmdbApi) GetServerById(c *gin.Context) {
 		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 		response.FailWithMessage("获取失败", c)
 	} else {
-		servers := make([]application.ApplicationServer, 0)
-		servers = append(servers, server)
 		response.OkWithDetailed(applicationRes.ApplicationServerResponse{
-			Servers: servers,
+			Server: server,
 		}, "获取成功", c)
 	}
 }

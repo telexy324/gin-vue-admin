@@ -19,7 +19,7 @@ func (s *CmdbRouter) InitCmdbRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 		cmdbRouterWithoutRecord.POST("updateServer", authorityServerApi.UpdateServer) // 更新菜单
 	}
 	{
-		cmdbRouterWithoutRecord.POST("getServer", authorityServerApi.GetServerById)     // 获取菜单树
+		cmdbRouterWithoutRecord.POST("getServerById", authorityServerApi.GetServerById)     // 获取菜单树
 		cmdbRouterWithoutRecord.POST("getServerList", authorityServerApi.GetServerList) // 分页获取基础menu列表
 	}
 	{

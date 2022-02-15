@@ -4,8 +4,12 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/model/application"
 )
 
-type ApplicationServerResponse struct {
+type ApplicationServersResponse struct {
 	Servers []application.ApplicationServer `json:"servers"`
+}
+
+type ApplicationServerResponse struct {
+	Server application.ApplicationServer `json:"server"`
 }
 
 type SystemRelationsResponse struct {

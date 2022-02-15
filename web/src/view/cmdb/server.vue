@@ -79,7 +79,7 @@
         <el-form-item label="架构" prop="architecture">
           <el-input v-model="form.architecture" autocomplete="off" />
         </el-form-item>
-        <el-form-item label="管理IP" prop="manageIP">
+        <el-form-item label="管理IP" prop="manageIp">
           <el-input v-model="form.manageIp" autocomplete="off" />
         </el-form-item>
         <el-form-item label="系统" prop="os">
@@ -221,7 +221,7 @@ export default {
     },
     async editServer(row) {
       const res = await getServerById({ id: row.ID })
-      this.form = res.data.api
+      this.form = res.data.server
       this.openDialog('edit')
     },
     async deleteServer(row) {
