@@ -26,5 +26,10 @@ func (s *CmdbRouter) InitCmdbRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 		cmdbRouterWithoutRecord.POST("system/addRelation", authorityServerApi.AddRelation)   // 获取菜单树
 		cmdbRouterWithoutRecord.POST("system/relations", authorityServerApi.SystemRelations) // 分页获取基础menu列表
 	}
+	{
+		cmdbRouterWithoutRecord.POST("importExcel", authorityServerApi.ImportExcel)          // 导入Excel
+		cmdbRouterWithoutRecord.POST("exportExcel", authorityServerApi.ExportExcel)          // 导出Excel
+		cmdbRouterWithoutRecord.GET("downloadTemplate", authorityServerApi.DownloadTemplate) // 下载模板文件
+	}
 	return cmdbRouter
 }

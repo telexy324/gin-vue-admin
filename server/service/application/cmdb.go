@@ -6,6 +6,7 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/model/application"
 	request2 "github.com/flipped-aurora/gin-vue-admin/server/model/application/request"
 	"gorm.io/gorm"
+	"strings"
 )
 
 //@author: [piexlmax](https://github.com/piexlmax)
@@ -94,7 +95,7 @@ func (cmdbService *CmdbService) GetServerById(id float64) (err error, server app
 
 //@author: [telexy324](https://github.com/telexy324)
 //@function: GetServerList
-//@description: 获取路由分页
+//@description: 获取服务器分页
 //@return: err error, list interface{}, total int64
 
 func (cmdbService *CmdbService) GetServerList(info request2.ServerSearch) (err error, list interface{}, total int64) {
@@ -102,11 +103,19 @@ func (cmdbService *CmdbService) GetServerList(info request2.ServerSearch) (err e
 	offset := info.PageSize * (info.Page - 1)
 	var serverList []application.ApplicationServer
 	db := global.GVA_DB.Model(&application.ApplicationServer{})
+	if info.Hostname != "" {
+		hostname:=strings.Trim(info.Hostname," ")
+		db = db.Where("`hostname` LIKE ?", "%"+hostname+"%")
+	}
+	if info.ManageIp != "" {
+		manageIp:=strings.Trim(info.ManageIp," ")
+		db = db.Where("`manage_ip` LIKE ?", "%"+manageIp+"%")
+	}
 	err = db.Count(&total).Error
 	if err != nil {
 		return
 	}
-	err = global.GVA_DB.Limit(limit).Offset(offset).Find(&serverList).Error
+	err = db.Limit(limit).Offset(offset).Find(&serverList).Error
 	return err, serverList, total
 }
 

@@ -27,6 +27,17 @@
             <el-button icon="el-icon-delete" size="mini" :disabled="!servers.length" style="margin-left: 10px;">删除</el-button>
           </template>
         </el-popover>
+        <el-upload
+          class="excel-btn"
+          :action="`${path}/server/importExcel`"
+          :headers="{'x-token':token}"
+          :on-success="loadExcel"
+          :show-file-list="false"
+        >
+          <el-button size="mini" type="primary" icon="el-icon-upload2">导入</el-button>
+        </el-upload>
+        <el-button class="excel-btn" size="mini" type="primary" icon="el-icon-download" @click="handleExcelExport('ExcelExport.xlsx')">导出</el-button>
+        <el-button class="excel-btn" size="mini" type="success" icon="el-icon-download" @click="downloadExcelTemplate()">下载模板</el-button>
       </div>
       <el-table :data="tableData" @sort-change="sortChange" @selection-change="handleSelectionChange">
         <el-table-column
@@ -36,7 +47,7 @@
         <el-table-column align="left" label="id" min-width="60" prop="ID" sortable="custom" />
         <el-table-column align="left" label="服务器名" min-width="150" prop="hostname" sortable="custom" />
         <el-table-column align="left" label="架构" min-width="150" prop="architecture" sortable="custom" />
-        <el-table-column align="left" label="管理IP" min-width="150" prop="manageIP" sortable="custom" />
+        <el-table-column align="left" label="管理IP" min-width="200" prop="manageIp" sortable="custom" />
         <el-table-column align="left" label="系统" min-width="150" prop="os" sortable="custom" />
         <el-table-column align="left" label="系统版本" min-width="150" prop="osVersion" sortable="custom" />
         <el-table-column align="left" fixed="right" label="操作" width="200">
@@ -100,6 +111,7 @@
 </template>
 
 <script>
+const path = import.meta.env.VITE_BASE_API
 // 获取列表内容封装在mixins内部  getTableData方法 初始化已封装完成 条件搜索时候 请把条件安好后台定制的结构体字段 放到 this.searchInfo 中即可实现条件搜索
 
 import {
@@ -148,7 +160,8 @@ export default {
         osVersion: [
           { required: true, message: '请输入系统版本', trigger: 'blur' }
         ]
-      }
+      },
+      path: path
     }
   },
   created() {
@@ -304,5 +317,8 @@ export default {
 }
 .warning {
   color: #dc143c;
+}
+.excel-btn+.excel-btn{
+  margin-left: 10px;
 }
 </style>
