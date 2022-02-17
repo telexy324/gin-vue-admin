@@ -294,9 +294,10 @@ func (cmdbService *CmdbService) ImportExcel2db(file multipart.File, header *mult
 	if err != nil {
 		return err
 	}
-	if len(rows) == 0 {
+	if len(rows) <= 1 {
 		return errors.New("数据表内容为空")
 	}
+	rows = rows[1:]
 	for _, row := range rows {
 		server := application.ApplicationServer{
 			Hostname:     row[0],
@@ -316,13 +317,31 @@ func (cmdbService *CmdbService) ImportExcel2db(file multipart.File, header *mult
 	return err
 }
 
-func (cmdbService *CmdbService) ExportTemplate() error {
+func (cmdbService *CmdbService) ExportTemplate() (*excelize.File, error) {
 	excel := excelize.NewFile()
-	headers:=[]string{"主机名","架构","管理IP","系统类型","系统版本"}
+	sheetName := "Sheet1"
+	headers := []string{"主机名", "架构", "管理IP", "系统类型", "系统版本"}
+	architectures := []string{consts.ArchitectureMap[consts.ArchitectureX86], consts.ArchitectureMap[consts.ArchitectureArm]}
+	oses := []string{consts.OsMap[consts.OsRedhat], consts.OsMap[consts.OsSuse], consts.OsMap[consts.OsCentos], consts.OsMap[consts.OsKylin]}
 	err := excel.SetSheetRow("Sheet1", "A1", &headers)
 	if err != nil {
-		return err
+		return nil, err
 	}
-
-	return err
+	dvRangeArchitecture := excelize.NewDataValidation(true)
+	dvRangeArchitecture.Sqref = "B2:B255"
+	if err = dvRangeArchitecture.SetDropList(architectures); err != nil {
+		return nil, err
+	}
+	if err = excel.AddDataValidation(sheetName, dvRangeArchitecture); err != nil {
+		return nil, err
+	}
+	dvRangeOs := excelize.NewDataValidation(true)
+	dvRangeOs.Sqref = "D2:D255"
+	if err = dvRangeOs.SetDropList(oses); err != nil {
+		return nil, err
+	}
+	if err = excel.AddDataValidation(sheetName, dvRangeOs); err != nil {
+		return nil, err
+	}
+	return excel, err
 }

@@ -215,7 +215,7 @@ func (a *CmdbApi) SystemRelations(c *gin.Context) {
 	}
 }
 
-// @Tags excel
+// @Tags Server
 // @Summary 导出Excel
 // @Security ApiKeyAuth
 // @accept application/json
@@ -237,7 +237,7 @@ func (e *CmdbApi) ExportExcel(c *gin.Context) {
 	c.File(filePath)
 }
 
-// @Tags excel
+// @Tags Server
 // @Summary 导入Excel文件
 // @Security ApiKeyAuth
 // @accept multipart/form-data
@@ -252,7 +252,7 @@ func (e *CmdbApi) ImportExcel(c *gin.Context) {
 		response.FailWithMessage("接收文件失败", c)
 		return
 	}
-	err = cmdbService.ImportExcel2db(file,header)
+	err = cmdbService.ImportExcel2db(file, header)
 	if err != nil {
 		global.GVA_LOG.Error("转换Excel失败!", zap.Any("err", err))
 		response.FailWithMessage("转换Excel失败", c)
@@ -261,19 +261,27 @@ func (e *CmdbApi) ImportExcel(c *gin.Context) {
 	response.OkWithMessage("导入成功", c)
 }
 
-// @Tags excel
+// @Tags Server
 // @Summary 下载模板
 // @Security ApiKeyAuth
 // @accept multipart/form-data
 // @Produce  application/json
-// @Param fileName query string true "模板名称"
 // @Success 200
-// @Router /excel/downloadTemplate [get]
+// @Router /cmdb/downloadTemplate [get]
 func (e *CmdbApi) DownloadTemplate(c *gin.Context) {
-	err = cmdbService.ImportExcel2db(file,header)
+	excel, err := cmdbService.ExportTemplate()
 	if err != nil {
-		global.GVA_LOG.Error("转换Excel失败!", zap.Any("err", err))
-		response.FailWithMessage("转换Excel失败", c)
+		global.GVA_LOG.Error("下载模板失败!", zap.Any("err", err))
+		response.FailWithMessage("下载模板失败", c)
+		return
+	}
+	//c.Writer.Header().Add("success", "true")
+	c.Header("Content-Type", "application/octet-stream")
+	c.Header("Content-Disposition", "attachment; filename="+"serverTemplate.xlsx")
+	c.Header("Content-Transfer-Encoding", "binary")
+	if err = excel.Write(c.Writer); err != nil {
+		global.GVA_LOG.Error("下载模板失败!", zap.Any("err", err))
+		response.FailWithMessage("下载模板失败", c)
 		return
 	}
 }

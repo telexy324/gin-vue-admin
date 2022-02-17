@@ -1256,6 +1256,65 @@ var doc = `{
                 }
             }
         },
+        "/cmdb/downloadTemplate": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Server"
+                ],
+                "summary": "下载模板",
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/cmdb/exportExcel": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "Server"
+                ],
+                "summary": "导出Excel",
+                "parameters": [
+                    {
+                        "description": "导出Excel文件信息",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.ExcelInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/cmdb/getServerById": {
             "post": {
                 "security": [
@@ -1325,6 +1384,42 @@ var doc = `{
                 "responses": {
                     "200": {
                         "description": "{\"success\":true,\"data\":{},\"msg\":\"获取成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/cmdb/importExcel": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Server"
+                ],
+                "summary": "导入Excel文件",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "导入Excel文件",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\":true,\"data\":{},\"msg\":\"导入成功\"}",
                         "schema": {
                             "type": "string"
                         }
@@ -4452,6 +4547,27 @@ var doc = `{
         },
         "request.Empty": {
             "type": "object"
+        },
+        "request.ExcelInfo": {
+            "type": "object",
+            "properties": {
+                "fileName": {
+                    "description": "文件名",
+                    "type": "string"
+                },
+                "header": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "infoList": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/application.ApplicationServer"
+                    }
+                }
+            }
         },
         "request.GetAuthorityId": {
             "type": "object",
