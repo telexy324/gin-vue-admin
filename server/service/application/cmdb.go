@@ -2,10 +2,16 @@ package application
 
 import (
 	"errors"
+	"fmt"
+	"github.com/flipped-aurora/gin-vue-admin/server/consts"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/application"
 	request2 "github.com/flipped-aurora/gin-vue-admin/server/model/application/request"
+	"github.com/xuri/excelize/v2"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
+	"mime/multipart"
+	"strconv"
 	"strings"
 )
 
@@ -104,11 +110,11 @@ func (cmdbService *CmdbService) GetServerList(info request2.ServerSearch) (err e
 	var serverList []application.ApplicationServer
 	db := global.GVA_DB.Model(&application.ApplicationServer{})
 	if info.Hostname != "" {
-		hostname:=strings.Trim(info.Hostname," ")
+		hostname := strings.Trim(info.Hostname, " ")
 		db = db.Where("`hostname` LIKE ?", "%"+hostname+"%")
 	}
 	if info.ManageIp != "" {
-		manageIp:=strings.Trim(info.ManageIp," ")
+		manageIp := strings.Trim(info.ManageIp, " ")
 		db = db.Where("`manage_ip` LIKE ?", "%"+manageIp+"%")
 	}
 	err = db.Count(&total).Error
@@ -253,4 +259,70 @@ func (cmdbService *CmdbService) SystemRelations(id float64) (err error, relation
 		}
 	}
 	return
+}
+
+func (cmdbService *CmdbService) ParseInfoList2Excel(infoList []application.ApplicationServer, headers []string, filePath string) error {
+	excel := excelize.NewFile()
+	err := excel.SetSheetRow("Sheet1", "A1", &headers)
+	if err != nil {
+		return err
+	}
+	for i, server := range infoList {
+		axis := fmt.Sprintf("A%d", i+2)
+		err = excel.SetSheetRow("Sheet1", axis, &[]interface{}{
+			server.ID,
+			server.Hostname,
+			server.Architecture,
+			server.ManageIp,
+			server.Os,
+			server.OsVersion,
+		})
+		if err != nil {
+			global.GVA_LOG.Error("转换Excel行失败!，server id为: "+strconv.Itoa(int(server.ID)), zap.Any("err", err))
+		}
+	}
+	err = excel.SaveAs(filePath)
+	return err
+}
+
+func (cmdbService *CmdbService) ImportExcel2db(file multipart.File, header *multipart.FileHeader) error {
+	f, err := excelize.OpenReader(file)
+	if err != nil {
+		return err
+	}
+	rows, err := f.GetRows("Sheet1")
+	if err != nil {
+		return err
+	}
+	if len(rows) == 0 {
+		return errors.New("数据表内容为空")
+	}
+	for _, row := range rows {
+		server := application.ApplicationServer{
+			Hostname:     row[0],
+			Architecture: int(consts.OsMapReverse[row[1]]),
+			ManageIp:     row[2],
+			Os:           int(consts.OsMapReverse[row[3]]),
+			OsVersion:    row[4],
+		}
+		if !errors.Is(global.GVA_DB.Where("hostname = ?", server.Hostname).First(&application.ApplicationServer{}).Error, gorm.ErrRecordNotFound) {
+			global.GVA_LOG.Error("存在重复hostname，请修改name" + row[0])
+			continue
+		}
+		if err = global.GVA_DB.Create(&server).Error; err != nil {
+			global.GVA_LOG.Error("插入失败", zap.Any("err", err))
+		}
+	}
+	return err
+}
+
+func (cmdbService *CmdbService) ExportTemplate() error {
+	excel := excelize.NewFile()
+	headers:=[]string{"主机名","架构","管理IP","系统类型","系统版本"}
+	err := excel.SetSheetRow("Sheet1", "A1", &headers)
+	if err != nil {
+		return err
+	}
+
+	return err
 }
