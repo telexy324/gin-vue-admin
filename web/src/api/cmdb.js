@@ -66,3 +66,49 @@ export const getServerById = (data) => {
     data
   })
 }
+
+// @Tags Server
+// @Summary 导出Excel
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce  application/octet-stream
+// @Param data body request2.ExcelInfo true "导出Excel文件信息"
+// @Success 200
+// @Router /cmdb/exportExcel [post]
+export const exportExcel = (data) => {
+  return service({
+    url: '/cmdb/exportExcel',
+    method: 'post',
+    data
+  })
+}
+
+// @Tags Server
+// @Summary 导入Excel文件
+// @Security ApiKeyAuth
+// @accept multipart/form-data
+// @Produce  application/json
+// @Param file formData file true "导入Excel文件"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"导入成功"}"
+// @Router /cmdb/importExcel [post]
+export const importExcel = (data) => {
+  return service({
+    url: '/cmdb/importExcel',
+    method: 'post',
+    data
+  })
+}
+
+// @Tags Server
+// @Summary 下载模板
+// @Security ApiKeyAuth
+// @accept multipart/form-data
+// @Produce  application/json
+// @Success 200
+// @Router /cmdb/downloadTemplate [get]
+export const downloadTemplate = () => {
+  return service({
+    url: '/cmdb/downloadTemplate',
+    method: 'get'
+  })
+}

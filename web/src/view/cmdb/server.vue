@@ -29,9 +29,10 @@
         </el-popover>
         <el-upload
           class="excel-btn"
-          :action="`${path}/server/importExcel`"
+          :action="`${path}/cmdb/importExcel`"
           :headers="{'x-token':token}"
-          :on-success="loadExcel"
+          :on-success="onSuccess"
+          :on-error="onfailed"
           :show-file-list="false"
         >
           <el-button size="mini" type="primary" icon="el-icon-upload2">导入</el-button>
@@ -124,6 +125,8 @@ import {
 import infoList from '@/mixins/infoList'
 import { toSQLLine } from '@/utils/stringFun'
 import warningBar from '@/components/warningBar/warningBar.vue'
+import { ElNotification } from 'element-plus'
+import { exportExcel, downloadTemplate } from '@/api/cmdb'
 
 export default {
   name: 'Server',
@@ -302,6 +305,29 @@ export default {
               break
           }
         }
+      })
+    },
+    handleExcelExport(fileName) {
+      if (!fileName || typeof fileName !== 'string') {
+        fileName = 'ExcelExport.xlsx'
+      }
+      exportExcel(this.tableData, fileName)
+    },
+    downloadExcelTemplate() {
+      downloadTemplate('ExcelTemplate.xlsx')
+    },
+    onSuccess() {
+      ElNotification({
+        title: 'Success',
+        message: '导入成功',
+        type: 'success',
+      })
+    },
+    onfailed() {
+      ElNotification({
+        title: 'Error',
+        message: '导入失败',
+        type: 'error',
       })
     }
   }
