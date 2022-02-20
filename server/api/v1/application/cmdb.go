@@ -279,9 +279,8 @@ func (e *CmdbApi) DownloadTemplate(c *gin.Context) {
 	c.Header("Content-Type", "application/octet-stream")
 	c.Header("Content-Disposition", "attachment; filename="+"serverTemplate.xlsx")
 	c.Header("Content-Transfer-Encoding", "binary")
+	c.Header("success", "true")
 	if err = excel.Write(c.Writer); err != nil {
 		global.GVA_LOG.Error("下载模板失败!", zap.Any("err", err))
-		response.FailWithMessage("下载模板失败", c)
-		return
 	}
 }

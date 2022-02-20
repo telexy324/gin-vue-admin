@@ -1,4 +1,5 @@
 import service from '@/utils/request'
+import download from '../utils/download'
 
 // @Summary 获取server列表
 // @Produce  application/json
@@ -106,9 +107,12 @@ export const importExcel = (data) => {
 // @Produce  application/json
 // @Success 200
 // @Router /cmdb/downloadTemplate [get]
-export const downloadTemplate = () => {
+export const downloadTemplate = (fileName) => {
   return service({
     url: '/cmdb/downloadTemplate',
-    method: 'get'
+    method: 'get',
+    responseType: 'blob'
+  }).then((res) => {
+    download(res, fileName)
   })
 }
