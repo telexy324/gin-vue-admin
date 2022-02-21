@@ -128,11 +128,11 @@ func (cmdbService *CmdbService) GetServerList(info request2.ServerSearch) (err e
 //@author: [telexy324](https://github.com/telexy324)
 //@function: AddRelation
 //@description: 添加联系
-//@param: relation model.SystemRelation
+//@param: relation model.ServerRelation
 //@return: error
 
-func (cmdbService *CmdbService) AddRelation(relation application.SystemRelation) error {
-	if !errors.Is(global.GVA_DB.Where("start_server_id = ? and end_server_id = ?", relation.StartServerId, relation.EndServerId).First(&application.SystemRelation{}).Error, gorm.ErrRecordNotFound) {
+func (cmdbService *CmdbService) AddRelation(relation application.ServerRelation) error {
+	if !errors.Is(global.GVA_DB.Where("start_server_id = ? and end_server_id = ?", relation.StartServerId, relation.EndServerId).First(&application.ServerRelation{}).Error, gorm.ErrRecordNotFound) {
 		return errors.New("存在重复关系")
 	}
 
@@ -150,12 +150,12 @@ func (cmdbService *CmdbService) AddRelation(relation application.SystemRelation)
 }
 
 //@author: [telexy324](https://github.com/telexy324)
-//@function: SystemRelations
+//@function: ServerRelations
 //@description: 返回当前选中server的关系路径
 //@param: id float64
 //@return: err error, server model.ApplicationServer
 
-func (cmdbService *CmdbService) SystemRelations(id float64) (err error, relations []application.SystemRelation, nodes []application.Node) {
+func (cmdbService *CmdbService) ServerRelations(id float64) (err error, relations []application.ServerRelation, nodes []application.Node) {
 	server := application.ApplicationServer{}
 	err = global.GVA_DB.Where("id = ?", id).First(&server).Error
 	if err != nil {
@@ -168,8 +168,8 @@ func (cmdbService *CmdbService) SystemRelations(id float64) (err error, relation
 		Name: server.Hostname,
 	})
 	mapNodes[int(server.ID)] = true
-	relationOneSrc := make([]application.SystemRelation, 0)
-	relationOneDest := make([]application.SystemRelation, 0)
+	relationOneSrc := make([]application.ServerRelation, 0)
+	relationOneDest := make([]application.ServerRelation, 0)
 	err = global.GVA_DB.Preload("EndServer").Where("start_server_id = ?", id).Find(&relationOneSrc).Error
 	err = global.GVA_DB.Preload("StartServer").Where("end_server_id = ?", id).Find(&relationOneDest).Error
 	if len(relationOneSrc) > 0 {
@@ -183,8 +183,8 @@ func (cmdbService *CmdbService) SystemRelations(id float64) (err error, relation
 				})
 				mapNodes[relation.EndServerId] = true
 			}
-			relationTwoSrc := make([]application.SystemRelation, 0)
-			relationTwoDest := make([]application.SystemRelation, 0)
+			relationTwoSrc := make([]application.ServerRelation, 0)
+			relationTwoDest := make([]application.ServerRelation, 0)
 			err = global.GVA_DB.Preload("EndServer").Where("start_server_id = ?", relation.EndServerId).Find(&relationTwoSrc).Error
 			err = global.GVA_DB.Preload("StartServer").Where("end_server_id = ?", relation.EndServerId).Find(&relationTwoDest).Error
 			if len(relationTwoSrc) > 0 {
@@ -226,8 +226,8 @@ func (cmdbService *CmdbService) SystemRelations(id float64) (err error, relation
 				})
 				mapNodes[relation.StartServerId] = true
 			}
-			relationTwoSrc := make([]application.SystemRelation, 0)
-			relationTwoDest := make([]application.SystemRelation, 0)
+			relationTwoSrc := make([]application.ServerRelation, 0)
+			relationTwoDest := make([]application.ServerRelation, 0)
 			err = global.GVA_DB.Preload("EndServer").Where("start_server_id = ?", relation.StartServerId).Find(&relationTwoSrc).Error
 			err = global.GVA_DB.Preload("StartServer").Where("end_server_id = ?", relation.StartServerId).Find(&relationTwoDest).Error
 			if len(relationTwoSrc) > 0 {
