@@ -68,14 +68,14 @@ type ApplicationSystem struct {
 	Position int    `json:"position" gorm:"column:position"` // 系统位置
 }
 
-type ApplicationSystemAdmins struct {
+type ApplicationSystemAdmin struct {
 	global.GVA_MODEL
 	SystemId int `json:"systemId" gorm:"column:system_id"` // 系统id
 	AdminId  int `json:"adminId" gorm:"column:admin_id"`   // 管理员id
 	IsPrime  int `json:"isPrime" gorm:"column:is_prime"`   // 0 非主管 1 主管
 }
 
-type Applications struct {
+type Application struct {
 	global.GVA_MODEL
 	ApplicationType int    `json:"type" gorm:"column:type"`       // 应用类型 0 未定义 1 数据库 2 缓存 3 应用 4 存储 5 负载均衡 6 备份 7 反向代理
 	Name            string `json:"name" gorm:"column:name"`       // 应用名称

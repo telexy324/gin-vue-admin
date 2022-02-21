@@ -48,7 +48,9 @@ CREATE TABLE `admins`
     `mobile`        varchar(30)  NOT NULL DEFAULT '' COMMENT '电话',
     `email`         varchar(50)  NOT NULL DEFAULT '' COMMENT '邮箱',
     `department_id` bigint UNSIGNED NOT NULL DEFAULT '0' COMMENT '部门id',
-    PRIMARY KEY (`id`)
+    PRIMARY KEY (`id`),
+    UNIQUE (`name`),
+    UNIQUE (`mobile`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE `departments`

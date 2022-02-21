@@ -17,4 +17,5 @@ var (
 	SetUserAuthorityVerify = Rules{"AuthorityId": {NotEmpty()}}
 	ServerVerify           = Rules{"Hostname": {NotEmpty()}}
 	SystemRelationVerify   = Rules{"StartServerId": {NotEmpty()}, "EndServerId": {NotEmpty()}}
+	AdminVerify            = Rules{"Name": {NotEmpty()}, "Mobile": {NotEmpty()}, "DepartmentId": {NotEmpty()}}
 )
