@@ -72,7 +72,7 @@ type ApplicationSystemAdmin struct {
 	global.GVA_MODEL
 	SystemId int `json:"systemId" gorm:"column:system_id"` // 系统id
 	AdminId  int `json:"adminId" gorm:"column:admin_id"`   // 管理员id
-	IsPrime  int `json:"isPrime" gorm:"column:is_prime"`   // 0 非主管 1 主管
+	//IsPrime  int `json:"isPrime" gorm:"column:is_prime"`   // 0 非主管 1 主管
 }
 
 type Application struct {

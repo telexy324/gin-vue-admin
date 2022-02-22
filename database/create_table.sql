@@ -85,7 +85,6 @@ CREATE TABLE `application_system_admins`
     `deleted_at` datetime(0) NULL DEFAULT NULL,
     `system_id`  bigint UNSIGNED NOT NULL COMMENT '系统id',
     `admin_id`   bigint UNSIGNED NOT NULL COMMENT '管理员id',
-    `is_prime`   tinyint(2) NOT NULL DEFAULT '0' COMMENT '是否主管 0 否 1 是',
     PRIMARY KEY (`id`),
     UNIQUE (`system_id`, `admin_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

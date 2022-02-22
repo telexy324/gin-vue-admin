@@ -1,20 +1,49 @@
 package utils
 
-func Subtr(a []string, b []string) []string{
-	var subA []string, subB []string
-	temp := map[string]struct{}{}  // map[string]struct{}{}创建了一个key类型为String值类型为空struct的map，Equal -> make(map[string]struct{})
-
-	for _, val := range b{
-		if _, ok := temp[val]; !ok{
-			temp[val] = struct{}{}  // 空struct 不占内存空间
+func SubStr(a []string, b []string) (subA []string) {
+	temp := map[string]struct{}{}
+	for _, val := range b {
+		if _, ok := temp[val]; !ok {
+			temp[val] = struct{}{}
 		}
 	}
-
-	for _, val := range a{
-		if _, ok := temp[val]; !ok{
-			c = append(c, val)
+	for _, val := range a {
+		if _, ok := temp[val]; !ok {
+			subA = append(subA, val)
+			temp[val] = struct{}{}
 		}
 	}
+	return
+}
 
-	return c
+func SubInt(a []int, b []int) (subA []int) {
+	temp := map[int]struct{}{}
+	for _, val := range b {
+		if _, ok := temp[val]; !ok {
+			temp[val] = struct{}{}
+		}
+	}
+	for _, val := range a {
+		if _, ok := temp[val]; !ok {
+			subA = append(subA, val)
+			temp[val] = struct{}{}
+		}
+	}
+	return
+}
+
+func SubFloat64(a []float64, b []float64) (subA []float64) {
+	temp := map[float64]struct{}{}
+	for _, val := range b {
+		if _, ok := temp[val]; !ok {
+			temp[val] = struct{}{}
+		}
+	}
+	for _, val := range a {
+		if _, ok := temp[val]; !ok {
+			subA = append(subA, val)
+			temp[val] = struct{}{}
+		}
+	}
+	return
 }

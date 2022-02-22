@@ -7,6 +7,7 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/application"
 	request2 "github.com/flipped-aurora/gin-vue-admin/server/model/application/request"
+	"github.com/flipped-aurora/gin-vue-admin/server/utils"
 	"github.com/xuri/excelize/v2"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -97,8 +98,36 @@ func (cmdbSystemService *CmdbSystemService) UpdateSystem(addSystemRequest reques
 		}
 
 		if addSystemRequest.SystemAdmin != nil && len(addSystemRequest.SystemAdmin) > 0 {
+			existAdmins := make([]application.Admin, 0)
+			existIds := make([]int, 0, len(existAdmins))
+			if err = db.Where("system_id = ?", addSystemRequest.System.ID).First(&existAdmins).Error; err != nil {
+				return err
+			}
+			for _, admin := range existAdmins {
+				existIds = append(existIds, int(admin.ID))
+			}
+			requestIds := make([]int, 0, len(addSystemRequest.SystemAdmin))
 			for _, admin := range addSystemRequest.SystemAdmin {
-
+				requestIds = append(requestIds, admin.AdminId)
+			}
+			toAdd := utils.SubInt(requestIds, existIds)
+			toDel := utils.SubInt(existIds, requestIds)
+			for _, id := range toAdd {
+				if err = db.Where("id = ?", id).First(&application.Admin{}).Error; err != nil {
+					return err
+				}
+				if err = db.Create(application.ApplicationSystemAdmin{
+					SystemId: int(addSystemRequest.System.ID),
+					AdminId:  id,
+				}).Error; err != nil {
+					return err
+				}
+			}
+			for _, id := range toDel {
+				admin := application.Admin{}
+				if err = db.Where("id = ?", id).Find(&admin).Delete(&admin).Error; err != nil {
+					return err
+				}
 			}
 		}
 		return nil
