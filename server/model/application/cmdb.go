@@ -21,7 +21,7 @@ type ApplicationServer struct {
 
 func (m *ApplicationServer) AfterFind(tx *gorm.DB) {
 	if m.ApplicationIds != "" {
-		if err := json.Unmarshal([]byte(m.ApplicationIds), m.Applications); err != nil {
+		if err := json.Unmarshal([]byte(m.ApplicationIds), &m.Applications); err != nil {
 			global.GVA_LOG.Error("转换失败", zap.Any("err", err))
 		}
 	}
@@ -43,7 +43,7 @@ func (m *ServerRelation) TableName() string {
 
 type Node struct {
 	Id    int    `json:"id"`
-	Type  int    `json:"type"` //0 outer 1 inner
+	Type  int    `json:"type"`
 	Name  string `json:"name"`
 	Value int    `json:"value"`
 }

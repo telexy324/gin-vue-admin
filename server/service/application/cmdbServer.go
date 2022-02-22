@@ -21,10 +21,10 @@ import (
 //@param: authorityId string
 //@return: err error, treeMap map[string][]model.SysMenu
 
-type CmdbService struct {
+type CmdbServerService struct {
 }
 
-var CmdbServiceApp = new(CmdbService)
+var CmdbServerServiceApp = new(CmdbServerService)
 
 //@author: [telexy324](https://github.com/telexy324)
 //@function: AddServer
@@ -32,7 +32,7 @@ var CmdbServiceApp = new(CmdbService)
 //@param: server model.ApplicationServer
 //@return: error
 
-func (cmdbService *CmdbService) AddServer(server application.ApplicationServer) error {
+func (cmdbServerService *CmdbServerService) AddServer(server application.ApplicationServer) error {
 	if !errors.Is(global.GVA_DB.Where("hostname = ?", server.Hostname).First(&application.ApplicationServer{}).Error, gorm.ErrRecordNotFound) {
 		return errors.New("存在重复hostname，请修改name")
 	}
@@ -45,7 +45,7 @@ func (cmdbService *CmdbService) AddServer(server application.ApplicationServer) 
 //@param: id float64
 //@return: err error
 
-func (cmdbService *CmdbService) DeleteServer(id float64) (err error) {
+func (cmdbServerService *CmdbServerService) DeleteServer(id float64) (err error) {
 	err = global.GVA_DB.Where("id = ?", id).First(&application.ApplicationServer{}).Error
 	if err != nil {
 		return
@@ -60,7 +60,7 @@ func (cmdbService *CmdbService) DeleteServer(id float64) (err error) {
 //@param: server model.ApplicationServer
 //@return: err error
 
-func (cmdbService *CmdbService) UpdateServer(server application.ApplicationServer) (err error) {
+func (cmdbServerService *CmdbServerService) UpdateServer(server application.ApplicationServer) (err error) {
 	var oldServer application.ApplicationServer
 	upDateMap := make(map[string]interface{})
 	upDateMap["hostname"] = server.Hostname
@@ -94,7 +94,7 @@ func (cmdbService *CmdbService) UpdateServer(server application.ApplicationServe
 //@param: id float64
 //@return: err error, server model.ApplicationServer
 
-func (cmdbService *CmdbService) GetServerById(id float64) (err error, server application.ApplicationServer) {
+func (cmdbServerService *CmdbServerService) GetServerById(id float64) (err error, server application.ApplicationServer) {
 	err = global.GVA_DB.Where("id = ?", id).First(&server).Error
 	return
 }
@@ -104,7 +104,7 @@ func (cmdbService *CmdbService) GetServerById(id float64) (err error, server app
 //@description: 获取服务器分页
 //@return: err error, list interface{}, total int64
 
-func (cmdbService *CmdbService) GetServerList(info request2.ServerSearch) (err error, list interface{}, total int64) {
+func (cmdbServerService *CmdbServerService) GetServerList(info request2.ServerSearch) (err error, list interface{}, total int64) {
 	limit := info.PageSize
 	offset := info.PageSize * (info.Page - 1)
 	var serverList []application.ApplicationServer
@@ -126,12 +126,22 @@ func (cmdbService *CmdbService) GetServerList(info request2.ServerSearch) (err e
 }
 
 //@author: [telexy324](https://github.com/telexy324)
+//@function: GetSystemServers
+//@description: 获取系统内全部服务器
+//@return: err error, serverList []application.ApplicationServer
+func (cmdbServerService *CmdbServerService) GetSystemServers(systemId float64) (err error, serverList []application.ApplicationServer) {
+	db := global.GVA_DB.Model(&application.ApplicationServer{})
+	err = db.Where("system_id = ?", systemId).Find(&serverList).Error
+	return
+}
+
+//@author: [telexy324](https://github.com/telexy324)
 //@function: AddRelation
 //@description: 添加联系
 //@param: relation model.ServerRelation
 //@return: error
 
-func (cmdbService *CmdbService) AddRelation(relation application.ServerRelation) error {
+func (cmdbServerService *CmdbServerService) AddRelation(relation application.ServerRelation) error {
 	if !errors.Is(global.GVA_DB.Where("start_server_id = ? and end_server_id = ?", relation.StartServerId, relation.EndServerId).First(&application.ServerRelation{}).Error, gorm.ErrRecordNotFound) {
 		return errors.New("存在重复关系")
 	}
@@ -155,7 +165,7 @@ func (cmdbService *CmdbService) AddRelation(relation application.ServerRelation)
 //@param: id float64
 //@return: err error, server model.ApplicationServer
 
-func (cmdbService *CmdbService) ServerRelations(id float64) (err error, relations []application.ServerRelation, nodes []application.Node) {
+func (cmdbServerService *CmdbServerService) ServerRelations(id float64) (err error, relations []application.ServerRelation, nodes []application.Node) {
 	server := application.ApplicationServer{}
 	err = global.GVA_DB.Where("id = ?", id).First(&server).Error
 	if err != nil {
@@ -261,7 +271,7 @@ func (cmdbService *CmdbService) ServerRelations(id float64) (err error, relation
 	return
 }
 
-func (cmdbService *CmdbService) ParseInfoList2Excel(infoList []application.ApplicationServer, headers []string, filePath string) error {
+func (cmdbServerService *CmdbServerService) ParseInfoList2Excel(infoList []application.ApplicationServer, headers []string, filePath string) error {
 	excel := excelize.NewFile()
 	err := excel.SetSheetRow("Sheet1", "A1", &headers)
 	if err != nil {
@@ -285,7 +295,7 @@ func (cmdbService *CmdbService) ParseInfoList2Excel(infoList []application.Appli
 	return err
 }
 
-func (cmdbService *CmdbService) ImportExcel2db(file multipart.File, header *multipart.FileHeader) error {
+func (cmdbServerService *CmdbServerService) ImportExcel2db(file multipart.File, header *multipart.FileHeader) error {
 	f, err := excelize.OpenReader(file)
 	if err != nil {
 		return err
@@ -317,7 +327,7 @@ func (cmdbService *CmdbService) ImportExcel2db(file multipart.File, header *mult
 	return err
 }
 
-func (cmdbService *CmdbService) ExportTemplate() (*excelize.File, error) {
+func (cmdbServerService *CmdbServerService) ExportTemplate() (*excelize.File, error) {
 	excel := excelize.NewFile()
 	sheetName := "Sheet1"
 	headers := []string{"主机名", "架构", "管理IP", "系统类型", "系统版本"}

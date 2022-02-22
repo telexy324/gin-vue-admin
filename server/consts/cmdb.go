@@ -17,6 +17,24 @@ const (
 	OsKylin
 )
 
+const (
+	ApplicationUnknown = iota
+	ApplicationDatabase
+	ApplicationCache
+	ApplicationWebMiddleware
+	ApplicationStore
+	ApplicationLoadBalancer
+	ApplicationBackup
+	ApplicationReverseProxy
+	ApplicationQueue
+	ApplicationSearchEngine
+	ApplicationCombined
+)
+
+const (
+	IsPrime = iota + 1
+)
+
 var ArchitectureMap = map[int64]string{
 	ArchitectureX86: "x86",
 	ArchitectureArm: "arm",

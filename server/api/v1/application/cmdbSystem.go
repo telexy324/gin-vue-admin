@@ -13,26 +13,26 @@ import (
 	"go.uber.org/zap"
 )
 
-type CmdbApi struct {
+type CmdbSystemApi struct {
 }
 
-// @Tags Server
-// @Summary 新增服务器
+// @Tags CmdbSystem
+// @Summary 新增系统
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body application.ApplicationServer true "主机名, 架构, 管理ip, 系统, 系统版本"
+// @Param data body request2.AddSystem true "系统名, 位置, 管理员id, 主管"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"添加成功"}"
-// @Router /cmdb/addServer [post]
-func (a *CmdbApi) AddServer(c *gin.Context) {
-	var server application.ApplicationServer
-	e := c.ShouldBindJSON(&server)
+// @Router /cmdb/addSystem [post]
+func (a *CmdbSystemApi) AddSystem(c *gin.Context) {
+	var addSystemRequest request2.AddSystem
+	e := c.ShouldBindJSON(&addSystemRequest)
 	global.GVA_LOG.Info("error", zap.Any("err", e))
-	if err := utils.Verify(server, utils.ServerVerify); err != nil {
+	if err := utils.Verify(addSystemRequest.System, utils.SystemVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err := cmdbService.AddServer(server); err != nil {
+	if err := cmdbSystemService.AddSystem(addSystemRequest); err != nil {
 		global.GVA_LOG.Error("添加失败!", zap.Any("err", err))
 
 		response.FailWithMessage("添加失败", c)
@@ -41,22 +41,22 @@ func (a *CmdbApi) AddServer(c *gin.Context) {
 	}
 }
 
-// @Tags Server
-// @Summary 删除服务器
+// @Tags CmdbSystem
+// @Summary 删除系统
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body request.GetById true "服务器id"
+// @Param data body request.GetById true "系统id"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"删除成功"}"
-// @Router /cmdb/deleteServer [post]
-func (a *CmdbApi) DeleteServer(c *gin.Context) {
-	var server request.GetById
-	_ = c.ShouldBindJSON(&server)
-	if err := utils.Verify(server, utils.IdVerify); err != nil {
+// @Router /cmdb/deleteSystem [post]
+func (a *CmdbSystemApi) DeleteSystem(c *gin.Context) {
+	var system request.GetById
+	_ = c.ShouldBindJSON(&system)
+	if err := utils.Verify(system, utils.IdVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err := cmdbService.DeleteServer(server.ID); err != nil {
+	if err := cmdbSystemService.DeleteSystem(system.ID); err != nil {
 		global.GVA_LOG.Error("删除失败!", zap.Any("err", err))
 		response.FailWithMessage("删除失败", c)
 	} else {
@@ -64,22 +64,23 @@ func (a *CmdbApi) DeleteServer(c *gin.Context) {
 	}
 }
 
-// @Tags Server
+// @Tags CmdbSystem
 // @Summary 更新服务器
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body application.ApplicationServer true "主机名, 架构, 管理ip, 系统, 系统版本"
+// @Param data body request2.AddSystem true "系统名, 位置, 管理员id, 主管"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"更新成功"}"
-// @Router /cmdb/updateServer [post]
-func (a *CmdbApi) UpdateServer(c *gin.Context) {
-	var server application.ApplicationServer
-	_ = c.ShouldBindJSON(&server)
-	if err := utils.Verify(server, utils.ServerVerify); err != nil {
+// @Router /cmdb/updateSystem [post]
+func (a *CmdbSystemApi) UpdateSystem(c *gin.Context) {
+	var addSystemRequest request2.AddSystem
+	e := c.ShouldBindJSON(&addSystemRequest)
+	global.GVA_LOG.Info("error", zap.Any("err", e))
+	if err := utils.Verify(addSystemRequest.System, utils.SystemVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err := cmdbService.UpdateServer(server); err != nil {
+	if err := cmdbSystemService.UpdateSystem(addSystemRequest); err != nil {
 		global.GVA_LOG.Error("更新失败!", zap.Any("err", err))
 		response.FailWithMessage("更新失败", c)
 	} else {
@@ -87,7 +88,7 @@ func (a *CmdbApi) UpdateServer(c *gin.Context) {
 	}
 }
 
-// @Tags Server
+// @Tags CmdbSystem
 // @Summary 根据id获取服务器
 // @Security ApiKeyAuth
 // @accept application/json
@@ -95,7 +96,7 @@ func (a *CmdbApi) UpdateServer(c *gin.Context) {
 // @Param data body request.GetById true "服务器id"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
 // @Router /cmdb/getServerById [post]
-func (a *CmdbApi) GetServerById(c *gin.Context) {
+func (a *CmdbSystemApi) GetServerById(c *gin.Context) {
 	var idInfo request.GetById
 	_ = c.ShouldBindJSON(&idInfo)
 	if err := utils.Verify(idInfo, utils.IdVerify); err != nil {
@@ -112,7 +113,7 @@ func (a *CmdbApi) GetServerById(c *gin.Context) {
 	}
 }
 
-// @Tags Server
+// @Tags CmdbSystem
 // @Summary 分页获取基础server列表
 // @Security ApiKeyAuth
 // @accept application/json
@@ -120,7 +121,7 @@ func (a *CmdbApi) GetServerById(c *gin.Context) {
 // @Param data body request.PageInfo true "页码, 每页大小"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
 // @Router /cmdb/getServerList [post]
-func (a *CmdbApi) GetServerList(c *gin.Context) {
+func (a *CmdbSystemApi) GetServerList(c *gin.Context) {
 	var pageInfo request2.ServerSearch
 	_ = c.ShouldBindJSON(&pageInfo)
 	if err := utils.Verify(pageInfo.PageInfo, utils.PageInfoVerify); err != nil {
@@ -140,7 +141,32 @@ func (a *CmdbApi) GetServerList(c *gin.Context) {
 	}
 }
 
-// @Tags Server
+// @Tags CmdbSystem
+// @Summary 根据系统id获取服务器
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body request.GetById true "系统id"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
+// @Router /cmdb/getSystemServers [post]
+func (a *CmdbSystemApi) GetSystemServers(c *gin.Context) {
+	var idInfo request.GetById
+	_ = c.ShouldBindJSON(&idInfo)
+	if err := utils.Verify(idInfo, utils.IdVerify); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err, serverList := cmdbService.GetSystemServers(idInfo.ID); err != nil {
+		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
+		response.FailWithMessage("获取失败", c)
+	} else {
+		response.OkWithDetailed(applicationRes.ApplicationServersResponse{
+			Servers: serverList,
+		}, "获取成功", c)
+	}
+}
+
+// @Tags CmdbSystem
 // @Summary 新增联系
 // @Security ApiKeyAuth
 // @accept application/json
@@ -148,7 +174,7 @@ func (a *CmdbApi) GetServerList(c *gin.Context) {
 // @Param data body application.SystemRelation true " "
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"添加成功"}"
 // @Router /cmdb/system/addRelation [post]
-func (a *CmdbApi) AddRelation(c *gin.Context) {
+func (a *CmdbSystemApi) AddRelation(c *gin.Context) {
 	var relation application.ServerRelation
 	e := c.ShouldBindJSON(&relation)
 	global.GVA_LOG.Info("error", zap.Any("err", e))
@@ -165,7 +191,7 @@ func (a *CmdbApi) AddRelation(c *gin.Context) {
 	}
 }
 
-// @Tags Server
+// @Tags CmdbSystem
 // @Summary 获取关系图
 // @Security ApiKeyAuth
 // @accept application/json
@@ -173,7 +199,7 @@ func (a *CmdbApi) AddRelation(c *gin.Context) {
 // @Param data body request.GetById true "服务器id"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
 // @Router /cmdb/system/relations [post]
-func (a *CmdbApi) SystemRelations(c *gin.Context) {
+func (a *CmdbSystemApi) SystemRelations(c *gin.Context) {
 	var idInfo request.GetById
 	_ = c.ShouldBindJSON(&idInfo)
 	if err := utils.Verify(idInfo, utils.IdVerify); err != nil {
@@ -215,7 +241,7 @@ func (a *CmdbApi) SystemRelations(c *gin.Context) {
 	}
 }
 
-// @Tags Server
+// @Tags CmdbSystem
 // @Summary 导出Excel
 // @Security ApiKeyAuth
 // @accept application/json
@@ -223,7 +249,7 @@ func (a *CmdbApi) SystemRelations(c *gin.Context) {
 // @Param data body request2.ExcelInfo true "导出Excel文件信息"
 // @Success 200
 // @Router /cmdb/exportExcel [post]
-func (e *CmdbApi) ExportExcel(c *gin.Context) {
+func (e *CmdbSystemApi) ExportExcel(c *gin.Context) {
 	var excelInfo request2.ExcelInfo
 	_ = c.ShouldBindJSON(&excelInfo)
 	filePath := global.GVA_CONFIG.Excel.Dir + excelInfo.FileName
@@ -237,7 +263,7 @@ func (e *CmdbApi) ExportExcel(c *gin.Context) {
 	c.File(filePath)
 }
 
-// @Tags Server
+// @Tags CmdbSystem
 // @Summary 导入Excel文件
 // @Security ApiKeyAuth
 // @accept multipart/form-data
@@ -245,7 +271,7 @@ func (e *CmdbApi) ExportExcel(c *gin.Context) {
 // @Param file formData file true "导入Excel文件"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"导入成功"}"
 // @Router /cmdb/importExcel [post]
-func (e *CmdbApi) ImportExcel(c *gin.Context) {
+func (e *CmdbSystemApi) ImportExcel(c *gin.Context) {
 	file, header, err := c.Request.FormFile("file")
 	if err != nil {
 		global.GVA_LOG.Error("接收文件失败!", zap.Any("err", err))
@@ -261,14 +287,14 @@ func (e *CmdbApi) ImportExcel(c *gin.Context) {
 	response.OkWithMessage("导入成功", c)
 }
 
-// @Tags Server
+// @Tags CmdbSystem
 // @Summary 下载模板
 // @Security ApiKeyAuth
 // @accept multipart/form-data
 // @Produce  application/json
 // @Success 200
 // @Router /cmdb/downloadTemplate [get]
-func (e *CmdbApi) DownloadTemplate(c *gin.Context) {
+func (e *CmdbSystemApi) DownloadTemplate(c *gin.Context) {
 	excel, err := cmdbService.ExportTemplate()
 	if err != nil {
 		global.GVA_LOG.Error("下载模板失败!", zap.Any("err", err))

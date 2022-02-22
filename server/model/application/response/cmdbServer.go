@@ -12,7 +12,7 @@ type ApplicationServerResponse struct {
 	Server application.ApplicationServer `json:"server"`
 }
 
-type SystemRelationsResponse struct {
+type ServerRelationsResponse struct {
 	Path RelationPath `json:"path"`
 }
 

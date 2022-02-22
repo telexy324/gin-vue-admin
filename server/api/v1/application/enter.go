@@ -3,9 +3,11 @@ package application
 import "github.com/flipped-aurora/gin-vue-admin/server/service"
 
 type ApiGroup struct {
-	CmdbApi
+	CmdbServerApi
+	CmdbSystemApi
 	StaffApi
 }
 
-var cmdbService = service.ServiceGroupApp.ApplicationServiceGroup.CmdbService
+var cmdbServerService = service.ServiceGroupApp.ApplicationServiceGroup.CmdbServerService
+var cmdbSystemService = service.ServiceGroupApp.ApplicationServiceGroup.CmdbSystemService
 var staffService = service.ServiceGroupApp.ApplicationServiceGroup.StaffService

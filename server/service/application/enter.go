@@ -1,6 +1,7 @@
 package application
 
 type ServiceGroup struct {
-	CmdbService
+	CmdbServerService
+	CmdbSystemService
 	StaffService
 }

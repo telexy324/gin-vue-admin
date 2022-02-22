@@ -34,7 +34,7 @@ CREATE TABLE `application_systems`
     `updated_at` datetime(0) NULL DEFAULT NULL,
     `deleted_at` datetime(0) NULL DEFAULT NULL,
     `name`       varchar(100) NOT NULL DEFAULT '' COMMENT '系统名称',
-    `position`   tinyint(2) NOT NULL DEFAULT '0' COMMENT '节点是否系统外 0 系统外, 1 系统内',
+    `position`   tinyint(2) NOT NULL DEFAULT '0' COMMENT '系统位置 0 未知, 1 月坛, 2 昌平, 3 丰台, 4 珠海, 5 西安',
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -71,7 +71,7 @@ CREATE TABLE `applications`
     `created_at` datetime(0) NULL DEFAULT NULL,
     `updated_at` datetime(0) NULL DEFAULT NULL,
     `deleted_at` datetime(0) NULL DEFAULT NULL,
-    `type`       tinyint(2) NOT NULL DEFAULT '0' COMMENT '应用类型 0 未定义 1 数据库 2 缓存 3 应用 4 存储 5 负载均衡 6 备份 7 反向代理',
+    `type`       tinyint(2) NOT NULL DEFAULT '0' COMMENT '应用类型 0 未定义 1 数据库 2 缓存 3 web中间件 4 存储 5 负载均衡 6 备份 7 反向代理 8 队列 9 搜索引擎',
     `name`       varchar(100) NOT NULL DEFAULT '' COMMENT '应用名称',
     `version`    varchar(100) NOT NULL DEFAULT '' COMMENT '版本',
     PRIMARY KEY (`id`)
