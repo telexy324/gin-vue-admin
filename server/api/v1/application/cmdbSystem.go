@@ -150,3 +150,78 @@ func (a *CmdbSystemApi) GetSystemList(c *gin.Context) {
 		}, "获取成功", c)
 	}
 }
+
+// @Tags CmdbSystem
+// @Summary 新增联系
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body application.SystemRelation true " "
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"添加成功"}"
+// @Router /cmdb/system/addRelation [post]
+func (a *CmdbSystemApi) AddRelation(c *gin.Context) {
+	var relation application.SystemRelation
+	e := c.ShouldBindJSON(&relation)
+	global.GVA_LOG.Info("error", zap.Any("err", e))
+	if err := utils.Verify(relation, utils.SystemRelationVerify); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err := cmdbServerService.AddRelation(relation); err != nil {
+		global.GVA_LOG.Error("添加失败!", zap.Any("err", err))
+
+		response.FailWithMessage("添加失败", c)
+	} else {
+		response.OkWithMessage("添加成功", c)
+	}
+}
+
+// @Tags CmdbSystem
+// @Summary 获取关系图
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body request.GetById true "系统id"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
+// @Router /cmdb/system/relations [post]
+func (a *CmdbSystemApi) SystemRelations(c *gin.Context) {
+	var idInfo request.GetById
+	_ = c.ShouldBindJSON(&idInfo)
+	if err := utils.Verify(idInfo, utils.IdVerify); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err, relations, nodes := cmdbServerService.ServerRelations(idInfo.ID); err != nil {
+		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
+		response.FailWithMessage("获取失败", c)
+	} else {
+		path := applicationRes.RelationPath{}
+		resNodes := make([]applicationRes.Node, 0)
+		if err = utils.ConvertStruct(&nodes, &resNodes); err != nil {
+			response.FailWithMessage("获取失败", c)
+		}
+		path.Nodes = resNodes
+		links := make([]applicationRes.Link, 0)
+		mapLinks := make(map[int]bool)
+		for _, relation := range relations {
+			if mapLinks[int(relation.ID)] == false {
+				links = append(links, applicationRes.Link{
+					VectorType:     0,
+					VectorStrValue: relation.Relation,
+					Property: applicationRes.Property{
+						Relation:         relation.Relation,
+						Url:              relation.EndServerUrl,
+						ServerUpdateDate: relation.UpdatedAt.Format("2006-01-02 15:04:05"),
+					},
+					StartNodeId: relation.StartServerId,
+					EndNodeId:   relation.EndServerId,
+				})
+				mapLinks[int(relation.ID)] = true
+			}
+		}
+		path.Links = links
+		response.OkWithDetailed(applicationRes.SystemRelationsResponse{
+			Path: path,
+		}, "获取成功", c)
+	}
+}

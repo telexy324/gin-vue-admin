@@ -88,3 +88,16 @@ CREATE TABLE `application_system_admins`
     PRIMARY KEY (`id`),
     UNIQUE (`system_id`, `admin_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE `application_system_relations`
+(
+    `id`              bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+    `created_at`      datetime(0) NULL DEFAULT NULL,
+    `updated_at`      datetime(0) NULL DEFAULT NULL,
+    `deleted_at`      datetime(0) NULL DEFAULT NULL,
+    `start_system_id` bigint UNSIGNED NOT NULL DEFAULT '0' COMMENT '源系统id',
+    `end_system_id`   bigint UNSIGNED NOT NULL DEFAULT '0' COMMENT '目的系统id',
+    `end_system_url`  varchar(255) NOT NULL DEFAULT '' COMMENT '目的url',
+    `relation`        varchar(100) NOT NULL DEFAULT '' COMMENT '调用关系',
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
