@@ -5,11 +5,12 @@ import (
 )
 
 type ApplicationSystemsResponse struct {
-	Servers []application.ApplicationSystem `json:"systems"`
+	Systems []ApplicationSystemResponse `json:"systems"`
 }
 
 type ApplicationSystemResponse struct {
-	Server application.ApplicationSystem `json:"system"`
+	System application.ApplicationSystem `json:"system"`
+	Admins []application.Admin `json:"admins"`
 }
 
 type SystemRelationsResponse struct {

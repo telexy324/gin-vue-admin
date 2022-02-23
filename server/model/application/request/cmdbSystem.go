@@ -12,7 +12,7 @@ type AddSystem struct {
 }
 
 type SystemSearch struct {
-	application.ApplicationServer
+	application.ApplicationSystem
 	request.PageInfo
 }
 
