@@ -174,7 +174,6 @@ func (cmdbServerService *CmdbServerService) ServerRelations(id float64) (err err
 	mapNodes := make(map[int]bool)
 	nodes = append(nodes, application.Node{
 		Id:   int(server.ID),
-		Type: server.Position,
 		Name: server.Hostname,
 	})
 	mapNodes[int(server.ID)] = true
@@ -188,7 +187,6 @@ func (cmdbServerService *CmdbServerService) ServerRelations(id float64) (err err
 			if mapNodes[relation.EndServerId] == false {
 				nodes = append(nodes, application.Node{
 					Id:   relation.EndServerId,
-					Type: relation.EndServer.Position,
 					Name: relation.EndServer.Hostname,
 				})
 				mapNodes[relation.EndServerId] = true
@@ -203,7 +201,6 @@ func (cmdbServerService *CmdbServerService) ServerRelations(id float64) (err err
 					if mapNodes[relation.EndServerId] == false {
 						nodes = append(nodes, application.Node{
 							Id:   relation.EndServerId,
-							Type: relation.EndServer.Position,
 							Name: relation.EndServer.Hostname,
 						})
 						mapNodes[relation.EndServerId] = true
@@ -216,7 +213,6 @@ func (cmdbServerService *CmdbServerService) ServerRelations(id float64) (err err
 					if mapNodes[relation.StartServerId] == false {
 						nodes = append(nodes, application.Node{
 							Id:   relation.StartServerId,
-							Type: relation.StartServer.Position,
 							Name: relation.StartServer.Hostname,
 						})
 						mapNodes[relation.StartServerId] = true
@@ -231,7 +227,6 @@ func (cmdbServerService *CmdbServerService) ServerRelations(id float64) (err err
 			if mapNodes[relation.StartServerId] == false {
 				nodes = append(nodes, application.Node{
 					Id:   relation.StartServerId,
-					Type: relation.StartServer.Position,
 					Name: relation.StartServer.Hostname,
 				})
 				mapNodes[relation.StartServerId] = true
@@ -246,7 +241,6 @@ func (cmdbServerService *CmdbServerService) ServerRelations(id float64) (err err
 					if mapNodes[relation.EndServerId] == false {
 						nodes = append(nodes, application.Node{
 							Id:   relation.EndServerId,
-							Type: relation.EndServer.Position,
 							Name: relation.EndServer.Hostname,
 						})
 						mapNodes[relation.EndServerId] = true
@@ -259,7 +253,6 @@ func (cmdbServerService *CmdbServerService) ServerRelations(id float64) (err err
 					if mapNodes[relation.StartServerId] == false {
 						nodes = append(nodes, application.Node{
 							Id:   relation.StartServerId,
-							Type: relation.StartServer.Position,
 							Name: relation.StartServer.Hostname,
 						})
 						mapNodes[relation.StartServerId] = true

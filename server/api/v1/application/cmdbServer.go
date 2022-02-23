@@ -32,7 +32,7 @@ func (a *CmdbServerApi) AddServer(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err := cmdbService.AddServer(server); err != nil {
+	if err := cmdbServerService.AddServer(server); err != nil {
 		global.GVA_LOG.Error("添加失败!", zap.Any("err", err))
 
 		response.FailWithMessage("添加失败", c)
@@ -56,7 +56,7 @@ func (a *CmdbServerApi) DeleteServer(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err := cmdbService.DeleteServer(server.ID); err != nil {
+	if err := cmdbServerService.DeleteServer(server.ID); err != nil {
 		global.GVA_LOG.Error("删除失败!", zap.Any("err", err))
 		response.FailWithMessage("删除失败", c)
 	} else {
@@ -79,7 +79,7 @@ func (a *CmdbServerApi) UpdateServer(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err := cmdbService.UpdateServer(server); err != nil {
+	if err := cmdbServerService.UpdateServer(server); err != nil {
 		global.GVA_LOG.Error("更新失败!", zap.Any("err", err))
 		response.FailWithMessage("更新失败", c)
 	} else {
@@ -102,7 +102,7 @@ func (a *CmdbServerApi) GetServerById(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err, server := cmdbService.GetServerById(idInfo.ID); err != nil {
+	if err, server := cmdbServerService.GetServerById(idInfo.ID); err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 		response.FailWithMessage("获取失败", c)
 	} else {
@@ -127,7 +127,7 @@ func (a *CmdbServerApi) GetServerList(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err, serverList, total := cmdbService.GetServerList(pageInfo); err != nil {
+	if err, serverList, total := cmdbServerService.GetServerList(pageInfo); err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 		response.FailWithMessage("获取失败", c)
 	} else {
@@ -155,7 +155,7 @@ func (a *CmdbServerApi) GetSystemServers(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err, serverList := cmdbService.GetSystemServers(idInfo.ID); err != nil {
+	if err, serverList := cmdbServerService.GetSystemServers(idInfo.ID); err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 		response.FailWithMessage("获取失败", c)
 	} else {
@@ -172,7 +172,7 @@ func (a *CmdbServerApi) GetSystemServers(c *gin.Context) {
 // @Produce application/json
 // @Param data body application.SystemRelation true " "
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"添加成功"}"
-// @Router /cmdb/system/addRelation [post]
+// @Router /cmdb/server/addRelation [post]
 func (a *CmdbServerApi) AddRelation(c *gin.Context) {
 	var relation application.ServerRelation
 	e := c.ShouldBindJSON(&relation)
@@ -181,7 +181,7 @@ func (a *CmdbServerApi) AddRelation(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err := cmdbService.AddRelation(relation); err != nil {
+	if err := cmdbServerService.AddRelation(relation); err != nil {
 		global.GVA_LOG.Error("添加失败!", zap.Any("err", err))
 
 		response.FailWithMessage("添加失败", c)
@@ -197,15 +197,15 @@ func (a *CmdbServerApi) AddRelation(c *gin.Context) {
 // @Produce application/json
 // @Param data body request.GetById true "服务器id"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /cmdb/system/relations [post]
-func (a *CmdbServerApi) SystemRelations(c *gin.Context) {
+// @Router /cmdb/server/relations [post]
+func (a *CmdbServerApi) ServerRelations(c *gin.Context) {
 	var idInfo request.GetById
 	_ = c.ShouldBindJSON(&idInfo)
 	if err := utils.Verify(idInfo, utils.IdVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err, relations, nodes := cmdbService.ServerRelations(idInfo.ID); err != nil {
+	if err, relations, nodes := cmdbServerService.ServerRelations(idInfo.ID); err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 		response.FailWithMessage("获取失败", c)
 	} else {
@@ -252,7 +252,7 @@ func (e *CmdbServerApi) ExportExcel(c *gin.Context) {
 	var excelInfo request2.ExcelInfo
 	_ = c.ShouldBindJSON(&excelInfo)
 	filePath := global.GVA_CONFIG.Excel.Dir + excelInfo.FileName
-	err := cmdbService.ParseInfoList2Excel(excelInfo.InfoList, excelInfo.Header, filePath)
+	err := cmdbServerService.ParseInfoList2Excel(excelInfo.InfoList, excelInfo.Header, filePath)
 	if err != nil {
 		global.GVA_LOG.Error("转换Excel失败!", zap.Any("err", err))
 		response.FailWithMessage("转换Excel失败", c)
@@ -277,7 +277,7 @@ func (e *CmdbServerApi) ImportExcel(c *gin.Context) {
 		response.FailWithMessage("接收文件失败", c)
 		return
 	}
-	err = cmdbService.ImportExcel2db(file, header)
+	err = cmdbServerService.ImportExcel2db(file, header)
 	if err != nil {
 		global.GVA_LOG.Error("转换Excel失败!", zap.Any("err", err))
 		response.FailWithMessage("转换Excel失败", c)
@@ -294,7 +294,7 @@ func (e *CmdbServerApi) ImportExcel(c *gin.Context) {
 // @Success 200
 // @Router /cmdb/downloadTemplate [get]
 func (e *CmdbServerApi) DownloadTemplate(c *gin.Context) {
-	excel, err := cmdbService.ExportTemplate()
+	excel, err := cmdbServerService.ExportTemplate()
 	if err != nil {
 		global.GVA_LOG.Error("下载模板失败!", zap.Any("err", err))
 		response.FailWithMessage("下载模板失败", c)
