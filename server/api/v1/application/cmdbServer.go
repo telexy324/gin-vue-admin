@@ -177,7 +177,7 @@ func (a *CmdbServerApi) AddRelation(c *gin.Context) {
 	var relation application.ServerRelation
 	e := c.ShouldBindJSON(&relation)
 	global.GVA_LOG.Info("error", zap.Any("err", e))
-	if err := utils.Verify(relation, utils.SystemRelationVerify); err != nil {
+	if err := utils.Verify(relation, utils.ServerRelationVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
@@ -307,5 +307,129 @@ func (e *CmdbServerApi) DownloadTemplate(c *gin.Context) {
 	c.Header("success", "true")
 	if err = excel.Write(c.Writer); err != nil {
 		global.GVA_LOG.Error("下载模板失败!", zap.Any("err", err))
+	}
+}
+
+// @Tags CmdbServer
+// @Summary 新增服务器
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body application.App true "类型, 名称, 版本"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"添加成功"}"
+// @Router /cmdb/addApp [post]
+func (a *CmdbServerApi) AddApp(c *gin.Context) {
+	var app application.App
+	e := c.ShouldBindJSON(&app)
+	global.GVA_LOG.Info("error", zap.Any("err", e))
+	if err := utils.Verify(app, utils.AppVerify); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err := cmdbServerService.AddApp(app); err != nil {
+		global.GVA_LOG.Error("添加失败!", zap.Any("err", err))
+
+		response.FailWithMessage("添加失败", c)
+	} else {
+		response.OkWithMessage("添加成功", c)
+	}
+}
+
+// @Tags CmdbApp
+// @Summary 删除服务器
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body request.GetById true "服务器id"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"删除成功"}"
+// @Router /cmdb/deleteApp [post]
+func (a *CmdbServerApi) DeleteApp(c *gin.Context) {
+	var app request.GetById
+	_ = c.ShouldBindJSON(&app)
+	if err := utils.Verify(app, utils.IdVerify); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err := cmdbServerService.DeleteApp(app.ID); err != nil {
+		global.GVA_LOG.Error("删除失败!", zap.Any("err", err))
+		response.FailWithMessage("删除失败", c)
+	} else {
+		response.OkWithMessage("删除成功", c)
+	}
+}
+
+// @Tags CmdbServer
+// @Summary 更新应用
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body application.App true "类型, 名称, 版本"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"更新成功"}"
+// @Router /cmdb/updateApp [post]
+func (a *CmdbServerApi) UpdateApp(c *gin.Context) {
+	var app application.App
+	_ = c.ShouldBindJSON(&app)
+	if err := utils.Verify(app, utils.AppVerify); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err := cmdbServerService.UpdateApp(app); err != nil {
+		global.GVA_LOG.Error("更新失败!", zap.Any("err", err))
+		response.FailWithMessage("更新失败", c)
+	} else {
+		response.OkWithMessage("更新成功", c)
+	}
+}
+
+// @Tags CmdbServer
+// @Summary 根据id获取服务器
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body request.GetById true "服务器id"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
+// @Router /cmdb/getAppById [post]
+func (a *CmdbServerApi) GetAppById(c *gin.Context) {
+	var idInfo request.GetById
+	_ = c.ShouldBindJSON(&idInfo)
+	if err := utils.Verify(idInfo, utils.IdVerify); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err, app := cmdbServerService.GetAppById(idInfo.ID); err != nil {
+		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
+		response.FailWithMessage("获取失败", c)
+	} else {
+		response.OkWithDetailed(applicationRes.ApplicationAppResponse{
+			App: app,
+		}, "获取成功", c)
+	}
+}
+
+// @Tags CmdbServer
+// @Summary 分页获取基础app列表
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body request.PageInfo true "页码, 每页大小"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
+// @Router /cmdb/getAppList [post]
+func (a *CmdbServerApi) GetAppList(c *gin.Context) {
+	var pageInfo request2.AppSearch
+	_ = c.ShouldBindJSON(&pageInfo)
+	if err := utils.Verify(pageInfo.PageInfo, utils.PageInfoVerify); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err, appList, total := cmdbServerService.GetAppList(pageInfo); err != nil {
+		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
+		response.FailWithMessage("获取失败", c)
+	} else {
+		response.OkWithDetailed(response.PageResult{
+			List:     appList,
+			Total:    total,
+			Page:     pageInfo.Page,
+			PageSize: pageInfo.PageSize,
+		}, "获取成功", c)
 	}
 }

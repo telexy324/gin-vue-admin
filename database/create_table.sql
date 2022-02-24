@@ -65,7 +65,7 @@ CREATE TABLE `departments`
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE `applications`
+CREATE TABLE `apps`
 (
     `id`         bigint UNSIGNED NOT NULL AUTO_INCREMENT,
     `created_at` datetime(0) NULL DEFAULT NULL,

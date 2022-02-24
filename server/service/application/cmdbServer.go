@@ -348,3 +348,99 @@ func (cmdbServerService *CmdbServerService) ExportTemplate() (*excelize.File, er
 	}
 	return excel, err
 }
+
+//@author: [telexy324](https://github.com/telexy324)
+//@function: AddApp
+//@description: 添加应用
+//@param: server model.App
+//@return: error
+
+func (cmdbServerService *CmdbServerService) AddApp(app application.App) error {
+	if !errors.Is(global.GVA_DB.Where("name = ?", app.Name).First(&application.App{}).Error, gorm.ErrRecordNotFound) {
+		return errors.New("存在重复name，请修改name")
+	}
+	return global.GVA_DB.Create(&app).Error
+}
+
+//@author: [telexy324](https://github.com/telexy324)
+//@function: DeleteApp
+//@description: 删除应用
+//@param: id float64
+//@return: err error
+
+func (cmdbServerService *CmdbServerService) DeleteApp(id float64) (err error) {
+	err = global.GVA_DB.Where("id = ?", id).First(&application.App{}).Error
+	if err != nil {
+		return
+	}
+	var app application.App
+	return global.GVA_DB.Where("id = ?", id).First(&app).Delete(&app).Error
+}
+
+//@author: [telexy324](https://github.com/telexy324)
+//@function: UpdateApp
+//@description: 更新应用
+//@param: server model.App
+//@return: err error
+
+func (cmdbServerService *CmdbServerService) UpdateApp(app application.App) (err error) {
+	var oldApp application.App
+	upDateMap := make(map[string]interface{})
+	upDateMap["name"] = app.Name
+	upDateMap["application_type"] = app.ApplicationType
+	upDateMap["version"] = app.Version
+
+	err = global.GVA_DB.Transaction(func(tx *gorm.DB) error {
+		db := tx.Where("id = ?", app.ID).Find(&oldApp)
+		if oldApp.Name != app.Name {
+			if !errors.Is(tx.Where("id <> ? AND name = ?", app.ID, app.Name).First(&application.App{}).Error, gorm.ErrRecordNotFound) {
+				global.GVA_LOG.Debug("存在相同name修改失败")
+				return errors.New("存在相同name修改失败")
+			}
+		}
+
+		txErr := db.Updates(upDateMap).Error
+		if txErr != nil {
+			global.GVA_LOG.Debug(txErr.Error())
+			return txErr
+		}
+		return nil
+	})
+	return err
+}
+
+//@author: [telexy324](https://github.com/telexy324)
+//@function: GetAppById
+//@description: 返回当前选中app
+//@param: id float64
+//@return: err error, server model.App
+
+func (cmdbServerService *CmdbServerService) GetAppById(id float64) (err error, app application.App) {
+	err = global.GVA_DB.Where("id = ?", id).First(&app).Error
+	return
+}
+
+//@author: [telexy324](https://github.com/telexy324)
+//@function: GetAppList
+//@description: 获取应用分页
+//@return: err error, list interface{}, total int64
+
+func (cmdbServerService *CmdbServerService) GetAppList(info request2.AppSearch) (err error, list interface{}, total int64) {
+	limit := info.PageSize
+	offset := info.PageSize * (info.Page - 1)
+	var appList []application.App
+	db := global.GVA_DB.Model(&application.App{})
+	if info.Name != "" {
+		name := strings.Trim(info.Name, " ")
+		db = db.Where("`hostname` LIKE ?", "%"+name+"%")
+	}
+	if info.ApplicationType > 0 {
+		db = db.Where("type = ?", info.ApplicationType)
+	}
+	err = db.Count(&total).Error
+	if err != nil {
+		return
+	}
+	err = db.Limit(limit).Offset(offset).Find(&appList).Error
+	return err, appList, total
+}

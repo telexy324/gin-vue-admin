@@ -20,4 +20,5 @@ var (
 	SystemRelationVerify   = Rules{"StartServerId": {NotEmpty()}, "EndServerId": {NotEmpty()}}
 	AdminVerify            = Rules{"Name": {NotEmpty()}, "Mobile": {NotEmpty()}, "DepartmentId": {NotEmpty()}}
 	SystemVerify           = Rules{"Name": {NotEmpty()}}
+	AppVerify              = Rules{"Name": {NotEmpty()}}
 )

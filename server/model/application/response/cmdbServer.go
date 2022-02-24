@@ -42,6 +42,14 @@ type Property struct {
 	ServerUpdateDate string `json:"server_update_date"`
 }
 
+type ApplicationAppsResponse struct {
+	Apps []application.App `json:"apps"`
+}
+
+type ApplicationAppResponse struct {
+	App application.App `json:"app"`
+}
+
 //message GetEnterpriseRelationChartRsp {
 //x.common.def.RelationPath path = 1;
 //bool convert_h5 = 999;
