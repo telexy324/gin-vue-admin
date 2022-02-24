@@ -24,12 +24,33 @@ definitions:
         description: 更新时间
         type: string
     type: object
+  application.App:
+    properties:
+      createdAt:
+        description: 创建时间
+        type: string
+      id:
+        description: 主键ID
+        type: integer
+      name:
+        description: 应用名称
+        type: string
+      type:
+        description: 应用类型 0 未定义 1 数据库 2 缓存 3 应用 4 存储 5 负载均衡 6 备份 7 反向代理
+        type: integer
+      updatedAt:
+        description: 更新时间
+        type: string
+      version:
+        description: 版本
+        type: string
+    type: object
   application.ApplicationServer:
     properties:
-      applicationIds:
+      appIds:
         description: 安装应用列表
         type: string
-      applications:
+      apps:
         description: 安装应用列表
         items:
           type: integer
@@ -1798,6 +1819,29 @@ paths:
       summary: 获取权限列表
       tags:
       - Casbin
+  /cmdb/addApp:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 类型, 名称, 版本
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/application.App'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"添加成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 新增服务器
+      tags:
+      - CmdbServer
   /cmdb/addServer:
     post:
       consumes:
@@ -1844,6 +1888,29 @@ paths:
       summary: 新增系统
       tags:
       - CmdbSystem
+  /cmdb/deleteApp:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 服务器id
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetById'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"删除成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 删除服务器
+      tags:
+      - CmdbApp
   /cmdb/deleteServer:
     post:
       consumes:
@@ -1923,6 +1990,52 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: 导出Excel
+      tags:
+      - CmdbServer
+  /cmdb/getAppById:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 服务器id
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetById'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 根据id获取服务器
+      tags:
+      - CmdbServer
+  /cmdb/getAppList:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 页码, 每页大小
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.PageInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 分页获取基础app列表
       tags:
       - CmdbServer
   /cmdb/getServerById:
@@ -2154,6 +2267,29 @@ paths:
       summary: 获取关系图
       tags:
       - CmdbSystem
+  /cmdb/updateApp:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 类型, 名称, 版本
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/application.App'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"更新成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 更新应用
+      tags:
+      - CmdbServer
   /cmdb/updateServer:
     post:
       consumes:
