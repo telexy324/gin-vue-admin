@@ -40,7 +40,11 @@ func (s *CmdbRouter) InitCmdbRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 	}
 	{
 		cmdbRouterWithoutRecord.POST("getSystemById", authoritySystemApi.GetSystemById)     // 获取菜单树
-		cmdbRouterWithoutRecord.POST("getServerList", authoritySystemApi.GetSystemList) // 分页获取基础menu列表
+		cmdbRouterWithoutRecord.POST("getSystemList", authoritySystemApi.GetSystemList) // 分页获取基础menu列表
+	}
+	{
+		cmdbRouterWithoutRecord.POST("system/addRelation", authoritySystemApi.AddRelation)   // 获取菜单树
+		cmdbRouterWithoutRecord.POST("system/relations", authoritySystemApi.SystemRelations) // 分页获取基础menu列表
 	}
 	return cmdbRouter
 }

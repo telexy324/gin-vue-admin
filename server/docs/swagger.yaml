@@ -1,7 +1,39 @@
 basePath: /
 definitions:
+  application.Admin:
+    properties:
+      createdAt:
+        description: 创建时间
+        type: string
+      departmentId:
+        description: 部门id
+        type: integer
+      email:
+        description: 邮件
+        type: string
+      id:
+        description: 主键ID
+        type: integer
+      mobile:
+        description: 电话
+        type: string
+      name:
+        description: 姓名
+        type: string
+      updatedAt:
+        description: 更新时间
+        type: string
+    type: object
   application.ApplicationServer:
     properties:
+      applicationIds:
+        description: 安装应用列表
+        type: string
+      applications:
+        description: 安装应用列表
+        items:
+          type: integer
+        type: array
       architecture:
         description: 架构
         type: integer
@@ -23,8 +55,44 @@ definitions:
       osVersion:
         description: 系统版本
         type: string
+      systemId:
+        description: 所属系统id
+        type: integer
+      updatedAt:
+        description: 更新时间
+        type: string
+    type: object
+  application.ApplicationSystem:
+    properties:
+      createdAt:
+        description: 创建时间
+        type: string
+      id:
+        description: 主键ID
+        type: integer
+      name:
+        description: 主机名
+        type: string
       position:
         description: 系统位置
+        type: integer
+      updatedAt:
+        description: 更新时间
+        type: string
+    type: object
+  application.ApplicationSystemAdmin:
+    properties:
+      adminId:
+        description: 管理员id
+        type: integer
+      createdAt:
+        description: 创建时间
+        type: string
+      id:
+        description: 主键ID
+        type: integer
+      systemId:
+        description: 系统id
         type: integer
       updatedAt:
         description: 更新时间
@@ -35,12 +103,12 @@ definitions:
       createdAt:
         description: 创建时间
         type: string
-      endServer:
-        $ref: '#/definitions/application.ApplicationServer'
-      endServerId:
+      endSystem:
+        $ref: '#/definitions/application.ApplicationSystem'
+      endSystemId:
         description: 目的节点id',
         type: integer
-      endServerUrl:
+      endSystemUrl:
         description: 目的节点url',
         type: string
       id:
@@ -49,9 +117,9 @@ definitions:
       relation:
         description: 调用关系',
         type: string
-      startServer:
-        $ref: '#/definitions/application.ApplicationServer'
-      startServerId:
+      startSystem:
+        $ref: '#/definitions/application.ApplicationSystem'
+      startSystemId:
         description: 源节点id
         type: integer
       updatedAt:
@@ -445,6 +513,18 @@ definitions:
       menus:
         items:
           $ref: '#/definitions/system.SysBaseMenu'
+        type: array
+    type: object
+  request.AddSystem:
+    properties:
+      authorityId:
+        description: 角色ID
+        type: string
+      system:
+        $ref: '#/definitions/application.ApplicationSystem'
+      systemAdmin:
+        items:
+          $ref: '#/definitions/application.ApplicationSystemAdmin'
         type: array
     type: object
   request.AutoHistoryByID:
@@ -1740,7 +1820,30 @@ paths:
       - ApiKeyAuth: []
       summary: 新增服务器
       tags:
-      - Server
+      - CmdbServer
+  /cmdb/addSystem:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 系统名, 位置, 管理员id, 主管
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.AddSystem'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"添加成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 新增系统
+      tags:
+      - CmdbSystem
   /cmdb/deleteServer:
     post:
       consumes:
@@ -1763,7 +1866,30 @@ paths:
       - ApiKeyAuth: []
       summary: 删除服务器
       tags:
-      - Server
+      - CmdbServer
+  /cmdb/deleteSystem:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 系统id
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetById'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"删除成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 删除系统
+      tags:
+      - CmdbSystem
   /cmdb/downloadTemplate:
     get:
       consumes:
@@ -1777,7 +1903,7 @@ paths:
       - ApiKeyAuth: []
       summary: 下载模板
       tags:
-      - Server
+      - CmdbServer
   /cmdb/exportExcel:
     post:
       consumes:
@@ -1798,7 +1924,7 @@ paths:
       - ApiKeyAuth: []
       summary: 导出Excel
       tags:
-      - Server
+      - CmdbServer
   /cmdb/getServerById:
     post:
       consumes:
@@ -1821,7 +1947,7 @@ paths:
       - ApiKeyAuth: []
       summary: 根据id获取服务器
       tags:
-      - Server
+      - CmdbServer
   /cmdb/getServerList:
     post:
       consumes:
@@ -1844,7 +1970,76 @@ paths:
       - ApiKeyAuth: []
       summary: 分页获取基础server列表
       tags:
-      - Server
+      - CmdbServer
+  /cmdb/getSystemById:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 服务器id
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetById'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 根据id获取服务器
+      tags:
+      - CmdbSystem
+  /cmdb/getSystemList:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 页码, 每页大小
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.PageInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 分页获取基础server列表
+      tags:
+      - CmdbSystem
+  /cmdb/getSystemServers:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 系统id
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetById'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 根据系统id获取服务器
+      tags:
+      - CmdbServer
   /cmdb/importExcel:
     post:
       consumes:
@@ -1866,7 +2061,53 @@ paths:
       - ApiKeyAuth: []
       summary: 导入Excel文件
       tags:
-      - Server
+      - CmdbServer
+  /cmdb/server/addRelation:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: ' '
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/application.SystemRelation'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"添加成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 新增联系
+      tags:
+      - CmdbServer
+  /cmdb/server/relations:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 服务器id
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetById'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 获取关系图
+      tags:
+      - CmdbServer
   /cmdb/system/addRelation:
     post:
       consumes:
@@ -1889,13 +2130,13 @@ paths:
       - ApiKeyAuth: []
       summary: 新增联系
       tags:
-      - Server
+      - CmdbSystem
   /cmdb/system/relations:
     post:
       consumes:
       - application/json
       parameters:
-      - description: 服务器id
+      - description: 系统id
         in: body
         name: data
         required: true
@@ -1912,7 +2153,7 @@ paths:
       - ApiKeyAuth: []
       summary: 获取关系图
       tags:
-      - Server
+      - CmdbSystem
   /cmdb/updateServer:
     post:
       consumes:
@@ -1935,7 +2176,30 @@ paths:
       - ApiKeyAuth: []
       summary: 更新服务器
       tags:
-      - Server
+      - CmdbServer
+  /cmdb/updateSystem:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 系统名, 位置, 管理员id, 主管
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.AddSystem'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"更新成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 更新服务器
+      tags:
+      - CmdbSystem
   /customer/customer:
     delete:
       consumes:
@@ -2566,6 +2830,137 @@ paths:
       summary: 更新菜单
       tags:
       - Menu
+  /staff/addAdmin:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 姓名, 电话, 邮件, 部门
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/application.Admin'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"添加成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 新增管理员
+      tags:
+      - Staff
+  /staff/deleteAdmin:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 服务器id
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetById'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"删除成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 删除管理员
+      tags:
+      - Staff
+  /staff/getAdminById:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 管理员id
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetById'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 根据id获取管理员
+      tags:
+      - Staff
+  /staff/getAdminList:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 页码, 每页大小
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.PageInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 分页获取基础admin列表
+      tags:
+      - Staff
+  /staff/getDepartmentall:
+    post:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 获取所有部门
+      tags:
+      - Staff
+  /staff/updateAdmin:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 主机名, 架构, 管理ip, 系统, 系统版本
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/application.Admin'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"更新成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 更新管理员
+      tags:
+      - Staff
   /sysDictionary/createSysDictionary:
     post:
       consumes:

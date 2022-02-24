@@ -1194,7 +1194,7 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Server"
+                    "CmdbServer"
                 ],
                 "summary": "新增服务器",
                 "parameters": [
@@ -1205,6 +1205,44 @@ var doc = `{
                         "required": true,
                         "schema": {
                             "$ref": "#/definitions/application.ApplicationServer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\":true,\"data\":{},\"msg\":\"添加成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/cmdb/addSystem": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "CmdbSystem"
+                ],
+                "summary": "新增系统",
+                "parameters": [
+                    {
+                        "description": "系统名, 位置, 管理员id, 主管",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.AddSystem"
                         }
                     }
                 ],
@@ -1232,12 +1270,50 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Server"
+                    "CmdbServer"
                 ],
                 "summary": "删除服务器",
                 "parameters": [
                     {
                         "description": "服务器id",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.GetById"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\":true,\"data\":{},\"msg\":\"删除成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/cmdb/deleteSystem": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "CmdbSystem"
+                ],
+                "summary": "删除系统",
+                "parameters": [
+                    {
+                        "description": "系统id",
                         "name": "data",
                         "in": "body",
                         "required": true,
@@ -1270,7 +1346,7 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Server"
+                    "CmdbServer"
                 ],
                 "summary": "下载模板",
                 "responses": {
@@ -1294,7 +1370,7 @@ var doc = `{
                     "application/octet-stream"
                 ],
                 "tags": [
-                    "Server"
+                    "CmdbServer"
                 ],
                 "summary": "导出Excel",
                 "parameters": [
@@ -1329,7 +1405,7 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Server"
+                    "CmdbServer"
                 ],
                 "summary": "根据id获取服务器",
                 "parameters": [
@@ -1367,7 +1443,7 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Server"
+                    "CmdbServer"
                 ],
                 "summary": "分页获取基础server列表",
                 "parameters": [
@@ -1378,6 +1454,120 @@ var doc = `{
                         "required": true,
                         "schema": {
                             "$ref": "#/definitions/request.PageInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\":true,\"data\":{},\"msg\":\"获取成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/cmdb/getSystemById": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "CmdbSystem"
+                ],
+                "summary": "根据id获取服务器",
+                "parameters": [
+                    {
+                        "description": "服务器id",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.GetById"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\":true,\"data\":{},\"msg\":\"获取成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/cmdb/getSystemList": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "CmdbSystem"
+                ],
+                "summary": "分页获取基础server列表",
+                "parameters": [
+                    {
+                        "description": "页码, 每页大小",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.PageInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\":true,\"data\":{},\"msg\":\"获取成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/cmdb/getSystemServers": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "CmdbServer"
+                ],
+                "summary": "根据系统id获取服务器",
+                "parameters": [
+                    {
+                        "description": "系统id",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.GetById"
                         }
                     }
                 ],
@@ -1405,7 +1595,7 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Server"
+                    "CmdbServer"
                 ],
                 "summary": "导入Excel文件",
                 "parameters": [
@@ -1427,6 +1617,82 @@ var doc = `{
                 }
             }
         },
+        "/cmdb/server/addRelation": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "CmdbServer"
+                ],
+                "summary": "新增联系",
+                "parameters": [
+                    {
+                        "description": " ",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/application.SystemRelation"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\":true,\"data\":{},\"msg\":\"添加成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/cmdb/server/relations": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "CmdbServer"
+                ],
+                "summary": "获取关系图",
+                "parameters": [
+                    {
+                        "description": "服务器id",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.GetById"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\":true,\"data\":{},\"msg\":\"获取成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/cmdb/system/addRelation": {
             "post": {
                 "security": [
@@ -1441,7 +1707,7 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Server"
+                    "CmdbSystem"
                 ],
                 "summary": "新增联系",
                 "parameters": [
@@ -1479,12 +1745,12 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Server"
+                    "CmdbSystem"
                 ],
                 "summary": "获取关系图",
                 "parameters": [
                     {
-                        "description": "服务器id",
+                        "description": "系统id",
                         "name": "data",
                         "in": "body",
                         "required": true,
@@ -1517,7 +1783,7 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Server"
+                    "CmdbServer"
                 ],
                 "summary": "更新服务器",
                 "parameters": [
@@ -1528,6 +1794,44 @@ var doc = `{
                         "required": true,
                         "schema": {
                             "$ref": "#/definitions/application.ApplicationServer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\":true,\"data\":{},\"msg\":\"更新成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/cmdb/updateSystem": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "CmdbSystem"
+                ],
+                "summary": "更新服务器",
+                "parameters": [
+                    {
+                        "description": "系统名, 位置, 管理员id, 主管",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.AddSystem"
                         }
                     }
                 ],
@@ -2564,6 +2868,223 @@ var doc = `{
                         "required": true,
                         "schema": {
                             "$ref": "#/definitions/system.SysBaseMenu"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\":true,\"data\":{},\"msg\":\"更新成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/staff/addAdmin": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Staff"
+                ],
+                "summary": "新增管理员",
+                "parameters": [
+                    {
+                        "description": "姓名, 电话, 邮件, 部门",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/application.Admin"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\":true,\"data\":{},\"msg\":\"添加成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/staff/deleteAdmin": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Staff"
+                ],
+                "summary": "删除管理员",
+                "parameters": [
+                    {
+                        "description": "服务器id",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.GetById"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\":true,\"data\":{},\"msg\":\"删除成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/staff/getAdminById": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Staff"
+                ],
+                "summary": "根据id获取管理员",
+                "parameters": [
+                    {
+                        "description": "管理员id",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.GetById"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\":true,\"data\":{},\"msg\":\"获取成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/staff/getAdminList": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Staff"
+                ],
+                "summary": "分页获取基础admin列表",
+                "parameters": [
+                    {
+                        "description": "页码, 每页大小",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.PageInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\":true,\"data\":{},\"msg\":\"获取成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/staff/getDepartmentall": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Staff"
+                ],
+                "summary": "获取所有部门",
+                "responses": {
+                    "200": {
+                        "description": "{\"success\":true,\"data\":{},\"msg\":\"获取成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/staff/updateAdmin": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Staff"
+                ],
+                "summary": "更新管理员",
+                "parameters": [
+                    {
+                        "description": "主机名, 架构, 管理ip, 系统, 系统版本",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/application.Admin"
                         }
                     }
                 ],
@@ -3856,9 +4377,53 @@ var doc = `{
         }
     },
     "definitions": {
+        "application.Admin": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "description": "创建时间",
+                    "type": "string"
+                },
+                "departmentId": {
+                    "description": "部门id",
+                    "type": "integer"
+                },
+                "email": {
+                    "description": "邮件",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "主键ID",
+                    "type": "integer"
+                },
+                "mobile": {
+                    "description": "电话",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "姓名",
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "description": "更新时间",
+                    "type": "string"
+                }
+            }
+        },
         "application.ApplicationServer": {
             "type": "object",
             "properties": {
+                "applicationIds": {
+                    "description": "安装应用列表",
+                    "type": "string"
+                },
+                "applications": {
+                    "description": "安装应用列表",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
                 "architecture": {
                     "description": "架构",
                     "type": "integer"
@@ -3887,8 +4452,58 @@ var doc = `{
                     "description": "系统版本",
                     "type": "string"
                 },
+                "systemId": {
+                    "description": "所属系统id",
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "description": "更新时间",
+                    "type": "string"
+                }
+            }
+        },
+        "application.ApplicationSystem": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "description": "创建时间",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "主键ID",
+                    "type": "integer"
+                },
+                "name": {
+                    "description": "主机名",
+                    "type": "string"
+                },
                 "position": {
                     "description": "系统位置",
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "description": "更新时间",
+                    "type": "string"
+                }
+            }
+        },
+        "application.ApplicationSystemAdmin": {
+            "type": "object",
+            "properties": {
+                "adminId": {
+                    "description": "管理员id",
+                    "type": "integer"
+                },
+                "createdAt": {
+                    "description": "创建时间",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "主键ID",
+                    "type": "integer"
+                },
+                "systemId": {
+                    "description": "系统id",
                     "type": "integer"
                 },
                 "updatedAt": {
@@ -3904,14 +4519,14 @@ var doc = `{
                     "description": "创建时间",
                     "type": "string"
                 },
-                "endServer": {
-                    "$ref": "#/definitions/application.ApplicationServer"
+                "endSystem": {
+                    "$ref": "#/definitions/application.ApplicationSystem"
                 },
-                "endServerId": {
+                "endSystemId": {
                     "description": "目的节点id',",
                     "type": "integer"
                 },
-                "endServerUrl": {
+                "endSystemUrl": {
                     "description": "目的节点url',",
                     "type": "string"
                 },
@@ -3923,10 +4538,10 @@ var doc = `{
                     "description": "调用关系',",
                     "type": "string"
                 },
-                "startServer": {
-                    "$ref": "#/definitions/application.ApplicationServer"
+                "startSystem": {
+                    "$ref": "#/definitions/application.ApplicationSystem"
                 },
-                "startServerId": {
+                "startSystemId": {
                     "description": "源节点id",
                     "type": "integer"
                 },
@@ -4488,6 +5103,24 @@ var doc = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/system.SysBaseMenu"
+                    }
+                }
+            }
+        },
+        "request.AddSystem": {
+            "type": "object",
+            "properties": {
+                "authorityId": {
+                    "description": "角色ID",
+                    "type": "string"
+                },
+                "system": {
+                    "$ref": "#/definitions/application.ApplicationSystem"
+                },
+                "systemAdmin": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/application.ApplicationSystemAdmin"
                     }
                 }
             }

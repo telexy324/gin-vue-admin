@@ -167,7 +167,7 @@ func (a *CmdbSystemApi) AddRelation(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err := cmdbServerService.AddRelation(relation); err != nil {
+	if err := cmdbSystemService.AddRelation(relation); err != nil {
 		global.GVA_LOG.Error("添加失败!", zap.Any("err", err))
 
 		response.FailWithMessage("添加失败", c)
@@ -191,7 +191,7 @@ func (a *CmdbSystemApi) SystemRelations(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err, relations, nodes := cmdbServerService.ServerRelations(idInfo.ID); err != nil {
+	if err, relations, nodes := cmdbSystemService.SystemRelations(idInfo.ID); err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 		response.FailWithMessage("获取失败", c)
 	} else {
@@ -210,11 +210,11 @@ func (a *CmdbSystemApi) SystemRelations(c *gin.Context) {
 					VectorStrValue: relation.Relation,
 					Property: applicationRes.Property{
 						Relation:         relation.Relation,
-						Url:              relation.EndServerUrl,
+						Url:              relation.EndSystemUrl,
 						ServerUpdateDate: relation.UpdatedAt.Format("2006-01-02 15:04:05"),
 					},
-					StartNodeId: relation.StartServerId,
-					EndNodeId:   relation.EndServerId,
+					StartNodeId: relation.StartSystemId,
+					EndNodeId:   relation.EndSystemId,
 				})
 				mapLinks[int(relation.ID)] = true
 			}

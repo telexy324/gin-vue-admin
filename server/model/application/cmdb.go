@@ -54,8 +54,8 @@ type SystemRelation struct {
 	EndSystemId   int               `json:"endSystemId" gorm:"column:end_system_id"`     // 目的节点id',
 	EndSystemUrl  string            `json:"endSystemUrl" gorm:"column:end_system_url"`   // 目的节点url',
 	Relation      string            `json:"relation" gorm:"column:relation"`             // 调用关系',
-	StartSystem   ApplicationServer `json:"startSystem"`
-	EndSystem     ApplicationServer `json:"endSystem"`
+	StartSystem   ApplicationSystem `json:"startSystem"`
+	EndSystem     ApplicationSystem `json:"endSystem"`
 }
 
 func (m *SystemRelation) TableName() string {
