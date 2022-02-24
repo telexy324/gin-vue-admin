@@ -1,6 +1,7 @@
 package application
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/flipped-aurora/gin-vue-admin/server/consts"
@@ -35,6 +36,13 @@ var CmdbServerServiceApp = new(CmdbServerService)
 func (cmdbServerService *CmdbServerService) AddServer(server application.ApplicationServer) error {
 	if !errors.Is(global.GVA_DB.Where("hostname = ?", server.Hostname).First(&application.ApplicationServer{}).Error, gorm.ErrRecordNotFound) {
 		return errors.New("存在重复hostname，请修改name")
+	}
+	if len(server.Apps) > 0 {
+		if js, err := json.Marshal(server.Apps); err != nil {
+			return err
+		} else {
+			server.AppIds = string(js)
+		}
 	}
 	return global.GVA_DB.Create(&server).Error
 }
@@ -77,7 +85,13 @@ func (cmdbServerService *CmdbServerService) UpdateServer(server application.Appl
 				return errors.New("存在相同name修改失败")
 			}
 		}
-
+		if len(server.Apps) > 0 {
+			if js, err := json.Marshal(server.Apps); err != nil {
+				return err
+			} else {
+				upDateMap["app_ids"] = string(js)
+			}
+		}
 		txErr := db.Updates(upDateMap).Error
 		if txErr != nil {
 			global.GVA_LOG.Debug(txErr.Error())

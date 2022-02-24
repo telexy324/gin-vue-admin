@@ -9,19 +9,19 @@ import (
 
 type ApplicationServer struct {
 	global.GVA_MODEL
-	Hostname       string `json:"hostname" gorm:"column:hostname"`              // 主机名
-	Architecture   int    `json:"architecture" gorm:"column:architecture"`      // 架构
-	ManageIp       string `json:"manageIp" gorm:"column:manage_ip"`             // 管理ip
-	Os             int    `json:"os" gorm:"column:os"`                          // 系统
-	OsVersion      string `json:"osVersion" gorm:"column:os_version"`           // 系统版本
-	SystemId       int    `json:"systemId" gorm:"column:system_id"`             // 所属系统id
-	ApplicationIds string `json:"applicationIds" gorm:"column:application_ids"` // 安装应用列表
-	Applications   []int  `json:"applications"`                                 // 安装应用列表
+	Hostname     string `json:"hostname" gorm:"column:hostname"`         // 主机名
+	Architecture int    `json:"architecture" gorm:"column:architecture"` // 架构
+	ManageIp     string `json:"manageIp" gorm:"column:manage_ip"`        // 管理ip
+	Os           int    `json:"os" gorm:"column:os"`                     // 系统
+	OsVersion    string `json:"osVersion" gorm:"column:os_version"`      // 系统版本
+	SystemId     int    `json:"systemId" gorm:"column:system_id"`        // 所属系统id
+	AppIds       string `json:"appIds" gorm:"column:app_ids"`            // 安装应用列表
+	Apps         []int  `json:"apps"`                                    // 安装应用列表
 }
 
 func (m *ApplicationServer) AfterFind(tx *gorm.DB) {
-	if m.ApplicationIds != "" {
-		if err := json.Unmarshal([]byte(m.ApplicationIds), &m.Applications); err != nil {
+	if m.AppIds != "" {
+		if err := json.Unmarshal([]byte(m.AppIds), &m.Apps); err != nil {
 			global.GVA_LOG.Error("转换失败", zap.Any("err", err))
 		}
 	}
