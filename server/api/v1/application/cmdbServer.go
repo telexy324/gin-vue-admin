@@ -335,7 +335,7 @@ func (a *CmdbServerApi) AddApp(c *gin.Context) {
 	}
 }
 
-// @Tags CmdbApp
+// @Tags CmdbServer
 // @Summary 删除服务器
 // @Security ApiKeyAuth
 // @accept application/json

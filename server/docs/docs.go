@@ -1308,7 +1308,7 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "CmdbApp"
+                    "CmdbServer"
                 ],
                 "summary": "删除服务器",
                 "parameters": [

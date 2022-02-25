@@ -1910,7 +1910,7 @@ paths:
       - ApiKeyAuth: []
       summary: 删除服务器
       tags:
-      - CmdbApp
+      - CmdbServer
   /cmdb/deleteServer:
     post:
       consumes:
