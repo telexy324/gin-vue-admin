@@ -370,7 +370,7 @@ func (cmdbServerService *CmdbServerService) ExportTemplate() (*excelize.File, er
 //@return: error
 
 func (cmdbServerService *CmdbServerService) AddApp(app application.App) error {
-	if !errors.Is(global.GVA_DB.Where("name = ?", app.Name).First(&application.App{}).Error, gorm.ErrRecordNotFound) {
+	if !errors.Is(global.GVA_DB.Where("name = ? and version = ?", app.Name, app.Version).First(&application.App{}).Error, gorm.ErrRecordNotFound) {
 		return errors.New("存在重复name，请修改name")
 	}
 	return global.GVA_DB.Create(&app).Error
@@ -401,13 +401,13 @@ func (cmdbServerService *CmdbServerService) UpdateApp(app application.App) (err 
 	var oldApp application.App
 	upDateMap := make(map[string]interface{})
 	upDateMap["name"] = app.Name
-	upDateMap["application_type"] = app.ApplicationType
+	upDateMap["type"] = app.ApplicationType
 	upDateMap["version"] = app.Version
 
 	err = global.GVA_DB.Transaction(func(tx *gorm.DB) error {
 		db := tx.Where("id = ?", app.ID).Find(&oldApp)
 		if oldApp.Name != app.Name {
-			if !errors.Is(tx.Where("id <> ? AND name = ?", app.ID, app.Name).First(&application.App{}).Error, gorm.ErrRecordNotFound) {
+			if !errors.Is(tx.Where("id <> ? AND name = ? and version = ?", app.ID, app.Name, app.Version).First(&application.App{}).Error, gorm.ErrRecordNotFound) {
 				global.GVA_LOG.Debug("存在相同name修改失败")
 				return errors.New("存在相同name修改失败")
 			}

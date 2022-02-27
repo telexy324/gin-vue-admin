@@ -16,7 +16,7 @@ type ApplicationServer struct {
 	OsVersion    string `json:"osVersion" gorm:"column:os_version"`      // 系统版本
 	SystemId     int    `json:"systemId" gorm:"column:system_id"`        // 所属系统id
 	AppIds       string `json:"appIds" gorm:"column:app_ids"`            // 安装应用列表
-	Apps         []int  `json:"apps"`                                    // 安装应用列表
+	Apps         []int  `json:"apps" gorm:"-"`                                    // 安装应用列表
 }
 
 func (m *ApplicationServer) AfterFind(tx *gorm.DB) {
@@ -80,4 +80,8 @@ type App struct {
 	ApplicationType int    `json:"type" gorm:"column:type"`       // 应用类型 0 未定义 1 数据库 2 缓存 3 应用 4 存储 5 负载均衡 6 备份 7 反向代理
 	Name            string `json:"name" gorm:"column:name"`       // 应用名称
 	Version         string `json:"version" gorm:"column:version"` // 版本
+}
+
+func (m *App) TableName() string {
+	return "application_apps"
 }

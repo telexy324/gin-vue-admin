@@ -22,11 +22,14 @@ type StaffApi struct {
 // @Produce application/json
 // @Param data body application.Admin true "姓名, 电话, 邮件, 部门"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"添加成功"}"
-// @Router /staff/addAdmin [post]
+// @Router /cmdb/addAdmin [post]
 func (a *StaffApi) AddAdmin(c *gin.Context) {
 	var admin application.Admin
-	e := c.ShouldBindJSON(&admin)
-	global.GVA_LOG.Info("error", zap.Any("err", e))
+	if err := c.ShouldBindJSON(&admin); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
 	if err := utils.Verify(admin, utils.ServerVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -47,10 +50,14 @@ func (a *StaffApi) AddAdmin(c *gin.Context) {
 // @Produce application/json
 // @Param data body request.GetById true "服务器id"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"删除成功"}"
-// @Router /staff/deleteAdmin [post]
+// @Router /cmdb/deleteAdmin [post]
 func (a *StaffApi) DeleteAdmin(c *gin.Context) {
 	var admin request.GetById
-	_ = c.ShouldBindJSON(&admin)
+	if err := c.ShouldBindJSON(&admin); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
 	if err := utils.Verify(admin, utils.IdVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -70,10 +77,14 @@ func (a *StaffApi) DeleteAdmin(c *gin.Context) {
 // @Produce application/json
 // @Param data body application.Admin true "主机名, 架构, 管理ip, 系统, 系统版本"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"更新成功"}"
-// @Router /staff/updateAdmin [post]
+// @Router /cmdb/updateAdmin [post]
 func (a *StaffApi) UpdateAdmin(c *gin.Context) {
 	var admin application.Admin
-	_ = c.ShouldBindJSON(&admin)
+	if err := c.ShouldBindJSON(&admin); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
 	if err := utils.Verify(admin, utils.AdminVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -93,10 +104,14 @@ func (a *StaffApi) UpdateAdmin(c *gin.Context) {
 // @Produce application/json
 // @Param data body request.GetById true "管理员id"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /staff/getAdminById [post]
+// @Router /cmdb/getAdminById [post]
 func (a *StaffApi) GetAdminById(c *gin.Context) {
 	var idInfo request.GetById
-	_ = c.ShouldBindJSON(&idInfo)
+	if err := c.ShouldBindJSON(&idInfo); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
 	if err := utils.Verify(idInfo, utils.IdVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -118,10 +133,14 @@ func (a *StaffApi) GetAdminById(c *gin.Context) {
 // @Produce application/json
 // @Param data body request.PageInfo true "页码, 每页大小"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /staff/getAdminList [post]
+// @Router /cmdb/getAdminList [post]
 func (a *StaffApi) GetAdminList(c *gin.Context) {
 	var pageInfo request2.AdminSearch
-	_ = c.ShouldBindJSON(&pageInfo)
+	if err := c.ShouldBindJSON(&pageInfo); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
 	if err := utils.Verify(pageInfo.PageInfo, utils.PageInfoVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -145,7 +164,7 @@ func (a *StaffApi) GetAdminList(c *gin.Context) {
 // @accept application/json
 // @Produce application/json
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /staff/getDepartmentall [post]
+// @Router /cmdb/getDepartmentAll [post]
 func (a *StaffApi) GetDepartmentAll(c *gin.Context) {
 	if err, departmentList := staffService.GetDepartmentAll(); err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))

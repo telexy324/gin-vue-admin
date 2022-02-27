@@ -10,7 +10,7 @@ CREATE TABLE `application_servers`
     `os`           tinyint(2) NOT NULL DEFAULT '0' COMMENT '系统 1 redhat,2 suse,3 centos,4 kylin',
     `os_version`   varchar(50)  NOT NULL DEFAULT '' COMMENT '系统版本',
     `system_id`    bigint UNSIGNED NOT NULL DEFAULT '0' COMMENT '所属系统id',
-    `app_ids`      text                  DEFAULT '' COMMENT '部署应用ids',
+    `app_ids`      text COMMENT '部署应用ids',
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -38,7 +38,7 @@ CREATE TABLE `application_systems`
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE `admins`
+CREATE TABLE `application_admins`
 (
     `id`            bigint UNSIGNED NOT NULL AUTO_INCREMENT,
     `created_at`    datetime(0) NULL DEFAULT NULL,
@@ -53,7 +53,7 @@ CREATE TABLE `admins`
     UNIQUE (`mobile`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE `departments`
+CREATE TABLE `application_departments`
 (
     `id`         bigint UNSIGNED NOT NULL AUTO_INCREMENT,
     `created_at` datetime(0) NULL DEFAULT NULL,
@@ -65,7 +65,7 @@ CREATE TABLE `departments`
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE `apps`
+CREATE TABLE `application_apps`
 (
     `id`         bigint UNSIGNED NOT NULL AUTO_INCREMENT,
     `created_at` datetime(0) NULL DEFAULT NULL,

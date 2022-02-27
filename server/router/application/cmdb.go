@@ -31,6 +31,15 @@ func (s *CmdbRouter) InitCmdbRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 		cmdbRouterWithoutRecord.POST("exportExcel", authorityServerApi.ExportExcel)          // 导出Excel
 		cmdbRouterWithoutRecord.GET("downloadTemplate", authorityServerApi.DownloadTemplate) // 下载模板文件
 	}
+	{
+		cmdbRouterWithoutRecord.POST("addApp", authorityServerApi.AddApp)       // 新增应用
+		cmdbRouter.POST("deleteApp", authorityServerApi.DeleteApp)              // 删除应用
+		cmdbRouterWithoutRecord.POST("updateApp", authorityServerApi.UpdateApp) // 更新应用
+	}
+	{
+		cmdbRouterWithoutRecord.POST("getAppById", authorityServerApi.GetAppById)     // 获取应用
+		cmdbRouterWithoutRecord.POST("getAppList", authorityServerApi.GetAppList) // 分页获取基础应用列表
+	}
 
 	var authoritySystemApi = v1.ApiGroupApp.ApplicationApiGroup.CmdbSystemApi
 	{
@@ -45,6 +54,18 @@ func (s *CmdbRouter) InitCmdbRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 	{
 		cmdbRouterWithoutRecord.POST("system/addRelation", authoritySystemApi.AddRelation)   // 获取菜单树
 		cmdbRouterWithoutRecord.POST("system/relations", authoritySystemApi.SystemRelations) // 分页获取基础menu列表
+	}
+
+	var authorityStaffApi = v1.ApiGroupApp.ApplicationApiGroup.StaffApi
+	{
+		cmdbRouterWithoutRecord.POST("addAdmin", authorityStaffApi.AddAdmin)       // 新增管理员
+		cmdbRouter.POST("deleteAdmin", authorityStaffApi.DeleteAdmin)              // 删除管理员
+		cmdbRouterWithoutRecord.POST("updateAdmin", authorityStaffApi.UpdateAdmin) // 更新管理员
+	}
+	{
+		cmdbRouterWithoutRecord.POST("getAdminById", authorityStaffApi.GetAdminById)     // 获取管理员
+		cmdbRouterWithoutRecord.POST("getAdminList", authorityStaffApi.GetAdminList) // 分页获取管理员列表
+		cmdbRouterWithoutRecord.POST("getDepartmentAll", authorityStaffApi.GetDepartmentAll) // 获取所有部门
 	}
 	return cmdbRouter
 }

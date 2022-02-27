@@ -1819,6 +1819,29 @@ paths:
       summary: 获取权限列表
       tags:
       - Casbin
+  /cmdb/addAdmin:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 姓名, 电话, 邮件, 部门
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/application.Admin'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"添加成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 新增管理员
+      tags:
+      - Staff
   /cmdb/addApp:
     post:
       consumes:
@@ -1839,7 +1862,7 @@ paths:
             type: string
       security:
       - ApiKeyAuth: []
-      summary: 新增服务器
+      summary: 新增应用
       tags:
       - CmdbServer
   /cmdb/addServer:
@@ -1888,7 +1911,7 @@ paths:
       summary: 新增系统
       tags:
       - CmdbSystem
-  /cmdb/deleteApp:
+  /cmdb/deleteAdmin:
     post:
       consumes:
       - application/json
@@ -1908,7 +1931,30 @@ paths:
             type: string
       security:
       - ApiKeyAuth: []
-      summary: 删除服务器
+      summary: 删除管理员
+      tags:
+      - Staff
+  /cmdb/deleteApp:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 应用id
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetById'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"删除成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 删除应用
       tags:
       - CmdbServer
   /cmdb/deleteServer:
@@ -1992,6 +2038,52 @@ paths:
       summary: 导出Excel
       tags:
       - CmdbServer
+  /cmdb/getAdminById:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 管理员id
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetById'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 根据id获取管理员
+      tags:
+      - Staff
+  /cmdb/getAdminList:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 页码, 每页大小
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.PageInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 分页获取基础admin列表
+      tags:
+      - Staff
   /cmdb/getAppById:
     post:
       consumes:
@@ -2012,7 +2104,7 @@ paths:
             type: string
       security:
       - ApiKeyAuth: []
-      summary: 根据id获取服务器
+      summary: 根据id获取应用
       tags:
       - CmdbServer
   /cmdb/getAppList:
@@ -2038,6 +2130,22 @@ paths:
       summary: 分页获取基础app列表
       tags:
       - CmdbServer
+  /cmdb/getDepartmentAll:
+    post:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 获取所有部门
+      tags:
+      - Staff
   /cmdb/getServerById:
     post:
       consumes:
@@ -2104,7 +2212,7 @@ paths:
             type: string
       security:
       - ApiKeyAuth: []
-      summary: 根据id获取服务器
+      summary: 根据id获取系统
       tags:
       - CmdbSystem
   /cmdb/getSystemList:
@@ -2267,6 +2375,29 @@ paths:
       summary: 获取关系图
       tags:
       - CmdbSystem
+  /cmdb/updateAdmin:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 主机名, 架构, 管理ip, 系统, 系统版本
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/application.Admin'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"更新成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 更新管理员
+      tags:
+      - Staff
   /cmdb/updateApp:
     post:
       consumes:
@@ -2966,137 +3097,6 @@ paths:
       summary: 更新菜单
       tags:
       - Menu
-  /staff/addAdmin:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: 姓名, 电话, 邮件, 部门
-        in: body
-        name: data
-        required: true
-        schema:
-          $ref: '#/definitions/application.Admin'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: '{"success":true,"data":{},"msg":"添加成功"}'
-          schema:
-            type: string
-      security:
-      - ApiKeyAuth: []
-      summary: 新增管理员
-      tags:
-      - Staff
-  /staff/deleteAdmin:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: 服务器id
-        in: body
-        name: data
-        required: true
-        schema:
-          $ref: '#/definitions/request.GetById'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: '{"success":true,"data":{},"msg":"删除成功"}'
-          schema:
-            type: string
-      security:
-      - ApiKeyAuth: []
-      summary: 删除管理员
-      tags:
-      - Staff
-  /staff/getAdminById:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: 管理员id
-        in: body
-        name: data
-        required: true
-        schema:
-          $ref: '#/definitions/request.GetById'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: '{"success":true,"data":{},"msg":"获取成功"}'
-          schema:
-            type: string
-      security:
-      - ApiKeyAuth: []
-      summary: 根据id获取管理员
-      tags:
-      - Staff
-  /staff/getAdminList:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: 页码, 每页大小
-        in: body
-        name: data
-        required: true
-        schema:
-          $ref: '#/definitions/request.PageInfo'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: '{"success":true,"data":{},"msg":"获取成功"}'
-          schema:
-            type: string
-      security:
-      - ApiKeyAuth: []
-      summary: 分页获取基础admin列表
-      tags:
-      - Staff
-  /staff/getDepartmentall:
-    post:
-      consumes:
-      - application/json
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: '{"success":true,"data":{},"msg":"获取成功"}'
-          schema:
-            type: string
-      security:
-      - ApiKeyAuth: []
-      summary: 获取所有部门
-      tags:
-      - Staff
-  /staff/updateAdmin:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: 主机名, 架构, 管理ip, 系统, 系统版本
-        in: body
-        name: data
-        required: true
-        schema:
-          $ref: '#/definitions/application.Admin'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: '{"success":true,"data":{},"msg":"更新成功"}'
-          schema:
-            type: string
-      security:
-      - ApiKeyAuth: []
-      summary: 更新管理员
-      tags:
-      - Staff
   /sysDictionary/createSysDictionary:
     post:
       consumes:

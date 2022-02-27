@@ -26,8 +26,11 @@ type CmdbServerApi struct {
 // @Router /cmdb/addServer [post]
 func (a *CmdbServerApi) AddServer(c *gin.Context) {
 	var server application.ApplicationServer
-	e := c.ShouldBindJSON(&server)
-	global.GVA_LOG.Info("error", zap.Any("err", e))
+	if err := c.ShouldBindJSON(&server); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
 	if err := utils.Verify(server, utils.ServerVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -51,7 +54,11 @@ func (a *CmdbServerApi) AddServer(c *gin.Context) {
 // @Router /cmdb/deleteServer [post]
 func (a *CmdbServerApi) DeleteServer(c *gin.Context) {
 	var server request.GetById
-	_ = c.ShouldBindJSON(&server)
+	if err := c.ShouldBindJSON(&server); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
 	if err := utils.Verify(server, utils.IdVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -74,7 +81,11 @@ func (a *CmdbServerApi) DeleteServer(c *gin.Context) {
 // @Router /cmdb/updateServer [post]
 func (a *CmdbServerApi) UpdateServer(c *gin.Context) {
 	var server application.ApplicationServer
-	_ = c.ShouldBindJSON(&server)
+	if err := c.ShouldBindJSON(&server); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
 	if err := utils.Verify(server, utils.ServerVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -97,7 +108,11 @@ func (a *CmdbServerApi) UpdateServer(c *gin.Context) {
 // @Router /cmdb/getServerById [post]
 func (a *CmdbServerApi) GetServerById(c *gin.Context) {
 	var idInfo request.GetById
-	_ = c.ShouldBindJSON(&idInfo)
+	if err := c.ShouldBindJSON(&idInfo); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
 	if err := utils.Verify(idInfo, utils.IdVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -122,7 +137,11 @@ func (a *CmdbServerApi) GetServerById(c *gin.Context) {
 // @Router /cmdb/getServerList [post]
 func (a *CmdbServerApi) GetServerList(c *gin.Context) {
 	var pageInfo request2.ServerSearch
-	_ = c.ShouldBindJSON(&pageInfo)
+	if err := c.ShouldBindJSON(&pageInfo); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
 	if err := utils.Verify(pageInfo.PageInfo, utils.PageInfoVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -150,7 +169,11 @@ func (a *CmdbServerApi) GetServerList(c *gin.Context) {
 // @Router /cmdb/getSystemServers [post]
 func (a *CmdbServerApi) GetSystemServers(c *gin.Context) {
 	var idInfo request.GetById
-	_ = c.ShouldBindJSON(&idInfo)
+	if err := c.ShouldBindJSON(&idInfo); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
 	if err := utils.Verify(idInfo, utils.IdVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -175,8 +198,11 @@ func (a *CmdbServerApi) GetSystemServers(c *gin.Context) {
 // @Router /cmdb/server/addRelation [post]
 func (a *CmdbServerApi) AddRelation(c *gin.Context) {
 	var relation application.ServerRelation
-	e := c.ShouldBindJSON(&relation)
-	global.GVA_LOG.Info("error", zap.Any("err", e))
+	if err := c.ShouldBindJSON(&relation); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
 	if err := utils.Verify(relation, utils.ServerRelationVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -200,7 +226,11 @@ func (a *CmdbServerApi) AddRelation(c *gin.Context) {
 // @Router /cmdb/server/relations [post]
 func (a *CmdbServerApi) ServerRelations(c *gin.Context) {
 	var idInfo request.GetById
-	_ = c.ShouldBindJSON(&idInfo)
+	if err := c.ShouldBindJSON(&idInfo); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
 	if err := utils.Verify(idInfo, utils.IdVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -250,7 +280,11 @@ func (a *CmdbServerApi) ServerRelations(c *gin.Context) {
 // @Router /cmdb/exportExcel [post]
 func (e *CmdbServerApi) ExportExcel(c *gin.Context) {
 	var excelInfo request2.ExcelInfo
-	_ = c.ShouldBindJSON(&excelInfo)
+	if err := c.ShouldBindJSON(&excelInfo); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
 	filePath := global.GVA_CONFIG.Excel.Dir + excelInfo.FileName
 	err := cmdbServerService.ParseInfoList2Excel(excelInfo.InfoList, excelInfo.Header, filePath)
 	if err != nil {
@@ -311,7 +345,7 @@ func (e *CmdbServerApi) DownloadTemplate(c *gin.Context) {
 }
 
 // @Tags CmdbServer
-// @Summary 新增服务器
+// @Summary 新增应用
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
@@ -320,8 +354,11 @@ func (e *CmdbServerApi) DownloadTemplate(c *gin.Context) {
 // @Router /cmdb/addApp [post]
 func (a *CmdbServerApi) AddApp(c *gin.Context) {
 	var app application.App
-	e := c.ShouldBindJSON(&app)
-	global.GVA_LOG.Info("error", zap.Any("err", e))
+	if err := c.ShouldBindJSON(&app); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
 	if err := utils.Verify(app, utils.AppVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -336,16 +373,20 @@ func (a *CmdbServerApi) AddApp(c *gin.Context) {
 }
 
 // @Tags CmdbServer
-// @Summary 删除服务器
+// @Summary 删除应用
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body request.GetById true "服务器id"
+// @Param data body request.GetById true "应用id"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"删除成功"}"
 // @Router /cmdb/deleteApp [post]
 func (a *CmdbServerApi) DeleteApp(c *gin.Context) {
 	var app request.GetById
-	_ = c.ShouldBindJSON(&app)
+	if err := c.ShouldBindJSON(&app); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
 	if err := utils.Verify(app, utils.IdVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -368,7 +409,11 @@ func (a *CmdbServerApi) DeleteApp(c *gin.Context) {
 // @Router /cmdb/updateApp [post]
 func (a *CmdbServerApi) UpdateApp(c *gin.Context) {
 	var app application.App
-	_ = c.ShouldBindJSON(&app)
+	if err := c.ShouldBindJSON(&app); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
 	if err := utils.Verify(app, utils.AppVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -382,7 +427,7 @@ func (a *CmdbServerApi) UpdateApp(c *gin.Context) {
 }
 
 // @Tags CmdbServer
-// @Summary 根据id获取服务器
+// @Summary 根据id获取应用
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
@@ -391,7 +436,11 @@ func (a *CmdbServerApi) UpdateApp(c *gin.Context) {
 // @Router /cmdb/getAppById [post]
 func (a *CmdbServerApi) GetAppById(c *gin.Context) {
 	var idInfo request.GetById
-	_ = c.ShouldBindJSON(&idInfo)
+	if err := c.ShouldBindJSON(&idInfo); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
 	if err := utils.Verify(idInfo, utils.IdVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -416,7 +465,11 @@ func (a *CmdbServerApi) GetAppById(c *gin.Context) {
 // @Router /cmdb/getAppList [post]
 func (a *CmdbServerApi) GetAppList(c *gin.Context) {
 	var pageInfo request2.AppSearch
-	_ = c.ShouldBindJSON(&pageInfo)
+	if err := c.ShouldBindJSON(&pageInfo); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
 	if err := utils.Verify(pageInfo.PageInfo, utils.PageInfoVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return

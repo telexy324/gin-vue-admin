@@ -26,8 +26,11 @@ type CmdbSystemApi struct {
 // @Router /cmdb/addSystem [post]
 func (a *CmdbSystemApi) AddSystem(c *gin.Context) {
 	var addSystemRequest request2.AddSystem
-	e := c.ShouldBindJSON(&addSystemRequest)
-	global.GVA_LOG.Info("error", zap.Any("err", e))
+	if err := c.ShouldBindJSON(&addSystemRequest); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
 	if err := utils.Verify(addSystemRequest.System, utils.SystemVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -51,7 +54,11 @@ func (a *CmdbSystemApi) AddSystem(c *gin.Context) {
 // @Router /cmdb/deleteSystem [post]
 func (a *CmdbSystemApi) DeleteSystem(c *gin.Context) {
 	var system request.GetById
-	_ = c.ShouldBindJSON(&system)
+	if err := c.ShouldBindJSON(&system); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
 	if err := utils.Verify(system, utils.IdVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -74,8 +81,11 @@ func (a *CmdbSystemApi) DeleteSystem(c *gin.Context) {
 // @Router /cmdb/updateSystem [post]
 func (a *CmdbSystemApi) UpdateSystem(c *gin.Context) {
 	var addSystemRequest request2.AddSystem
-	e := c.ShouldBindJSON(&addSystemRequest)
-	global.GVA_LOG.Info("error", zap.Any("err", e))
+	if err := c.ShouldBindJSON(&addSystemRequest); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
 	if err := utils.Verify(addSystemRequest.System, utils.SystemVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -89,7 +99,7 @@ func (a *CmdbSystemApi) UpdateSystem(c *gin.Context) {
 }
 
 // @Tags CmdbSystem
-// @Summary 根据id获取服务器
+// @Summary 根据id获取系统
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
@@ -98,7 +108,11 @@ func (a *CmdbSystemApi) UpdateSystem(c *gin.Context) {
 // @Router /cmdb/getSystemById [post]
 func (a *CmdbSystemApi) GetSystemById(c *gin.Context) {
 	var idInfo request.GetById
-	_ = c.ShouldBindJSON(&idInfo)
+	if err := c.ShouldBindJSON(&idInfo); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
 	if err := utils.Verify(idInfo, utils.IdVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -133,7 +147,11 @@ func (a *CmdbSystemApi) GetSystemById(c *gin.Context) {
 // @Router /cmdb/getSystemList [post]
 func (a *CmdbSystemApi) GetSystemList(c *gin.Context) {
 	var pageInfo request2.SystemSearch
-	_ = c.ShouldBindJSON(&pageInfo)
+	if err := c.ShouldBindJSON(&pageInfo); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
 	if err := utils.Verify(pageInfo.PageInfo, utils.PageInfoVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -161,8 +179,11 @@ func (a *CmdbSystemApi) GetSystemList(c *gin.Context) {
 // @Router /cmdb/system/addRelation [post]
 func (a *CmdbSystemApi) AddRelation(c *gin.Context) {
 	var relation application.SystemRelation
-	e := c.ShouldBindJSON(&relation)
-	global.GVA_LOG.Info("error", zap.Any("err", e))
+	if err := c.ShouldBindJSON(&relation); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
 	if err := utils.Verify(relation, utils.SystemRelationVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -186,7 +207,11 @@ func (a *CmdbSystemApi) AddRelation(c *gin.Context) {
 // @Router /cmdb/system/relations [post]
 func (a *CmdbSystemApi) SystemRelations(c *gin.Context) {
 	var idInfo request.GetById
-	_ = c.ShouldBindJSON(&idInfo)
+	if err := c.ShouldBindJSON(&idInfo); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
 	if err := utils.Verify(idInfo, utils.IdVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return

@@ -25,5 +25,6 @@ yarn-error.log*
 /server/log/
 /server/gva
 /server/latest_log
+/server/go_build_gin_vue_admin_main_go.exe
 
 *.iml
