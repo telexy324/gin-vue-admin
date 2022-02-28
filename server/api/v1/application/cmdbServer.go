@@ -25,7 +25,7 @@ type CmdbServerApi struct {
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"添加成功"}"
 // @Router /cmdb/addServer [post]
 func (a *CmdbServerApi) AddServer(c *gin.Context) {
-	var server application.ApplicationServer
+	var server request2.AddServer
 	if err := c.ShouldBindJSON(&server); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
@@ -80,7 +80,7 @@ func (a *CmdbServerApi) DeleteServer(c *gin.Context) {
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"更新成功"}"
 // @Router /cmdb/updateServer [post]
 func (a *CmdbServerApi) UpdateServer(c *gin.Context) {
-	var server application.ApplicationServer
+	var server request2.UpdateServer
 	if err := c.ShouldBindJSON(&server); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)

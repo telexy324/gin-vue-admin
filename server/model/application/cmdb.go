@@ -16,15 +16,22 @@ type ApplicationServer struct {
 	OsVersion    string `json:"osVersion" gorm:"column:os_version"`      // 系统版本
 	SystemId     int    `json:"systemId" gorm:"column:system_id"`        // 所属系统id
 	AppIds       string `json:"appIds" gorm:"column:app_ids"`            // 安装应用列表
-	Apps         []int  `json:"apps" gorm:"-"`                                    // 安装应用列表
+	Apps         []App  `json:"apps" gorm:"-"`                           // 安装应用列表
 }
 
-func (m *ApplicationServer) AfterFind(tx *gorm.DB) {
+func (m *ApplicationServer) AfterFind(tx *gorm.DB) (err error) {
+	appIds := make([]int, 0)
 	if m.AppIds != "" {
-		if err := json.Unmarshal([]byte(m.AppIds), &m.Apps); err != nil {
+		if err = json.Unmarshal([]byte(m.AppIds), &appIds); err != nil {
 			global.GVA_LOG.Error("转换失败", zap.Any("err", err))
+			return
 		}
 	}
+	if err = tx.Model(&App{}).Where("id = ?", appIds).Find(&m.Apps).Error; err != nil {
+		global.GVA_LOG.Error("转换失败", zap.Any("err", err))
+		return
+	}
+	return nil
 }
 
 type ServerRelation struct {
@@ -54,8 +61,8 @@ type SystemRelation struct {
 	EndSystemId   int               `json:"endSystemId" gorm:"column:end_system_id"`     // 目的节点id',
 	EndSystemUrl  string            `json:"endSystemUrl" gorm:"column:end_system_url"`   // 目的节点url',
 	Relation      string            `json:"relation" gorm:"column:relation"`             // 调用关系',
-	StartSystem   ApplicationSystem `json:"startSystem"`
-	EndSystem     ApplicationSystem `json:"endSystem"`
+	StartSystem   ApplicationSystem `json:"startSystem" gorm:"-"`
+	EndSystem     ApplicationSystem `json:"endSystem" gorm:"-"`
 }
 
 func (m *SystemRelation) TableName() string {

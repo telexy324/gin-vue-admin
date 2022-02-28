@@ -63,6 +63,12 @@
               type="text"
               @click="deleteServer(scope.row)"
             >删除</el-button>
+            <el-button
+              icon="el-icon-orange"
+              size="small"
+              type="text"
+              @click="deleteServer(scope.row)"
+            >关系图</el-button>
           </template>
         </el-table-column>
       </el-table>

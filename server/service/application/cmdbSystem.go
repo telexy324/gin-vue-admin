@@ -34,7 +34,7 @@ func (cmdbSystemService *CmdbSystemService) AddSystem(addSystemRequest request2.
 		return errors.New("存在重复name，请修改name")
 	}
 	err = global.GVA_DB.Transaction(func(tx *gorm.DB) error {
-		if txErr := tx.Create(&addSystemRequest.System).Error;txErr!=nil {
+		if txErr := tx.Create(&addSystemRequest.System).Error; txErr != nil {
 			global.GVA_LOG.Error("添加系统失败", zap.Any("err", err))
 			return txErr
 		}
@@ -158,10 +158,17 @@ func (cmdbSystemService *CmdbSystemService) GetSystemById(id float64) (err error
 	if err = global.GVA_DB.Where("id = ?", id).First(&system).Error; err != nil {
 		return
 	}
-	if err = global.GVA_DB.Where("system_id = ?", id).Find(&admins).Error; err != nil {
+	var systemAdmins []application.ApplicationSystemAdmin
+	if err = global.GVA_DB.Where("system_id = ?", id).Find(&systemAdmins).Error; err != nil {
 		return
 	}
-
+	adminIds := make([]int, 0, len(systemAdmins))
+	for _, sysAdmin := range systemAdmins {
+		adminIds = append(adminIds, sysAdmin.AdminId)
+	}
+	if err = global.GVA_DB.Where("id in ?", adminIds).Find(&admins).Error; err != nil {
+		return
+	}
 	return
 }
 
@@ -187,14 +194,14 @@ func (cmdbSystemService *CmdbSystemService) GetSystemList(info request2.SystemSe
 
 	systemInfoList := make([]applicationRes.ApplicationSystemResponse, 0, len(systemList))
 	for _, system := range systemList {
-		admins := make([]application.ApplicationSystemAdmin, 0)
+		sysAdmins := make([]application.ApplicationSystemAdmin, 0)
 		adminInfos := make([]application.Admin, 0)
-		if err = global.GVA_DB.Where("system_id = ?", system.ID).Find(&admins).Error; err != nil {
+		if err = global.GVA_DB.Where("system_id = ?", system.ID).Find(&sysAdmins).Error; err != nil {
 			return
 		}
-		for _, admin := range admins {
+		for _, sysAdmin := range sysAdmins {
 			var adminInfo = application.Admin{}
-			if err = global.GVA_DB.Where("id = ?", admin.ID).First(&adminInfo).Error; err != nil {
+			if err = global.GVA_DB.Where("id = ?", sysAdmin.AdminId).First(&adminInfo).Error; err != nil {
 				return
 			} else {
 				adminInfos = append(adminInfos, adminInfo)
@@ -205,7 +212,7 @@ func (cmdbSystemService *CmdbSystemService) GetSystemList(info request2.SystemSe
 			Admins: adminInfos,
 		})
 	}
-	return err, systemList, total
+	return err, systemInfoList, total
 }
 
 //@author: [telexy324](https://github.com/telexy324)

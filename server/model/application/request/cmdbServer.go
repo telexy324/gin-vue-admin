@@ -7,6 +7,13 @@ import (
 
 type AddServer struct {
 	Server      *application.ApplicationServer `json:"server"`
+	Apps        []int                          `json:"apps"`
+	AuthorityId string                         `json:"authorityId"` // 角色ID
+}
+
+type UpdateServer struct {
+	Server      *application.ApplicationServer `json:"server"`
+	Apps        []int                          `json:"apps"`
 	AuthorityId string                         `json:"authorityId"` // 角色ID
 }
 

@@ -33,15 +33,15 @@ var CmdbServerServiceApp = new(CmdbServerService)
 //@param: server model.ApplicationServer
 //@return: error
 
-func (cmdbServerService *CmdbServerService) AddServer(server application.ApplicationServer) error {
-	if !errors.Is(global.GVA_DB.Where("hostname = ?", server.Hostname).First(&application.ApplicationServer{}).Error, gorm.ErrRecordNotFound) {
+func (cmdbServerService *CmdbServerService) AddServer(server request2.AddServer) error {
+	if !errors.Is(global.GVA_DB.Where("hostname = ?", server.Server.Hostname).First(&application.ApplicationServer{}).Error, gorm.ErrRecordNotFound) {
 		return errors.New("存在重复hostname，请修改name")
 	}
 	if len(server.Apps) > 0 {
 		if js, err := json.Marshal(server.Apps); err != nil {
 			return err
 		} else {
-			server.AppIds = string(js)
+			server.Server.AppIds = string(js)
 		}
 	}
 	return global.GVA_DB.Create(&server).Error
@@ -68,19 +68,19 @@ func (cmdbServerService *CmdbServerService) DeleteServer(id float64) (err error)
 //@param: server model.ApplicationServer
 //@return: err error
 
-func (cmdbServerService *CmdbServerService) UpdateServer(server application.ApplicationServer) (err error) {
+func (cmdbServerService *CmdbServerService) UpdateServer(server request2.UpdateServer) (err error) {
 	var oldServer application.ApplicationServer
 	upDateMap := make(map[string]interface{})
-	upDateMap["hostname"] = server.Hostname
-	upDateMap["manage_ip"] = server.ManageIp
-	upDateMap["os"] = server.Os
-	upDateMap["os_version"] = server.OsVersion
-	upDateMap["architecture"] = server.Architecture
+	upDateMap["hostname"] = server.Server.Hostname
+	upDateMap["manage_ip"] = server.Server.ManageIp
+	upDateMap["os"] = server.Server.Os
+	upDateMap["os_version"] = server.Server.OsVersion
+	upDateMap["architecture"] = server.Server.Architecture
 
 	err = global.GVA_DB.Transaction(func(tx *gorm.DB) error {
-		db := tx.Where("id = ?", server.ID).Find(&oldServer)
-		if oldServer.Hostname != server.Hostname {
-			if !errors.Is(tx.Where("id <> ? AND hostname = ?", server.ID, server.Hostname).First(&application.ApplicationServer{}).Error, gorm.ErrRecordNotFound) {
+		db := tx.Where("id = ?", server.Server.ID).Find(&oldServer)
+		if oldServer.Hostname != server.Server.Hostname {
+			if !errors.Is(tx.Where("id <> ? AND hostname = ?", server.Server.ID, server.Server.Hostname).First(&application.ApplicationServer{}).Error, gorm.ErrRecordNotFound) {
 				global.GVA_LOG.Debug("存在相同name修改失败")
 				return errors.New("存在相同name修改失败")
 			}
