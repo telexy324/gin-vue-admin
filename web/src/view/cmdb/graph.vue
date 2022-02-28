@@ -1,9 +1,11 @@
-<template lang="pug">
-.relation.common
-  .box(v-if='!err')
-    #chart(ref='chart' :style='{ height: `${screenHeight-10}px` }')
-  NoData(v-if='err && err.message' :title='err.message')
-  Loading(:loading="loading")
+<template>
+  <div class="relation common">
+    <div v-if="!err" class="box">
+      <div id="chart" ref="chart" :style="{ height: `${screenHeight-10}px` }" />
+    </div>
+    <NoData v-if="err && err.message" :title="err.message" />
+    <Loading :loading="loading" />
+  </div>
 </template>
 
 <script>
@@ -17,6 +19,12 @@ import echarts from 'echarts'
 export default {
   name: 'relation',
   mixins: [echartMixins('#chart')],
+  props: {
+    cid: {
+      type: Number,
+      default: 2
+    },
+  },
   data() {
     return {
       isMobile: false, // 设备类型判断
@@ -24,23 +32,21 @@ export default {
       screenHeight: 500,
       err: null,
       loading: false,
-      cid: 2,
       cname: null,
       // echarts 实例
       myChart: null,
     }
   },
   computed: {},
+  watch: {},
   created() {
     this.screenHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight
   },
   mounted() {
     const { companyId, companyName } = this.$route.query
-    this.cid = 2
     this.cname = decodeURIComponent(companyName || '')
     this.getData()
   },
-  watch: {},
   methods: {
     getData() {
       const body = {

@@ -193,8 +193,12 @@ func (cmdbServerService *CmdbServerService) ServerRelations(id float64) (err err
 	mapNodes[int(server.ID)] = true
 	relationOneSrc := make([]application.ServerRelation, 0)
 	relationOneDest := make([]application.ServerRelation, 0)
-	err = global.GVA_DB.Preload("EndServer").Where("start_server_id = ?", id).Find(&relationOneSrc).Error
-	err = global.GVA_DB.Preload("StartServer").Where("end_server_id = ?", id).Find(&relationOneDest).Error
+	if err = global.GVA_DB.Preload("EndServer").Where("start_server_id = ?", id).Find(&relationOneSrc).Error; err != nil && err != gorm.ErrRecordNotFound {
+		return
+	}
+	if err = global.GVA_DB.Preload("StartServer").Where("end_server_id = ?", id).Find(&relationOneDest).Error; err != nil && err != gorm.ErrRecordNotFound {
+		return
+	}
 	if len(relationOneSrc) > 0 {
 		relations = append(relations, relationOneSrc...)
 		for _, relation := range relationOneSrc {
@@ -207,8 +211,12 @@ func (cmdbServerService *CmdbServerService) ServerRelations(id float64) (err err
 			}
 			relationTwoSrc := make([]application.ServerRelation, 0)
 			relationTwoDest := make([]application.ServerRelation, 0)
-			err = global.GVA_DB.Preload("EndServer").Where("start_server_id = ?", relation.EndServerId).Find(&relationTwoSrc).Error
-			err = global.GVA_DB.Preload("StartServer").Where("end_server_id = ?", relation.EndServerId).Find(&relationTwoDest).Error
+			if err = global.GVA_DB.Preload("EndServer").Where("start_server_id = ?", relation.EndServerId).Find(&relationTwoSrc).Error; err != nil && err != gorm.ErrRecordNotFound {
+				return
+			}
+			if err = global.GVA_DB.Preload("StartServer").Where("end_server_id = ?", relation.EndServerId).Find(&relationTwoDest).Error; err != nil && err != gorm.ErrRecordNotFound {
+				return
+			}
 			if len(relationTwoSrc) > 0 {
 				relations = append(relations, relationTwoSrc...)
 				for _, relation := range relationTwoSrc {
@@ -247,8 +255,12 @@ func (cmdbServerService *CmdbServerService) ServerRelations(id float64) (err err
 			}
 			relationTwoSrc := make([]application.ServerRelation, 0)
 			relationTwoDest := make([]application.ServerRelation, 0)
-			err = global.GVA_DB.Preload("EndServer").Where("start_server_id = ?", relation.StartServerId).Find(&relationTwoSrc).Error
-			err = global.GVA_DB.Preload("StartServer").Where("end_server_id = ?", relation.StartServerId).Find(&relationTwoDest).Error
+			if err = global.GVA_DB.Preload("EndServer").Where("start_server_id = ?", relation.StartServerId).Find(&relationTwoSrc).Error; err != nil && err != gorm.ErrRecordNotFound {
+				return
+			}
+			if err = global.GVA_DB.Preload("StartServer").Where("end_server_id = ?", relation.StartServerId).Find(&relationTwoDest).Error; err != nil && err != gorm.ErrRecordNotFound {
+				return
+			}
 			if len(relationTwoSrc) > 0 {
 				relations = append(relations, relationTwoSrc...)
 				for _, relation := range relationTwoSrc {

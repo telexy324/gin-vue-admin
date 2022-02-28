@@ -9,7 +9,7 @@ import service from '@/utils/request'
 // 查询企业信息
 export const getSystemRelations = (data) => {
   return service({
-    url: '/cmdb/system/relations',
+    url: '/cmdb/server/relations',
     method: 'post',
     data
   })
