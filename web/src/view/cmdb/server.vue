@@ -263,6 +263,11 @@ export default {
           }
         })
     },
+    async relation(row) {
+      const res = await getServerById({ id: row.ID })
+      this.form = res.data.server
+      this.openDialog('edit')
+    },
     async enterDialog() {
       this.$refs.serverForm.validate(async valid => {
         if (valid) {

@@ -7,7 +7,7 @@ import service from '@/utils/request'
 // }
 // @Router /cmdb/getServerList [post]
 // 查询企业信息
-export const getSystemRelations = (data) => {
+export const getServerRelations = (data) => {
   return service({
     url: '/cmdb/server/relations',
     method: 'post',

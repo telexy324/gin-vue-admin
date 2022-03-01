@@ -9,7 +9,7 @@
 </template>
 
 <script>
-import { getSystemRelations } from '@/api/graph'
+import { getServerRelations } from '@/api/graph'
 import echartMixins from '@/mixins/echartMixins'
 import NoData from '@/components/NoData.vue'
 import Loading from '@/components/loading.vue'
@@ -54,7 +54,7 @@ export default {
         id: this.cid
       }
       this.loading = true
-      getSystemRelations(body)
+      getServerRelations(body)
         .then(this.handleData)
         .catch(err => {
           this.err = err
