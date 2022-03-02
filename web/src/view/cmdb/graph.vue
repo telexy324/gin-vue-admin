@@ -75,8 +75,8 @@ export default {
       // 关系数组处理
       path.links.forEach(link => {
         link.value = link.vector_str_value
-        link.source = link.start_node_id
-        link.target = link.end_node_id
+        link.source = this.search(path.nodes, link.start_node_id)
+        link.target = this.search(path.nodes, link.end_node_id)
         // if (linkCache[link.target + link.source]) {
         //     link.lineStyle = {
         //         curveness: 0.1,
@@ -87,7 +87,7 @@ export default {
         link.lineStyle = {
           curveness: 0.1,
         }
-        link.value = link.vector_str_value
+        // link.value = link.vector_str_value
       })
       // 节点数组处理
       path.nodes.forEach((node, index) => {
@@ -147,9 +147,9 @@ export default {
             // 节点大小
             symbolSize(value, { data }) {
               // 根节点大小
-              if (data.id === cid) return 88
+              if (data.id === cid) return 68
               // 其它节点大小
-              return 70
+              return 40
             },
             force: {
               // 节点之间的斥力因子。值越大则斥力越大
@@ -196,7 +196,8 @@ export default {
             itemStyle: {
               color({ data }) {
                 // 主节点
-                if (data.id === cid) return '#288bff'
+                // if (data.id === cid) return '#288bff'
+                if (data.id === cid) return '#333333'
                 // 公司
                 if (data.type === 'gn_company') return '#3ea3ff'
                 // 人物
@@ -234,6 +235,15 @@ export default {
       newName = newName.replace(/\n$/g, '')
       if (name.length > num * row) newName += '...'
       return newName
+    },
+    search(arr, dst) {
+      var i = arr.length
+      while (i -= 1) {
+        if (arr[i].id === dst) {
+          return i
+        }
+      }
+      return false
     },
   },
   components: { NoData, Loading },
