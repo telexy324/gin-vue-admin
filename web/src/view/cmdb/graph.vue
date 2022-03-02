@@ -19,12 +19,12 @@ import echarts from 'echarts'
 export default {
   name: 'relation',
   mixins: [echartMixins('#chart')],
-  props: {
-    cid: {
-      type: Number,
-      default: 2
-    },
-  },
+  // props: {
+  //   cid: {
+  //     type: Number,
+  //     default: 2
+  //   },
+  // },
   data() {
     return {
       isMobile: false, // 设备类型判断
@@ -35,6 +35,7 @@ export default {
       cname: null,
       // echarts 实例
       myChart: null,
+      cid: null,
     }
   },
   computed: {},
@@ -43,8 +44,8 @@ export default {
     this.screenHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight
   },
   mounted() {
-    const { companyId, companyName } = this.$route.query
-    this.cname = decodeURIComponent(companyName || '')
+    const { cid } = this.$route.params
+    this.cid = cid
     this.getData()
   },
   methods: {

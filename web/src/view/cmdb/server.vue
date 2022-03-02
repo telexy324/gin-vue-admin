@@ -67,7 +67,7 @@
               icon="el-icon-orange"
               size="small"
               type="text"
-              @click="deleteServer(scope.row)"
+              @click="relation(scope.row)"
             >关系图</el-button>
           </template>
         </el-table-column>
@@ -264,9 +264,11 @@ export default {
         })
     },
     async relation(row) {
-      const res = await getServerById({ id: row.ID })
-      this.form = res.data.server
-      this.openDialog('edit')
+      const routeData = this.$router.resolve({
+        name: 'graph',
+        params: { cid: row.id }
+      })
+      window.open(routeData.href, '_blank')
     },
     async enterDialog() {
       this.$refs.serverForm.validate(async valid => {
