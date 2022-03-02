@@ -75,8 +75,8 @@ export default {
       // 关系数组处理
       path.links.forEach(link => {
         link.value = link.vector_str_value
-        link.source = this.search(path.nodes, link.start_node_id)
-        link.target = this.search(path.nodes, link.end_node_id)
+        link.source = path.nodes.findIndex(item => item.id === link.start_node_id)
+        link.target = path.nodes.findIndex(item => item.id === link.end_node_id)
         // if (linkCache[link.target + link.source]) {
         //     link.lineStyle = {
         //         curveness: 0.1,
@@ -235,15 +235,6 @@ export default {
       newName = newName.replace(/\n$/g, '')
       if (name.length > num * row) newName += '...'
       return newName
-    },
-    search(arr, dst) {
-      var i = arr.length
-      while (i -= 1) {
-        if (arr[i].id === dst) {
-          return i
-        }
-      }
-      return false
     },
   },
   components: { NoData, Loading },
