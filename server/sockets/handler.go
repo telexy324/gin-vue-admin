@@ -2,12 +2,14 @@ package sockets
 
 import (
 	"fmt"
-	"github.com/ansible-semaphore/semaphore/db"
+	"github.com/flipped-aurora/gin-vue-admin/server/global"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/system"
+	"github.com/gin-gonic/gin"
+	uuid "github.com/satori/go.uuid"
+	"go.uber.org/zap"
 	"net/http"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
-	"github.com/ansible-semaphore/semaphore/util"
 	"github.com/gorilla/context"
 	"github.com/gorilla/websocket"
 )
@@ -37,30 +39,39 @@ const (
 type connection struct {
 	ws     *websocket.Conn
 	send   chan []byte
-	userID int
+	userID uuid.UUID
 }
 
 // readPump pumps messages from the websocket connection to the hub.
 func (c *connection) readPump() {
 	defer func() {
 		h.unregister <- c
-		util.LogErrorWithFields(c.ws.Close(), log.Fields{"error": "Error closing websocket"})
+		err := c.ws.Close()
+		if err != nil {
+			global.GVA_LOG.Error("Error closing websocket", zap.Error(err))
+		}
 	}()
 
 	c.ws.SetReadLimit(maxMessageSize)
-	util.LogErrorWithFields(c.ws.SetReadDeadline(time.Now().Add(pongWait)), log.Fields{"error": "Socket state corrupt"})
+	err := c.ws.SetReadDeadline(time.Now().Add(pongWait))
+	if err != nil {
+		global.GVA_LOG.Error("Socket state corrupt", zap.Error(err))
+	}
 	c.ws.SetPongHandler(func(string) error {
-		util.LogErrorWithFields(c.ws.SetReadDeadline(time.Now().Add(pongWait)), log.Fields{"error": "Socket state corrupt"})
+		err = c.ws.SetReadDeadline(time.Now().Add(pongWait))
+		if err != nil {
+			global.GVA_LOG.Error("Socket state corrupt", zap.Error(err))
+		}
 		return nil
 	})
 
 	for {
-		_, message, err := c.ws.ReadMessage()
+		_, message, e := c.ws.ReadMessage()
 		fmt.Println(string(message))
 
-		if err != nil {
-			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway) {
-				util.LogError(err)
+		if e != nil {
+			if websocket.IsUnexpectedCloseError(e, websocket.CloseGoingAway) {
+				global.GVA_LOG.Error(e.Error())
 			}
 			break
 		}
@@ -69,7 +80,10 @@ func (c *connection) readPump() {
 
 // write writes a message with the given message type and payload.
 func (c *connection) write(mt int, payload []byte) error {
-	util.LogErrorWithFields(c.ws.SetWriteDeadline(time.Now().Add(writeWait)), log.Fields{"error": "Socket state corrupt"})
+	err := c.ws.SetWriteDeadline(time.Now().Add(writeWait))
+	if err != nil {
+		global.GVA_LOG.Error("Socket state corrupt", zap.Error(err))
+	}
 	return c.ws.WriteMessage(mt, payload)
 }
 
@@ -79,23 +93,26 @@ func (c *connection) writePump() {
 
 	defer func() {
 		ticker.Stop()
-		util.LogError(c.ws.Close())
+		global.GVA_LOG.Error(c.ws.Close().Error())
 	}()
 
 	for {
 		select {
 		case message, ok := <-c.send:
 			if !ok {
-				util.LogError(c.write(websocket.CloseMessage, []byte{}))
+				err := c.write(websocket.CloseMessage, []byte{})
+				if err != nil {
+					global.GVA_LOG.Error(err.Error())
+				}
 				return
 			}
 			if err := c.write(websocket.TextMessage, message); err != nil {
-				util.LogError(err)
+				global.GVA_LOG.Error(err.Error())
 				return
 			}
 		case <-ticker.C:
 			if err := c.write(websocket.PingMessage, []byte{}); err != nil {
-				util.LogError(err)
+				global.GVA_LOG.Error(err.Error())
 				return
 			}
 		}
@@ -103,27 +120,27 @@ func (c *connection) writePump() {
 }
 
 // Handler is used by the router to handle the /ws endpoint
-func Handler(w http.ResponseWriter, r *http.Request) {
-	user := context.Get(r, "user").(*db.User)
-	ws, err := upgrader.Upgrade(w, r, nil)
+func Handler(c *gin.Context) {
+	user := context.Get(c.Request, "user").(*system.SysUser)
+	ws, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		panic(err)
 	}
 
-	c := &connection{
+	conn := &connection{
 		send:   make(chan []byte, 256),
 		ws:     ws,
-		userID: user.ID,
+		userID: user.UUID,
 	}
 
-	h.register <- c
+	h.register <- conn
 
-	go c.writePump()
-	c.readPump()
+	go conn.writePump()
+	conn.readPump()
 }
 
 // Message allows a message to be sent to the websockets, called in API task logging
-func Message(userID int, message []byte) {
+func Message(userID uuid.UUID, message []byte) {
 	h.broadcast <- &sendRequest{
 		userID: userID,
 		msg:    message,

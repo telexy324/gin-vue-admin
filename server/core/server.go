@@ -2,6 +2,7 @@ package core
 
 import (
 	"fmt"
+	"github.com/flipped-aurora/gin-vue-admin/server/sockets"
 	"time"
 
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
@@ -45,4 +46,5 @@ func RunWindowsServer() {
 	如果项目让您获得了收益，希望您能请团队喝杯可乐:https://www.github.com/flipped-aurora/gin-vue-admin/server.com/docs/coffee
 `, address)
 	global.GVA_LOG.Error(s.ListenAndServe().Error())
+	go sockets.StartWS()
 }

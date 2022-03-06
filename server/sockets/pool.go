@@ -1,5 +1,7 @@
 package sockets
 
+import uuid "github.com/satori/go.uuid"
+
 // hub maintains the set of active connections and broadcasts messages to the
 // connections.
 type hub struct {
@@ -17,7 +19,7 @@ type hub struct {
 }
 
 type sendRequest struct {
-	userID int
+	userID uuid.UUID
 	msg    []byte
 }
 
@@ -41,7 +43,7 @@ func (h *hub) run() {
 			}
 		case m := <-h.broadcast:
 			for c := range h.connections {
-				if m.userID > 0 && m.userID != c.userID {
+				if m.userID != c.userID {
 					continue
 				}
 
