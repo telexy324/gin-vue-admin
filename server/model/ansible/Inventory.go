@@ -1,4 +1,4 @@
-package db
+package ansible
 
 const (
 	InventoryStatic = "static"
