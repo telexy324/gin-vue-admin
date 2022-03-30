@@ -1,7 +1,12 @@
 package ansible
 
 import (
+	"database/sql"
 	"encoding/json"
+	"errors"
+	"github.com/flipped-aurora/gin-vue-admin/server/global"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
+	"gorm.io/gorm"
 )
 
 type TemplateType string
@@ -75,29 +80,196 @@ type Template struct {
 	SuppressSuccessAlerts bool `db:"suppress_success_alerts" json:"suppress_success_alerts"`
 }
 
+func (m *Template) CreateTemplate(template Template) (Template, error) {
+	err := global.GVA_DB.Create(&template).Error
+	return template, err
+}
+
+func (m *Template) UpdateTemplate(template Template) error {
+	var oldTemplate Template
+	_, surveyVarsJson := json.Marshal(template.SurveyVars)
+	upDateMap := make(map[string]interface{})
+	upDateMap["inventory_id"] = template.InventoryID
+	upDateMap["repository_id"] = template.RepositoryID
+	upDateMap["environment_id"] = template.EnvironmentID
+	upDateMap["name"] = template.Name
+	upDateMap["playbook"] = template.Playbook
+	upDateMap["arguments"] = template.Arguments
+	upDateMap["allow_override_args_in_task"] = template.AllowOverrideArgsInTask
+	upDateMap["description"] = template.Description
+	upDateMap["vault_key_id"] = template.VaultKeyID
+	upDateMap["`type`"] = template.Type
+	upDateMap["start_version"] = template.StartVersion
+	upDateMap["build_template_id"] = template.BuildTemplateID
+	upDateMap["view_id"] = template.ViewID
+	upDateMap["autorun"] = template.Autorun
+	upDateMap["survey_vars"] = surveyVarsJson
+	upDateMap["suppress_success_alerts"] = template.SuppressSuccessAlerts
+
+	err := global.GVA_DB.Transaction(func(tx *gorm.DB) error {
+		db := tx.Where("id = ? and project_id = ?", template.ID, template.ProjectID).Find(&oldTemplate)
+		txErr := db.Updates(upDateMap).Error
+		if txErr != nil {
+			global.GVA_LOG.Debug(txErr.Error())
+			return txErr
+		}
+		return nil
+	})
+	return err
+}
+
+func (m *Template) GetTemplates(projectID int, filter TemplateFilter, sortInverted bool, sortBy string) (templates []Template, err error) {
+
+	if filter.ViewID != nil {
+		q = q.Where("pt.view_id=?", *filter.ViewID)
+	}
+
+	if filter.BuildTemplateID != nil {
+		q = q.Where("pt.build_template_id=?", *filter.BuildTemplateID)
+		if filter.AutorunOnly {
+			q = q.Where("pt.autorun=true")
+		}
+	}
+
+	order := "ASC"
+	if params.SortInverted {
+		order = "DESC"
+	}
+
+	switch params.SortBy {
+	case "name", "playbook":
+		q = q.Where("pt.project_id=?", projectID).
+			OrderBy("pt." + params.SortBy + " " + order)
+	case "inventory":
+		q = q.LeftJoin("project__inventory pi ON (pt.inventory_id = pi.id)").
+			Where("pt.project_id=?", projectID).
+			OrderBy("pi.name " + order)
+	case "environment":
+		q = q.LeftJoin("project__environment pe ON (pt.environment_id = pe.id)").
+			Where("pt.project_id=?", projectID).
+			OrderBy("pe.name " + order)
+	case "repository":
+		q = q.LeftJoin("project__repository pr ON (pt.repository_id = pr.id)").
+			Where("pt.project_id=?", projectID).
+			OrderBy("pr.name " + order)
+	default:
+		q = q.Where("pt.project_id=?", projectID).
+			OrderBy("pt.name " + order)
+	}
+
+	query, args, err := q.ToSql()
+
+	if err != nil {
+		return
+	}
+
+	_, err = d.selectAll(&templates, query, args...)
+
+	if err != nil {
+		return
+	}
+
+	err = db.FillTemplates(d, templates)
+
+	return
+
+	db := global.GVA_DB.Model(&Template{})
+	if filter.ViewID != nil {
+		db = db.Where("view_id=?", *filter.ViewID)
+	}
+	if filter.BuildTemplateID != nil {
+		db = db.Where("build_template_id=?", *filter.BuildTemplateID)
+		if filter.AutorunOnly {
+			db = db.Where("pt.autorun=true")
+		}
+	}
+	order := ""
+	if sortInverted {
+		order = "desc"
+	}
+	switch sortBy {
+	case "name", "playbook":
+		db = db.Where("project_id=?", projectID).
+			Order(sortBy + " " + order)
+	case "inventory":
+		db = db.Joins("left join project_inventory on inventory_id = project_inventory.id").
+			Where("project_id=?", projectID).
+			Order("project_inventory.name " + order)
+	case "environment":
+		db = db.Joins("project_environment on environment_id = environment.id)").
+			Where("project_id=?", projectID).
+			Order("project_environment.name " + order)
+	case "repository":
+		db = db.Joins("project_repository on repository_id = repository.id)").
+			Where("project_id=?", projectID).
+			Order("project_repository.name " + order)
+	default:
+		db = db.Where("project_id=?", projectID).
+			Order("name " + order)
+	}
+	err = db.Find(&templates).Error
+	if err!=nil {
+		return
+	}
+	FillTemplates(, templates)
+	return
+}
+
+func (d *SqlDb) GetTemplate(projectID int, templateID int) (template db.Template, err error) {
+	err = d.selectOne(
+		&template,
+		"select * from project__template where project_id=? and id=?",
+		projectID,
+		templateID)
+
+	if err == sql.ErrNoRows {
+		err = db.ErrNotFound
+	}
+
+	if err != nil {
+		return
+	}
+
+	err = db.FillTemplate(d, &template)
+	return
+}
+
+func (d *SqlDb) DeleteTemplate(projectID int, templateID int) error {
+	_, err := d.exec("delete from project__template where project_id=? and id=?", projectID, templateID)
+	return err
+}
+
+func (d *SqlDb) GetTemplateRefs(projectID int, templateID int) (db.ObjectReferrers, error) {
+	return d.getObjectRefs(projectID, db.TemplateProps, templateID)
+}
+
 func (tpl *Template) Validate() error {
 	if tpl.Name == "" {
-		return &ValidationError{"template name can not be empty"}
+		return errors.New("template name can not be empty")
 	}
 
 	if tpl.Playbook == "" {
-		return &ValidationError{"template playbook can not be empty"}
+		return errors.New("template playbook can not be empty")
 	}
 
 	if tpl.Arguments != nil {
 		if !json.Valid([]byte(*tpl.Arguments)) {
-			return &ValidationError{"template arguments must be valid JSON"}
+			return errors.New("template arguments must be valid JSON")
 		}
 	}
 
 	return nil
 }
 
-func FillTemplates(d Store, templates []Template) (err error) {
+func FillTemplates(t *Task, templates []Template) (err error) {
 	for i := range templates {
 		tpl := &templates[i]
 		var tasks []TaskWithTpl
-		tasks, err = d.GetTemplateTasks(tpl.ProjectID, tpl.ID, RetrieveQueryParams{Count: 1})
+		err, iTasks, _ := t.GetTemplateTasks(tpl.ProjectID, tpl.ID, request.PageInfo{
+			Page:     1,
+			PageSize: 1,
+		})
+		tasks = iTasks.([]TaskWithTpl)
 		if err != nil {
 			return
 		}
