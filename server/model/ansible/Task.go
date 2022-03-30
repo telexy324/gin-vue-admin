@@ -1,14 +1,10 @@
 package ansible
 
 import (
-	"database/sql"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/application"
-	applicationRes "github.com/flipped-aurora/gin-vue-admin/server/model/application/response"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/system"
 	"gorm.io/gorm"
-	"strings"
 	"time"
 )
 
@@ -84,12 +80,6 @@ type TaskOutput struct {
 	Output string    `gorm:"output" json:"output"`
 }
 
-func (m *Task) GetTask(projectID int, taskID int) (task Task, err error) {
-	err = global.GVA_DB.Preload("Template", "project_id=?", projectID).
-		Where("id = ?", taskID).First(&task).Error
-	return
-}
-
 func (m *Task) CreateTask(task Task) (Task, error) {
 	err := global.GVA_DB.Create(&task).Error
 	return task, err
@@ -119,144 +109,81 @@ func (m *TaskOutput) CreateTaskOutput(output TaskOutput) (TaskOutput, error) {
 	return output, err
 }
 
-func (m *TaskOutput) getTasks(projectID int, templateID *int, info request.PageInfo, tasks *[]db.TaskWithTpl) (err error) {
-	fields := "task.*"
-	fields += ", tpl.playbook as tpl_playbook" +
-		", `user`.name as user_name" +
-		", tpl.name as tpl_alias" +
-		", tpl.type as tpl_type"
-
-	q := squirrel.Select(fields).
-		From("task").
-		Join("project__template as tpl on task.template_id=tpl.id").
-		LeftJoin("`user` on task.user_id=`user`.id").
-		OrderBy("task.created desc, id desc")
-
-	if templateID == nil {
-		q = q.Where("tpl.project_id=?", projectID)
-	} else {
-		q = q.Where("tpl.project_id=? AND task.template_id=?", projectID, templateID)
-	}
-
-	if params.Count > 0 {
-		q = q.Limit(uint64(params.Count))
-	}
-
-	query, args, _ := q.ToSql()
-
-	_, err = d.selectAll(tasks, query, args...)
-
-	for i := range *tasks {
-		err = (*tasks)[i].Fill(d)
-		if err != nil {
-			return
-		}
-	}
-
-	return
+func (m *Task) getTasks(projectID int, templateID *int, info request.PageInfo) (err error, list interface{}, total int64) {
 	limit := info.PageSize
 	offset := info.PageSize * (info.Page - 1)
-	var tasks []Task
-	err = global.GVA_DB.Preload("Template", "project_id=?", projectID).
-		Where("id = ?", taskID).First(&task).Error
-	db := global.GVA_DB.Model(&application.ApplicationSystem{})
-	if info.Name != "" {
-		name := strings.Trim(info.Name, " ")
-		db = db.Where("`name` LIKE ?", "%"+name+"%")
+	db := global.GVA_DB.Preload("User")
+	if templateID == nil {
+		db = db.Preload("Template", "project_id=?", projectID)
+	} else {
+		db = db.Preload("Template", "project_id=?", projectID).Where("template_id=?", templateID)
 	}
+	db.Order("created desc, id desc")
 	err = db.Count(&total).Error
 	if err != nil {
 		return
 	}
-	err = db.Limit(limit).Offset(offset).Find(&systemList).Error
+	var Tasks []Task
+	var TaskWithTpls []TaskWithTpl
+	err = db.Limit(limit).Offset(offset).Find(&Tasks).Error
 
-	systemInfoList := make([]applicationRes.ApplicationSystemResponse, 0, len(systemList))
-	for _, system := range systemList {
-		sysAdmins := make([]application.ApplicationSystemAdmin, 0)
-		adminInfos := make([]application.Admin, 0)
-		if err = global.GVA_DB.Where("system_id = ?", system.ID).Find(&sysAdmins).Error; err != nil {
-			return
+	for _, task := range Tasks {
+		taskWithTpl := TaskWithTpl{
+			Task:             task,
+			TemplatePlaybook: task.Template.Playbook,
+			TemplateAlias:    task.Template.Name,
+			TemplateType:     task.Template.Type,
+			UserName:         &task.User.Username,
 		}
-		for _, sysAdmin := range sysAdmins {
-			var adminInfo = application.Admin{}
-			if err = global.GVA_DB.Where("id = ?", sysAdmin.AdminId).First(&adminInfo).Error; err != nil {
-				return
-			} else {
-				adminInfos = append(adminInfos, adminInfo)
-			}
+		TaskWithTpls = append(TaskWithTpls, taskWithTpl)
+	}
+	return err, TaskWithTpls, total
+}
+
+func (m *Task) GetTask(projectID int, taskID int) (task Task, err error) {
+	err = global.GVA_DB.Preload("Template", "project_id=?", projectID).
+		Where("id = ?", taskID).First(&task).Error
+	return
+}
+
+func (m *Task) GetTemplateTasks(projectID int, templateID int, info request.PageInfo) (err error, list interface{}, total int64) {
+	return m.getTasks(projectID, &templateID, info)
+}
+
+func (m *Task) GetProjectTasks(projectID int, info request.PageInfo) (err error, list interface{}, total int64) {
+	return m.getTasks(projectID, nil, info)
+}
+
+func (m *Task) DeleteTaskWithOutputs(projectID int, taskID int) (err error) {
+	// check if task exists in the project
+	_, err = m.GetTask(projectID, taskID)
+	if err != nil {
+		return
+	}
+	var task Task
+	var taskOutputs []TaskOutput
+	err = global.GVA_DB.Transaction(func(tx *gorm.DB) error {
+		txErr := tx.Where("task_id = ?", taskID).Find(&taskOutputs).Delete(&taskOutputs).Error
+		if txErr != nil {
+			return txErr
 		}
-		systemInfoList = append(systemInfoList, applicationRes.ApplicationSystemResponse{
-			System: system,
-			Admins: adminInfos,
-		})
-	}
-	return err, systemInfoList, total
-}
-
-func (d *SqlDb) GetTask(projectID int, taskID int) (task db.Task, err error) {
-	q := squirrel.Select("task.*").
-		From("task").
-		Join("project__template as tpl on task.template_id=tpl.id").
-		Where("tpl.project_id=? AND task.id=?", projectID, taskID)
-
-	query, args, err := q.ToSql()
-
-	if err != nil {
-		return
-	}
-
-	err = d.selectOne(&task, query, args...)
-
-	if err == sql.ErrNoRows {
-		err = db.ErrNotFound
-		return
-	}
-
-	if err != nil {
-		return
-	}
-
+		txErr = tx.Where("id = ?", taskID).Find(&task).Delete(&task).Error
+		if txErr != nil {
+			return txErr
+		}
+		return nil
+	})
 	return
 }
 
-func (d *SqlDb) GetTemplateTasks(projectID int, templateID int, params db.RetrieveQueryParams) (tasks []db.TaskWithTpl, err error) {
-	err = d.getTasks(projectID, &templateID, params, &tasks)
-	return
-}
-
-func (d *SqlDb) GetProjectTasks(projectID int, params db.RetrieveQueryParams) (tasks []db.TaskWithTpl, err error) {
-	err = d.getTasks(projectID, nil, params, &tasks)
-	return
-}
-
-func (d *SqlDb) DeleteTaskWithOutputs(projectID int, taskID int) (err error) {
+func (m *TaskOutput) GetTaskOutputs(projectID int, taskID int) (output []TaskOutput, err error) {
+	var task *Task
 	// check if task exists in the project
-	_, err = d.GetTask(projectID, taskID)
-
+	_, err = task.GetTask(projectID, taskID)
 	if err != nil {
 		return
 	}
 
-	_, err = d.exec("delete from task__output where task_id=?", taskID)
-
-	if err != nil {
-		return
-	}
-
-	_, err = d.exec("delete from task where id=?", taskID)
-	return
-}
-
-func (d *SqlDb) GetTaskOutputs(projectID int, taskID int) (output []db.TaskOutput, err error) {
-	// check if task exists in the project
-	_, err = d.GetTask(projectID, taskID)
-
-	if err != nil {
-		return
-	}
-
-	_, err = d.selectAll(&output,
-		"select task_id, task, time, output from task__output where task_id=? order by time asc",
-		taskID)
+	err = global.GVA_DB.Where("task_id = ?", taskID).Order("time").Find(&output).Error
 	return
 }
