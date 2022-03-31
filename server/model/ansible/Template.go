@@ -80,7 +80,7 @@ type Template struct {
 	SuppressSuccessAlerts bool `db:"suppress_success_alerts" json:"suppress_success_alerts"`
 }
 
-func (m *Template) CreateTemplate(template Template) (Template, error) {
+func CreateTemplate(template Template) (Template, error) {
 	err := global.GVA_DB.Create(&template).Error
 	return template, err
 }
@@ -119,60 +119,6 @@ func (m *Template) UpdateTemplate(template Template) error {
 }
 
 func (m *Template) GetTemplates(projectID int, filter TemplateFilter, sortInverted bool, sortBy string) (templates []Template, err error) {
-
-	if filter.ViewID != nil {
-		q = q.Where("pt.view_id=?", *filter.ViewID)
-	}
-
-	if filter.BuildTemplateID != nil {
-		q = q.Where("pt.build_template_id=?", *filter.BuildTemplateID)
-		if filter.AutorunOnly {
-			q = q.Where("pt.autorun=true")
-		}
-	}
-
-	order := "ASC"
-	if params.SortInverted {
-		order = "DESC"
-	}
-
-	switch params.SortBy {
-	case "name", "playbook":
-		q = q.Where("pt.project_id=?", projectID).
-			OrderBy("pt." + params.SortBy + " " + order)
-	case "inventory":
-		q = q.LeftJoin("project__inventory pi ON (pt.inventory_id = pi.id)").
-			Where("pt.project_id=?", projectID).
-			OrderBy("pi.name " + order)
-	case "environment":
-		q = q.LeftJoin("project__environment pe ON (pt.environment_id = pe.id)").
-			Where("pt.project_id=?", projectID).
-			OrderBy("pe.name " + order)
-	case "repository":
-		q = q.LeftJoin("project__repository pr ON (pt.repository_id = pr.id)").
-			Where("pt.project_id=?", projectID).
-			OrderBy("pr.name " + order)
-	default:
-		q = q.Where("pt.project_id=?", projectID).
-			OrderBy("pt.name " + order)
-	}
-
-	query, args, err := q.ToSql()
-
-	if err != nil {
-		return
-	}
-
-	_, err = d.selectAll(&templates, query, args...)
-
-	if err != nil {
-		return
-	}
-
-	err = db.FillTemplates(d, templates)
-
-	return
-
 	db := global.GVA_DB.Model(&Template{})
 	if filter.ViewID != nil {
 		db = db.Where("view_id=?", *filter.ViewID)
@@ -180,7 +126,7 @@ func (m *Template) GetTemplates(projectID int, filter TemplateFilter, sortInvert
 	if filter.BuildTemplateID != nil {
 		db = db.Where("build_template_id=?", *filter.BuildTemplateID)
 		if filter.AutorunOnly {
-			db = db.Where("pt.autorun=true")
+			db = db.Where("autorun=true")
 		}
 	}
 	order := ""
@@ -208,14 +154,14 @@ func (m *Template) GetTemplates(projectID int, filter TemplateFilter, sortInvert
 			Order("name " + order)
 	}
 	err = db.Find(&templates).Error
-	if err!=nil {
+	if err != nil {
 		return
 	}
-	FillTemplates(, templates)
+	err = FillTemplates(templates)
 	return
 }
 
-func (d *SqlDb) GetTemplate(projectID int, templateID int) (template db.Template, err error) {
+func (m *Template) GetTemplate(projectID int, templateID int) (template Template, err error) {
 	err = d.selectOne(
 		&template,
 		"select * from project__template where project_id=? and id=?",
@@ -232,6 +178,11 @@ func (d *SqlDb) GetTemplate(projectID int, templateID int) (template db.Template
 
 	err = db.FillTemplate(d, &template)
 	return
+	err = global.GVA_DB.Where("project_id=? and id =?", projectID,templateID).First(&template).Error
+	if err!=nil {
+		return
+	}
+	FillTemplate()
 }
 
 func (d *SqlDb) DeleteTemplate(projectID int, templateID int) error {
@@ -261,7 +212,8 @@ func (tpl *Template) Validate() error {
 	return nil
 }
 
-func FillTemplates(t *Task, templates []Template) (err error) {
+func FillTemplates(templates []Template) (err error) {
+	t := &Task{}
 	for i := range templates {
 		tpl := &templates[i]
 		var tasks []TaskWithTpl
@@ -277,11 +229,10 @@ func FillTemplates(t *Task, templates []Template) (err error) {
 			tpl.LastTask = &tasks[0]
 		}
 	}
-
 	return
 }
 
-func FillTemplate(d Store, template *Template) (err error) {
+func FillTemplate(template *Template) (err error) {
 	if template.VaultKeyID != nil {
 		template.VaultKey, err = d.GetAccessKey(template.ProjectID, *template.VaultKeyID)
 	}

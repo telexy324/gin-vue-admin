@@ -80,7 +80,7 @@ type TaskOutput struct {
 	Output string    `gorm:"output" json:"output"`
 }
 
-func (m *Task) CreateTask(task Task) (Task, error) {
+func CreateTask(task Task) (Task, error) {
 	err := global.GVA_DB.Create(&task).Error
 	return task, err
 }
