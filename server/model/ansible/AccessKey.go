@@ -4,18 +4,16 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
-	"database/sql"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
+	"gorm.io/gorm"
 	"io"
 	"io/ioutil"
 	"math/big"
 	"os"
 	"strconv"
-
-	"github.com/ansible-semaphore/semaphore/util"
 )
 
 type AccessKeyType string
@@ -62,8 +60,8 @@ type SshKey struct {
 type AccessKeyRole int
 
 type ObjectReferrers struct {
-	Templates    []Template `json:"templates"`
-	Inventories  []Inventory `json:"inventories"`
+	Templates   []Template  `json:"templates"`
+	Inventories []Inventory `json:"inventories"`
 }
 
 const (
@@ -74,111 +72,91 @@ const (
 )
 
 func (m *AccessKey) GetAccessKey(projectID int, accessKeyID int) (key AccessKey, err error) {
-	err = global.GVA_DB.Where("project_id=? and id =?", projectID,accessKeyID).First(&key).Error
+	err = global.GVA_DB.Where("project_id=? and id =?", projectID, accessKeyID).First(&key).Error
 	return
 }
 
-func (m *AccessKey) GetAccessKeyRefs(projectID int, keyID int) (refs ObjectReferrers, error) {
-	t,s,i:=&Template{},&Schedule{},&Inventory{}
-	refs.Templates, err = d.getObjectRefsFrom(projectID, objectProps, objectID, db.TemplateProps)
-	if err != nil {
-		return
+//func (m *AccessKey) GetAccessKeyRefs(projectID int, keyID int) (refs ObjectReferrers, error) {
+//	t,s,i:=&Template{},&Schedule{},&Inventory{}
+//	refs.Templates, err = d.getObjectRefsFrom(projectID, objectProps, objectID, db.TemplateProps)
+//	if err != nil {
+//		return
+//	}
+//
+//	refs.Inventories, err = d.getObjectRefsFrom(projectID, objectProps, objectID, db.InventoryProps)
+//	if err != nil {
+//		return
+//	}
+//
+//	templates, err := d.getObjectRefsFrom(projectID, objectProps, objectID, db.ScheduleProps)
+//	if err != nil {
+//		return
+//	}
+//
+//	for _, st := range templates {
+//		exists := false
+//		for _, tpl := range refs.Templates {
+//			if tpl.ID == st.ID {
+//				exists = true
+//				break
+//			}
+//		}
+//		if exists {
+//			continue
+//		}
+//		refs.Templates = append(refs.Templates, st)
+//	}
+//
+//	return
+//}
+
+func (m *AccessKey) GetAccessKeys(projectID int, sortInverted bool, sortBy string) ([]AccessKey, error) {
+	var keys []AccessKey
+	db := global.GVA_DB.Model(&AccessKey{})
+	order := ""
+	if sortInverted {
+		order = "desc"
 	}
-
-	refs.Inventories, err = d.getObjectRefsFrom(projectID, objectProps, objectID, db.InventoryProps)
-	if err != nil {
-		return
-	}
-
-	templates, err := d.getObjectRefsFrom(projectID, objectProps, objectID, db.ScheduleProps)
-	if err != nil {
-		return
-	}
-
-	for _, st := range templates {
-		exists := false
-		for _, tpl := range refs.Templates {
-			if tpl.ID == st.ID {
-				exists = true
-				break
-			}
-		}
-		if exists {
-			continue
-		}
-		refs.Templates = append(refs.Templates, st)
-	}
-
-	return
-}
-
-func (d *SqlDb) GetAccessKeys(projectID int, params db.RetrieveQueryParams) ([]db.AccessKey, error) {
-	var keys []db.AccessKey
-	err := d.getObjects(projectID, db.AccessKeyProps, params, &keys)
+	db = db.Where("project_id=?", projectID).Order(sortBy + " " + order)
+	err := db.Find(&keys).Error
 	return keys, err
 }
 
-func (d *SqlDb) UpdateAccessKey(key db.AccessKey) error {
-	err := key.Validate(key.OverrideSecret)
+func (m *AccessKey) UpdateAccessKey(key AccessKey) error {
+	var oldKey AccessKey
+	upDateMap := make(map[string]interface{})
+	upDateMap["name"] = key.Name
+	upDateMap["secret"] = key.Secret
+	upDateMap["type"] = key.Type
 
-	if err != nil {
-		return err
-	}
-
-	err = key.SerializeSecret()
-
-	if err != nil {
-		return err
-	}
-
-	var res sql.Result
-
-	var args []interface{}
-	query := "update access_key set name=?"
-	args = append(args, key.Name)
-
-	if key.OverrideSecret {
-		query += ", type=?, secret=?"
-		args = append(args, key.Type)
-		args = append(args, key.Secret)
-	}
-
-	query += " where id=?"
-	args = append(args, key.ID)
-
-	query += " and project_id=?"
-	args = append(args, key.ProjectID)
-
-	res, err = d.exec(query, args...)
-
-	return validateMutationResult(res, err)
+	err := global.GVA_DB.Transaction(func(tx *gorm.DB) error {
+		db := tx.Where("id = ? and project_id = ?", key.ID, key.ProjectID).Find(&oldKey)
+		txErr := db.Updates(upDateMap).Error
+		if txErr != nil {
+			global.GVA_LOG.Debug(txErr.Error())
+			return txErr
+		}
+		return nil
+	})
+	return err
 }
 
-func (d *SqlDb) CreateAccessKey(key db.AccessKey) (newKey db.AccessKey, err error) {
+func CreateAccessKey(key AccessKey) (newKey AccessKey, err error) {
 	err = key.SerializeSecret()
 	if err != nil {
 		return
 	}
-
-	insertID, err := d.insert(
-		"id",
-		"insert into access_key (name, type, project_id, secret) values (?, ?, ?, ?)",
-		key.Name,
-		key.Type,
-		key.ProjectID,
-		key.Secret)
-
-	if err != nil {
-		return
-	}
-
-	newKey = key
-	newKey.ID = insertID
-	return
+	err = global.GVA_DB.Create(&key).Error
+	return key, err
 }
 
-func (d *SqlDb) DeleteAccessKey(projectID int, accessKeyID int) error {
-	return d.deleteObject(projectID, db.AccessKeyProps, accessKeyID)
+func (m *AccessKey) DeleteAccessKey(projectID int, accessKeyID int) error {
+	err := global.GVA_DB.Where("id = ? and project_id = ?", accessKeyID, projectID).First(&AccessKey{}).Error
+	if err != nil {
+		return err
+	}
+	var key AccessKey
+	return global.GVA_DB.Where("id = ? and project_id = ?", accessKeyID, projectID).First(&key).Delete(&key).Error
 }
 
 func (key *AccessKey) Install(usage AccessKeyRole) error {
@@ -267,7 +245,7 @@ func (key AccessKey) Destroy() error {
 
 // GetPath returns the location of the access key once written to disk
 func (key AccessKey) GetPath() string {
-	return util.Config.TmpPath + "/access_key_" + strconv.FormatInt(key.InstallationKey, 10)
+	return global.GVA_CONFIG.Ansible.TmpPath + "/access_key_" + strconv.FormatInt(key.InstallationKey, 10)
 }
 
 func (key AccessKey) Validate(validateSecretFields bool) error {
@@ -317,7 +295,7 @@ func (key *AccessKey) SerializeSecret() error {
 		return fmt.Errorf("invalid access token type")
 	}
 
-	encryptionString := util.Config.GetAccessKeyEncryption()
+	encryptionString := global.GVA_CONFIG.Ansible.GetAccessKeyEncryption()
 
 	if encryptionString == "" {
 		secret := base64.StdEncoding.EncodeToString(plaintext)
@@ -400,7 +378,7 @@ func (key *AccessKey) DeserializeSecret() error {
 		return err
 	}
 
-	encryptionString := util.Config.GetAccessKeyEncryption()
+	encryptionString := global.GVA_CONFIG.Ansible.GetAccessKeyEncryption()
 
 	if encryptionString == "" {
 		err = key.unmarshalAppropriateField(ciphertext)

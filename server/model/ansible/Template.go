@@ -1,7 +1,6 @@
 package ansible
 
 import (
-	"database/sql"
 	"encoding/json"
 	"errors"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
@@ -162,37 +161,26 @@ func (m *Template) GetTemplates(projectID int, filter TemplateFilter, sortInvert
 }
 
 func (m *Template) GetTemplate(projectID int, templateID int) (template Template, err error) {
-	err = d.selectOne(
-		&template,
-		"select * from project__template where project_id=? and id=?",
-		projectID,
-		templateID)
-
-	if err == sql.ErrNoRows {
-		err = db.ErrNotFound
-	}
-
+	err = global.GVA_DB.Where("project_id=? and id =?", projectID, templateID).First(&template).Error
 	if err != nil {
 		return
 	}
-
-	err = db.FillTemplate(d, &template)
+	err = FillTemplate(&template)
 	return
-	err = global.GVA_DB.Where("project_id=? and id =?", projectID,templateID).First(&template).Error
-	if err!=nil {
-		return
+}
+
+func (m *Template) DeleteTemplate(projectID int, templateID int) error {
+	err := global.GVA_DB.Where("id = ? and project_id = ?", templateID, projectID).First(&Template{}).Error
+	if err != nil {
+		return err
 	}
-	FillTemplate()
+	var template Template
+	return global.GVA_DB.Where("id = ? and project_id = ?", templateID, projectID).First(&template).Delete(&template).Error
 }
 
-func (d *SqlDb) DeleteTemplate(projectID int, templateID int) error {
-	_, err := d.exec("delete from project__template where project_id=? and id=?", projectID, templateID)
-	return err
-}
-
-func (d *SqlDb) GetTemplateRefs(projectID int, templateID int) (db.ObjectReferrers, error) {
-	return d.getObjectRefs(projectID, db.TemplateProps, templateID)
-}
+//func (d *SqlDb) GetTemplateRefs(projectID int, templateID int) (db.ObjectReferrers, error) {
+//	return d.getObjectRefs(projectID, db.TemplateProps, templateID)
+//}
 
 func (tpl *Template) Validate() error {
 	if tpl.Name == "" {
@@ -233,15 +221,16 @@ func FillTemplates(templates []Template) (err error) {
 }
 
 func FillTemplate(template *Template) (err error) {
+	k := &AccessKey{}
 	if template.VaultKeyID != nil {
-		template.VaultKey, err = d.GetAccessKey(template.ProjectID, *template.VaultKeyID)
+		template.VaultKey, err = k.GetAccessKey(template.ProjectID, *template.VaultKeyID)
 	}
 
 	if err != nil {
 		return
 	}
 
-	err = FillTemplates(d, []Template{*template})
+	err = FillTemplates([]Template{*template})
 
 	if err != nil {
 		return
