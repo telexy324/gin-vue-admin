@@ -2,9 +2,7 @@ package ansible
 
 import (
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/system"
-	"gorm.io/gorm"
 	"time"
 )
 
@@ -78,112 +76,4 @@ type TaskOutput struct {
 	Task   string    `gorm:"task" json:"task"`
 	Time   time.Time `gorm:"time" json:"time"`
 	Output string    `gorm:"output" json:"output"`
-}
-
-func CreateTask(task Task) (Task, error) {
-	err := global.GVA_DB.Create(&task).Error
-	return task, err
-}
-
-func (m *Task) UpdateTask(task Task) error {
-	var oldTask Task
-	upDateMap := make(map[string]interface{})
-	upDateMap["status"] = task.Status
-	upDateMap["start"] = task.Start
-	upDateMap["end"] = task.End
-
-	err := global.GVA_DB.Transaction(func(tx *gorm.DB) error {
-		db := tx.Where("id = ?", task.ID).Find(&oldTask)
-		txErr := db.Updates(upDateMap).Error
-		if txErr != nil {
-			global.GVA_LOG.Debug(txErr.Error())
-			return txErr
-		}
-		return nil
-	})
-	return err
-}
-
-func (m *TaskOutput) CreateTaskOutput(output TaskOutput) (TaskOutput, error) {
-	err := global.GVA_DB.Create(&output).Error
-	return output, err
-}
-
-func (m *Task) getTasks(projectID int, templateID *int, info request.PageInfo) (err error, list interface{}, total int64) {
-	limit := info.PageSize
-	offset := info.PageSize * (info.Page - 1)
-	db := global.GVA_DB.Preload("User")
-	if templateID == nil {
-		db = db.Preload("Template", "project_id=?", projectID)
-	} else {
-		db = db.Preload("Template", "project_id=?", projectID).Where("template_id=?", templateID)
-	}
-	db.Order("created desc, id desc")
-	err = db.Count(&total).Error
-	if err != nil {
-		return
-	}
-	var Tasks []Task
-	var TaskWithTpls []TaskWithTpl
-	err = db.Limit(limit).Offset(offset).Find(&Tasks).Error
-
-	for _, task := range Tasks {
-		taskWithTpl := TaskWithTpl{
-			Task:             task,
-			TemplatePlaybook: task.Template.Playbook,
-			TemplateAlias:    task.Template.Name,
-			TemplateType:     task.Template.Type,
-			UserName:         &task.User.Username,
-		}
-		TaskWithTpls = append(TaskWithTpls, taskWithTpl)
-	}
-	return err, TaskWithTpls, total
-}
-
-func (m *Task) GetTask(projectID int, taskID int) (task Task, err error) {
-	err = global.GVA_DB.Preload("Template", "project_id=?", projectID).
-		Where("id = ?", taskID).First(&task).Error
-	return
-}
-
-func (m *Task) GetTemplateTasks(projectID int, templateID int, info request.PageInfo) (err error, list interface{}, total int64) {
-	return m.getTasks(projectID, &templateID, info)
-}
-
-func (m *Task) GetProjectTasks(projectID int, info request.PageInfo) (err error, list interface{}, total int64) {
-	return m.getTasks(projectID, nil, info)
-}
-
-func (m *Task) DeleteTaskWithOutputs(projectID int, taskID int) (err error) {
-	// check if task exists in the project
-	_, err = m.GetTask(projectID, taskID)
-	if err != nil {
-		return
-	}
-	var task Task
-	var taskOutputs []TaskOutput
-	err = global.GVA_DB.Transaction(func(tx *gorm.DB) error {
-		txErr := tx.Where("task_id = ?", taskID).Find(&taskOutputs).Delete(&taskOutputs).Error
-		if txErr != nil {
-			return txErr
-		}
-		txErr = tx.Where("id = ?", taskID).Find(&task).Delete(&task).Error
-		if txErr != nil {
-			return txErr
-		}
-		return nil
-	})
-	return
-}
-
-func (m *TaskOutput) GetTaskOutputs(projectID int, taskID int) (output []TaskOutput, err error) {
-	var task *Task
-	// check if task exists in the project
-	_, err = task.GetTask(projectID, taskID)
-	if err != nil {
-		return
-	}
-
-	err = global.GVA_DB.Where("task_id = ?", taskID).Order("time").Find(&output).Error
-	return
 }
