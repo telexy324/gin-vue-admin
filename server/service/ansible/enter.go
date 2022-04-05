@@ -6,7 +6,6 @@ type ServiceGroup struct {
 	InventoryService
 	KeyService
 	ProjectService
-	ProjectsService
 	SchedulesService
 	TemplatesService
 	UserService
