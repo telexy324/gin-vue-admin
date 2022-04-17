@@ -10,6 +10,9 @@ import (
 	"github.com/gorilla/context"
 )
 
+type UsersApi struct {
+}
+
 // UserMiddleware ensures a user exists and loads it to the context
 func UserMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

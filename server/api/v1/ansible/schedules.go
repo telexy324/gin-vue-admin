@@ -10,6 +10,9 @@ import (
 	"strconv"
 )
 
+type SchedulesApi struct {
+}
+
 // SchedulesMiddleware ensures a template exists and loads it to the context
 func SchedulesMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

@@ -21,4 +21,5 @@ var (
 	AdminVerify            = Rules{"Name": {NotEmpty()}, "Mobile": {NotEmpty()}, "DepartmentId": {NotEmpty()}}
 	SystemVerify           = Rules{"Name": {NotEmpty()}}
 	AppVerify              = Rules{"Name": {NotEmpty()}}
+	EnvironmentVerify      = Rules{"Name": {NotEmpty()}}
 )

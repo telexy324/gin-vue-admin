@@ -10,6 +10,9 @@ import (
 	"strconv"
 )
 
+type TasksApi struct {
+}
+
 // AddTask inserts a task into the database and returns a header or returns error
 func AddTask(w http.ResponseWriter, r *http.Request) {
 	project := context.Get(r, "project").(db.Project)

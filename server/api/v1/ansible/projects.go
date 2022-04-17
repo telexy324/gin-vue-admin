@@ -9,6 +9,9 @@ import (
 	"github.com/gorilla/context"
 )
 
+type ProjectsApi struct {
+}
+
 // GetProjects returns all projects in this users context
 func GetProjects(w http.ResponseWriter, r *http.Request) {
 	user := context.Get(r, "user").(*db.User)

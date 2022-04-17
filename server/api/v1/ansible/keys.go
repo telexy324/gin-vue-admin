@@ -9,6 +9,9 @@ import (
 	"github.com/gorilla/context"
 )
 
+type KeysApi struct {
+}
+
 // KeyMiddleware ensures a key exists and loads it to the context
 func KeyMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

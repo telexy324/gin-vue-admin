@@ -13,6 +13,9 @@ import (
 	"github.com/gorilla/context"
 )
 
+type InventoryApi struct {
+}
+
 // InventoryMiddleware ensures an inventory exists and loads it to the context
 func InventoryMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

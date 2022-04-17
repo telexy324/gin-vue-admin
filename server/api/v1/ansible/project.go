@@ -8,6 +8,9 @@ import (
 	"github.com/gorilla/context"
 )
 
+type ProjectApi struct {
+}
+
 // ProjectMiddleware ensures a project exists and loads it to the context
 func ProjectMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
