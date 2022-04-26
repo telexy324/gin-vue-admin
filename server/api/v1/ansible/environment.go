@@ -7,7 +7,8 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/ansible"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/application"
-	request2 "github.com/flipped-aurora/gin-vue-admin/server/model/application/request"
+	request2 "github.com/flipped-aurora/gin-vue-admin/server/model/ansible/request"
+	ansibleRes "github.com/flipped-aurora/gin-vue-admin/server/model/ansible/response"
 	applicationRes "github.com/flipped-aurora/gin-vue-admin/server/model/application/response"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/response"
@@ -54,36 +55,6 @@ func GetEnvironment(w http.ResponseWriter, r *http.Request) {
 	helpers.WriteJSON(w, http.StatusOK, env)
 }
 
-// UpdateEnvironment updates an existing environment in the database
-func UpdateEnvironment(w http.ResponseWriter, r *http.Request) {
-	oldEnv := context.Get(r, "environment").(db.Environment)
-	var env db.Environment
-	if !helpers.Bind(w, r, &env) {
-		return
-	}
-
-	if env.ID != oldEnv.ID {
-		helpers.WriteJSON(w, http.StatusBadRequest, map[string]string{
-			"error": "Environment ID in body and URL must be the same",
-		})
-		return
-	}
-
-	if env.ProjectID != oldEnv.ProjectID {
-		helpers.WriteJSON(w, http.StatusBadRequest, map[string]string{
-			"error": "Project ID in body and URL must be the same",
-		})
-		return
-	}
-
-	if err := helpers.Store(r).UpdateEnvironment(env); err != nil {
-		helpers.WriteError(w, err)
-		return
-	}
-
-	w.WriteHeader(http.StatusNoContent)
-}
-
 // @Tags Environment
 // @Summary 新增Environment
 // @Security ApiKeyAuth
@@ -103,7 +74,7 @@ func (a *EnvironmentApi) AddEnvironment(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if _,err := environmentService.CreateEnvironment(environment); err != nil {
+	if _, err := environmentService.CreateEnvironment(environment); err != nil {
 		global.GVA_LOG.Error("添加失败!", zap.Any("err", err))
 
 		response.FailWithMessage("添加失败", c)
@@ -112,42 +83,7 @@ func (a *EnvironmentApi) AddEnvironment(c *gin.Context) {
 	}
 }
 
-// RemoveEnvironment deletes an environment from the database
-func RemoveEnvironment(w http.ResponseWriter, r *http.Request) {
-	env := context.Get(r, "environment").(db.Environment)
-
-	var err error
-
-	err = helpers.Store(r).DeleteEnvironment(env.ProjectID, env.ID)
-	if err == db.ErrInvalidOperation {
-		helpers.WriteJSON(w, http.StatusBadRequest, map[string]interface{}{
-			"error": "Environment is in use by one or more templates",
-			"inUse": true,
-		})
-		return
-	}
-
-	if err != nil {
-		helpers.WriteError(w, err)
-		return
-	}
-
-	user := context.Get(r, "user").(*db.User)
-
-	desc := "Environment " + env.Name + " deleted"
-	_, err = helpers.Store(r).CreateEvent(db.Event{
-		UserID:      &user.ID,
-		ProjectID:   &env.ProjectID,
-		Description: &desc,
-	})
-
-	if err != nil {
-		log.Error(err)
-	}
-
-	w.WriteHeader(http.StatusNoContent)
-}
-// @Tags Staff
+// @Tags Environment
 // @Summary 删除Environment
 // @Security ApiKeyAuth
 // @accept application/json
@@ -156,7 +92,7 @@ func RemoveEnvironment(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"删除成功"}"
 // @Router /ansible/environment/deleteEnvironment [post]
 func (a *EnvironmentApi) DeleteEnvironment(c *gin.Context) {
-	var environment request.GetById
+	var environment request2.GetByProjectId
 	if err := c.ShouldBindJSON(&environment); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
@@ -166,7 +102,7 @@ func (a *EnvironmentApi) DeleteEnvironment(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err := environmentService.DeleteEnvironment(admin.ID); err != nil {
+	if err := environmentService.DeleteEnvironment(environment.ProjectId,environment.ID); err != nil {
 		global.GVA_LOG.Error("删除失败!", zap.Any("err", err))
 		response.FailWithMessage("删除失败", c)
 	} else {
@@ -175,80 +111,25 @@ func (a *EnvironmentApi) DeleteEnvironment(c *gin.Context) {
 }
 
 // @Tags Environment
-// @Summary 新增Environment
+// @Summary 更新Environment
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body ansible.Environment true ""
-// @Success 200 {string} string "{"success":true,"data":{},"msg":"添加成功"}"
-// @Router /ansible/environment/addEnvironment [post]
-func (a *EnvironmentApi) AddEnvironment(c *gin.Context) {
-	var admin application.Admin
-	if err := c.ShouldBindJSON(&admin); err != nil {
-		global.GVA_LOG.Info("error", zap.Any("err", err))
-		response.FailWithMessage(err.Error(), c)
-		return
-	}
-	if err := utils.Verify(admin, utils.ServerVerify); err != nil {
-		response.FailWithMessage(err.Error(), c)
-		return
-	}
-	if err := staffService.AddAdmin(admin); err != nil {
-		global.GVA_LOG.Error("添加失败!", zap.Any("err", err))
-
-		response.FailWithMessage("添加失败", c)
-	} else {
-		response.OkWithMessage("添加成功", c)
-	}
-}
-
-// @Tags Staff
-// @Summary 删除管理员
-// @Security ApiKeyAuth
-// @accept application/json
-// @Produce application/json
-// @Param data body request.GetById true "服务器id"
-// @Success 200 {string} string "{"success":true,"data":{},"msg":"删除成功"}"
-// @Router /cmdb/deleteAdmin [post]
-func (a *StaffApi) DeleteAdmin(c *gin.Context) {
-	var admin request.GetById
-	if err := c.ShouldBindJSON(&admin); err != nil {
-		global.GVA_LOG.Info("error", zap.Any("err", err))
-		response.FailWithMessage(err.Error(), c)
-		return
-	}
-	if err := utils.Verify(admin, utils.IdVerify); err != nil {
-		response.FailWithMessage(err.Error(), c)
-		return
-	}
-	if err := staffService.DeleteAdmin(admin.ID); err != nil {
-		global.GVA_LOG.Error("删除失败!", zap.Any("err", err))
-		response.FailWithMessage("删除失败", c)
-	} else {
-		response.OkWithMessage("删除成功", c)
-	}
-}
-
-// @Tags Staff
-// @Summary 更新管理员
-// @Security ApiKeyAuth
-// @accept application/json
-// @Produce application/json
-// @Param data body application.Admin true "主机名, 架构, 管理ip, 系统, 系统版本"
+// @Param data body ansible.Environment true "主机名, 架构, 管理ip, 系统, 系统版本"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"更新成功"}"
-// @Router /cmdb/updateAdmin [post]
-func (a *StaffApi) UpdateAdmin(c *gin.Context) {
-	var admin application.Admin
-	if err := c.ShouldBindJSON(&admin); err != nil {
+// @Router /ansible/environment/updateEnvironment [post]
+func (a *EnvironmentApi) UpdateEnvironment(c *gin.Context) {
+	var environment ansible.Environment
+	if err := c.ShouldBindJSON(&environment); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err := utils.Verify(admin, utils.AdminVerify); err != nil {
+	if err := utils.Verify(environment, utils.EnvironmentVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err := staffService.UpdateAdmin(admin); err != nil {
+	if err := environmentService.UpdateEnvironment(environment); err != nil {
 		global.GVA_LOG.Error("更新失败!", zap.Any("err", err))
 		response.FailWithMessage("更新失败", c)
 	} else {
@@ -256,16 +137,16 @@ func (a *StaffApi) UpdateAdmin(c *gin.Context) {
 	}
 }
 
-// @Tags Staff
-// @Summary 根据id获取管理员
+// @Tags Environment
+// @Summary 根据id获取Environment
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body request.GetById true "管理员id"
+// @Param data body request2.GetByProjectId true "Environmentid"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /cmdb/getAdminById [post]
-func (a *StaffApi) GetAdminById(c *gin.Context) {
-	var idInfo request.GetById
+// @Router /ansible/environment/getEnvironmentById [post]
+func (a *EnvironmentApi) GetEnvironmentById(c *gin.Context) {
+	var idInfo request2.GetByProjectId
 	if err := c.ShouldBindJSON(&idInfo); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
@@ -275,26 +156,26 @@ func (a *StaffApi) GetAdminById(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err, admin := staffService.GetAdminById(idInfo.ID); err != nil {
+	if environment,err := environmentService.GetEnvironment(idInfo.ProjectId,idInfo.ID); err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 		response.FailWithMessage("获取失败", c)
 	} else {
-		response.OkWithDetailed(applicationRes.AdminResponse{
-			Admin: admin,
+		response.OkWithDetailed(ansibleRes.EnvironmentResponse{
+			Environment: environment,
 		}, "获取成功", c)
 	}
 }
 
-// @Tags Staff
-// @Summary 分页获取基础admin列表
+// @Tags Environment
+// @Summary 分页获取基础Environment列表
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body request.PageInfo true "页码, 每页大小"
+// @Param data body request2.GetByProjectId true "页码, 每页大小"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /cmdb/getAdminList [post]
-func (a *StaffApi) GetAdminList(c *gin.Context) {
-	var pageInfo request2.AdminSearch
+// @Router /ansible/environment/getEnvironmentList[post]
+func (a *EnvironmentApi) GetEnvironmentList(c *gin.Context) {
+	var pageInfo request2.GetByProjectId
 	if err := c.ShouldBindJSON(&pageInfo); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
@@ -304,7 +185,7 @@ func (a *StaffApi) GetAdminList(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err, adminList, total := staffService.GetAdminList(pageInfo); err != nil {
+	if err, adminList, total := environmentService.GetEnvironments(pageInfo); err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 		response.FailWithMessage("获取失败", c)
 	} else {

@@ -11,7 +11,7 @@ type EnvironmentService struct {
 
 var EnvironmentServiceApp = new(EnvironmentService)
 
-func (environmentService *EnvironmentService) GetEnvironment(projectID int, environmentID int) (ansible.Environment, error) {
+func (environmentService *EnvironmentService) GetEnvironment(projectID float64, environmentID float64) (ansible.Environment, error) {
 	var environment ansible.Environment
 	err := global.GVA_DB.Where("project_id=? and id =?", projectID, environmentID).First(&environment).Error
 	return environment, err
@@ -21,7 +21,7 @@ func (environmentService *EnvironmentService) GetEnvironment(projectID int, envi
 //	return d.getObjectRefs(projectID, db.EnvironmentProps, environmentID)
 //}
 
-func (environmentService *EnvironmentService) GetEnvironments(projectID int, sortInverted bool, sortBy string) ([]ansible.Environment, error) {
+func (environmentService *EnvironmentService) GetEnvironments(projectID float64, sortInverted bool, sortBy string) ([]ansible.Environment, error) {
 	var environments []ansible.Environment
 	db := global.GVA_DB.Model(&ansible.Environment{})
 	order := ""
@@ -64,7 +64,7 @@ func (environmentService *EnvironmentService) CreateEnvironment(env ansible.Envi
 	return env, err
 }
 
-func (environmentService *EnvironmentService) DeleteEnvironment(projectID int, environmentID int) error {
+func (environmentService *EnvironmentService) DeleteEnvironment(projectID float64, environmentID float64) error {
 	err := global.GVA_DB.Where("id = ? and project_id = ?", environmentID, projectID).First(&ansible.Environment{}).Error
 	if err != nil {
 		return err
