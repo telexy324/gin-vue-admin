@@ -1,23 +1,14 @@
 package ansible
 
 import (
-	log "github.com/Sirupsen/logrus"
-	"github.com/ansible-semaphore/semaphore/api/helpers"
-	"github.com/ansible-semaphore/semaphore/db"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/ansible"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/application"
 	request2 "github.com/flipped-aurora/gin-vue-admin/server/model/ansible/request"
 	ansibleRes "github.com/flipped-aurora/gin-vue-admin/server/model/ansible/response"
-	applicationRes "github.com/flipped-aurora/gin-vue-admin/server/model/application/response"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/response"
 	"github.com/flipped-aurora/gin-vue-admin/server/utils"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
-	"net/http"
-
-	"github.com/gorilla/context"
 )
 
 type EnvironmentApi struct {
@@ -33,27 +24,6 @@ type EnvironmentApi struct {
 //
 //	helpers.WriteJSON(w, http.StatusOK, refs)
 //}
-
-// GetEnvironment retrieves sorted environments from the database
-func GetEnvironment(w http.ResponseWriter, r *http.Request) {
-
-	// return single environment if request has environment ID
-	if environment := context.Get(r, "environment"); environment != nil {
-		helpers.WriteJSON(w, http.StatusOK, environment.(db.Environment))
-		return
-	}
-
-	project := context.Get(r, "project").(db.Project)
-
-	env, err := helpers.Store(r).GetEnvironments(project.ID, helpers.QueryParams(r.URL))
-
-	if err != nil {
-		helpers.WriteError(w, err)
-		return
-	}
-
-	helpers.WriteJSON(w, http.StatusOK, env)
-}
 
 // @Tags Environment
 // @Summary 新增Environment
@@ -102,7 +72,7 @@ func (a *EnvironmentApi) DeleteEnvironment(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err := environmentService.DeleteEnvironment(environment.ProjectId,environment.ID); err != nil {
+	if err := environmentService.DeleteEnvironment(environment.ProjectId, environment.ID); err != nil {
 		global.GVA_LOG.Error("删除失败!", zap.Any("err", err))
 		response.FailWithMessage("删除失败", c)
 	} else {
@@ -156,7 +126,7 @@ func (a *EnvironmentApi) GetEnvironmentById(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if environment,err := environmentService.GetEnvironment(idInfo.ProjectId,idInfo.ID); err != nil {
+	if environment, err := environmentService.GetEnvironment(idInfo.ProjectId, idInfo.ID); err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 		response.FailWithMessage("获取失败", c)
 	} else {
@@ -185,33 +155,15 @@ func (a *EnvironmentApi) GetEnvironmentList(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err, adminList, total := environmentService.GetEnvironments(pageInfo); err != nil {
+	if err, environments, total := environmentService.GetEnvironments(pageInfo); err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 		response.FailWithMessage("获取失败", c)
 	} else {
 		response.OkWithDetailed(response.PageResult{
-			List:     adminList,
+			List:     environments,
 			Total:    total,
 			Page:     pageInfo.Page,
 			PageSize: pageInfo.PageSize,
-		}, "获取成功", c)
-	}
-}
-
-// @Tags Staff
-// @Summary 获取所有部门
-// @Security ApiKeyAuth
-// @accept application/json
-// @Produce application/json
-// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /cmdb/getDepartmentAll [post]
-func (a *StaffApi) GetDepartmentAll(c *gin.Context) {
-	if err, departmentList := staffService.GetDepartmentAll(); err != nil {
-		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
-		response.FailWithMessage("获取失败", c)
-	} else {
-		response.OkWithDetailed(applicationRes.DepartmentsResponse{
-			Departments: departmentList,
 		}, "获取成功", c)
 	}
 }

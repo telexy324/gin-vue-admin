@@ -3,6 +3,7 @@ package ansible
 import (
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/ansible"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/ansible/request"
 	"gorm.io/gorm"
 )
 
@@ -21,16 +22,22 @@ func (environmentService *EnvironmentService) GetEnvironment(projectID float64, 
 //	return d.getObjectRefs(projectID, db.EnvironmentProps, environmentID)
 //}
 
-func (environmentService *EnvironmentService) GetEnvironments(projectID float64, sortInverted bool, sortBy string) ([]ansible.Environment, error) {
+func (environmentService *EnvironmentService) GetEnvironments(info request.GetByProjectId) (err error, list interface{}, total int64) {
+	limit := info.PageSize
+	offset := info.PageSize * (info.Page - 1)
 	var environments []ansible.Environment
 	db := global.GVA_DB.Model(&ansible.Environment{})
 	order := ""
-	if sortInverted {
+	if info.SortInverted {
 		order = "desc"
 	}
-	db = db.Where("project_id=?", projectID).Order(sortBy + " " + order)
-	err := db.Find(&environments).Error
-	return environments, err
+	db = db.Where("project_id=?", info.ProjectId).Order(info.SortBy + " " + order)
+	err = db.Count(&total).Error
+	if err != nil {
+		return
+	}
+	err = db.Limit(limit).Offset(offset).Find(&environments).Error
+	return err, environments, total
 }
 
 func (environmentService *EnvironmentService) UpdateEnvironment(env ansible.Environment) error {
