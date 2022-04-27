@@ -3,6 +3,7 @@ package ansible
 import (
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/ansible"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/ansible/request"
 	"gorm.io/gorm"
 )
 
@@ -27,7 +28,7 @@ func (inventoryService *InventoryService) FillInventory(inventory *ansible.Inven
 	return
 }
 
-func (inventoryService *InventoryService) GetInventory(projectID int, inventoryID int) (inventory ansible.Inventory, err error) {
+func (inventoryService *InventoryService) GetInventory(projectID float64, inventoryID float64) (inventory ansible.Inventory, err error) {
 	err = global.GVA_DB.Where("project_id=? and id =?", projectID, inventoryID).First(&inventory).Error
 	if err != nil {
 		return
@@ -36,23 +37,29 @@ func (inventoryService *InventoryService) GetInventory(projectID int, inventoryI
 	return
 }
 
-func (inventoryService *InventoryService) GetInventories(projectID int, sortInverted bool, sortBy string) ([]ansible.Inventory, error) {
+func (inventoryService *InventoryService) GetInventories(info request.GetByProjectId) (err error, list interface{}, total int64) {
+	limit := info.PageSize
+	offset := info.PageSize * (info.Page - 1)
 	var inventories []ansible.Inventory
 	db := global.GVA_DB.Model(&ansible.Inventory{})
 	order := ""
-	if sortInverted {
+	if info.SortInverted {
 		order = "desc"
 	}
-	db = db.Where("project_id=?", projectID).Order(sortBy + " " + order)
-	err := db.Find(&inventories).Error
-	return inventories, err
+	db = db.Where("project_id=?", info.ProjectId).Order(info.SortBy + " " + order)
+	err = db.Count(&total).Error
+	if err != nil {
+		return
+	}
+	err = db.Limit(limit).Offset(offset).Find(&inventories).Error
+	return err, inventories, total
 }
 
 //func (m *Inventory) GetInventoryRefs(projectID int, inventoryID int) (db.ObjectReferrers, error) {
 //	return d.getObjectRefs(projectID, db.InventoryProps, inventoryID)
 //}
 
-func (inventoryService *InventoryService) DeleteInventory(projectID int, inventoryID int) error {
+func (inventoryService *InventoryService) DeleteInventory(projectID float64, inventoryID float64) error {
 	err := global.GVA_DB.Where("id = ? and project_id = ?", inventoryID, projectID).First(&ansible.Inventory{}).Error
 	if err != nil {
 		return err

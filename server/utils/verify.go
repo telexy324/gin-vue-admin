@@ -22,4 +22,5 @@ var (
 	SystemVerify           = Rules{"Name": {NotEmpty()}}
 	AppVerify              = Rules{"Name": {NotEmpty()}}
 	EnvironmentVerify      = Rules{"Name": {NotEmpty()}}
+	InventoryVerify        = Rules{"Name": {NotEmpty()},"Type": {Le("1")}}
 )
