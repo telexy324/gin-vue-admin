@@ -1,5 +1,7 @@
 package utils
 
+import "github.com/flipped-aurora/gin-vue-admin/server/model/ansible"
+
 var (
 	IdVerify               = Rules{"ID": {NotEmpty()}}
 	ApiVerify              = Rules{"Path": {NotEmpty()}, "Description": {NotEmpty()}, "ApiGroup": {NotEmpty()}, "Method": {NotEmpty()}}
@@ -22,5 +24,5 @@ var (
 	SystemVerify           = Rules{"Name": {NotEmpty()}}
 	AppVerify              = Rules{"Name": {NotEmpty()}}
 	EnvironmentVerify      = Rules{"Name": {NotEmpty()}}
-	InventoryVerify        = Rules{"Name": {NotEmpty()},"Type": {Le("1")}}
+	InventoryVerify        = Rules{"Name": {NotEmpty()}, "Type": {RegexpMatch(ansible.InventoryFile + "|" + ansible.InventoryStatic)}}
 )

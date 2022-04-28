@@ -1,10 +1,14 @@
 package ansible
 
 import (
+	"errors"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/ansible"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/ansible/request"
 	"gorm.io/gorm"
+	"os"
+	"path/filepath"
+	"strings"
 )
 
 type InventoryService struct {
@@ -77,6 +81,17 @@ func (inventoryService *InventoryService) UpdateInventory(inventory ansible.Inve
 	upDateMap["inventory"] = inventory.Inventory
 	upDateMap["become_key_id"] = inventory.BecomeKeyID
 
+	switch inventory.Type {
+	case ansible.InventoryStatic:
+		break
+	case ansible.InventoryFile:
+		if !IsValidInventoryPath(inventory.Inventory) {
+			return errors.New("Inventory path is not valid!")
+		}
+	default:
+		return errors.New("Inventory type is not valid!")
+	}
+
 	err := global.GVA_DB.Transaction(func(tx *gorm.DB) error {
 		db := tx.Where("id = ? and project_id = ?", inventory.ID, inventory.ProjectID).Find(&oldInventory)
 		txErr := db.Updates(upDateMap).Error
@@ -92,4 +107,25 @@ func (inventoryService *InventoryService) UpdateInventory(inventory ansible.Inve
 func (inventoryService *InventoryService) CreateInventory(inventory ansible.Inventory) (newInventory ansible.Inventory, err error) {
 	err = global.GVA_DB.Create(&inventory).Error
 	return inventory, err
+}
+
+// IsValidInventoryPath tests a path to ensure it is below the cwd
+func IsValidInventoryPath(path string) bool {
+
+	currentPath, err := os.Getwd()
+	if err != nil {
+		return false
+	}
+
+	absPath, err := filepath.Abs(path)
+	if err != nil {
+		return false
+	}
+
+	relPath, err := filepath.Rel(currentPath, absPath)
+	if err != nil {
+		return false
+	}
+
+	return !strings.HasPrefix(relPath, "..")
 }

@@ -112,7 +112,7 @@ func (a *EnvironmentApi) UpdateEnvironment(c *gin.Context) {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body request2.GetByProjectId true "Environmentid"
+// @Param data body request2.GetByProjectId true "EnvironmentId"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
 // @Router /ansible/environment/getEnvironmentById [post]
 func (a *EnvironmentApi) GetEnvironmentById(c *gin.Context) {
