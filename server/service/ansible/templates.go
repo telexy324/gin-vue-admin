@@ -156,7 +156,7 @@ func (templateService *TemplatesService) FillTemplates(templates []ansible.Templ
 
 func (templateService *TemplatesService) FillTemplate(template *ansible.Template) (err error) {
 	if template.VaultKeyID != nil {
-		template.VaultKey, err = KeyServiceApp.GetAccessKey(template.ProjectID, *template.VaultKeyID)
+		template.VaultKey, err = KeyServiceApp.GetAccessKey(float64(template.ProjectID), float64(*template.VaultKeyID))
 	}
 
 	if err != nil {

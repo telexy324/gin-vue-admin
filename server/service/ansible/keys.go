@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/ansible"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/ansible/request"
 	"gorm.io/gorm"
 	"io"
 	"io/ioutil"
@@ -22,7 +23,7 @@ type KeyService struct {
 
 var KeyServiceApp = new(KeyService)
 
-func (keyService *KeyService) GetAccessKey(projectID int, accessKeyID int) (key ansible.AccessKey, err error) {
+func (keyService *KeyService) GetAccessKey(projectID float64, accessKeyID float64) (key ansible.AccessKey, err error) {
 	err = global.GVA_DB.Where("project_id=? and id =?", projectID, accessKeyID).First(&key).Error
 	return
 }
@@ -61,26 +62,36 @@ func (keyService *KeyService) GetAccessKey(projectID int, accessKeyID int) (key 
 //	return
 //}
 
-func (keyService *KeyService) GetAccessKeys(projectID int, sortInverted bool, sortBy string) ([]ansible.AccessKey, error) {
+func (keyService *KeyService) GetAccessKeys(info request.GetByProjectId) (err error, list interface{}, total int64) {
+	limit := info.PageSize
+	offset := info.PageSize * (info.Page - 1)
 	var keys []ansible.AccessKey
 	db := global.GVA_DB.Model(&ansible.AccessKey{})
 	order := ""
-	if sortInverted {
+	if info.SortInverted {
 		order = "desc"
 	}
-	db = db.Where("project_id=?", projectID).Order(sortBy + " " + order)
-	err := db.Find(&keys).Error
-	return keys, err
+	db = db.Where("project_id=?", info.ProjectId).Order(info.SortBy + " " + order)
+	err = db.Count(&total).Error
+	if err != nil {
+		return
+	}
+	err = db.Limit(limit).Offset(offset).Find(&keys).Error
+	return err, keys, total
 }
 
 func (keyService *KeyService) UpdateAccessKey(key ansible.AccessKey) error {
+	err := keyService.SerializeSecret(&key)
+	if err != nil {
+		return err
+	}
 	var oldKey ansible.AccessKey
 	upDateMap := make(map[string]interface{})
 	upDateMap["name"] = key.Name
 	upDateMap["secret"] = key.Secret
 	upDateMap["type"] = key.Type
 
-	err := global.GVA_DB.Transaction(func(tx *gorm.DB) error {
+	err = global.GVA_DB.Transaction(func(tx *gorm.DB) error {
 		db := tx.Where("id = ? and project_id = ?", key.ID, key.ProjectID).Find(&oldKey)
 		txErr := db.Updates(upDateMap).Error
 		if txErr != nil {
@@ -101,7 +112,7 @@ func (keyService *KeyService) CreateAccessKey(key *ansible.AccessKey) (newKey *a
 	return key, err
 }
 
-func (keyService *KeyService) DeleteAccessKey(projectID int, accessKeyID int) error {
+func (keyService *KeyService) DeleteAccessKey(projectID float64, accessKeyID float64) error {
 	err := global.GVA_DB.Where("id = ? and project_id = ?", accessKeyID, projectID).First(&ansible.AccessKey{}).Error
 	if err != nil {
 		return err

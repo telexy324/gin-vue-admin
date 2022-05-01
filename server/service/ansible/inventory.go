@@ -18,7 +18,7 @@ var InventoryServiceApp = new(InventoryService)
 
 func (inventoryService *InventoryService) FillInventory(inventory *ansible.Inventory) (err error) {
 	if inventory.SSHKeyID != nil {
-		inventory.SSHKey, err = KeyServiceApp.GetAccessKey(inventory.ProjectID, *inventory.SSHKeyID)
+		inventory.SSHKey, err = KeyServiceApp.GetAccessKey(float64(inventory.ProjectID), float64(*inventory.SSHKeyID))
 	}
 
 	if err != nil {
@@ -26,7 +26,7 @@ func (inventoryService *InventoryService) FillInventory(inventory *ansible.Inven
 	}
 
 	if inventory.BecomeKeyID != nil {
-		inventory.BecomeKey, err = KeyServiceApp.GetAccessKey(inventory.ProjectID, *inventory.BecomeKeyID)
+		inventory.BecomeKey, err = KeyServiceApp.GetAccessKey(float64(inventory.ProjectID), float64(*inventory.BecomeKeyID))
 	}
 
 	return
