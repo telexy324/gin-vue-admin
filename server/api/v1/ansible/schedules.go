@@ -13,27 +13,6 @@ import (
 type SchedulesApi struct {
 }
 
-// SchedulesMiddleware ensures a template exists and loads it to the context
-func SchedulesMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		project := context.Get(r, "project").(db.Project)
-		scheduleID, err := helpers.GetIntParam("schedule_id", w, r)
-		if err != nil { // not specified schedule_id
-			return
-		}
-
-		schedule, err := helpers.Store(r).GetSchedule(project.ID, scheduleID)
-
-		if err != nil {
-			helpers.WriteError(w, err)
-			return
-		}
-
-		context.Set(r, "schedule", schedule)
-		next.ServeHTTP(w, r)
-	})
-}
-
 func refreshSchedulePool(r *http.Request) {
 	pool := context.Get(r, "schedule_pool").(schedules.SchedulePool)
 	pool.Refresh()

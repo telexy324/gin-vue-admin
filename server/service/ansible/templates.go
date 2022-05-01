@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/ansible"
+	request2 "github.com/flipped-aurora/gin-vue-admin/server/model/ansible/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
 	"gorm.io/gorm"
 )
@@ -52,7 +53,10 @@ func (templateService *TemplatesService) UpdateTemplate(template ansible.Templat
 	return err
 }
 
-func (templateService *TemplatesService) GetTemplates(projectID int, filter ansible.TemplateFilter, sortInverted bool, sortBy string) (templates []ansible.Template, err error) {
+func (templateService *TemplatesService) GetTemplates(info request2.GetByProjectId, filter ansible.TemplateFilter) (err error, list interface{}, total int64) {
+	limit := info.PageSize
+	offset := info.PageSize * (info.Page - 1)
+	var templates []ansible.Template
 	db := global.GVA_DB.Model(&ansible.Template{})
 	if filter.ViewID != nil {
 		db = db.Where("view_id=?", *filter.ViewID)
@@ -64,30 +68,34 @@ func (templateService *TemplatesService) GetTemplates(projectID int, filter ansi
 		}
 	}
 	order := ""
-	if sortInverted {
+	if info.SortInverted {
 		order = "desc"
 	}
-	switch sortBy {
+	switch info.SortBy {
 	case "name", "playbook":
-		db = db.Where("project_id=?", projectID).
-			Order(sortBy + " " + order)
+		db = db.Where("project_id=?", info.ProjectId).
+			Order(info.SortBy + " " + order)
 	case "inventory":
 		db = db.Joins("left join project_inventory on inventory_id = project_inventory.id").
-			Where("project_id=?", projectID).
+			Where("project_id=?", info.ProjectId).
 			Order("project_inventory.name " + order)
 	case "environment":
 		db = db.Joins("project_environment on environment_id = environment.id)").
-			Where("project_id=?", projectID).
+			Where("project_id=?", info.ProjectId).
 			Order("project_environment.name " + order)
 	case "repository":
 		db = db.Joins("project_repository on repository_id = repository.id)").
-			Where("project_id=?", projectID).
+			Where("project_id=?", info.ProjectId).
 			Order("project_repository.name " + order)
 	default:
-		db = db.Where("project_id=?", projectID).
+		db = db.Where("project_id=?", info.ProjectId).
 			Order("name " + order)
 	}
-	err = db.Find(&templates).Error
+	err = db.Count(&total).Error
+	if err != nil {
+		return
+	}
+	err = db.Limit(limit).Offset(offset).Find(&templates).Error
 	if err != nil {
 		return
 	}
@@ -95,7 +103,7 @@ func (templateService *TemplatesService) GetTemplates(projectID int, filter ansi
 	return
 }
 
-func (templateService *TemplatesService) GetTemplate(projectID int, templateID int) (template ansible.Template, err error) {
+func (templateService *TemplatesService) GetTemplate(projectID float64, templateID float64) (template ansible.Template, err error) {
 	err = global.GVA_DB.Where("project_id=? and id =?", projectID, templateID).First(&template).Error
 	if err != nil {
 		return
@@ -104,7 +112,7 @@ func (templateService *TemplatesService) GetTemplate(projectID int, templateID i
 	return
 }
 
-func (templateService *TemplatesService) DeleteTemplate(projectID int, templateID int) error {
+func (templateService *TemplatesService) DeleteTemplate(projectID float64, templateID float64) error {
 	err := global.GVA_DB.Where("id = ? and project_id = ?", templateID, projectID).First(&ansible.Template{}).Error
 	if err != nil {
 		return err

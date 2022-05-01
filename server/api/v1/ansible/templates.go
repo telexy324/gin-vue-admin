@@ -1,181 +1,172 @@
 package ansible
 
 import (
-	log "github.com/Sirupsen/logrus"
-	"github.com/ansible-semaphore/semaphore/api/helpers"
-	"github.com/ansible-semaphore/semaphore/db"
-	"github.com/gorilla/context"
-	"net/http"
-	"strconv"
+	"github.com/flipped-aurora/gin-vue-admin/server/global"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/ansible"
+	request2 "github.com/flipped-aurora/gin-vue-admin/server/model/ansible/request"
+	ansibleRes "github.com/flipped-aurora/gin-vue-admin/server/model/ansible/response"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/common/response"
+	"github.com/flipped-aurora/gin-vue-admin/server/utils"
+	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 type TemplatesApi struct {
 }
 
-// TemplatesMiddleware ensures a template exists and loads it to the context
-func TemplatesMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		project := context.Get(r, "project").(db.Project)
-		templateID, err := helpers.GetIntParam("template_id", w, r)
-		if err != nil {
-			return
-		}
+//func GetTemplateRefs(w http.ResponseWriter, r *http.Request) {
+//	tpl := context.Get(r, "template").(db.Template)
+//	refs, err := helpers.Store(r).GetTemplateRefs(tpl.ProjectID, tpl.ID)
+//	if err != nil {
+//		helpers.WriteError(w, err)
+//		return
+//	}
+//
+//	helpers.WriteJSON(w, http.StatusOK, refs)
+//}
 
-		template, err := helpers.Store(r).GetTemplate(project.ID, templateID)
+// @Tags Template
+// @Summary 新增Template
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body ansible.Template true ""
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"添加成功"}"
+// @Router /ansible/template/addTemplate [post]
+func (a *TemplatesApi) AddTemplate(c *gin.Context) {
+	var template ansible.Template
+	if err := c.ShouldBindJSON(&template); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err := utils.Verify(template, utils.TemplateVerify); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if _, err := templateService.CreateTemplate(template); err != nil {
+		global.GVA_LOG.Error("添加失败!", zap.Any("err", err))
 
-		if err != nil {
-			helpers.WriteError(w, err)
-			return
-		}
-
-		context.Set(r, "template", template)
-		next.ServeHTTP(w, r)
-	})
+		response.FailWithMessage("添加失败", c)
+	} else {
+		response.OkWithMessage("添加成功", c)
+	}
 }
 
-// GetTemplate returns single template by ID
-func GetTemplate(w http.ResponseWriter, r *http.Request) {
-	template := context.Get(r, "template").(db.Template)
-	helpers.WriteJSON(w, http.StatusOK, template)
+// @Tags Template
+// @Summary 删除Template
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body request.GetById true "TemplateId"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"删除成功"}"
+// @Router /ansible/template/deleteTemplate [post]
+func (a *TemplatesApi) DeleteTemplate(c *gin.Context) {
+	var template request2.GetByProjectId
+	if err := c.ShouldBindJSON(&template); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err := utils.Verify(template, utils.IdVerify); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err := templateService.DeleteTemplate(template.ProjectId, template.ID); err != nil {
+		global.GVA_LOG.Error("删除失败!", zap.Any("err", err))
+		response.FailWithMessage("删除失败", c)
+	} else {
+		response.OkWithMessage("删除成功", c)
+	}
 }
 
-func GetTemplateRefs(w http.ResponseWriter, r *http.Request) {
-	tpl := context.Get(r, "template").(db.Template)
-	refs, err := helpers.Store(r).GetTemplateRefs(tpl.ProjectID, tpl.ID)
-	if err != nil {
-		helpers.WriteError(w, err)
+// @Tags Template
+// @Summary 更新Template
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body ansible.Template true "主机名, 架构, 管理ip, 系统, 系统版本"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"更新成功"}"
+// @Router /ansible/template/updateTemplate [post]
+func (a *TemplatesApi) UpdateTemplate(c *gin.Context) {
+	var template ansible.Template
+	if err := c.ShouldBindJSON(&template); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
 		return
 	}
-
-	helpers.WriteJSON(w, http.StatusOK, refs)
-}
-
-// GetTemplates returns all templates for a project in a sort order
-func GetTemplates(w http.ResponseWriter, r *http.Request) {
-	project := context.Get(r, "project").(db.Project)
-
-	templates, err := helpers.Store(r).GetTemplates(project.ID, db.TemplateFilter{}, helpers.QueryParams(r.URL))
-
-	if err != nil {
-		helpers.WriteError(w, err)
+	if err := utils.Verify(template, utils.TemplateVerify); err != nil {
+		response.FailWithMessage(err.Error(), c)
 		return
 	}
-
-	helpers.WriteJSON(w, http.StatusOK, templates)
-}
-
-// AddTemplate adds a template to the database
-func AddTemplate(w http.ResponseWriter, r *http.Request) {
-	project := context.Get(r, "project").(db.Project)
-
-	var template db.Template
-	if !helpers.Bind(w, r, &template) {
-		return
-	}
-
-	template.ProjectID = project.ID
-	template, err := helpers.Store(r).CreateTemplate(template)
-
-	if err != nil {
-		helpers.WriteError(w, err)
-		return
-	}
-
-	user := context.Get(r, "user").(*db.User)
-	objType := db.EventTemplate
-	desc := "Template ID " + strconv.Itoa(template.ID) + " created"
-
-	_, err = helpers.Store(r).CreateEvent(db.Event{
-		UserID:      &user.ID,
-		ProjectID:   &project.ID,
-		ObjectType:  &objType,
-		ObjectID:    &template.ID,
-		Description: &desc,
-	})
-
-	if err != nil {
-		log.Error(err)
-	}
-
-	helpers.WriteJSON(w, http.StatusCreated, template)
-}
-
-// UpdateTemplate writes a template to an existing key in the database
-func UpdateTemplate(w http.ResponseWriter, r *http.Request) {
-	oldTemplate := context.Get(r, "template").(db.Template)
-
-	var template db.Template
-	if !helpers.Bind(w, r, &template) {
-		return
-	}
-
-	// project ID and template ID in the body and the path must be the same
-
-	if template.ID != oldTemplate.ID {
-		helpers.WriteJSON(w, http.StatusBadRequest, map[string]string{
-			"error": "template id in URL and in body must be the same",
-		})
-		return
-	}
-
-	if template.ProjectID != oldTemplate.ProjectID {
-		helpers.WriteJSON(w, http.StatusBadRequest, map[string]string{
-			"error": "You can not move template to other project",
-		})
-		return
-	}
-
 	if template.Arguments != nil && *template.Arguments == "" {
 		template.Arguments = nil
 	}
-
-	err := helpers.Store(r).UpdateTemplate(template)
-	if err != nil {
-		helpers.WriteError(w, err)
-		return
+	if err := templateService.UpdateTemplate(template); err != nil {
+		global.GVA_LOG.Error("更新失败!", zap.Any("err", err))
+		response.FailWithMessage("更新失败", c)
+	} else {
+		response.OkWithMessage("更新成功", c)
 	}
-
-	user := context.Get(r, "user").(*db.User)
-
-	desc := "Template ID " + strconv.Itoa(template.ID) + " updated"
-	objType := db.EventTemplate
-
-	_, err = helpers.Store(r).CreateEvent(db.Event{
-		UserID:      &user.ID,
-		ProjectID:   &template.ProjectID,
-		Description: &desc,
-		ObjectID:    &template.ID,
-		ObjectType:  &objType,
-	})
-
-	if err != nil {
-		log.Error(err)
-	}
-
-	w.WriteHeader(http.StatusNoContent)
 }
 
-// RemoveTemplate deletes a template from the database
-func RemoveTemplate(w http.ResponseWriter, r *http.Request) {
-	tpl := context.Get(r, "template").(db.Template)
-
-	err := helpers.Store(r).DeleteTemplate(tpl.ProjectID, tpl.ID)
-	if err != nil {
-		helpers.WriteError(w, err)
+// @Tags Template
+// @Summary 根据id获取Template
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body request2.GetByProjectId true "TemplateId"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
+// @Router /ansible/template/getTemplateById [post]
+func (a *TemplatesApi) GetTemplateById(c *gin.Context) {
+	var idInfo request2.GetByProjectId
+	if err := c.ShouldBindJSON(&idInfo); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
 		return
 	}
-
-	user := context.Get(r, "user").(*db.User)
-	desc := "Template ID " + strconv.Itoa(tpl.ID) + " deleted"
-	_, err = helpers.Store(r).CreateEvent(db.Event{
-		UserID:      &user.ID,
-		ProjectID:   &tpl.ProjectID,
-		Description: &desc,
-	})
-
-	if err != nil {
-		log.Error(err)
+	if err := utils.Verify(idInfo, utils.IdVerify); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
 	}
+	if template, err := templateService.GetTemplate(idInfo.ProjectId, idInfo.ID); err != nil {
+		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
+		response.FailWithMessage("获取失败", c)
+	} else {
+		response.OkWithDetailed(ansibleRes.TemplateResponse{
+			Template: template,
+		}, "获取成功", c)
+	}
+}
 
-	w.WriteHeader(http.StatusNoContent)
+// @Tags Template
+// @Summary 分页获取基础Template列表
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body request2.GetByProjectId true "页码, 每页大小"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
+// @Router /ansible/template/getTemplateList[post]
+func (a *TemplatesApi) GetTemplateList(c *gin.Context) {
+	var pageInfo request2.GetByProjectId
+	if err := c.ShouldBindJSON(&pageInfo); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err := utils.Verify(pageInfo.PageInfo, utils.PageInfoVerify); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err, templates, total := templateService.GetTemplates(pageInfo, ansible.TemplateFilter{}); err != nil {
+		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
+		response.FailWithMessage("获取失败", c)
+	} else {
+		response.OkWithDetailed(response.PageResult{
+			List:     templates,
+			Total:    total,
+			Page:     pageInfo.Page,
+			PageSize: pageInfo.PageSize,
+		}, "获取成功", c)
+	}
 }

@@ -130,7 +130,7 @@ func (taskService *TaskService) GetIncomingVersion(task ansible.Task) *string {
 		return nil
 	}
 
-	tpl, err := TemplatesServiceApp.GetTemplate(task.ProjectID, buildTask.TemplateID)
+	tpl, err := TemplatesServiceApp.GetTemplate(float64(task.ProjectID), float64(buildTask.TemplateID))
 	if err != nil {
 		return nil
 	}
