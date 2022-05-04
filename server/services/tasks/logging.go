@@ -3,12 +3,12 @@ package tasks
 import (
 	"bufio"
 	"encoding/json"
+	"github.com/flipped-aurora/gin-vue-admin/server/global"
+	"go.uber.org/zap"
 	"os/exec"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
-	"github.com/ansible-semaphore/semaphore/api/sockets"
-	"github.com/ansible-semaphore/semaphore/util"
+	"github.com/flipped-aurora/gin-vue-admin/server/sockets"
 )
 
 func (t *TaskRunner) Log(msg string) {
@@ -23,7 +23,7 @@ func (t *TaskRunner) Log(msg string) {
 			"project_id": t.task.ProjectID,
 		})
 
-		util.LogPanic(err)
+		global.GVA_LOG.Panic(err.Error(), zap.Any("level", "Panic"))
 
 		sockets.Message(user, b)
 	}
@@ -59,7 +59,7 @@ func (t *TaskRunner) logPipe(reader *bufio.Reader) {
 
 	if err != nil && err.Error() != "EOF" {
 		//don't panic on this errors, sometimes it throw not dangerous "read |0: file already closed" error
-		util.LogWarningWithFields(err, log.Fields{"error": "Failed to read TaskRunner output"})
+		global.GVA_LOG.Panic(err.Error(), zap.Any("level", "Warning"), zap.Any("error", "Failed to read TaskRunner output"))
 	}
 
 }
@@ -75,6 +75,6 @@ func (t *TaskRunner) LogCmd(cmd *exec.Cmd) {
 func (t *TaskRunner) panicOnError(err error, msg string) {
 	if err != nil {
 		t.Log(msg)
-		util.LogPanicWithFields(err, log.Fields{"error": msg})
+		global.GVA_LOG.Panic(err.Error(), zap.Any("level", "Warning"))
 	}
 }

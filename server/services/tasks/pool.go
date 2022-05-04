@@ -2,6 +2,9 @@ package tasks
 
 import (
 	"github.com/ansible-semaphore/semaphore/db"
+	"github.com/flipped-aurora/gin-vue-admin/server/global"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/ansible"
+	"go.uber.org/zap"
 	"regexp"
 	"strconv"
 	"strings"
@@ -37,15 +40,13 @@ type TaskPool struct {
 	// logger channel used to putting log records to database.
 	logger chan logRecord
 
-	store db.Store
-
 	resourceLocker chan *resourceLock
 }
 
 func (p *TaskPool) GetTask(id int) (task *TaskRunner) {
 
 	for _, t := range p.queue {
-		if t.task.ID == id {
+		if int(t.task.ID) == id {
 			task = t
 			break
 		}
@@ -53,7 +54,7 @@ func (p *TaskPool) GetTask(id int) (task *TaskRunner) {
 
 	if task == nil {
 		for _, t := range p.runningTasks {
-			if t.task.ID == id {
+			if int(t.task.ID) == id {
 				task = t
 				break
 			}
@@ -87,40 +88,38 @@ func (p *TaskPool) Run() {
 					projTasks = make(map[int]*TaskRunner)
 					p.activeProj[t.task.ProjectID] = projTasks
 				}
-				projTasks[t.task.ID] = t
-				p.runningTasks[t.task.ID] = t
+				projTasks[int(t.task.ID)] = t
+				p.runningTasks[int(t.task.ID)] = t
 				continue
 			}
 
-			if p.activeProj[t.task.ProjectID] != nil && p.activeProj[t.task.ProjectID][t.task.ID] != nil {
-				delete(p.activeProj[t.task.ProjectID], t.task.ID)
+			if p.activeProj[t.task.ProjectID] != nil && p.activeProj[t.task.ProjectID][int(t.task.ID)] != nil {
+				delete(p.activeProj[t.task.ProjectID], int(t.task.ID))
 				if len(p.activeProj[t.task.ProjectID]) == 0 {
 					delete(p.activeProj, t.task.ProjectID)
 				}
 			}
 
-			delete(p.runningTasks, t.task.ID)
+			delete(p.runningTasks, int(t.task.ID))
 		}
 	}(p.resourceLocker)
 
 	for {
 		select {
 		case record := <-p.logger: // new log message which should be put to database
-			_, err := record.task.pool.store.CreateTaskOutput(db.TaskOutput{
-				TaskID: record.task.task.ID,
+			_, err := taskService.CreateTaskOutput(ansible.TaskOutput{
+				TaskID: int(record.task.task.ID),
 				Output: record.output,
 				Time:   record.time,
 			})
-
 			if err != nil {
-				log.Error(err)
+				global.GVA_LOG.Error(err.Error())
 			}
 		case task := <-p.register: // new task created by API or schedule
 			p.queue = append(p.queue, task)
-			log.Debug(task)
-			msg := "Task " + strconv.Itoa(task.task.ID) + " added to queue"
+			msg := "Task " + strconv.Itoa(int(task.task.ID)) + " added to queue"
 			task.Log(msg)
-			log.Info(msg)
+			global.GVA_LOG.Info(msg)
 			task.updateStatus()
 
 		case <-ticker.C: // timer 5 seconds
@@ -130,10 +129,10 @@ func (p *TaskPool) Run() {
 
 			//get TaskRunner from top of queue
 			t := p.queue[0]
-			if t.task.Status == db.TaskFailStatus {
+			if t.task.Status == ansible.TaskFailStatus {
 				//delete failed TaskRunner from queue
 				p.queue = p.queue[1:]
-				log.Info("Task " + strconv.Itoa(t.task.ID) + " removed from queue")
+				global.GVA_LOG.Info("Task " + strconv.Itoa(int(t.task.ID)) + " removed from queue")
 				continue
 			}
 			if p.blocks(t) {
@@ -141,7 +140,7 @@ func (p *TaskPool) Run() {
 				p.queue = append(p.queue[1:], t)
 				continue
 			}
-			log.Info("Set resource locker with TaskRunner " + strconv.Itoa(t.task.ID))
+			global.GVA_LOG.Info("Set resource locker with TaskRunner " + strconv.Itoa(int(t.task.ID)))
 			p.resourceLocker <- &resourceLock{lock: true, holder: t}
 			if !t.prepared {
 				go t.prepareRun()
@@ -149,14 +148,14 @@ func (p *TaskPool) Run() {
 			}
 			go t.run()
 			p.queue = p.queue[1:]
-			log.Info("Task " + strconv.Itoa(t.task.ID) + " removed from queue")
+			global.GVA_LOG.Info("Task " + strconv.Itoa(int(t.task.ID)) + " removed from queue")
 		}
 	}
 }
 
 func (p *TaskPool) blocks(t *TaskRunner) bool {
 
-	if len(p.runningTasks) >= util.Config.MaxParallelTasks {
+	if len(p.runningTasks) >= global.GVA_CONFIG.Ansible.MaxParallelTasks {
 		return true
 	}
 
@@ -170,30 +169,29 @@ func (p *TaskPool) blocks(t *TaskRunner) bool {
 		}
 	}
 
-	proj, err := p.store.GetProject(t.task.ProjectID)
+	proj, err := projectService.GetProject(t.task.ProjectID)
 
 	if err != nil {
-		log.Error(err)
+		global.GVA_LOG.Error(err.Error())
 		return false
 	}
 
 	return proj.MaxParallelTasks > 0 && len(p.activeProj[t.task.ProjectID]) >= proj.MaxParallelTasks
 }
 
-func CreateTaskPool(store db.Store) TaskPool {
+func CreateTaskPool() TaskPool {
 	return TaskPool{
 		queue:          make([]*TaskRunner, 0), // queue of waiting tasks
 		register:       make(chan *TaskRunner), // add TaskRunner to queue
 		activeProj:     make(map[int]map[int]*TaskRunner),
 		runningTasks:   make(map[int]*TaskRunner),   // working tasks
 		logger:         make(chan logRecord, 10000), // store log records to database
-		store:          store,
 		resourceLocker: make(chan *resourceLock),
 	}
 }
 
-func (p *TaskPool) StopTask(targetTask db.Task) error {
-	tsk := p.GetTask(targetTask.ID)
+func (p *TaskPool) StopTask(targetTask ansible.Task) error {
+	tsk := p.GetTask(int(targetTask.ID))
 	if tsk == nil { // task not active, but exists in database
 		tsk = &TaskRunner{
 			task: targetTask,
@@ -203,12 +201,12 @@ func (p *TaskPool) StopTask(targetTask db.Task) error {
 		if err != nil {
 			return err
 		}
-		tsk.setStatus(db.TaskStoppedStatus)
+		tsk.setStatus(ansible.TaskStoppedStatus)
 		tsk.createTaskEvent()
 	} else {
 		status := tsk.task.Status
-		tsk.setStatus(db.TaskStoppingStatus)
-		if status == db.TaskRunningStatus {
+		tsk.setStatus(ansible.TaskStoppingStatus)
+		if status == ansible.TaskRunningStatus {
 			if tsk.process == nil {
 				panic("running process can not be nil")
 			}
@@ -276,25 +274,25 @@ func getNextBuildVersion(startVersion string, currentVersion string) string {
 	return prefix + strconv.Itoa(newVer) + suffix
 }
 
-func (p *TaskPool) AddTask(taskObj db.Task, userID *int, projectID int) (newTask db.Task, err error) {
+func (p *TaskPool) AddTask(taskObj ansible.Task, userID *int, projectID int) (newTask ansible.Task, err error) {
 	taskObj.Created = time.Now()
-	taskObj.Status = db.TaskWaitingStatus
+	taskObj.Status = ansible.TaskWaitingStatus
 	taskObj.UserID = userID
 	taskObj.ProjectID = projectID
 
-	tpl, err := p.store.GetTemplate(projectID, taskObj.TemplateID)
+	tpl, err := templateService.GetTemplate(float64(projectID), float64(taskObj.TemplateID))
 	if err != nil {
 		return
 	}
 
-	err = taskObj.ValidateNewTask(tpl)
+	err = taskService.ValidateNewTask(tpl)
 	if err != nil {
 		return
 	}
 
-	if tpl.Type == db.TemplateBuild { // get next version for TaskRunner if it is a Build
-		var builds []db.TaskWithTpl
-		builds, err = p.store.GetTemplateTasks(tpl.ProjectID, tpl.ID, db.RetrieveQueryParams{Count: 1})
+	if tpl.Type == ansible.TemplateBuild { // get next version for TaskRunner if it is a Build
+		var builds []ansible.TaskWithTpl
+		builds, err = taskService.GetTemplateTasks(tpl.ProjectID, tpl.ID, db.RetrieveQueryParams{Count: 1})
 		if err != nil {
 			return
 		}
@@ -306,7 +304,7 @@ func (p *TaskPool) AddTask(taskObj db.Task, userID *int, projectID int) (newTask
 		}
 	}
 
-	newTask, err = p.store.CreateTask(taskObj)
+	newTask, err = taskService.CreateTask(taskObj)
 	if err != nil {
 		return
 	}
@@ -324,16 +322,6 @@ func (p *TaskPool) AddTask(taskObj db.Task, userID *int, projectID int) (newTask
 	}
 
 	p.register <- &taskRunner
-
-	objType := db.EventTask
-	desc := "Task ID " + strconv.Itoa(newTask.ID) + " queued for running"
-	_, err = p.store.CreateEvent(db.Event{
-		UserID:      userID,
-		ProjectID:   &projectID,
-		ObjectType:  &objType,
-		ObjectID:    &newTask.ID,
-		Description: &desc,
-	})
 
 	return
 }

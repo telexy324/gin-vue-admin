@@ -27,3 +27,8 @@ var (
 
 	BlackCache local_cache.Cache
 )
+
+func init() {
+	GVA_CONFIG.Ansible.TmpPath = "/tmp/semaphore"
+	GVA_CONFIG.Ansible.MaxParallelTasks = 10
+}

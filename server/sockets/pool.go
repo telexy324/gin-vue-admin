@@ -1,7 +1,5 @@
 package sockets
 
-import uuid "github.com/satori/go.uuid"
-
 // hub maintains the set of active connections and broadcasts messages to the
 // connections.
 type hub struct {
@@ -19,7 +17,7 @@ type hub struct {
 }
 
 type sendRequest struct {
-	userID uuid.UUID
+	userID int
 	msg    []byte
 }
 

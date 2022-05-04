@@ -5,7 +5,6 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/system"
 	"github.com/gin-gonic/gin"
-	uuid "github.com/satori/go.uuid"
 	"go.uber.org/zap"
 	"net/http"
 	"time"
@@ -39,29 +38,20 @@ const (
 type connection struct {
 	ws     *websocket.Conn
 	send   chan []byte
-	userID uuid.UUID
+	userID int
 }
 
 // readPump pumps messages from the websocket connection to the hub.
 func (c *connection) readPump() {
 	defer func() {
 		h.unregister <- c
-		err := c.ws.Close()
-		if err != nil {
-			global.GVA_LOG.Error("Error closing websocket", zap.Error(err))
-		}
+		global.GVA_LOG.Error(c.ws.Close().Error(), zap.Any("error", "Error closing websocket"))
 	}()
 
 	c.ws.SetReadLimit(maxMessageSize)
-	err := c.ws.SetReadDeadline(time.Now().Add(pongWait))
-	if err != nil {
-		global.GVA_LOG.Error("Socket state corrupt", zap.Error(err))
-	}
+	global.GVA_LOG.Error(c.ws.SetReadDeadline(time.Now().Add(pongWait)).Error(), zap.Any("error", "Socket state corrupt"))
 	c.ws.SetPongHandler(func(string) error {
-		err = c.ws.SetReadDeadline(time.Now().Add(pongWait))
-		if err != nil {
-			global.GVA_LOG.Error("Socket state corrupt", zap.Error(err))
-		}
+		global.GVA_LOG.Error(c.ws.SetReadDeadline(time.Now().Add(pongWait)).Error(), zap.Any("error", "Socket state corrupt"))
 		return nil
 	})
 
@@ -80,10 +70,7 @@ func (c *connection) readPump() {
 
 // write writes a message with the given message type and payload.
 func (c *connection) write(mt int, payload []byte) error {
-	err := c.ws.SetWriteDeadline(time.Now().Add(writeWait))
-	if err != nil {
-		global.GVA_LOG.Error("Socket state corrupt", zap.Error(err))
-	}
+	global.GVA_LOG.Error(c.ws.SetWriteDeadline(time.Now().Add(writeWait)).Error(), zap.Any("error", "Socket state corrupt"))
 	return c.ws.WriteMessage(mt, payload)
 }
 
@@ -130,7 +117,7 @@ func Handler(c *gin.Context) {
 	conn := &connection{
 		send:   make(chan []byte, 256),
 		ws:     ws,
-		userID: user.UUID,
+		userID: int(user.ID),
 	}
 
 	h.register <- conn
@@ -140,7 +127,7 @@ func Handler(c *gin.Context) {
 }
 
 // Message allows a message to be sent to the websockets, called in API task logging
-func Message(userID uuid.UUID, message []byte) {
+func Message(userID int, message []byte) {
 	h.broadcast <- &sendRequest{
 		userID: userID,
 		msg:    message,

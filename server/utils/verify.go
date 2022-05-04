@@ -27,4 +27,5 @@ var (
 	InventoryVerify        = Rules{"Name": {NotEmpty()}, "Type": {RegexpMatch(ansible.InventoryFile + "|" + ansible.InventoryStatic)}}
 	KeyVerify              = Rules{"Name": {NotEmpty()}}
 	TemplateVerify         = Rules{"Name": {NotEmpty()}}
+	ScheduleVerify         = Rules{"Name": {NotEmpty()}}
 )

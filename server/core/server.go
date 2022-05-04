@@ -2,6 +2,8 @@ package core
 
 import (
 	"fmt"
+	"github.com/flipped-aurora/gin-vue-admin/server/services/schedules"
+	"github.com/flipped-aurora/gin-vue-admin/server/services/tasks"
 	"github.com/flipped-aurora/gin-vue-admin/server/sockets"
 	"time"
 
@@ -46,5 +48,7 @@ func RunWindowsServer() {
 	如果项目让您获得了收益，希望您能请团队喝杯可乐:https://www.github.com/flipped-aurora/gin-vue-admin/server.com/docs/coffee
 `, address)
 	global.GVA_LOG.Error(s.ListenAndServe().Error())
+	taskPool := tasks.CreateTaskPool()
+	schedulePool := schedules.CreateSchedulePool(&taskPool)
 	go sockets.StartWS()
 }
