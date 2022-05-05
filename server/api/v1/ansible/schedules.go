@@ -213,11 +213,15 @@ func (a *SchedulesApi) AddSchedule(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
+	if !validateCronFormat(schedule.CronFormat, w) {
+		return
+	}
 	if _, err := scheduleService.CreateSchedule(schedule); err != nil {
 		global.GVA_LOG.Error("添加失败!", zap.Any("err", err))
 
 		response.FailWithMessage("添加失败", c)
 	} else {
+		refreshSchedulePool(r)
 		response.OkWithMessage("添加成功", c)
 	}
 }

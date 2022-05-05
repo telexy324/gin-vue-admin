@@ -3,7 +3,9 @@ package schedules
 import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/ansible-semaphore/semaphore/db"
-	"github.com/ansible-semaphore/semaphore/services/tasks"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/ansible"
+	"github.com/flipped-aurora/gin-vue-admin/server/services/tasks"
+	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/robfig/cron/v3"
 	"sync"
 )
@@ -15,13 +17,13 @@ type ScheduleRunner struct {
 }
 
 func (r ScheduleRunner) Run() {
-	schedule, err := r.pool.store.GetSchedule(r.projectID, r.scheduleID)
+	schedule, err := scheduleService.GetSchedule(r.projectID, r.scheduleID)
 	if err != nil {
-		log.Error(err)
+		global.GVA_LOG.Error(err.Error())
 		return
 	}
 
-	_, err = r.pool.taskPool.AddTask(db.Task{
+	_, err = r.pool.taskPool.AddTask(ansible.Task{
 		TemplateID: schedule.TemplateID,
 		ProjectID:  schedule.ProjectID,
 	}, nil, schedule.ProjectID)
@@ -34,7 +36,6 @@ func (r ScheduleRunner) Run() {
 type SchedulePool struct {
 	cron     *cron.Cron
 	locker   sync.Locker
-	store    db.Store
 	taskPool *tasks.TaskPool
 }
 
