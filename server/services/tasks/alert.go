@@ -2,13 +2,14 @@ package tasks
 
 import (
 	"bytes"
-	"github.com/ansible-semaphore/semaphore/db"
+	"github.com/flipped-aurora/gin-vue-admin/server/global"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/ansible"
+	"github.com/flipped-aurora/gin-vue-admin/server/utils/mail"
+	"go.uber.org/zap"
 	"html/template"
 	"net/http"
 	"strconv"
 	"strings"
-
-	"github.com/ansible-semaphore/semaphore/util"
 )
 
 const emailTemplate = `Subject: Task '{{ .Name }}' failed
@@ -31,52 +32,49 @@ type Alert struct {
 }
 
 func (t *TaskRunner) sendMailAlert() {
-	if !util.Config.EmailAlert || !t.alert {
+	if !global.GVA_CONFIG.Ansible.EmailAlert || !t.alert {
 		return
 	}
 
-	mailHost := util.Config.EmailHost + ":" + util.Config.EmailPort
+	mailHost := global.GVA_CONFIG.Ansible.EmailHost + ":" + global.GVA_CONFIG.Ansible.EmailPort
 
 	var mailBuffer bytes.Buffer
 	alert := Alert{
-		TaskID:  strconv.Itoa(t.task.ID),
+		TaskID:  strconv.Itoa(int(t.task.ID)),
 		Name:    t.template.Name,
-		TaskURL: util.Config.WebHost + "/project/" + strconv.Itoa(t.template.ProjectID),
+		TaskURL: global.GVA_CONFIG.Ansible.WebHost + "/project/" + strconv.Itoa(t.template.ProjectID),
 	}
 	tpl := template.New("mail body template")
 	tpl, err := tpl.Parse(emailTemplate)
-	util.LogError(err)
+	if err != nil {
+		global.GVA_LOG.Error(err.Error(), zap.Any("level", "Error"))
+	}
 
 	t.panicOnError(tpl.Execute(&mailBuffer, alert), "Can't generate alert template!")
 
 	for _, user := range t.users {
-		userObj, err := t.pool.store.GetUser(user)
+		err, userObj := systemUserService.FindUserById(user)
 
-		if !userObj.Alert {
-			return
-		}
-		t.panicOnError(err, "Can't find user Email!")
-
-		t.Log("Sending email to " + userObj.Email + " from " + util.Config.EmailSender)
-		if util.Config.EmailSecure {
-			err = util.SendSecureMail(util.Config.EmailHost, util.Config.EmailPort, util.Config.EmailSender, util.Config.EmailUsername, util.Config.EmailPassword, userObj.Email, mailBuffer)
+		t.Log("Sending email to " + userObj.Email + " from " + global.GVA_CONFIG.Ansible.EmailSender)
+		if global.GVA_CONFIG.Ansible.EmailSecure {
+			err = mail.SendSecureMail(global.GVA_CONFIG.Ansible.EmailHost, global.GVA_CONFIG.Ansible.EmailPort, global.GVA_CONFIG.Ansible.EmailSender, global.GVA_CONFIG.Ansible.EmailUsername, global.GVA_CONFIG.Ansible.EmailPassword, userObj.Email, mailBuffer)
 		} else {
-			err = util.SendMail(mailHost, util.Config.EmailSender, userObj.Email, mailBuffer)
+			err = mail.SendMail(mailHost, global.GVA_CONFIG.Ansible.EmailSender, userObj.Email, mailBuffer)
 		}
 		t.panicOnError(err, "Can't send email!")
 	}
 }
 
 func (t *TaskRunner) sendTelegramAlert() {
-	if !util.Config.TelegramAlert || !t.alert {
+	if !global.GVA_CONFIG.Ansible.TelegramAlert || !t.alert {
 		return
 	}
 
-	if t.template.SuppressSuccessAlerts && t.task.Status == db.TaskSuccessStatus {
+	if t.template.SuppressSuccessAlerts && t.task.Status == ansible.TaskSuccessStatus {
 		return
 	}
 
-	chatID := util.Config.TelegramChat
+	chatID := global.GVA_CONFIG.Ansible.TelegramChat
 	if t.alertChat != nil && *t.alertChat != "" {
 		chatID = *t.alertChat
 	}
@@ -99,17 +97,17 @@ func (t *TaskRunner) sendTelegramAlert() {
 
 	var author string
 	if t.task.UserID != nil {
-		user, err := t.pool.store.GetUser(*t.task.UserID)
+		err, user := systemUserService.FindUserById(*t.task.UserID)
 		if err != nil {
 			panic(err)
 		}
-		author = user.Name
+		author = user.Username
 	}
 
 	alert := Alert{
-		TaskID:          strconv.Itoa(t.task.ID),
+		TaskID:          strconv.Itoa(int(t.task.ID)),
 		Name:            t.template.Name,
-		TaskURL:         util.Config.WebHost + "/project/" + strconv.Itoa(t.template.ProjectID) + "/templates/" + strconv.Itoa(t.template.ID) + "?t=" + strconv.Itoa(t.task.ID),
+		TaskURL:         global.GVA_CONFIG.Ansible.WebHost + "/project/" + strconv.Itoa(t.template.ProjectID) + "/templates/" + strconv.Itoa(t.template.ID) + "?t=" + strconv.Itoa(int(t.task.ID)),
 		ChatID:          chatID,
 		TaskResult:      strings.ToUpper(string(t.task.Status)),
 		TaskVersion:     version,
@@ -131,7 +129,7 @@ func (t *TaskRunner) sendTelegramAlert() {
 		panic(err)
 	}
 
-	resp, err := http.Post("https://api.telegram.org/bot"+util.Config.TelegramToken+"/sendMessage", "application/json", &telegramBuffer)
+	resp, err := http.Post("https://api.telegram.org/bot"+global.GVA_CONFIG.Ansible.TelegramToken+"/sendMessage", "application/json", &telegramBuffer)
 
 	if err != nil {
 		t.Log("Can't send telegram alert! Response code not 200!")

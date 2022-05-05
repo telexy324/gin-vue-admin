@@ -202,7 +202,6 @@ func (p *TaskPool) StopTask(targetTask ansible.Task) error {
 			return err
 		}
 		tsk.setStatus(ansible.TaskStoppedStatus)
-		tsk.createTaskEvent()
 	} else {
 		status := tsk.task.Status
 		tsk.setStatus(ansible.TaskStoppingStatus)

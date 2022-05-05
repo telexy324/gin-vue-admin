@@ -10,3 +10,5 @@ var scheduleService = service.ServiceGroupApp.AnsibleServiceGroup.SchedulesServi
 var taskService = service.ServiceGroupApp.AnsibleServiceGroup.TaskService
 var templateService = service.ServiceGroupApp.AnsibleServiceGroup.TemplatesService
 var userService = service.ServiceGroupApp.AnsibleServiceGroup.UserService
+
+var systemUserService = service.ServiceGroupApp.SystemServiceGroup.UserService

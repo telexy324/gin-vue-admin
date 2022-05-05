@@ -4,7 +4,6 @@ import (
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
-	"github.com/ansible-semaphore/semaphore/lib"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/ansible"
 	request2 "github.com/flipped-aurora/gin-vue-admin/server/model/ansible/request"
@@ -350,7 +349,7 @@ func (t *TaskRunner) runPlaybook() (err error) {
 	return utils.AnsiblePlaybook{
 		Logger:     t,
 		TemplateID: t.template.ID,
-	}.RunPlaybook(args, func(p *os.Process) { t.process = p })
+	}.RunPlaybook(global.GVA_CONFIG.Ansible.TmpPath, args, func(p *os.Process) { t.process = p })
 }
 
 func (t *TaskRunner) getEnvironmentExtraVars() (str string, err error) {
@@ -370,8 +369,7 @@ func (t *TaskRunner) getEnvironmentExtraVars() (str string, err error) {
 	}
 
 	if t.task.UserID != nil {
-		var user ansible.User
-		user, err = t.pool.store.GetUser(*t.task.UserID)
+		err, user := systemUserService.FindUserById(*t.task.UserID)
 		if err == nil {
 			taskDetails["username"] = user.Username
 		}
@@ -379,7 +377,7 @@ func (t *TaskRunner) getEnvironmentExtraVars() (str string, err error) {
 
 	if t.template.Type != ansible.TemplateTask {
 		taskDetails["type"] = t.template.Type
-		incomingVersion := t.task.GetIncomingVersion(t.pool.store)
+		incomingVersion := taskService.GetIncomingVersion(t.task)
 		if incomingVersion != nil {
 			taskDetails["incoming_version"] = incomingVersion
 		}
@@ -427,13 +425,15 @@ func (t *TaskRunner) getPlaybookArgs() (args []string, err error) {
 	if t.inventory.SSHKeyID != nil {
 		switch t.inventory.SSHKey.Type {
 		case ansible.AccessKeySSH:
-			args = append(args, "--private-key="+t.inventory.SSHKey.GetPath())
+			path := keyService.GetPath(&t.inventory.SSHKey)
+			args = append(args, "--private-key="+path)
 			//args = append(args, "--extra-vars={\"ansible_ssh_private_key_file\": \""+t.inventory.SSHKey.GetPath()+"\"}")
 			if t.inventory.SSHKey.SshKey.Login != "" {
 				args = append(args, "--extra-vars={\"ansible_user\": \""+t.inventory.SSHKey.SshKey.Login+"\"}")
 			}
 		case ansible.AccessKeyLoginPassword:
-			args = append(args, "--extra-vars=@"+t.inventory.SSHKey.GetPath())
+			path := keyService.GetPath(&t.inventory.SSHKey)
+			args = append(args, "--extra-vars=@"+path)
 		case ansible.AccessKeyNone:
 		default:
 			err = fmt.Errorf("access key does not suite for inventory's user credentials")
@@ -444,7 +444,8 @@ func (t *TaskRunner) getPlaybookArgs() (args []string, err error) {
 	if t.inventory.BecomeKeyID != nil {
 		switch t.inventory.BecomeKey.Type {
 		case ansible.AccessKeyLoginPassword:
-			args = append(args, "--extra-vars=@"+t.inventory.BecomeKey.GetPath())
+			path := keyService.GetPath(&t.inventory.BecomeKey)
+			args = append(args, "--extra-vars=@"+path)
 		case ansible.AccessKeyNone:
 		default:
 			err = fmt.Errorf("access key does not suite for inventory's sudo user credentials")
@@ -461,7 +462,8 @@ func (t *TaskRunner) getPlaybookArgs() (args []string, err error) {
 	}
 
 	if t.template.VaultKeyID != nil {
-		args = append(args, "--vault-password-file", t.template.VaultKey.GetPath())
+		path := keyService.GetPath(&t.template.VaultKey)
+		args = append(args, "--vault-password-file", path)
 	}
 
 	extraVars, err := t.getEnvironmentExtraVars()

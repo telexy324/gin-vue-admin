@@ -1,29 +1,28 @@
 package tasks
 
 import (
-	"github.com/ansible-semaphore/semaphore/db"
+	"github.com/flipped-aurora/gin-vue-admin/server/global"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/ansible"
 	"io/ioutil"
 	"strconv"
-
-	"github.com/ansible-semaphore/semaphore/util"
 )
 
 func (t *TaskRunner) installInventory() (err error) {
 	if t.inventory.SSHKeyID != nil {
-		err = t.inventory.SSHKey.Install(db.AccessKeyRoleAnsibleUser)
+		err = keyService.Install(&t.inventory.SSHKey, ansible.AccessKeyRoleAnsibleUser)
 		if err != nil {
 			return
 		}
 	}
 
 	if t.inventory.BecomeKeyID != nil {
-		err = t.inventory.BecomeKey.Install(db.AccessKeyRoleAnsibleBecomeUser)
+		err = keyService.Install(&t.inventory.BecomeKey, ansible.AccessKeyRoleAnsibleBecomeUser)
 		if err != nil {
 			return
 		}
 	}
 
-	if t.inventory.Type == db.InventoryStatic {
+	if t.inventory.Type == ansible.InventoryStatic {
 		err = t.installStaticInventory()
 	}
 
@@ -34,5 +33,5 @@ func (t *TaskRunner) installStaticInventory() error {
 	t.Log("installing static inventory")
 
 	// create inventory file
-	return ioutil.WriteFile(util.Config.TmpPath+"/inventory_"+strconv.Itoa(t.task.ID), []byte(t.inventory.Inventory), 0664)
+	return ioutil.WriteFile(global.GVA_CONFIG.Ansible.TmpPath+"/inventory_"+strconv.Itoa(int(t.task.ID)), []byte(t.inventory.Inventory), 0664)
 }
