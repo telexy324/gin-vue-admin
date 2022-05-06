@@ -28,4 +28,5 @@ var (
 	KeyVerify              = Rules{"Name": {NotEmpty()}}
 	TemplateVerify         = Rules{"Name": {NotEmpty()}}
 	ScheduleVerify         = Rules{"Name": {NotEmpty()}}
+	TaskVerify             = Rules{"Name": {NotEmpty()}}
 )
