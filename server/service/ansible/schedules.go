@@ -17,7 +17,7 @@ func (schedulesService *SchedulesService) CreateSchedule(schedule ansible.Schedu
 }
 
 func (schedulesService *SchedulesService) SetScheduleLastCommitHash(projectID int, scheduleID int, lastCommentHash string) error {
-	oldSchedule, err := schedulesService.GetSchedule(projectID, scheduleID)
+	oldSchedule, err := schedulesService.GetSchedule(float64(projectID), float64(scheduleID))
 	if err != nil {
 		return err
 	}
@@ -44,12 +44,12 @@ func (schedulesService *SchedulesService) UpdateSchedule(schedule ansible.Schedu
 	return err
 }
 
-func (schedulesService *SchedulesService) GetSchedule(projectID int, scheduleID int) (template ansible.Schedule, err error) {
+func (schedulesService *SchedulesService) GetSchedule(projectID float64, scheduleID float64) (template ansible.Schedule, err error) {
 	err = global.GVA_DB.Where("project_id=? and id =?", projectID, scheduleID).First(&template).Error
 	return
 }
 
-func (schedulesService *SchedulesService) DeleteSchedule(projectID int, scheduleID int) error {
+func (schedulesService *SchedulesService) DeleteSchedule(projectID float64, scheduleID float64) error {
 	err := global.GVA_DB.Where("id = ? and project_id=? ", scheduleID, projectID).First(&ansible.Schedule{}).Error
 	if err != nil {
 		return err
@@ -63,7 +63,7 @@ func (schedulesService *SchedulesService) GetSchedules() (schedules []ansible.Sc
 	return
 }
 
-func (schedulesService *SchedulesService) GetTemplateSchedules(projectID int, templateID int) (schedules []ansible.Schedule, err error) {
+func (schedulesService *SchedulesService) GetTemplateSchedules(projectID float64, templateID float64) (schedules []ansible.Schedule, err error) {
 	err = global.GVA_DB.Where("project_id = ? and template_id=?", projectID, templateID).Find(&schedules).Error
 	return
 }

@@ -17,7 +17,7 @@ type ScheduleRunner struct {
 }
 
 func (r ScheduleRunner) Run() {
-	schedule, err := scheduleService.GetSchedule(r.projectID, r.scheduleID)
+	schedule, err := scheduleService.GetSchedule(float64(r.projectID), float64(r.scheduleID))
 	if err != nil {
 		global.GVA_LOG.Error(err.Error())
 		return
@@ -29,7 +29,7 @@ func (r ScheduleRunner) Run() {
 	}, nil, schedule.ProjectID)
 
 	if err != nil {
-		log.Error(err)
+		global.GVA_LOG.Error(err.Error())
 	}
 }
 
@@ -47,10 +47,10 @@ func (p *SchedulePool) init() {
 func (p *SchedulePool) Refresh() {
 	defer p.locker.Unlock()
 
-	schedules, err := p.store.GetSchedules()
+	schedules, err := scheduleService.GetSchedules()
 
 	if err != nil {
-		log.Error(err)
+		global.GVA_LOG.Error(err.Error())
 		return
 	}
 
@@ -63,7 +63,7 @@ func (p *SchedulePool) Refresh() {
 			pool:       p,
 		}, schedule.CronFormat)
 		if err != nil {
-			log.Error(err)
+			global.GVA_LOG.Error(err.Error())
 		}
 	}
 }
@@ -97,9 +97,8 @@ func (p *SchedulePool) Destroy() {
 	p.cron = nil
 }
 
-func CreateSchedulePool(store db.Store, taskPool *tasks.TaskPool) SchedulePool {
+func CreateSchedulePool(taskPool *tasks.TaskPool) SchedulePool {
 	pool := SchedulePool{
-		store:    store,
 		taskPool: taskPool,
 	}
 	pool.init()
