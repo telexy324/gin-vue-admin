@@ -1,10 +1,6 @@
 package ansible
 
 import (
-	log "github.com/Sirupsen/logrus"
-	"github.com/ansible-semaphore/semaphore/api/helpers"
-	"github.com/ansible-semaphore/semaphore/db"
-	"github.com/ansible-semaphore/semaphore/util"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/ansible"
 	request2 "github.com/flipped-aurora/gin-vue-admin/server/model/ansible/request"
@@ -12,174 +8,26 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/response"
 	"github.com/flipped-aurora/gin-vue-admin/server/utils"
 	"github.com/gin-gonic/gin"
-	"github.com/gorilla/context"
 	"go.uber.org/zap"
-	"net/http"
-	"strconv"
 )
 
 type TasksApi struct {
 }
 
-// AddTask inserts a task into the database and returns a header or returns error
-func AddTask(w http.ResponseWriter, r *http.Request) {
-	project := context.Get(r, "project").(db.Project)
-	user := context.Get(r, "user").(*db.User)
+//// GetAllTasks returns all tasks for the current project
+//func GetAllTasks(w http.ResponseWriter, r *http.Request) {
+//	GetTasksList(w, r, 0)
+//}
 
-	var taskObj db.Task
-
-	if !helpers.Bind(w, r, &taskObj) {
-		return
-	}
-
-	newTask, err := helpers.TaskPool(r).AddTask(taskObj, &user.ID, project.ID)
-
-	if err != nil {
-		util.LogErrorWithFields(err, log.Fields{"error": "Cannot write new event to database"})
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	helpers.WriteJSON(w, http.StatusCreated, newTask)
-}
-
-// GetTasksList returns a list of tasks for the current project in desc order to limit or error
-func GetTasksList(w http.ResponseWriter, r *http.Request, limit uint64) {
-	project := context.Get(r, "project").(db.Project)
-	tpl := context.Get(r, "template")
-
-	var err error
-	var tasks []db.TaskWithTpl
-
-	if tpl != nil {
-		tasks, err = helpers.Store(r).GetTemplateTasks(tpl.(db.Template).ProjectID, tpl.(db.Template).ID, db.RetrieveQueryParams{
-			Count: int(limit),
-		})
-	} else {
-		tasks, err = helpers.Store(r).GetProjectTasks(project.ID, db.RetrieveQueryParams{
-			Count: int(limit),
-		})
-	}
-
-	if err != nil {
-		util.LogErrorWithFields(err, log.Fields{"error": "Bad request. Cannot get tasks list from database"})
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	helpers.WriteJSON(w, http.StatusOK, tasks)
-}
-
-// GetAllTasks returns all tasks for the current project
-func GetAllTasks(w http.ResponseWriter, r *http.Request) {
-	GetTasksList(w, r, 0)
-}
-
-// GetLastTasks returns the hundred most recent tasks
-func GetLastTasks(w http.ResponseWriter, r *http.Request) {
-	str := r.URL.Query().Get("limit")
-	limit, err := strconv.Atoi(str)
-	if err != nil || limit <= 0 || limit > 200 {
-		limit = 200
-	}
-	GetTasksList(w, r, uint64(limit))
-}
-
-// GetTask returns a task based on its id
-func GetTask(w http.ResponseWriter, r *http.Request) {
-	task := context.Get(r, "task").(db.Task)
-	helpers.WriteJSON(w, http.StatusOK, task)
-}
-
-// GetTaskMiddleware is middleware that gets a task by id and sets the context to it or panics
-func GetTaskMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		project := context.Get(r, "project").(db.Project)
-		taskID, err := helpers.GetIntParam("task_id", w, r)
-
-		if err != nil {
-			util.LogErrorWithFields(err, log.Fields{"error": "Bad request. Cannot get task_id from request"})
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-
-		task, err := helpers.Store(r).GetTask(project.ID, taskID)
-		if err != nil {
-			util.LogErrorWithFields(err, log.Fields{"error": "Bad request. Cannot get task from database"})
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-
-		context.Set(r, "task", task)
-		next.ServeHTTP(w, r)
-	})
-}
-
-// GetTaskOutput returns the logged task output by id and writes it as json or returns error
-func GetTaskOutput(w http.ResponseWriter, r *http.Request) {
-	task := context.Get(r, "task").(db.Task)
-	project := context.Get(r, "project").(db.Project)
-
-	var output []db.TaskOutput
-	output, err := helpers.Store(r).GetTaskOutputs(project.ID, task.ID)
-
-	if err != nil {
-		util.LogErrorWithFields(err, log.Fields{"error": "Bad request. Cannot get task output from database"})
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	helpers.WriteJSON(w, http.StatusOK, output)
-}
-
-func StopTask(w http.ResponseWriter, r *http.Request) {
-	targetTask := context.Get(r, "task").(db.Task)
-	project := context.Get(r, "project").(db.Project)
-
-	if targetTask.ProjectID != project.ID {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	err := helpers.TaskPool(r).StopTask(targetTask)
-	if err != nil {
-		helpers.WriteError(w, err)
-		return
-	}
-
-	w.WriteHeader(http.StatusNoContent)
-}
-
-// RemoveTask removes a task from the database
-func RemoveTask(w http.ResponseWriter, r *http.Request) {
-	targetTask := context.Get(r, "task").(db.Task)
-	editor := context.Get(r, "user").(*db.User)
-	project := context.Get(r, "project").(db.Project)
-
-	activeTask := helpers.TaskPool(r).GetTask(targetTask.ID)
-
-	if activeTask != nil {
-		// can't delete task in queue or running
-		// task must be stopped firstly
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	if !editor.Admin {
-		log.Warn(editor.Username + " is not permitted to delete task logs")
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
-
-	err := helpers.Store(r).DeleteTaskWithOutputs(project.ID, targetTask.ID)
-	if err != nil {
-		util.LogErrorWithFields(err, log.Fields{"error": "Bad request. Cannot delete task from database"})
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	w.WriteHeader(http.StatusNoContent)
-}
+//// GetLastTasks returns the hundred most recent tasks
+//func GetLastTasks(w http.ResponseWriter, r *http.Request) {
+//	str := r.URL.Query().Get("limit")
+//	limit, err := strconv.Atoi(str)
+//	if err != nil || limit <= 0 || limit > 200 {
+//		limit = 200
+//	}
+//	GetTasksList(w, r, uint64(limit))
+//}
 
 // @Tags Task
 // @Summary 新增Task
@@ -190,22 +38,25 @@ func RemoveTask(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"添加成功"}"
 // @Router /ansible/task/addTask [post]
 func (a *TasksApi) AddTask(c *gin.Context) {
-	var task ansible.Task
-	if err := c.ShouldBindJSON(&task); err != nil {
+	var taskRequest request2.AddTaskByProjectId
+	if err := c.ShouldBindJSON(&taskRequest); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err := utils.Verify(task, utils.TaskVerify); err != nil {
+	if err := utils.Verify(taskRequest.Task, utils.TaskVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if _, err := taskService.CreateTask(task); err != nil {
+	userID := int(utils.GetUserID(c))
+	if task, err := global.AnsibleTaskPool.AddTask(taskRequest.Task, &userID, int(taskRequest.ProjectId)); err != nil {
 		global.GVA_LOG.Error("添加失败!", zap.Any("err", err))
 
 		response.FailWithMessage("添加失败", c)
 	} else {
-		response.OkWithMessage("添加成功", c)
+		response.OkWithDetailed(ansibleRes.TaskResponse{
+			Task: task,
+		}, "添加成功", c)
 	}
 }
 
@@ -218,17 +69,30 @@ func (a *TasksApi) AddTask(c *gin.Context) {
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"删除成功"}"
 // @Router /ansible/task/deleteTask [post]
 func (a *TasksApi) DeleteTask(c *gin.Context) {
-	var task request2.GetByProjectId
-	if err := c.ShouldBindJSON(&task); err != nil {
+	var taskRequest request2.GetByProjectId
+	if err := c.ShouldBindJSON(&taskRequest); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err := utils.Verify(task, utils.IdVerify); err != nil {
+	if err := utils.Verify(taskRequest, utils.IdVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err := taskService.DeleteTaskWithOutputs(task.ProjectId, task.ID); err != nil {
+	activeTask := global.AnsibleTaskPool.GetTask(int(taskRequest.ProjectId))
+	if activeTask != nil {
+		response.FailWithMessage("task正在执行", c)
+		return
+	}
+	userID := utils.GetUserID(c)
+	user, err := userService.GetProjectUser(taskRequest.ProjectId, float64(userID))
+	if err != nil {
+		global.GVA_LOG.Error("获取task管理员失败!", zap.Any("err", err))
+		response.FailWithMessage("删除失败", c)
+	} else if user.Admin != ansible.IsAdmin {
+		response.FailWithMessage("非管理员", c)
+	}
+	if err = taskService.DeleteTaskWithOutputs(int(taskRequest.ProjectId), int(taskRequest.ID)); err != nil {
 		global.GVA_LOG.Error("删除失败!", zap.Any("err", err))
 		response.FailWithMessage("删除失败", c)
 	} else {
@@ -282,7 +146,7 @@ func (a *TasksApi) GetTaskById(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if task, err := taskService.GetTask(idInfo.ProjectId, idInfo.ID); err != nil {
+	if task, err := taskService.GetTask(int(idInfo.ProjectId), int(idInfo.ID)); err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 		response.FailWithMessage("获取失败", c)
 	} else {
@@ -301,7 +165,7 @@ func (a *TasksApi) GetTaskById(c *gin.Context) {
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
 // @Router /ansible/task/getTaskList[post]
 func (a *TasksApi) GetTaskList(c *gin.Context) {
-	var pageInfo request2.GetByProjectId
+	var pageInfo request2.GetTaskByTemplateId
 	if err := c.ShouldBindJSON(&pageInfo); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
@@ -311,15 +175,98 @@ func (a *TasksApi) GetTaskList(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err, tasks, total := taskService.GetTemplateTasks(pageInfo); err != nil {
+	if pageInfo.TemplateId >= 0 {
+		if err, tasks, total := taskService.GetTemplateTasks(int(pageInfo.ProjectId), int(pageInfo.TemplateId), pageInfo.PageInfo); err != nil {
+			global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
+			response.FailWithMessage("获取失败", c)
+		} else {
+			response.OkWithDetailed(response.PageResult{
+				List:     tasks,
+				Total:    total,
+				Page:     pageInfo.Page,
+				PageSize: pageInfo.PageSize,
+			}, "获取成功", c)
+		}
+	} else {
+		if err, tasks, total := taskService.GetProjectTasks(int(pageInfo.ProjectId), pageInfo.PageInfo); err != nil {
+			global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
+			response.FailWithMessage("获取失败", c)
+		} else {
+			response.OkWithDetailed(response.PageResult{
+				List:     tasks,
+				Total:    total,
+				Page:     pageInfo.Page,
+				PageSize: pageInfo.PageSize,
+			}, "获取成功", c)
+		}
+	}
+}
+
+// @Tags Task
+// @Summary 根据id获取TaskOutputs
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body request2.GetByProjectId true "TaskId"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
+// @Router /ansible/task/getTaskOutputs [post]
+func (a *TasksApi) GetTaskOutputs(c *gin.Context) {
+	var idInfo request2.GetByProjectId
+	if err := c.ShouldBindJSON(&idInfo); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err := utils.Verify(idInfo, utils.IdVerify); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	task, err := taskService.GetTask(int(idInfo.ProjectId), int(idInfo.ID))
+	if err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 		response.FailWithMessage("获取失败", c)
+		return
+	}
+	if taskOutput, err := taskService.GetTaskOutputs(int(idInfo.ProjectId), int(idInfo.ID), &task); err != nil {
+		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
+		response.FailWithMessage("获取失败", c)
+		return
 	} else {
-		response.OkWithDetailed(response.PageResult{
-			List:     tasks,
-			Total:    total,
-			Page:     pageInfo.Page,
-			PageSize: pageInfo.PageSize,
+		response.OkWithDetailed(ansibleRes.TaskOutputsResponse{
+			TaskOutputs: taskOutput,
 		}, "获取成功", c)
+	}
+}
+
+// @Tags Task
+// @Summary 停止Task
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body request2.GetByProjectId true "TaskId"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
+// @Router /ansible/task/stopTask [post]
+func (a *TasksApi) StopTask(c *gin.Context) {
+	var idInfo request2.GetByProjectId
+	if err := c.ShouldBindJSON(&idInfo); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err := utils.Verify(idInfo, utils.IdVerify); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	task, err := taskService.GetTask(int(idInfo.ProjectId), int(idInfo.ID))
+	if err != nil {
+		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
+		response.FailWithMessage("获取失败", c)
+	}
+	err = global.AnsibleTaskPool.StopTask(task)
+	if err != nil {
+		global.GVA_LOG.Error("停止失败!", zap.Any("err", err))
+		response.FailWithMessage("停止失败", c)
+	} else {
+		response.OkWithMessage("停止成功", c)
 	}
 }

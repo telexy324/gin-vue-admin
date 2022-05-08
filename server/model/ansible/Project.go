@@ -5,6 +5,11 @@ import (
 	"time"
 )
 
+const (
+	NotAdmin = iota
+	IsAdmin
+)
+
 // Project is the top level structure in Semaphore
 type Project struct {
 	global.GVA_MODEL

@@ -16,7 +16,7 @@ func (userService *UserService) CreateProjectUser(projectUser ansible.ProjectUse
 	return projectUser, err
 }
 
-func (userService *UserService) GetProjectUser(projectID, userID int) (projectUser ansible.ProjectUser, err error) {
+func (userService *UserService) GetProjectUser(projectID, userID float64) (projectUser ansible.ProjectUser, err error) {
 	err = global.GVA_DB.Where("project_id=? and id =?", projectID, userID).First(&projectUser).Error
 	return
 }

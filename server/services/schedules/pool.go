@@ -1,11 +1,9 @@
 package schedules
 
 import (
-	log "github.com/Sirupsen/logrus"
-	"github.com/ansible-semaphore/semaphore/db"
+	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/ansible"
 	"github.com/flipped-aurora/gin-vue-admin/server/services/tasks"
-	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/robfig/cron/v3"
 	"sync"
 )

@@ -184,7 +184,7 @@ func (a *SchedulesApi) GetScheduleById(c *gin.Context) {
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
 // @Router /ansible/schedule/getTemplateScheduleList[post]
 func (a *SchedulesApi) GetTemplateScheduleList(c *gin.Context) {
-	var pageInfo request2.GetByTemplateId
+	var pageInfo request2.GetScheduleByTemplateId
 	if err := c.ShouldBindJSON(&pageInfo); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)

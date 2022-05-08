@@ -11,3 +11,7 @@ type TasksResponse struct {
 type TaskResponse struct {
 	Task ansible.Task `json:"task"`
 }
+
+type TaskOutputsResponse struct {
+	TaskOutputs []ansible.TaskOutput `json:"taskOutputs"`
+}
