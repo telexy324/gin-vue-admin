@@ -1,17 +1,13 @@
 package tasks
 
 import (
-	"github.com/ansible-semaphore/semaphore/db"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/ansible"
-	"go.uber.org/zap"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
-
-	log "github.com/Sirupsen/logrus"
-	"github.com/ansible-semaphore/semaphore/util"
 )
 
 type logRecord struct {
@@ -291,10 +287,14 @@ func (p *TaskPool) AddTask(taskObj ansible.Task, userID *int, projectID int) (ne
 
 	if tpl.Type == ansible.TemplateBuild { // get next version for TaskRunner if it is a Build
 		var builds []ansible.TaskWithTpl
-		builds, err = taskService.GetTemplateTasks(tpl.ProjectID, tpl.ID, db.RetrieveQueryParams{Count: 1})
+		err, buildList, _ := taskService.GetTemplateTasks(tpl.ProjectID, tpl.ID, request.PageInfo{
+			Page:     1,
+			PageSize: 1,
+		})
 		if err != nil {
 			return
 		}
+		builds = buildList.([]ansible.TaskWithTpl)
 		if len(builds) == 0 || builds[0].Version == nil {
 			taskObj.Version = tpl.StartVersion
 		} else {

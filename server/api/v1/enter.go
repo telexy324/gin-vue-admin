@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"github.com/flipped-aurora/gin-vue-admin/server/api/v1/ansible"
 	"github.com/flipped-aurora/gin-vue-admin/server/api/v1/application"
 	"github.com/flipped-aurora/gin-vue-admin/server/api/v1/autocode"
 	"github.com/flipped-aurora/gin-vue-admin/server/api/v1/example"
@@ -12,6 +13,7 @@ type ApiGroup struct {
 	SystemApiGroup      system.ApiGroup
 	AutoCodeApiGroup    autocode.ApiGroup
 	ApplicationApiGroup application.ApiGroup
+	AnsibleApiGroup     ansible.ApiGroup
 }
 
 var ApiGroupApp = new(ApiGroup)
