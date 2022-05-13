@@ -29,4 +29,5 @@ var (
 	TemplateVerify         = Rules{"Name": {NotEmpty()}}
 	ScheduleVerify         = Rules{"Name": {NotEmpty()}}
 	TaskVerify             = Rules{"Name": {NotEmpty()}}
+	ProjectVerify          = Rules{"Name": {NotEmpty()}}
 )

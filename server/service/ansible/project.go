@@ -3,6 +3,7 @@ package ansible
 import (
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/ansible"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/ansible/request"
 	"gorm.io/gorm"
 	"time"
 )
@@ -18,11 +19,23 @@ func (projectService *ProjectService) CreateProject(project ansible.Project) (ne
 	return project, err
 }
 
-func (projectService *ProjectService) GetProjects(userID int) (projects []ansible.Project, err error) {
-	err = global.GVA_DB.Joins("inner join project_user on id = project_user.project_id").
-		Where("project_user.user_id=?", userID).
-		Order("name ").Find(&projects).Error
-	return
+func (projectService *ProjectService) GetProjects(userID int,info request.GetById) (err error, list interface{}, total int64) {
+	limit := info.PageSize
+	offset := info.PageSize * (info.Page - 1)
+	var projects []ansible.Project
+	db := global.GVA_DB.Model(&ansible.Project{})
+	order := ""
+	if info.SortInverted {
+		order = "desc"
+	}
+	db = db.Joins("inner join project_user on id = project_user.project_id").
+		Where("project_user.user_id=?", userID).Order(info.SortBy + " " + order)
+	err = db.Count(&total).Error
+	if err != nil {
+		return
+	}
+	err = db.Limit(limit).Offset(offset).Find(&projects).Error
+	return err, projects, total
 }
 
 func (projectService *ProjectService) GetProject(projectID int) (project ansible.Project, err error) {

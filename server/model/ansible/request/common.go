@@ -10,3 +10,11 @@ type GetByProjectId struct {
 	SortInverted bool
 	SortBy       string
 }
+
+// Find by id and project_id structure
+type GetById struct {
+	ID        float64 `json:"id" form:"id"`                 // 主键ID
+	request.PageInfo
+	SortInverted bool
+	SortBy       string
+}
