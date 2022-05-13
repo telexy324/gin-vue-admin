@@ -1,152 +1,126 @@
 package ansible
 
 import (
-	"github.com/ansible-semaphore/semaphore/api/helpers"
-	"github.com/ansible-semaphore/semaphore/db"
-	"net/http"
-	"strconv"
-
-	log "github.com/Sirupsen/logrus"
-	"github.com/gorilla/context"
+	"github.com/flipped-aurora/gin-vue-admin/server/global"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/ansible"
+	request2 "github.com/flipped-aurora/gin-vue-admin/server/model/ansible/request"
+	ansibleRes "github.com/flipped-aurora/gin-vue-admin/server/model/ansible/response"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/common/response"
+	"github.com/flipped-aurora/gin-vue-admin/server/utils"
+	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 type UsersApi struct {
 }
 
-// UserMiddleware ensures a user exists and loads it to the context
-func UserMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		project := context.Get(r, "project").(db.Project)
-		userID, err := helpers.GetIntParam("user_id", w, r)
-		if err != nil {
-			return
-		}
+// @Tags User
+// @Summary 新增User
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body ansible.User true ""
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"添加成功"}"
+// @Router /ansible/user/addUser [post]
+func (a *UsersApi) AddUser(c *gin.Context) {
+	var userRequest request2.AddUserByProjectId
+	if err := c.ShouldBindJSON(&userRequest); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err := utils.Verify(userRequest, utils.ProjectIdVerify); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if _, err := userService.CreateProjectUser(ansible.ProjectUser{ProjectId: int(userRequest.ProjectId), UserId: int(userRequest.UserId), Admin: userRequest.Admin}); err != nil {
+		global.GVA_LOG.Error("添加失败!", zap.Any("err", err))
 
-		_, err = helpers.Store(r).GetProjectUser(project.ID, userID)
-
-		if err != nil {
-			helpers.WriteError(w, err)
-			return
-		}
-
-		user, err := helpers.Store(r).GetUser(userID)
-
-		if err != nil {
-			helpers.WriteError(w, err)
-			return
-		}
-
-		context.Set(r, "projectUser", user)
-		next.ServeHTTP(w, r)
-	})
+		response.FailWithMessage("添加失败", c)
+	} else {
+		response.OkWithMessage("添加成功", c)
+	}
 }
 
-// GetUsers returns all users in a project
-func GetUsers(w http.ResponseWriter, r *http.Request) {
-
-	// get single user if user ID specified in the request
-	if user := context.Get(r, "projectUser"); user != nil {
-		helpers.WriteJSON(w, http.StatusOK, user.(db.User))
+// @Tags User
+// @Summary 删除User
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body request.GetById true "EnvronmentId"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"删除成功"}"
+// @Router /ansible/user/deleteUser [post]
+func (a *UsersApi) DeleteUser(c *gin.Context) {
+	var userRequest request2.DeleteUserByProjectId
+	if err := c.ShouldBindJSON(&userRequest); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
 		return
 	}
-
-	project := context.Get(r, "project").(db.Project)
-	users, err := helpers.Store(r).GetProjectUsers(project.ID, helpers.QueryParams(r.URL))
-
-	if err != nil {
-		helpers.WriteError(w, err)
+	if err := utils.Verify(userRequest, utils.ProjectIdVerify); err != nil {
+		response.FailWithMessage(err.Error(), c)
 		return
 	}
-
-	helpers.WriteJSON(w, http.StatusOK, users)
+	if err := userService.DeleteProjectUser(int(userRequest.ProjectId), int(userRequest.UserId)); err != nil {
+		global.GVA_LOG.Error("删除失败!", zap.Any("err", err))
+		response.FailWithMessage("删除失败", c)
+	} else {
+		response.OkWithMessage("删除成功", c)
+	}
 }
 
-// AddUser adds a user to a projects team in the database
-func AddUser(w http.ResponseWriter, r *http.Request) {
-	project := context.Get(r, "project").(db.Project)
-	var projectUser struct {
-		UserID int  `json:"user_id" binding:"required"`
-		Admin  bool `json:"admin"`
-	}
-
-	if !helpers.Bind(w, r, &projectUser) {
+// @Tags User
+// @Summary 更新User
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body ansible.User true "主机名, 架构, 管理ip, 系统, 系统版本"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"更新成功"}"
+// @Router /ansible/user/updateUser [post]
+func (a *UsersApi) UpdateUser(c *gin.Context) {
+	var userRequest request2.AddUserByProjectId
+	if err := c.ShouldBindJSON(&userRequest); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
 		return
 	}
-
-	_, err := helpers.Store(r).CreateProjectUser(db.ProjectUser{ProjectID: project.ID, UserID: projectUser.UserID, Admin: projectUser.Admin})
-
-	if err != nil {
-		w.WriteHeader(http.StatusConflict)
+	if err := utils.Verify(userRequest, utils.ProjectIdVerify); err != nil {
+		response.FailWithMessage(err.Error(), c)
 		return
 	}
-
-	user := context.Get(r, "user").(*db.User)
-	objType := db.EventUser
-	desc := "User ID " + strconv.Itoa(projectUser.UserID) + " added to team"
-
-	_, err = helpers.Store(r).CreateEvent(db.Event{
-		UserID:		 &user.ID,
-		ProjectID:   &project.ID,
-		ObjectType:  &objType,
-		ObjectID:    &projectUser.UserID,
-		Description: &desc,
-	})
-
-	if err != nil {
-		log.Error(err)
+	if err := userService.UpdateProjectUser(ansible.ProjectUser{ProjectId: int(userRequest.ProjectId), UserId: int(userRequest.UserId), Admin: userRequest.Admin}); err != nil {
+		global.GVA_LOG.Error("更新失败!", zap.Any("err", err))
+		response.FailWithMessage("更新失败", c)
+	} else {
+		response.OkWithMessage("更新成功", c)
 	}
-
-	w.WriteHeader(http.StatusNoContent)
 }
 
-// RemoveUser removes a user from a project team
-func RemoveUser(w http.ResponseWriter, r *http.Request) {
-	project := context.Get(r, "project").(db.Project)
-	projectUser := context.Get(r, "projectUser").(db.User)
-
-	err := helpers.Store(r).DeleteProjectUser(project.ID, projectUser.ID)
-
-	if err != nil {
-		helpers.WriteError(w, err)
+// @Tags User
+// @Summary 分页获取基础User列表
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body request2.GetByProjectId true "页码, 每页大小"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
+// @Router /ansible/user/getProjectUsers[post]
+func (a *UsersApi) GetProjectUsers(c *gin.Context) {
+	var userRequest request2.GetByProjectId
+	if err := c.ShouldBindJSON(&userRequest); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
 		return
 	}
-
-	user := context.Get(r, "user").(*db.User)
-	objType := db.EventUser
-	desc := "User ID " + strconv.Itoa(projectUser.ID) + " removed from team"
-
-	_, err = helpers.Store(r).CreateEvent(db.Event{
-		UserID:      &user.ID,
-		ProjectID:   &project.ID,
-		ObjectType:  &objType,
-		ObjectID:    &projectUser.ID,
-		Description: &desc,
-	})
-
-	if err != nil {
-		log.Error(err)
-	}
-
-	w.WriteHeader(http.StatusNoContent)
-}
-
-// MakeUserAdmin writes the admin flag to the users account
-func MakeUserAdmin(w http.ResponseWriter, r *http.Request) {
-	project := context.Get(r, "project").(db.Project)
-	user := context.Get(r, "projectUser").(db.User)
-	admin := true
-
-	if r.Method == "DELETE" {
-		// strip admin
-		admin = false
-	}
-
-	err := helpers.Store(r).UpdateProjectUser(db.ProjectUser{UserID: user.ID, ProjectID: project.ID, Admin: admin})
-
-	if err != nil {
-		helpers.WriteError(w, err)
+	if err := utils.Verify(userRequest.ProjectId, utils.ProjectIdVerify); err != nil {
+		response.FailWithMessage(err.Error(), c)
 		return
 	}
-
-	w.WriteHeader(http.StatusNoContent)
+	if users, err := userService.GetProjectUsers(int(userRequest.ProjectId)); err != nil {
+		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
+		response.FailWithMessage("获取失败", c)
+	} else {
+		response.OkWithDetailed(ansibleRes.UsersResponse{
+			Users: users,
+		}, "获取成功", c)
+	}
 }

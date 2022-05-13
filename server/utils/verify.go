@@ -30,4 +30,5 @@ var (
 	ScheduleVerify         = Rules{"Name": {NotEmpty()}}
 	TaskVerify             = Rules{"Name": {NotEmpty()}}
 	ProjectVerify          = Rules{"Name": {NotEmpty()}}
+	ProjectIdVerify        = Rules{"ProjectId": {NotEmpty()}}
 )
