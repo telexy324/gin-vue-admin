@@ -147,13 +147,13 @@ func (templateService *TemplatesService) FillTemplates(templates []ansible.Templ
 	for i := range templates {
 		tpl := &templates[i]
 		var tasks []ansible.TaskWithTpl
-		err, iTasks, _ := TaskServiceApp.GetTemplateTasks(tpl.ProjectID, tpl.ID, request.PageInfo{
+		e, iTasks, _ := TaskServiceApp.GetTemplateTasks(tpl.ProjectID, tpl.ID, request.PageInfo{
 			Page:     1,
 			PageSize: 1,
 		})
 		tasks = iTasks.([]ansible.TaskWithTpl)
-		if err != nil {
-			return
+		if e != nil {
+			return e
 		}
 		if len(tasks) > 0 {
 			tpl.LastTask = &tasks[0]

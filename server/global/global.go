@@ -1,8 +1,6 @@
 package global
 
 import (
-	"github.com/flipped-aurora/gin-vue-admin/server/services/schedules"
-	"github.com/flipped-aurora/gin-vue-admin/server/services/tasks"
 	"github.com/flipped-aurora/gin-vue-admin/server/utils/timer"
 	"github.com/songzhibin97/gkit/cache/local_cache"
 
@@ -27,9 +25,7 @@ var (
 	GVA_Timer               timer.Timer = timer.NewTimerTask()
 	GVA_Concurrency_Control             = &singleflight.Group{}
 
-	BlackCache          local_cache.Cache
-	AnsibleTaskPool     *tasks.TaskPool
-	AnsibleSchedulePool *schedules.SchedulePool
+	BlackCache local_cache.Cache
 )
 
 func init() {
