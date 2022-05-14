@@ -50,7 +50,7 @@ func RunWindowsServer() {
 	global.GVA_LOG.Error(s.ListenAndServe().Error())
 	taskPool := tasks.CreateTaskPool()
 	schedulePool := schedules.CreateSchedulePool(&taskPool)
-
+	tasks.AnsibleTaskPool, schedules.AnsibleSchedulePool = &taskPool, &schedulePool
 	defer schedulePool.Destroy()
 	go sockets.StartWS()
 	go schedulePool.Run()

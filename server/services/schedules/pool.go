@@ -8,6 +8,8 @@ import (
 	"sync"
 )
 
+var AnsibleSchedulePool *SchedulePool
+
 type ScheduleRunner struct {
 	projectID  int
 	scheduleID int

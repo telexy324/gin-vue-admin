@@ -3,9 +3,10 @@ package ansible
 import (
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/ansible"
-	request2 "github.com/flipped-aurora/gin-vue-admin/server/model/ansible/request"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/ansible/request"
 	ansibleRes "github.com/flipped-aurora/gin-vue-admin/server/model/ansible/response"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/response"
+	"github.com/flipped-aurora/gin-vue-admin/server/services/tasks"
 	"github.com/flipped-aurora/gin-vue-admin/server/utils"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -34,11 +35,11 @@ type TasksApi struct {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body ansible.Task true ""
+// @Param data body request.AddTaskByProjectId true "Task"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"添加成功"}"
 // @Router /ansible/task/addTask [post]
 func (a *TasksApi) AddTask(c *gin.Context) {
-	var taskRequest request2.AddTaskByProjectId
+	var taskRequest request.AddTaskByProjectId
 	if err := c.ShouldBindJSON(&taskRequest); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
@@ -49,7 +50,7 @@ func (a *TasksApi) AddTask(c *gin.Context) {
 		return
 	}
 	userID := int(utils.GetUserID(c))
-	if task, err := global.AnsibleTaskPool.AddTask(taskRequest.Task, &userID, int(taskRequest.ProjectId)); err != nil {
+	if task, err := tasks.AnsibleTaskPool.AddTask(taskRequest.Task, &userID, int(taskRequest.ProjectId)); err != nil {
 		global.GVA_LOG.Error("添加失败!", zap.Any("err", err))
 
 		response.FailWithMessage("添加失败", c)
@@ -65,11 +66,11 @@ func (a *TasksApi) AddTask(c *gin.Context) {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body request.GetById true "TaskId"
+// @Param data body request.GetByProjectId true "TaskId"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"删除成功"}"
 // @Router /ansible/task/deleteTask [post]
 func (a *TasksApi) DeleteTask(c *gin.Context) {
-	var taskRequest request2.GetByProjectId
+	var taskRequest request.GetByProjectId
 	if err := c.ShouldBindJSON(&taskRequest); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
@@ -79,7 +80,7 @@ func (a *TasksApi) DeleteTask(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	activeTask := global.AnsibleTaskPool.GetTask(int(taskRequest.ProjectId))
+	activeTask := tasks.AnsibleTaskPool.GetTask(int(taskRequest.ProjectId))
 	if activeTask != nil {
 		response.FailWithMessage("task正在执行", c)
 		return
@@ -132,11 +133,11 @@ func (a *TasksApi) UpdateTask(c *gin.Context) {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body request2.GetByProjectId true "TaskId"
+// @Param data body request.GetByProjectId true "TaskId"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
 // @Router /ansible/task/getTaskById [post]
 func (a *TasksApi) GetTaskById(c *gin.Context) {
-	var idInfo request2.GetByProjectId
+	var idInfo request.GetByProjectId
 	if err := c.ShouldBindJSON(&idInfo); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
@@ -161,11 +162,11 @@ func (a *TasksApi) GetTaskById(c *gin.Context) {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body request2.GetByProjectId true "页码, 每页大小"
+// @Param data body request.GetTaskByTemplateId true "页码, 每页大小"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /ansible/task/getTaskList[post]
+// @Router /ansible/task/getTaskList [post]
 func (a *TasksApi) GetTaskList(c *gin.Context) {
-	var pageInfo request2.GetTaskByTemplateId
+	var pageInfo request.GetTaskByTemplateId
 	if err := c.ShouldBindJSON(&pageInfo); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
@@ -207,11 +208,11 @@ func (a *TasksApi) GetTaskList(c *gin.Context) {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body request2.GetByProjectId true "TaskId"
+// @Param data body request.GetByProjectId true "TaskId"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
 // @Router /ansible/task/getTaskOutputs [post]
 func (a *TasksApi) GetTaskOutputs(c *gin.Context) {
-	var idInfo request2.GetByProjectId
+	var idInfo request.GetByProjectId
 	if err := c.ShouldBindJSON(&idInfo); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
@@ -243,11 +244,11 @@ func (a *TasksApi) GetTaskOutputs(c *gin.Context) {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body request2.GetByProjectId true "TaskId"
+// @Param data body request.GetByProjectId true "TaskId"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
 // @Router /ansible/task/stopTask [post]
 func (a *TasksApi) StopTask(c *gin.Context) {
-	var idInfo request2.GetByProjectId
+	var idInfo request.GetByProjectId
 	if err := c.ShouldBindJSON(&idInfo); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
@@ -262,7 +263,7 @@ func (a *TasksApi) StopTask(c *gin.Context) {
 		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 		response.FailWithMessage("获取失败", c)
 	}
-	err = global.AnsibleTaskPool.StopTask(task)
+	err = tasks.AnsibleTaskPool.StopTask(task)
 	if err != nil {
 		global.GVA_LOG.Error("停止失败!", zap.Any("err", err))
 		response.FailWithMessage("停止失败", c)

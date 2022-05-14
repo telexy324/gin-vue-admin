@@ -3,7 +3,7 @@ package ansible
 import (
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/ansible"
-	request2 "github.com/flipped-aurora/gin-vue-admin/server/model/ansible/request"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/ansible/request"
 	ansibleRes "github.com/flipped-aurora/gin-vue-admin/server/model/ansible/response"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/response"
 	"github.com/flipped-aurora/gin-vue-admin/server/utils"
@@ -19,11 +19,11 @@ type UsersApi struct {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body ansible.User true ""
+// @Param data body request.AddUserByProjectId true "User"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"添加成功"}"
 // @Router /ansible/user/addUser [post]
 func (a *UsersApi) AddUser(c *gin.Context) {
-	var userRequest request2.AddUserByProjectId
+	var userRequest request.AddUserByProjectId
 	if err := c.ShouldBindJSON(&userRequest); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
@@ -47,11 +47,11 @@ func (a *UsersApi) AddUser(c *gin.Context) {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body request.GetById true "EnvronmentId"
+// @Param data body request.DeleteUserByProjectId true "EnvronmentId"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"删除成功"}"
 // @Router /ansible/user/deleteUser [post]
 func (a *UsersApi) DeleteUser(c *gin.Context) {
-	var userRequest request2.DeleteUserByProjectId
+	var userRequest request.DeleteUserByProjectId
 	if err := c.ShouldBindJSON(&userRequest); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
@@ -74,11 +74,11 @@ func (a *UsersApi) DeleteUser(c *gin.Context) {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body ansible.User true "主机名, 架构, 管理ip, 系统, 系统版本"
+// @Param data body request.AddUserByProjectId true "主机名, 架构, 管理ip, 系统, 系统版本"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"更新成功"}"
 // @Router /ansible/user/updateUser [post]
 func (a *UsersApi) UpdateUser(c *gin.Context) {
-	var userRequest request2.AddUserByProjectId
+	var userRequest request.AddUserByProjectId
 	if err := c.ShouldBindJSON(&userRequest); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
@@ -101,11 +101,11 @@ func (a *UsersApi) UpdateUser(c *gin.Context) {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body request2.GetByProjectId true "页码, 每页大小"
+// @Param data body request.GetByProjectId true "页码, 每页大小"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /ansible/user/getProjectUsers[post]
+// @Router /ansible/user/getProjectUsers [post]
 func (a *UsersApi) GetProjectUsers(c *gin.Context) {
-	var userRequest request2.GetByProjectId
+	var userRequest request.GetByProjectId
 	if err := c.ShouldBindJSON(&userRequest); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)

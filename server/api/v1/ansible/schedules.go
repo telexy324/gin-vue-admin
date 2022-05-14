@@ -3,7 +3,7 @@ package ansible
 import (
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/ansible"
-	request2 "github.com/flipped-aurora/gin-vue-admin/server/model/ansible/request"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/ansible/request"
 	ansibleRes "github.com/flipped-aurora/gin-vue-admin/server/model/ansible/response"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/response"
 	"github.com/flipped-aurora/gin-vue-admin/server/services/schedules"
@@ -16,7 +16,7 @@ type SchedulesApi struct {
 }
 
 func refreshSchedulePool() {
-	global.AnsibleSchedulePool.Refresh()
+	schedules.AnsibleSchedulePool.Refresh()
 }
 
 func validateCronFormat(cronFormat string) bool {
@@ -32,7 +32,7 @@ func validateCronFormat(cronFormat string) bool {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body ansible.Schedule true ""
+// @Param data body ansible.Schedule true "Schedule"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"添加成功"}"
 // @Router /ansible/schedule/validateScheduleFormat [post]
 func (a *SchedulesApi) ValidateScheduleCronFormat(c *gin.Context) {
@@ -58,7 +58,7 @@ func (a *SchedulesApi) ValidateScheduleCronFormat(c *gin.Context) {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body ansible.Schedule true ""
+// @Param data body ansible.Schedule true "Schedule"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"添加成功"}"
 // @Router /ansible/schedule/addSchedule [post]
 func (a *SchedulesApi) AddSchedule(c *gin.Context) {
@@ -91,11 +91,11 @@ func (a *SchedulesApi) AddSchedule(c *gin.Context) {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body request.GetById true "ScheduleId"
+// @Param data body request.GetByProjectId true "ScheduleId"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"删除成功"}"
 // @Router /ansible/schedule/deleteSchedule [post]
 func (a *SchedulesApi) DeleteSchedule(c *gin.Context) {
-	var schedule request2.GetByProjectId
+	var schedule request.GetByProjectId
 	if err := c.ShouldBindJSON(&schedule); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
@@ -151,11 +151,11 @@ func (a *SchedulesApi) UpdateSchedule(c *gin.Context) {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body request2.GetByProjectId true "EnvironmentId"
+// @Param data body request.GetByProjectId true "EnvironmentId"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
 // @Router /ansible/schedule/getScheduleById [post]
 func (a *SchedulesApi) GetScheduleById(c *gin.Context) {
-	var idInfo request2.GetByProjectId
+	var idInfo request.GetByProjectId
 	if err := c.ShouldBindJSON(&idInfo); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
@@ -180,11 +180,11 @@ func (a *SchedulesApi) GetScheduleById(c *gin.Context) {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body request2.GetByProjectId true "页码, 每页大小"
+// @Param data body request.GetScheduleByTemplateId true "页码, 每页大小"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /ansible/schedule/getTemplateScheduleList[post]
+// @Router /ansible/schedule/getTemplateScheduleList [post]
 func (a *SchedulesApi) GetTemplateScheduleList(c *gin.Context) {
-	var pageInfo request2.GetScheduleByTemplateId
+	var pageInfo request.GetScheduleByTemplateId
 	if err := c.ShouldBindJSON(&pageInfo); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)

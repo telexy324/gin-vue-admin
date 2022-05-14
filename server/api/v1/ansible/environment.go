@@ -3,7 +3,7 @@ package ansible
 import (
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/ansible"
-	request2 "github.com/flipped-aurora/gin-vue-admin/server/model/ansible/request"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/ansible/request"
 	ansibleRes "github.com/flipped-aurora/gin-vue-admin/server/model/ansible/response"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/response"
 	"github.com/flipped-aurora/gin-vue-admin/server/utils"
@@ -30,7 +30,7 @@ type EnvironmentApi struct {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body ansible.Environment true ""
+// @Param data body ansible.Environment true "Environment"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"添加成功"}"
 // @Router /ansible/environment/addEnvironment [post]
 func (a *EnvironmentApi) AddEnvironment(c *gin.Context) {
@@ -58,11 +58,11 @@ func (a *EnvironmentApi) AddEnvironment(c *gin.Context) {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body request.GetById true "EnvronmentId"
+// @Param data body request.GetByProjectId true "EnvronmentId"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"删除成功"}"
 // @Router /ansible/environment/deleteEnvironment [post]
 func (a *EnvironmentApi) DeleteEnvironment(c *gin.Context) {
-	var environment request2.GetByProjectId
+	var environment request.GetByProjectId
 	if err := c.ShouldBindJSON(&environment); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
@@ -112,11 +112,11 @@ func (a *EnvironmentApi) UpdateEnvironment(c *gin.Context) {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body request2.GetByProjectId true "EnvironmentId"
+// @Param data body request.GetByProjectId true "EnvironmentId"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
 // @Router /ansible/environment/getEnvironmentById [post]
 func (a *EnvironmentApi) GetEnvironmentById(c *gin.Context) {
-	var idInfo request2.GetByProjectId
+	var idInfo request.GetByProjectId
 	if err := c.ShouldBindJSON(&idInfo); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
@@ -141,11 +141,11 @@ func (a *EnvironmentApi) GetEnvironmentById(c *gin.Context) {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body request2.GetByProjectId true "页码, 每页大小"
+// @Param data body request.GetByProjectId true "页码, 每页大小"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /ansible/environment/getEnvironmentList[post]
+// @Router /ansible/environment/getEnvironmentList [post]
 func (a *EnvironmentApi) GetEnvironmentList(c *gin.Context) {
-	var pageInfo request2.GetByProjectId
+	var pageInfo request.GetByProjectId
 	if err := c.ShouldBindJSON(&pageInfo); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)

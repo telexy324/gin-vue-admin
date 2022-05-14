@@ -3,7 +3,7 @@ package ansible
 import (
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/ansible"
-	request2 "github.com/flipped-aurora/gin-vue-admin/server/model/ansible/request"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/ansible/request"
 	ansibleRes "github.com/flipped-aurora/gin-vue-admin/server/model/ansible/response"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/response"
 	"github.com/flipped-aurora/gin-vue-admin/server/utils"
@@ -30,7 +30,7 @@ type KeysApi struct {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body ansible.Key true ""
+// @Param data body ansible.AccessKey true "Keys"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"添加成功"}"
 // @Router /ansible/key/addKey [post]
 func (a *KeysApi) AddKey(c *gin.Context) {
@@ -62,11 +62,11 @@ func (a *KeysApi) AddKey(c *gin.Context) {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body request.GetById true "KeyId"
+// @Param data body request.GetByProjectId true "KeyId"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"删除成功"}"
 // @Router /ansible/key/deleteKey [post]
 func (a *KeysApi) DeleteKey(c *gin.Context) {
-	var key request2.GetByProjectId
+	var key request.GetByProjectId
 	if err := c.ShouldBindJSON(&key); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
@@ -89,7 +89,7 @@ func (a *KeysApi) DeleteKey(c *gin.Context) {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body ansible.Key true "主机名, 架构, 管理ip, 系统, 系统版本"
+// @Param data body ansible.AccessKey true "主机名, 架构, 管理ip, 系统, 系统版本"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"更新成功"}"
 // @Router /ansible/key/updateKey [post]
 func (a *KeysApi) UpdateKey(c *gin.Context) {
@@ -120,11 +120,11 @@ func (a *KeysApi) UpdateKey(c *gin.Context) {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body request2.GetByProjectId true "KeyId"
+// @Param data body request.GetByProjectId true "KeyId"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
 // @Router /ansible/key/getKeyById [post]
 func (a *KeysApi) GetKeyById(c *gin.Context) {
-	var idInfo request2.GetByProjectId
+	var idInfo request.GetByProjectId
 	if err := c.ShouldBindJSON(&idInfo); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
@@ -149,11 +149,11 @@ func (a *KeysApi) GetKeyById(c *gin.Context) {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body request2.GetByProjectId true "页码, 每页大小"
+// @Param data body request.GetByProjectId true "页码, 每页大小"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /ansible/key/getKeyList[post]
+// @Router /ansible/key/getKeyList [post]
 func (a *KeysApi) GetKeyList(c *gin.Context) {
-	var pageInfo request2.GetByProjectId
+	var pageInfo request.GetByProjectId
 	if err := c.ShouldBindJSON(&pageInfo); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)

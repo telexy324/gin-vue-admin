@@ -10,6 +10,8 @@ import (
 	"time"
 )
 
+var AnsibleTaskPool     *TaskPool
+
 type logRecord struct {
 	task   *TaskRunner
 	output string
@@ -287,11 +289,12 @@ func (p *TaskPool) AddTask(taskObj ansible.Task, userID *int, projectID int) (ne
 
 	if tpl.Type == ansible.TemplateBuild { // get next version for TaskRunner if it is a Build
 		var builds []ansible.TaskWithTpl
-		err, buildList, _ := taskService.GetTemplateTasks(tpl.ProjectID, tpl.ID, request.PageInfo{
+		e, buildList, _ := taskService.GetTemplateTasks(tpl.ProjectID, tpl.ID, request.PageInfo{
 			Page:     1,
 			PageSize: 1,
 		})
-		if err != nil {
+		if e != nil {
+			err = e
 			return
 		}
 		builds = buildList.([]ansible.TaskWithTpl)

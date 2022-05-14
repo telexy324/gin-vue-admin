@@ -3,7 +3,7 @@ package ansible
 import (
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/ansible"
-	request2 "github.com/flipped-aurora/gin-vue-admin/server/model/ansible/request"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/ansible/request"
 	ansibleRes "github.com/flipped-aurora/gin-vue-admin/server/model/ansible/response"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/response"
 	"github.com/flipped-aurora/gin-vue-admin/server/utils"
@@ -19,11 +19,11 @@ type ProjectApi struct {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body request.GetById true "EnvronmentId"
+// @Param data body request.GetById true "ProjectId"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"删除成功"}"
 // @Router /ansible/project/deleteProject [post]
 func (a *ProjectApi) DeleteProject(c *gin.Context) {
-	var project request2.GetById
+	var project request.GetById
 	if err := c.ShouldBindJSON(&project); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
@@ -73,11 +73,11 @@ func (a *ProjectApi) UpdateProject(c *gin.Context) {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body request2.GetByProjectId true "ProjectId"
+// @Param data body request.GetById true "ProjectId"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
 // @Router /ansible/project/getProjectById [post]
 func (a *ProjectApi) GetProjectById(c *gin.Context) {
-	var idInfo request2.GetById
+	var idInfo request.GetById
 	if err := c.ShouldBindJSON(&idInfo); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
@@ -102,11 +102,11 @@ func (a *ProjectApi) GetProjectById(c *gin.Context) {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body ansible.Project true "主机名, 架构, 管理ip, 系统, 系统版本"
+// @Param data body request.GetByProjectId true "主机名, 架构, 管理ip, 系统, 系统版本"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"更新成功"}"
 // @Router /ansible/project/mustBeAdmin [post]
 func (a *ProjectApi) MustBeAdmin(c *gin.Context) {
-	var project request2.GetByProjectId
+	var project request.GetByProjectId
 	if err := c.ShouldBindJSON(&project); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
