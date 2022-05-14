@@ -19,8 +19,7 @@ func (s *UserRouter) InitUserRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 		userRouterWithoutRecord.POST("updateUser", authorityUserApi.UpdateUser) // 更新菜单
 	}
 	{
-		userRouterWithoutRecord.POST("getUserById", authorityUserApi.GetUserById)     // 获取菜单树
-		userRouterWithoutRecord.POST("getUserList", authorityUserApi.GetUserList) // 分页获取基础menu列表
+		userRouterWithoutRecord.POST("getProjectUsers", authorityUserApi.GetProjectUsers)     // 获取菜单树
 	}
 	return userRouter
 }

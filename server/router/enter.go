@@ -1,6 +1,7 @@
 package router
 
 import (
+	"github.com/flipped-aurora/gin-vue-admin/server/router/ansible"
 	"github.com/flipped-aurora/gin-vue-admin/server/router/application"
 	"github.com/flipped-aurora/gin-vue-admin/server/router/autocode"
 	"github.com/flipped-aurora/gin-vue-admin/server/router/example"
@@ -12,6 +13,7 @@ type RouterGroup struct {
 	Example     example.RouterGroup
 	Autocode    autocode.RouterGroup
 	Application application.RouterGroup
+	Ansible     ansible.RouterGroup
 }
 
 var RouterGroupApp = new(RouterGroup)

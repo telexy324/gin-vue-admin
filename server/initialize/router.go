@@ -42,6 +42,7 @@ func Routers() *gin.Engine {
 	exampleRouter := router.RouterGroupApp.Example
 	autocodeRouter := router.RouterGroupApp.Autocode
 	applicationRouter := router.RouterGroupApp.Application
+	ansibleRouter := router.RouterGroupApp.Ansible
 	PublicGroup := Router.Group("")
 	{
 		// 健康监测
@@ -55,6 +56,13 @@ func Routers() *gin.Engine {
 
 		applicationRouter.InitCmdbRouter(PublicGroup)
 		//systemRouter.InitMenuRouter(PublicGroup)                   // 注册menu路由
+		ansibleRouter.InitEnvironmentRouter(PublicGroup)
+		ansibleRouter.InitInventoryRouter(PublicGroup)
+		ansibleRouter.InitKeyRouter(PublicGroup)
+		ansibleRouter.InitProjectRouter(PublicGroup)
+		ansibleRouter.InitScheduleRouter(PublicGroup)
+		ansibleRouter.InitTaskRouter(PublicGroup)
+		ansibleRouter.InitUserRouter(PublicGroup)
 	}
 	PrivateGroup := Router.Group("")
 	PrivateGroup.Use(middleware.JWTAuth()).Use(middleware.CasbinHandler())

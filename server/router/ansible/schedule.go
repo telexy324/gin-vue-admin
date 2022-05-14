@@ -22,5 +22,8 @@ func (s *ScheduleRouter) InitScheduleRouter(Router *gin.RouterGroup) (R gin.IRou
 		scheduleRouterWithoutRecord.POST("getScheduleById", authorityScheduleApi.GetScheduleById)     // 获取菜单树
 		scheduleRouterWithoutRecord.POST("getTemplateScheduleList", authorityScheduleApi.GetTemplateScheduleList) // 分页获取基础menu列表
 	}
+	{
+		scheduleRouterWithoutRecord.POST("validateScheduleFormat", authorityScheduleApi.ValidateScheduleCronFormat)     // 获取菜单树
+	}
 	return scheduleRouter
 }

@@ -19,8 +19,12 @@ func (s *TaskRouter) InitTaskRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 		taskRouterWithoutRecord.POST("updateTask", authorityTaskApi.UpdateTask) // 更新菜单
 	}
 	{
-		taskRouterWithoutRecord.POST("getTaskById", authorityTaskApi.GetTaskById)     // 获取菜单树
+		taskRouterWithoutRecord.POST("getTaskById", authorityTaskApi.GetTaskById) // 获取菜单树
 		taskRouterWithoutRecord.POST("getTaskList", authorityTaskApi.GetTaskList) // 分页获取基础menu列表
+	}
+	{
+		taskRouterWithoutRecord.POST("getTaskOutputs", authorityTaskApi.GetTaskOutputs) // 获取菜单树
+		taskRouterWithoutRecord.POST("stopTask", authorityTaskApi.StopTask)             // 分页获取基础menu列表
 	}
 	return taskRouter
 }

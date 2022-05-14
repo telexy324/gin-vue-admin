@@ -19,8 +19,11 @@ func (s *ProjectRouter) InitProjectRouter(Router *gin.RouterGroup) (R gin.IRoute
 		projectRouterWithoutRecord.POST("updateProject", authorityProjectApi.UpdateProject) // 更新菜单
 	}
 	{
-		projectRouterWithoutRecord.POST("getProjectById", authorityProjectApi.GetProjectById)     // 获取菜单树
+		projectRouterWithoutRecord.POST("getProjectById", authorityProjectApi.GetProjectById) // 获取菜单树
 		projectRouterWithoutRecord.POST("getProjectList", authorityProjectApi.GetProjectList) // 分页获取基础menu列表
+	}
+	{
+		projectRouterWithoutRecord.POST("mustBeAdmin", authorityProjectApi.MustBeAdmin) // 获取菜单树
 	}
 	return projectRouter
 }

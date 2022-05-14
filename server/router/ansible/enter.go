@@ -3,9 +3,9 @@ package ansible
 type RouterGroup struct {
 	EnvironmentRouter
 	InventoryRouter
-	KeysRouter
+	KeyRouter
 	ProjectRouter
 	ScheduleRouter
 	TaskRouter
-	UsersRouter
+	UserRouter
 }
