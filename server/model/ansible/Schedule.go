@@ -9,3 +9,7 @@ type Schedule struct {
 	CronFormat     string  `gorm:"cron_format" json:"cron_format"`
 	LastCommitHash *string `gorm:"last_commit_hash" json:"-"`
 }
+
+func (m *Schedule) TableName() string {
+	return "ansible_schedules"
+}

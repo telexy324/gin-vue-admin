@@ -24,3 +24,7 @@ type Inventory struct {
 	// static/file
 	Type string `gorm:"type" json:"type"`
 }
+
+func (m *Inventory) TableName() string {
+	return "ansible_inventorys"
+}

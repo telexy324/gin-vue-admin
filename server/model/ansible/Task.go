@@ -77,3 +77,11 @@ type TaskOutput struct {
 	Time   time.Time `gorm:"time" json:"time"`
 	Output string    `gorm:"output" json:"output"`
 }
+
+func (m *Task) TableName() string {
+	return "ansible_tasks"
+}
+
+func (m *TaskOutput) TableName() string {
+	return "ansible_task_outputs"
+}

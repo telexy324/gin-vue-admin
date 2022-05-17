@@ -1,4 +1,4 @@
-CREATE TABLE `access_keys`
+CREATE TABLE `ansible_access_keys`
 (
     `id`         bigint UNSIGNED NOT NULL AUTO_INCREMENT,
     `created_at` datetime(0) NULL DEFAULT NULL,
@@ -11,7 +11,7 @@ CREATE TABLE `access_keys`
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-create table `environments`
+create table `ansible_environments`
 (
     `id`         bigint UNSIGNED NOT NULL AUTO_INCREMENT,
     `created_at` datetime(0) NULL DEFAULT NULL,
@@ -24,7 +24,7 @@ create table `environments`
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-create table `inventorys`
+create table `ansible_inventorys`
 (
     `id`            bigint UNSIGNED NOT NULL AUTO_INCREMENT,
     `created_at`    datetime(0) NULL DEFAULT NULL,
@@ -38,7 +38,7 @@ create table `inventorys`
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-create table `projects`
+create table `ansible_projects`
 (
     `id`                 bigint UNSIGNED NOT NULL AUTO_INCREMENT,
     `created_at`         datetime(0) NULL DEFAULT NULL,
@@ -52,7 +52,7 @@ create table `projects`
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-create table `project_users`
+create table `ansible_project_users`
 (
     `id`         bigint UNSIGNED NOT NULL AUTO_INCREMENT,
     `created_at` datetime(0) NULL DEFAULT NULL,
@@ -64,20 +64,20 @@ create table `project_users`
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-create table `environments`
+create table `ansible_schedules`
 (
     `id`               bigint UNSIGNED NOT NULL AUTO_INCREMENT,
     `created_at`       datetime(0) NULL DEFAULT NULL,
     `updated_at`       datetime(0) NULL DEFAULT NULL,
     `deleted_at`       datetime(0) NULL DEFAULT NULL,
     `project_id`       bigint UNSIGNED NOT NULL DEFAULT '0',
-    `template_id`      int primary key,
+    `template_id`      bigint UNSIGNED NOT NULL DEFAULT '0',
     `cron_format`      varchar(255) not null,
     `last_commit_hash` varchar(40)  NOT NULL DEFAULT '',
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-create table `tasks`
+create table `ansible_tasks`
 (
     `id`             bigint UNSIGNED NOT NULL AUTO_INCREMENT,
     `created_at`     datetime(0) NULL DEFAULT NULL,
@@ -103,7 +103,7 @@ create table `tasks`
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-create table `task_outputs`
+create table `ansible_task_outputs`
 (
     `id`         bigint UNSIGNED NOT NULL AUTO_INCREMENT,
     `created_at` datetime(0) NULL DEFAULT NULL,
@@ -118,7 +118,7 @@ create table `task_outputs`
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-create table `templates`
+create table `ansible_templates`
 (
     `id`                          bigint UNSIGNED NOT NULL AUTO_INCREMENT,
     `created_at`                  datetime(0) NULL DEFAULT NULL,

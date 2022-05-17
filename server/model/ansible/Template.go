@@ -71,3 +71,7 @@ type Template struct {
 
 	SuppressSuccessAlerts bool `gorm:"suppress_success_alerts" json:"suppress_success_alerts"`
 }
+
+func (m *Template) TableName() string {
+	return "ansible_templates"
+}

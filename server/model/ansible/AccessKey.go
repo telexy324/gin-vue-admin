@@ -32,6 +32,10 @@ type AccessKey struct {
 	InstallationKey int64 `gorm:"-" json:"-"`
 }
 
+func (m *AccessKey) TableName() string {
+	return "ansible_access_keys"
+}
+
 type LoginPassword struct {
 	Login    string `json:"login"`
 	Password string `json:"password"`
@@ -56,5 +60,3 @@ const (
 	AccessKeyRoleAnsiblePasswordVault
 	AccessKeyRoleGit
 )
-
-

@@ -26,3 +26,11 @@ type ProjectUser struct {
 	UserId    int `json:"userId" gorm:"column:user_id"`       // 管理员id
 	Admin     int `json:"admin" gorm:"column:admin"`          // 0 非主管 1 主管
 }
+
+func (m *Project) TableName() string {
+	return "ansible_projects"
+}
+
+func (m *ProjectUser) TableName() string {
+	return "ansible_project_users"
+}

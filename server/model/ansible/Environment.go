@@ -15,6 +15,10 @@ type Environment struct {
 	JSON      string  `gorm:"json" json:"json" binding:"required"`
 }
 
+func (m *Environment) TableName() string {
+	return "ansible_environments"
+}
+
 func (env *Environment) Validate() error {
 	if env.Name == "" {
 		return errors.New("environment name can not be empty")
