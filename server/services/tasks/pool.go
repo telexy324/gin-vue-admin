@@ -298,10 +298,10 @@ func (p *TaskPool) AddTask(taskObj ansible.Task, userID *int, projectID int) (ne
 			return
 		}
 		builds = buildList.([]ansible.TaskWithTpl)
-		if len(builds) == 0 || builds[0].Version == nil {
+		if len(builds) == 0 || builds[0].Task.Version == nil {
 			taskObj.Version = tpl.StartVersion
 		} else {
-			v := getNextBuildVersion(*tpl.StartVersion, *builds[0].Version)
+			v := getNextBuildVersion(*tpl.StartVersion, *builds[0].Task.Version)
 			taskObj.Version = &v
 		}
 	}

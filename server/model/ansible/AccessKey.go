@@ -1,5 +1,7 @@
 package ansible
 
+import "github.com/flipped-aurora/gin-vue-admin/server/global"
+
 type AccessKeyType string
 
 const (
@@ -11,23 +13,23 @@ const (
 
 // AccessKey represents a key used to access a machine with ansible from semaphore
 type AccessKey struct {
-	ID   int    `db:"id" json:"id"`
-	Name string `db:"name" json:"name" binding:"required"`
+	global.GVA_MODEL
+	Name string `gorm:"name" json:"name" binding:"required"`
 	// 'ssh/login_password/none'
-	Type AccessKeyType `db:"type" json:"type" binding:"required"`
+	Type AccessKeyType `gorm:"type" json:"type" binding:"required"`
 
-	ProjectID *int `db:"project_id" json:"project_id"`
+	ProjectID *int `gorm:"project_id" json:"project_id"`
 
 	// Secret used internally, do not assign this field.
 	// You should use methods SerializeSecret to fill this field.
-	Secret *string `db:"secret" json:"-"`
+	Secret *string `gorm:"secret" json:"-"`
 
-	LoginPassword  LoginPassword `db:"-" json:"login_password"`
-	SshKey         SshKey        `db:"-" json:"ssh"`
-	PAT            string        `db:"-" json:"pat"`
-	OverrideSecret bool          `db:"-" json:"override_secret"`
+	LoginPassword  LoginPassword `gorm:"-" json:"login_password"`
+	SshKey         SshKey        `gorm:"-" json:"ssh"`
+	PAT            string        `gorm:"-" json:"pat"`
+	OverrideSecret bool          `gorm:"-" json:"override_secret"`
 
-	InstallationKey int64 `db:"-" json:"-"`
+	InstallationKey int64 `gorm:"-" json:"-"`
 }
 
 type LoginPassword struct {

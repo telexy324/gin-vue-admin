@@ -30,7 +30,6 @@ func (schedulesService *SchedulesService) UpdateSchedule(schedule ansible.Schedu
 	var oldSchedule ansible.Schedule
 	upDateMap := make(map[string]interface{})
 	upDateMap["cron_format"] = schedule.CronFormat
-	upDateMap["repository_id"] = schedule.RepositoryID
 
 	err := global.GVA_DB.Transaction(func(tx *gorm.DB) error {
 		db := tx.Where("id = ? and project_id = ?", schedule.ID, schedule.ProjectID).Find(&oldSchedule)

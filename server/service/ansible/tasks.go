@@ -152,8 +152,8 @@ func (taskService *TaskService) ValidateNewTask(template ansible.Template) error
 }
 
 func (taskService *TaskService) Fill(task ansible.TaskWithTpl) error {
-	if task.BuildTaskID != nil {
-		build, err := taskService.GetTask(task.ProjectID, *task.BuildTaskID)
+	if task.Task.BuildTaskID != nil {
+		build, err := taskService.GetTask(task.Task.ProjectID, *task.Task.BuildTaskID)
 		if err == gorm.ErrRecordNotFound {
 			return nil
 		}

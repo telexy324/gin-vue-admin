@@ -1,5 +1,7 @@
 package ansible
 
+import "github.com/flipped-aurora/gin-vue-admin/server/global"
+
 type TemplateType string
 
 const (
@@ -31,42 +33,41 @@ type TemplateFilter struct {
 
 // Template is a user defined model that is used to run a task
 type Template struct {
-	ID int `db:"id" json:"id"`
+	global.GVA_MODEL
 
-	ProjectID     int  `db:"project_id" json:"project_id"`
-	InventoryID   int  `db:"inventory_id" json:"inventory_id"`
-	RepositoryID  int  `db:"repository_id" json:"repository_id"`
-	EnvironmentID *int `db:"environment_id" json:"environment_id"`
+	ProjectID     int  `gorm:"project_id" json:"project_id"`
+	InventoryID   int  `gorm:"inventory_id" json:"inventory_id"`
+	EnvironmentID *int `gorm:"environment_id" json:"environment_id"`
 
 	// Name as described in https://github.com/ansible-semaphore/semaphore/issues/188
-	Name string `db:"name" json:"name"`
+	Name string `gorm:"name" json:"name"`
 	// playbook name in the form of "some_play.yml"
-	Playbook string `db:"playbook" json:"playbook"`
+	Playbook string `gorm:"playbook" json:"playbook"`
 	// to fit into []string
-	Arguments *string `db:"arguments" json:"arguments"`
+	Arguments *string `gorm:"arguments" json:"arguments"`
 	// if true, semaphore will not prepend any arguments to `arguments` like inventory, etc
-	AllowOverrideArgsInTask bool `db:"allow_override_args_in_task" json:"allow_override_args_in_task"`
+	AllowOverrideArgsInTask bool `gorm:"allow_override_args_in_task" json:"allow_override_args_in_task"`
 
-	Description *string `db:"description" json:"description"`
+	Description *string `gorm:"description" json:"description"`
 
-	VaultKeyID *int      `db:"vault_key_id" json:"vault_key_id"`
-	VaultKey   AccessKey `db:"-" json:"-"`
+	VaultKeyID *int      `gorm:"vault_key_id" json:"vault_key_id"`
+	VaultKey   AccessKey `gorm:"-" json:"-"`
 
-	Type            TemplateType `db:"type" json:"type"`
-	StartVersion    *string      `db:"start_version" json:"start_version"`
-	BuildTemplateID *int         `db:"build_template_id" json:"build_template_id"`
+	Type            TemplateType `gorm:"type" json:"type"`
+	StartVersion    *string      `gorm:"start_version" json:"start_version"`
+	BuildTemplateID *int         `gorm:"build_template_id" json:"build_template_id"`
 
-	ViewID *int `db:"view_id" json:"view_id"`
+	ViewID *int `gorm:"view_id" json:"view_id"`
 
-	LastTask *TaskWithTpl `db:"-" json:"last_task"`
+	LastTask *TaskWithTpl `gorm:"-" json:"last_task"`
 
-	Autorun bool `db:"autorun" json:"autorun"`
+	Autorun bool `gorm:"autorun" json:"autorun"`
 
 	// SurveyVarsJSON used internally for read from database.
 	// It is not used for store survey vars to database.
 	// Do not use it in your code. Use SurveyVars instead.
-	SurveyVarsJSON *string     `db:"survey_vars" json:"-"`
-	SurveyVars     []SurveyVar `db:"-" json:"survey_vars"`
+	SurveyVarsJSON *string     `gorm:"survey_vars" json:"-"`
+	SurveyVars     []SurveyVar `gorm:"-" json:"survey_vars"`
 
-	SuppressSuccessAlerts bool `db:"suppress_success_alerts" json:"suppress_success_alerts"`
+	SuppressSuccessAlerts bool `gorm:"suppress_success_alerts" json:"suppress_success_alerts"`
 }

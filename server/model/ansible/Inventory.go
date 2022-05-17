@@ -1,5 +1,7 @@
 package ansible
 
+import "github.com/flipped-aurora/gin-vue-admin/server/global"
+
 const (
 	InventoryStatic = "static"
 	InventoryFile   = "file"
@@ -7,18 +9,18 @@ const (
 
 // Inventory is the model of an ansible inventory file
 type Inventory struct {
-	ID        int    `db:"id" json:"id"`
-	Name      string `db:"name" json:"name" binding:"required"`
-	ProjectID int    `db:"project_id" json:"project_id"`
-	Inventory string `db:"inventory" json:"inventory"`
+	global.GVA_MODEL
+	Name      string `gorm:"name" json:"name" binding:"required"`
+	ProjectID int    `gorm:"project_id" json:"project_id"`
+	Inventory string `gorm:"inventory" json:"inventory"`
 
 	// accesses hosts in inventory
-	SSHKeyID *int      `db:"ssh_key_id" json:"ssh_key_id"`
-	SSHKey   AccessKey `db:"-" json:"-"`
+	SSHKeyID *int      `gorm:"ssh_key_id" json:"ssh_key_id"`
+	SSHKey   AccessKey `gorm:"-" json:"-"`
 
-	BecomeKeyID *int      `db:"become_key_id" json:"become_key_id"`
-	BecomeKey   AccessKey `db:"-" json:"-"`
+	BecomeKeyID *int      `gorm:"become_key_id" json:"become_key_id"`
+	BecomeKey   AccessKey `gorm:"-" json:"-"`
 
 	// static/file
-	Type string `db:"type" json:"type"`
+	Type string `gorm:"type" json:"type"`
 }

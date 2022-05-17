@@ -3,15 +3,16 @@ package ansible
 import (
 	"encoding/json"
 	"errors"
+	"github.com/flipped-aurora/gin-vue-admin/server/global"
 )
 
 // Environment is used to pass additional arguments, in json form to ansible
 type Environment struct {
-	ID        int     `db:"id" json:"id"`
-	Name      string  `db:"name" json:"name" binding:"required"`
-	ProjectID int     `db:"project_id" json:"project_id"`
-	Password  *string `db:"password" json:"password"`
-	JSON      string  `db:"json" json:"json" binding:"required"`
+	global.GVA_MODEL
+	Name      string  `gorm:"name" json:"name" binding:"required"`
+	ProjectID int     `gorm:"project_id" json:"project_id"`
+	Password  *string `gorm:"password" json:"password"`
+	JSON      string  `gorm:"json" json:"json" binding:"required"`
 }
 
 func (env *Environment) Validate() error {

@@ -25,7 +25,6 @@ func (templateService *TemplatesService) UpdateTemplate(template ansible.Templat
 	_, surveyVarsJson := json.Marshal(template.SurveyVars)
 	upDateMap := make(map[string]interface{})
 	upDateMap["inventory_id"] = template.InventoryID
-	upDateMap["repository_id"] = template.RepositoryID
 	upDateMap["environment_id"] = template.EnvironmentID
 	upDateMap["name"] = template.Name
 	upDateMap["playbook"] = template.Playbook
@@ -147,7 +146,7 @@ func (templateService *TemplatesService) FillTemplates(templates []ansible.Templ
 	for i := range templates {
 		tpl := &templates[i]
 		var tasks []ansible.TaskWithTpl
-		e, iTasks, _ := TaskServiceApp.GetTemplateTasks(tpl.ProjectID, tpl.ID, request.PageInfo{
+		e, iTasks, _ := TaskServiceApp.GetTemplateTasks(tpl.ProjectID, int(tpl.ID), request.PageInfo{
 			Page:     1,
 			PageSize: 1,
 		})

@@ -1,5 +1,256 @@
 basePath: /
 definitions:
+  ansible.AccessKey:
+    properties:
+      id:
+        type: integer
+      login_password:
+        $ref: '#/definitions/ansible.LoginPassword'
+      name:
+        type: string
+      override_secret:
+        type: boolean
+      pat:
+        type: string
+      project_id:
+        type: integer
+      ssh:
+        $ref: '#/definitions/ansible.SshKey'
+      type:
+        description: '''ssh/login_password/none'''
+        type: string
+    required:
+    - name
+    - type
+    type: object
+  ansible.Environment:
+    properties:
+      id:
+        type: integer
+      json:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+      project_id:
+        type: integer
+    required:
+    - json
+    - name
+    type: object
+  ansible.Inventory:
+    properties:
+      become_key_id:
+        type: integer
+      id:
+        type: integer
+      inventory:
+        type: string
+      name:
+        type: string
+      project_id:
+        type: integer
+      ssh_key_id:
+        description: accesses hosts in inventory
+        type: integer
+      type:
+        description: static/file
+        type: string
+    required:
+    - name
+    type: object
+  ansible.LoginPassword:
+    properties:
+      login:
+        type: string
+      password:
+        type: string
+    type: object
+  ansible.Project:
+    properties:
+      alert:
+        type: boolean
+      alert_chat:
+        type: string
+      created:
+        type: string
+      createdAt:
+        description: 创建时间
+        type: string
+      id:
+        description: 主键ID
+        type: integer
+      max_parallel_tasks:
+        type: integer
+      name:
+        type: string
+      updatedAt:
+        description: 更新时间
+        type: string
+    required:
+    - name
+    type: object
+  ansible.Schedule:
+    properties:
+      cron_format:
+        type: string
+      id:
+        type: integer
+      project_id:
+        type: integer
+      repository_id:
+        type: integer
+      template_id:
+        type: integer
+    type: object
+  ansible.SshKey:
+    properties:
+      login:
+        type: string
+      passphrase:
+        type: string
+      private_key:
+        type: string
+    type: object
+  ansible.SurveyVar:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      required:
+        type: boolean
+      title:
+        type: string
+      type:
+        type: string
+    type: object
+  ansible.Task:
+    properties:
+      arguments:
+        type: string
+      build_task_id:
+        type: integer
+      commit_hash:
+        description: |-
+          CommitMessage is a git commit hash of playbook repository which
+          was active when task was created.
+        type: string
+      commit_message:
+        description: |-
+          CommitMessage contains message retrieved from git repository after checkout to CommitHash.
+          It is readonly by API.
+        type: string
+      created:
+        type: string
+      createdAt:
+        description: 创建时间
+        type: string
+      debug:
+        type: boolean
+      dry_run:
+        type: boolean
+      end:
+        type: string
+      environment:
+        type: string
+      id:
+        description: 主键ID
+        type: integer
+      message:
+        type: string
+      playbook:
+        description: override variables
+        type: string
+      project:
+        $ref: '#/definitions/ansible.Project'
+      project_id:
+        type: integer
+      start:
+        type: string
+      status:
+        type: string
+      template:
+        $ref: '#/definitions/ansible.Template'
+      template_id:
+        type: integer
+      updatedAt:
+        description: 更新时间
+        type: string
+      user:
+        $ref: '#/definitions/system.SysUser'
+      user_id:
+        type: integer
+      version:
+        description: |-
+          Version is a build version.
+          This field available only for Build tasks.
+        type: string
+    type: object
+  ansible.TaskWithTpl:
+    properties:
+      build_task:
+        $ref: '#/definitions/ansible.Task'
+      task:
+        $ref: '#/definitions/ansible.Task'
+      tpl_alias:
+        type: string
+      tpl_playbook:
+        type: string
+      tpl_type:
+        type: string
+      user_name:
+        type: string
+    type: object
+  ansible.Template:
+    properties:
+      allow_override_args_in_task:
+        description: if true, semaphore will not prepend any arguments to `arguments`
+          like inventory, etc
+        type: boolean
+      arguments:
+        description: to fit into []string
+        type: string
+      autorun:
+        type: boolean
+      build_template_id:
+        type: integer
+      description:
+        type: string
+      environment_id:
+        type: integer
+      id:
+        type: integer
+      inventory_id:
+        type: integer
+      last_task:
+        $ref: '#/definitions/ansible.TaskWithTpl'
+      name:
+        description: Name as described in https://github.com/ansible-semaphore/semaphore/issues/188
+        type: string
+      playbook:
+        description: playbook name in the form of "some_play.yml"
+        type: string
+      project_id:
+        type: integer
+      repository_id:
+        type: integer
+      start_version:
+        type: string
+      suppress_success_alerts:
+        type: boolean
+      survey_vars:
+        items:
+          $ref: '#/definitions/ansible.SurveyVar'
+        type: array
+      type:
+        type: string
+      vault_key_id:
+        type: integer
+      view_id:
+        type: integer
+    type: object
   application.Admin:
     properties:
       createdAt:
@@ -53,7 +304,7 @@ definitions:
       apps:
         description: 安装应用列表
         items:
-          type: integer
+          $ref: '#/definitions/application.App'
         type: array
       architecture:
         description: 架构
@@ -175,6 +426,42 @@ definitions:
       bucketUrl:
         type: string
       endpoint:
+        type: string
+    type: object
+  config.Ansible:
+    properties:
+      access_key_encryption:
+        type: string
+      email_alert:
+        description: feature switches
+        type: boolean
+      email_host:
+        type: string
+      email_password:
+        type: string
+      email_port:
+        type: string
+      email_secure:
+        type: boolean
+      email_sender:
+        description: email alerting
+        type: string
+      email_username:
+        type: string
+      max_parallel_tasks:
+        description: task concurrency
+        type: integer
+      telegram_alert:
+        type: boolean
+      telegram_chat:
+        description: telegram alerting
+        type: string
+      telegram_token:
+        type: string
+      tmp-path:
+        type: string
+      web_host:
+        description: web host
         type: string
     type: object
   config.Autocode:
@@ -356,6 +643,8 @@ definitions:
     properties:
       aliyunOSS:
         $ref: '#/definitions/config.AliyunOSS'
+      ansible:
+        $ref: '#/definitions/config.Ansible'
       autoCode:
         $ref: '#/definitions/config.Autocode'
         description: auto
@@ -526,6 +815,28 @@ definitions:
           $ref: '#/definitions/system.SysBaseMenu'
         type: array
     type: object
+  github.com_flipped-aurora_gin-vue-admin_server_model_ansible_request.GetById:
+    properties:
+      id:
+        description: 主键ID
+        type: number
+      page:
+        description: 页码
+        type: integer
+      pageSize:
+        description: 每页大小
+        type: integer
+      sortBy:
+        type: string
+      sortInverted:
+        type: boolean
+    type: object
+  github.com_flipped-aurora_gin-vue-admin_server_model_common_request.GetById:
+    properties:
+      id:
+        description: 主键ID
+        type: number
+    type: object
   request.AddMenuAuthorityInfo:
     properties:
       authorityId:
@@ -547,6 +858,77 @@ definitions:
         items:
           $ref: '#/definitions/application.ApplicationSystemAdmin'
         type: array
+    type: object
+  request.AddTaskByProjectId:
+    properties:
+      arguments:
+        type: string
+      build_task_id:
+        type: integer
+      commit_hash:
+        description: |-
+          CommitMessage is a git commit hash of playbook repository which
+          was active when task was created.
+        type: string
+      commit_message:
+        description: |-
+          CommitMessage contains message retrieved from git repository after checkout to CommitHash.
+          It is readonly by API.
+        type: string
+      created:
+        type: string
+      createdAt:
+        description: 创建时间
+        type: string
+      debug:
+        type: boolean
+      dry_run:
+        type: boolean
+      end:
+        type: string
+      environment:
+        type: string
+      id:
+        description: 主键ID
+        type: integer
+      message:
+        type: string
+      playbook:
+        description: override variables
+        type: string
+      project:
+        $ref: '#/definitions/ansible.Project'
+      project_id:
+        type: integer
+      start:
+        type: string
+      status:
+        type: string
+      template:
+        $ref: '#/definitions/ansible.Template'
+      template_id:
+        type: integer
+      updatedAt:
+        description: 更新时间
+        type: string
+      user:
+        $ref: '#/definitions/system.SysUser'
+      user_id:
+        type: integer
+      version:
+        description: |-
+          Version is a build version.
+          This field available only for Build tasks.
+        type: string
+    type: object
+  request.AddUserByProjectId:
+    properties:
+      admin:
+        type: integer
+      project_id:
+        type: number
+      user_id:
+        type: number
     type: object
   request.AutoHistoryByID:
     properties:
@@ -584,6 +966,13 @@ definitions:
         description: 用户名
         type: string
     type: object
+  request.DeleteUserByProjectId:
+    properties:
+      project_id:
+        type: number
+      user_id:
+        type: number
+    type: object
   request.Empty:
     type: object
   request.ExcelInfo:
@@ -606,10 +995,62 @@ definitions:
         description: 角色ID
         type: string
     type: object
-  request.GetById:
+  request.GetByProjectId:
     properties:
       id:
         description: 主键ID
+        type: number
+      page:
+        description: 页码
+        type: integer
+      pageSize:
+        description: 每页大小
+        type: integer
+      project_id:
+        type: number
+      sortBy:
+        type: string
+      sortInverted:
+        type: boolean
+    type: object
+  request.GetScheduleByTemplateId:
+    properties:
+      id:
+        description: 主键ID
+        type: number
+      page:
+        description: 页码
+        type: integer
+      pageSize:
+        description: 每页大小
+        type: integer
+      project_id:
+        type: number
+      sortBy:
+        type: string
+      sortInverted:
+        type: boolean
+      template_id:
+        type: number
+    type: object
+  request.GetTaskByTemplateId:
+    properties:
+      id:
+        description: 主键ID
+        type: number
+      page:
+        description: 页码
+        type: integer
+      pageSize:
+        description: 每页大小
+        type: integer
+      project_id:
+        type: number
+      sortBy:
+        type: string
+      sortInverted:
+        type: boolean
+      template_id:
         type: number
     type: object
   request.IdsReq:
@@ -1084,6 +1525,8 @@ definitions:
       createdAt:
         description: 创建时间
         type: string
+      email:
+        type: string
       headerImg:
         description: 用户头像
         type: string
@@ -1117,6 +1560,995 @@ info:
   title: Swagger Example API
   version: 0.0.1
 paths:
+  /ansible/environment/addEnvironment:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Environment
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/ansible.Environment'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"添加成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 新增Environment
+      tags:
+      - Environment
+  /ansible/environment/deleteEnvironment:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: EnvronmentId
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetByProjectId'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"删除成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 删除Environment
+      tags:
+      - Environment
+  /ansible/environment/getEnvironmentById:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: EnvironmentId
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetByProjectId'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 根据id获取Environment
+      tags:
+      - Environment
+  /ansible/environment/getEnvironmentList:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 页码, 每页大小
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetByProjectId'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 分页获取基础Environment列表
+      tags:
+      - Environment
+  /ansible/environment/updateEnvironment:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 主机名, 架构, 管理ip, 系统, 系统版本
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/ansible.Environment'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"更新成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 更新Environment
+      tags:
+      - Environment
+  /ansible/inventory/addInventory:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Inventory
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/ansible.Inventory'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"添加成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 新增Inventory
+      tags:
+      - Inventory
+  /ansible/inventory/deleteInventory:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: InventoryId
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetByProjectId'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"删除成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 删除Inventory
+      tags:
+      - Inventory
+  /ansible/inventory/getInventoryById:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: InventoryId
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetByProjectId'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 根据id获取Inventory
+      tags:
+      - Inventory
+  /ansible/inventory/getInventoryList:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 页码, 每页大小
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetByProjectId'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 分页获取基础Inventory列表
+      tags:
+      - Inventory
+  /ansible/inventory/updateInventory:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 主机名, 架构, 管理ip, 系统, 系统版本
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/ansible.Inventory'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"更新成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 更新Inventory
+      tags:
+      - Inventory
+  /ansible/key/addKey:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Keys
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/ansible.AccessKey'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"添加成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 新增Key
+      tags:
+      - Key
+  /ansible/key/deleteKey:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: KeyId
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetByProjectId'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"删除成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 删除Key
+      tags:
+      - Key
+  /ansible/key/getKeyById:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: KeyId
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetByProjectId'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 根据id获取Key
+      tags:
+      - Key
+  /ansible/key/getKeyList:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 页码, 每页大小
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetByProjectId'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 分页获取基础Key列表
+      tags:
+      - Key
+  /ansible/key/updateKey:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 主机名, 架构, 管理ip, 系统, 系统版本
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/ansible.AccessKey'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"更新成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 更新Key
+      tags:
+      - Key
+  /ansible/project/addProject:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Project
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/ansible.Project'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"添加成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 新增Project
+      tags:
+      - Project
+  /ansible/project/deleteProject:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: ProjectId
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/github.com_flipped-aurora_gin-vue-admin_server_model_ansible_request.GetById'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"删除成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 删除Project
+      tags:
+      - Project
+  /ansible/project/getProjectById:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: ProjectId
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/github.com_flipped-aurora_gin-vue-admin_server_model_ansible_request.GetById'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 根据id获取Project
+      tags:
+      - Project
+  /ansible/project/getProjectList:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 页码, 每页大小
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/github.com_flipped-aurora_gin-vue-admin_server_model_ansible_request.GetById'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 分页获取基础Project列表
+      tags:
+      - Project
+  /ansible/project/mustBeAdmin:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 主机名, 架构, 管理ip, 系统, 系统版本
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetByProjectId'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"更新成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 检验是否为管理员
+      tags:
+      - Project
+  /ansible/project/updateProject:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 主机名, 架构, 管理ip, 系统, 系统版本
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/ansible.Project'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"更新成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 更新Project
+      tags:
+      - Project
+  /ansible/schedule/addSchedule:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Schedule
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/ansible.Schedule'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"添加成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 新增Schedule
+      tags:
+      - Schedule
+  /ansible/schedule/deleteSchedule:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: ScheduleId
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetByProjectId'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"删除成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 删除Schedule
+      tags:
+      - Schedule
+  /ansible/schedule/getScheduleById:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: EnvironmentId
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetByProjectId'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 根据id获取Schedule
+      tags:
+      - Schedule
+  /ansible/schedule/getTemplateScheduleList:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 页码, 每页大小
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetScheduleByTemplateId'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 分页获取基础Schedule列表
+      tags:
+      - Schedule
+  /ansible/schedule/updateSchedule:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 主机名, 架构, 管理ip, 系统, 系统版本
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/ansible.Schedule'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"更新成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 更新Schedule
+      tags:
+      - Schedule
+  /ansible/schedule/validateScheduleFormat:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Schedule
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/ansible.Schedule'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"添加成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 确认Schedule
+      tags:
+      - Schedule
+  /ansible/task/addTask:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Task
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.AddTaskByProjectId'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"添加成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 新增Task
+      tags:
+      - Task
+  /ansible/task/deleteTask:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: TaskId
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetByProjectId'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"删除成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 删除Task
+      tags:
+      - Task
+  /ansible/task/getTaskById:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: TaskId
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetByProjectId'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 根据id获取Task
+      tags:
+      - Task
+  /ansible/task/getTaskList:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 页码, 每页大小
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetTaskByTemplateId'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 分页获取基础Task列表
+      tags:
+      - Task
+  /ansible/task/getTaskOutputs:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: TaskId
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetByProjectId'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 根据id获取TaskOutputs
+      tags:
+      - Task
+  /ansible/task/stopTask:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: TaskId
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetByProjectId'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 停止Task
+      tags:
+      - Task
+  /ansible/task/updateTask:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 主机名, 架构, 管理ip, 系统, 系统版本
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/ansible.Task'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"更新成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 更新Task
+      tags:
+      - Task
+  /ansible/template/addTemplate:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Template
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/ansible.Template'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"添加成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 新增Template
+      tags:
+      - Template
+  /ansible/template/deleteTemplate:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: TemplateId
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetByProjectId'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"删除成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 删除Template
+      tags:
+      - Template
+  /ansible/template/getTemplateById:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: TemplateId
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetByProjectId'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 根据id获取Template
+      tags:
+      - Template
+  /ansible/template/getTemplateList:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 页码, 每页大小
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetByProjectId'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 分页获取基础Template列表
+      tags:
+      - Template
+  /ansible/template/updateTemplate:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 主机名, 架构, 管理ip, 系统, 系统版本
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/ansible.Template'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"更新成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 更新Template
+      tags:
+      - Template
+  /ansible/user/addUser:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: User
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.AddUserByProjectId'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"添加成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 新增User
+      tags:
+      - User
+  /ansible/user/deleteUser:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: EnvronmentId
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.DeleteUserByProjectId'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"删除成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 删除User
+      tags:
+      - User
+  /ansible/user/getProjectUsers:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 页码, 每页大小
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetByProjectId'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 分页获取基础User列表
+      tags:
+      - User
+  /ansible/user/updateUser:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 主机名, 架构, 管理ip, 系统, 系统版本
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.AddUserByProjectId'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"更新成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 更新User
+      tags:
+      - User
   /api/createApi:
     post:
       consumes:
@@ -1212,7 +2644,7 @@ paths:
         name: data
         required: true
         schema:
-          $ref: '#/definitions/request.GetById'
+          $ref: '#/definitions/github.com_flipped-aurora_gin-vue-admin_server_model_common_request.GetById'
       produces:
       - application/json
       responses:
@@ -1921,7 +3353,7 @@ paths:
         name: data
         required: true
         schema:
-          $ref: '#/definitions/request.GetById'
+          $ref: '#/definitions/github.com_flipped-aurora_gin-vue-admin_server_model_common_request.GetById'
       produces:
       - application/json
       responses:
@@ -1944,7 +3376,7 @@ paths:
         name: data
         required: true
         schema:
-          $ref: '#/definitions/request.GetById'
+          $ref: '#/definitions/github.com_flipped-aurora_gin-vue-admin_server_model_common_request.GetById'
       produces:
       - application/json
       responses:
@@ -1967,7 +3399,7 @@ paths:
         name: data
         required: true
         schema:
-          $ref: '#/definitions/request.GetById'
+          $ref: '#/definitions/github.com_flipped-aurora_gin-vue-admin_server_model_common_request.GetById'
       produces:
       - application/json
       responses:
@@ -1990,7 +3422,7 @@ paths:
         name: data
         required: true
         schema:
-          $ref: '#/definitions/request.GetById'
+          $ref: '#/definitions/github.com_flipped-aurora_gin-vue-admin_server_model_common_request.GetById'
       produces:
       - application/json
       responses:
@@ -2048,7 +3480,7 @@ paths:
         name: data
         required: true
         schema:
-          $ref: '#/definitions/request.GetById'
+          $ref: '#/definitions/github.com_flipped-aurora_gin-vue-admin_server_model_common_request.GetById'
       produces:
       - application/json
       responses:
@@ -2094,7 +3526,7 @@ paths:
         name: data
         required: true
         schema:
-          $ref: '#/definitions/request.GetById'
+          $ref: '#/definitions/github.com_flipped-aurora_gin-vue-admin_server_model_common_request.GetById'
       produces:
       - application/json
       responses:
@@ -2156,7 +3588,7 @@ paths:
         name: data
         required: true
         schema:
-          $ref: '#/definitions/request.GetById'
+          $ref: '#/definitions/github.com_flipped-aurora_gin-vue-admin_server_model_common_request.GetById'
       produces:
       - application/json
       responses:
@@ -2202,7 +3634,7 @@ paths:
         name: data
         required: true
         schema:
-          $ref: '#/definitions/request.GetById'
+          $ref: '#/definitions/github.com_flipped-aurora_gin-vue-admin_server_model_common_request.GetById'
       produces:
       - application/json
       responses:
@@ -2248,7 +3680,7 @@ paths:
         name: data
         required: true
         schema:
-          $ref: '#/definitions/request.GetById'
+          $ref: '#/definitions/github.com_flipped-aurora_gin-vue-admin_server_model_common_request.GetById'
       produces:
       - application/json
       responses:
@@ -2316,7 +3748,7 @@ paths:
         name: data
         required: true
         schema:
-          $ref: '#/definitions/request.GetById'
+          $ref: '#/definitions/github.com_flipped-aurora_gin-vue-admin_server_model_common_request.GetById'
       produces:
       - application/json
       responses:
@@ -2362,7 +3794,7 @@ paths:
         name: data
         required: true
         schema:
-          $ref: '#/definitions/request.GetById'
+          $ref: '#/definitions/github.com_flipped-aurora_gin-vue-admin_server_model_common_request.GetById'
       produces:
       - application/json
       responses:
@@ -2950,7 +4382,7 @@ paths:
         name: data
         required: true
         schema:
-          $ref: '#/definitions/request.GetById'
+          $ref: '#/definitions/github.com_flipped-aurora_gin-vue-admin_server_model_common_request.GetById'
       produces:
       - application/json
       responses:
@@ -2973,7 +4405,7 @@ paths:
         name: data
         required: true
         schema:
-          $ref: '#/definitions/request.GetById'
+          $ref: '#/definitions/github.com_flipped-aurora_gin-vue-admin_server_model_common_request.GetById'
       produces:
       - application/json
       responses:
@@ -3748,7 +5180,7 @@ paths:
         name: data
         required: true
         schema:
-          $ref: '#/definitions/request.GetById'
+          $ref: '#/definitions/github.com_flipped-aurora_gin-vue-admin_server_model_common_request.GetById'
       produces:
       - application/json
       responses:

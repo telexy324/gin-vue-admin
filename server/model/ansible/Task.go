@@ -61,7 +61,7 @@ type Task struct {
 
 // TaskWithTpl is the task data with additional fields
 type TaskWithTpl struct {
-	Task
+	Task             Task         `gorm:"-" json:"task"`
 	TemplatePlaybook string       `gorm:"-" json:"tpl_playbook"`
 	TemplateAlias    string       `gorm:"-" json:"tpl_alias"`
 	TemplateType     TemplateType `gorm:"-" json:"tpl_type"`
