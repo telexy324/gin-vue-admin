@@ -13,11 +13,11 @@ const (
 // Project is the top level structure in Semaphore
 type Project struct {
 	global.GVA_MODEL
-	Name             string    `gorm:"name" json:"name" binding:"required"`
-	Created          time.Time `gorm:"created" json:"created"`
-	Alert            bool      `gorm:"alert" json:"alert"`
-	AlertChat        *string   `gorm:"alert_chat" json:"alert_chat"`
-	MaxParallelTasks int       `gorm:"max_parallel_tasks" json:"max_parallel_tasks"`
+	Name             string    `gorm:"column:name" json:"name" binding:"required"`
+	Created          time.Time `gorm:"column:created" json:"created"`
+	Alert            bool      `gorm:"column:alert" json:"alert"`
+	AlertChat        *string   `gorm:"column:alert_chat" json:"alert_chat"`
+	MaxParallelTasks int       `gorm:"column:max_parallel_tasks" json:"max_parallel_tasks"`
 }
 
 type ProjectUser struct {

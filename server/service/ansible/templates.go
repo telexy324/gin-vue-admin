@@ -16,7 +16,13 @@ type TemplatesService struct {
 var TemplatesServiceApp = new(TemplatesService)
 
 func (templateService *TemplatesService) CreateTemplate(template ansible.Template) (ansible.Template, error) {
-	err := global.GVA_DB.Create(&template).Error
+	surveyVarJson, err := json.Marshal(template.SurveyVars)
+	if err != nil {
+		return template, err
+	}
+	s := string(surveyVarJson)
+	template.SurveyVarsJSON = &s
+	err = global.GVA_DB.Create(&template).Error
 	return template, err
 }
 
@@ -99,7 +105,7 @@ func (templateService *TemplatesService) GetTemplates(info request2.GetByProject
 		return
 	}
 	err = templateService.FillTemplates(templates)
-	return
+	return err, templates, total
 }
 
 func (templateService *TemplatesService) GetTemplate(projectID float64, templateID float64) (template ansible.Template, err error) {

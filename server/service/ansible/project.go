@@ -24,12 +24,15 @@ func (projectService *ProjectService) GetProjects(userID int,info request.GetByI
 	offset := info.PageSize * (info.Page - 1)
 	var projects []ansible.Project
 	db := global.GVA_DB.Model(&ansible.Project{})
-	order := ""
-	if info.SortInverted {
-		order = "desc"
+	db = db.Joins("inner join ansible_project_users on ansible_projects.id = ansible_project_users.project_id").
+		Where("ansible_project_users.user_id=?", userID)
+	if info.SortBy != "" {
+		order := ""
+		if info.SortInverted {
+			order = "desc"
+		}
+		db = db.Order(info.SortBy + " " + order)
 	}
-	db = db.Joins("inner join project_user on id = project_user.project_id").
-		Where("project_user.user_id=?", userID).Order(info.SortBy + " " + order)
 	err = db.Count(&total).Error
 	if err != nil {
 		return

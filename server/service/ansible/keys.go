@@ -67,11 +67,14 @@ func (keyService *KeyService) GetAccessKeys(info request.GetByProjectId) (err er
 	offset := info.PageSize * (info.Page - 1)
 	var keys []ansible.AccessKey
 	db := global.GVA_DB.Model(&ansible.AccessKey{})
-	order := ""
-	if info.SortInverted {
-		order = "desc"
+	db = db.Where("project_id=?", info.ProjectId)
+	if info.SortBy != "" {
+		order := ""
+		if info.SortInverted {
+			order = "desc"
+		}
+		db = db.Order(info.SortBy + " " + order)
 	}
-	db = db.Where("project_id=?", info.ProjectId).Order(info.SortBy + " " + order)
 	err = db.Count(&total).Error
 	if err != nil {
 		return

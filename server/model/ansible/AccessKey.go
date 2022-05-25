@@ -14,15 +14,15 @@ const (
 // AccessKey represents a key used to access a machine with ansible from semaphore
 type AccessKey struct {
 	global.GVA_MODEL
-	Name string `gorm:"name" json:"name" binding:"required"`
+	Name string `gorm:"column:name" json:"name"`
 	// 'ssh/login_password/none'
-	Type AccessKeyType `gorm:"type" json:"type" binding:"required"`
+	Type AccessKeyType `gorm:"column:type" json:"type"`
 
-	ProjectID *int `gorm:"project_id" json:"project_id"`
+	ProjectID *int `gorm:"column:project_id" json:"project_id"`
 
 	// Secret used internally, do not assign this field.
 	// You should use methods SerializeSecret to fill this field.
-	Secret *string `gorm:"secret" json:"-"`
+	Secret *string `gorm:"column:secret" json:"-"`
 
 	LoginPassword  LoginPassword `gorm:"-" json:"login_password"`
 	SshKey         SshKey        `gorm:"-" json:"ssh"`

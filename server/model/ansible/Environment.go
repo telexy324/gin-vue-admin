@@ -9,10 +9,10 @@ import (
 // Environment is used to pass additional arguments, in json form to ansible
 type Environment struct {
 	global.GVA_MODEL
-	Name      string  `gorm:"name" json:"name" binding:"required"`
-	ProjectID int     `gorm:"project_id" json:"project_id"`
-	Password  *string `gorm:"password" json:"password"`
-	JSON      string  `gorm:"json" json:"json" binding:"required"`
+	Name      string  `gorm:"column:name" json:"name" binding:"required"`
+	ProjectID int     `gorm:"column:project_id" json:"project_id"`
+	Password  *string `gorm:"column:password" json:"password"`
+	JSON      string  `gorm:"column:json" json:"json" binding:"required"`
 }
 
 func (m *Environment) TableName() string {

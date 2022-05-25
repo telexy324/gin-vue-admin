@@ -10,19 +10,19 @@ const (
 // Inventory is the model of an ansible inventory file
 type Inventory struct {
 	global.GVA_MODEL
-	Name      string `gorm:"name" json:"name" binding:"required"`
-	ProjectID int    `gorm:"project_id" json:"project_id"`
-	Inventory string `gorm:"inventory" json:"inventory"`
+	Name      string `gorm:"column:name" json:"name" binding:"required"`
+	ProjectID int    `gorm:"column:project_id" json:"project_id"`
+	Inventory string `gorm:"column:inventory" json:"inventory"`
 
 	// accesses hosts in inventory
-	SSHKeyID *int      `gorm:"ssh_key_id" json:"ssh_key_id"`
+	SSHKeyID *int      `gorm:"column:ssh_key_id" json:"ssh_key_id"`
 	SSHKey   AccessKey `gorm:"-" json:"-"`
 
-	BecomeKeyID *int      `gorm:"become_key_id" json:"become_key_id"`
+	BecomeKeyID *int      `gorm:"column:become_key_id" json:"become_key_id"`
 	BecomeKey   AccessKey `gorm:"-" json:"-"`
 
 	// static/file
-	Type string `gorm:"type" json:"type"`
+	Type string `gorm:"column:type" json:"type"`
 }
 
 func (m *Inventory) TableName() string {

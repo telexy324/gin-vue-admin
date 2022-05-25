@@ -63,6 +63,7 @@ func Routers() *gin.Engine {
 		ansibleRouter.InitScheduleRouter(PublicGroup)
 		ansibleRouter.InitTaskRouter(PublicGroup)
 		ansibleRouter.InitUserRouter(PublicGroup)
+		ansibleRouter.InitTemplateRouter(PublicGroup)
 	}
 	PrivateGroup := Router.Group("")
 	PrivateGroup.Use(middleware.JWTAuth()).Use(middleware.CasbinHandler())

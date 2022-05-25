@@ -72,10 +72,10 @@ type TaskWithTpl struct {
 // TaskOutput is the ansible log output from the task
 type TaskOutput struct {
 	global.GVA_MODEL
-	TaskID int       `gorm:"task_id" json:"task_id"`
-	Task   string    `gorm:"task" json:"task"`
-	Time   time.Time `gorm:"time" json:"time"`
-	Output string    `gorm:"output" json:"output"`
+	TaskID int       `gorm:"column:task_id" json:"task_id"`
+	Task   string    `gorm:"column:task" json:"task"`
+	Time   time.Time `gorm:"column:time" json:"time"`
+	Output string    `gorm:"column:output" json:"output"`
 }
 
 func (m *Task) TableName() string {

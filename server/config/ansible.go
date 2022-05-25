@@ -3,7 +3,7 @@ package config
 import "os"
 
 type Ansible struct {
-	TmpPath             string `mapstructure:"tmp-path" json:"tmp-path" yaml:"tmp-path"`
+	TmpPath             string `mapstructure:"tmp_path" json:"tmp_path" yaml:"tmp_path"`
 	AccessKeyEncryption string `mapstructure:"access_key_encryption" json:"access_key_encryption" yaml:"access_key_encryption"`
 	// task concurrency
 	MaxParallelTasks int `mapstructure:"max_parallel_tasks" json:"max_parallel_tasks" yaml:"max_parallel_tasks"`

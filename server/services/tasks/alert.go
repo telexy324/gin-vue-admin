@@ -107,7 +107,7 @@ func (t *TaskRunner) sendTelegramAlert() {
 	alert := Alert{
 		TaskID:          strconv.Itoa(int(t.task.ID)),
 		Name:            t.template.Name,
-		TaskURL:         global.GVA_CONFIG.Ansible.WebHost + "/project/" + strconv.Itoa(t.template.ProjectID) + "/templates/" + strconv.Itoa(t.template.ID) + "?t=" + strconv.Itoa(int(t.task.ID)),
+		TaskURL:         global.GVA_CONFIG.Ansible.WebHost + "/project/" + strconv.Itoa(t.template.ProjectID) + "/templates/" + strconv.Itoa(int(t.template.ID)) + "?t=" + strconv.Itoa(int(t.task.ID)),
 		ChatID:          chatID,
 		TaskResult:      strings.ToUpper(string(t.task.Status)),
 		TaskVersion:     version,

@@ -8,6 +8,7 @@ CREATE TABLE `ansible_access_keys`
     `type`       varchar(255) NOT NULL DEFAULT '',
     `project_id` bigint UNSIGNED NOT NULL DEFAULT '0',
     `key`        text,
+    `secret`     text,
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -31,6 +32,7 @@ create table `ansible_inventorys`
     `updated_at`    datetime(0) NULL DEFAULT NULL,
     `deleted_at`    datetime(0) NULL DEFAULT NULL,
     `project_id`    bigint UNSIGNED NOT NULL DEFAULT '0',
+    `name`          varchar(255) NOT NULL DEFAULT '',
     `type`          varchar(255) NOT NULL DEFAULT '',
     `ssh_key_id`    bigint UNSIGNED NOT NULL DEFAULT '0',
     `become_key_id` bigint UNSIGNED NOT NULL DEFAULT '0',

@@ -44,7 +44,7 @@ func (taskService *TaskService) CreateTaskOutput(output ansible.TaskOutput) (ans
 func (taskService *TaskService) getTasks(projectID int, templateID *int, info request.PageInfo) (err error, list interface{}, total int64) {
 	limit := info.PageSize
 	offset := info.PageSize * (info.Page - 1)
-	db := global.GVA_DB.Preload("User")
+	db := global.GVA_DB.Model(&ansible.Task{}).Preload("User")
 	if templateID == nil {
 		db = db.Preload("Template", "project_id=?", projectID)
 	} else {

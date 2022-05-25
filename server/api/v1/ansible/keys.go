@@ -103,7 +103,7 @@ func (a *KeysApi) UpdateKey(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err := keyService.Validate(&key, true); err != nil {
+	if err := keyService.Validate(&key, key.OverrideSecret); err != nil {
 		global.GVA_LOG.Error("更新失败!", zap.Any("err", err))
 		response.FailWithMessage("更新失败", c)
 	}

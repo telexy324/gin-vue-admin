@@ -232,7 +232,7 @@ func (t *TaskRunner) run() {
 	for _, tpl := range templates {
 		taskID := int(t.task.ID)
 		_, err = t.pool.AddTask(ansible.Task{
-			TemplateID:  tpl.ID,
+			TemplateID:  int(tpl.ID),
 			ProjectID:   tpl.ProjectID,
 			BuildTaskID: &taskID,
 		}, nil, tpl.ProjectID)
@@ -348,7 +348,7 @@ func (t *TaskRunner) runPlaybook() (err error) {
 
 	return utils.AnsiblePlaybook{
 		Logger:     t,
-		TemplateID: t.template.ID,
+		TemplateID: int(t.template.ID),
 	}.RunPlaybook(global.GVA_CONFIG.Ansible.TmpPath, args, func(p *os.Process) { t.process = p })
 }
 

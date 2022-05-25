@@ -162,7 +162,7 @@ func (p *TaskPool) blocks(t *TaskRunner) bool {
 	}
 
 	for _, r := range p.activeProj[t.task.ProjectID] {
-		if r.template.ID == t.task.TemplateID {
+		if int(r.template.ID) == t.task.TemplateID {
 			return true
 		}
 	}
@@ -289,7 +289,7 @@ func (p *TaskPool) AddTask(taskObj ansible.Task, userID *int, projectID int) (ne
 
 	if tpl.Type == ansible.TemplateBuild { // get next version for TaskRunner if it is a Build
 		var builds []ansible.TaskWithTpl
-		e, buildList, _ := taskService.GetTemplateTasks(tpl.ProjectID, tpl.ID, request.PageInfo{
+		e, buildList, _ := taskService.GetTemplateTasks(tpl.ProjectID, int(tpl.ID), request.PageInfo{
 			Page:     1,
 			PageSize: 1,
 		})

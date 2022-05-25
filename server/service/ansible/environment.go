@@ -27,11 +27,14 @@ func (environmentService *EnvironmentService) GetEnvironments(info request.GetBy
 	offset := info.PageSize * (info.Page - 1)
 	var environments []ansible.Environment
 	db := global.GVA_DB.Model(&ansible.Environment{})
-	order := ""
-	if info.SortInverted {
-		order = "desc"
+	db = db.Where("project_id=?", info.ProjectId)
+	if info.SortBy != "" {
+		order := ""
+		if info.SortInverted {
+			order = "desc"
+		}
+		db = db.Order(info.SortBy + " " + order)
 	}
-	db = db.Where("project_id=?", info.ProjectId).Order(info.SortBy + " " + order)
 	err = db.Count(&total).Error
 	if err != nil {
 		return

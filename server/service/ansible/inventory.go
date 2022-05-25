@@ -46,11 +46,14 @@ func (inventoryService *InventoryService) GetInventories(info request.GetByProje
 	offset := info.PageSize * (info.Page - 1)
 	var inventories []ansible.Inventory
 	db := global.GVA_DB.Model(&ansible.Inventory{})
-	order := ""
-	if info.SortInverted {
-		order = "desc"
+	db = db.Where("project_id=?", info.ProjectId)
+	if info.SortBy != "" {
+		order := ""
+		if info.SortInverted {
+			order = "desc"
+		}
+		db = db.Order(info.SortBy + " " + order)
 	}
-	db = db.Where("project_id=?", info.ProjectId).Order(info.SortBy + " " + order)
 	err = db.Count(&total).Error
 	if err != nil {
 		return
@@ -76,8 +79,8 @@ func (inventoryService *InventoryService) UpdateInventory(inventory ansible.Inve
 	var oldInventory ansible.Inventory
 	upDateMap := make(map[string]interface{})
 	upDateMap["name"] = inventory.Name
-	upDateMap["secret"] = inventory.SSHKeyID
-	upDateMap["ssh_key_id"] = inventory.Type
+	upDateMap["ssh_key_id"] = inventory.SSHKeyID
+	upDateMap["type"] = inventory.Type
 	upDateMap["inventory"] = inventory.Inventory
 	upDateMap["become_key_id"] = inventory.BecomeKeyID
 

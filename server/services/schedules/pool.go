@@ -59,7 +59,7 @@ func (p *SchedulePool) Refresh() {
 	for _, schedule := range schedules {
 		_, err := p.addRunner(ScheduleRunner{
 			projectID:  schedule.ProjectID,
-			scheduleID: schedule.ID,
+			scheduleID: int(schedule.ID),
 			pool:       p,
 		}, schedule.CronFormat)
 		if err != nil {
