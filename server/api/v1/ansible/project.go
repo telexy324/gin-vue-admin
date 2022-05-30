@@ -96,32 +96,3 @@ func (a *ProjectApi) GetProjectById(c *gin.Context) {
 		}, "获取成功", c)
 	}
 }
-
-// @Tags Project
-// @Summary 检验是否为管理员
-// @Security ApiKeyAuth
-// @accept application/json
-// @Produce application/json
-// @Param data body request.GetByProjectId true "主机名, 架构, 管理ip, 系统, 系统版本"
-// @Success 200 {string} string "{"success":true,"data":{},"msg":"更新成功"}"
-// @Router /ansible/project/mustBeAdmin [post]
-func (a *ProjectApi) MustBeAdmin(c *gin.Context) {
-	var project request.GetByProjectId
-	if err := c.ShouldBindJSON(&project); err != nil {
-		global.GVA_LOG.Info("error", zap.Any("err", err))
-		response.FailWithMessage(err.Error(), c)
-		return
-	}
-	if err := utils.Verify(project, utils.ProjectVerify); err != nil {
-		response.FailWithMessage(err.Error(), c)
-		return
-	}
-	userID := int(utils.GetUserID(c))
-	user, err := userService.GetProjectUser(project.ProjectId, float64(userID))
-	if err != nil {
-		global.GVA_LOG.Error("获取project管理员失败!", zap.Any("err", err))
-		response.FailWithMessage("验证失败", c)
-	} else if user.Admin != ansible.IsAdmin {
-		response.FailWithMessage("非管理员", c)
-	}
-}
