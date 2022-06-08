@@ -16,27 +16,22 @@
     </div>
     <div class="gva-table-box">
       <div class="gva-btn-list">
-        <el-button size="mini" type="primary" icon="el-icon-plus" @click="openDialog('addServer')">新增</el-button>
+        <el-button size="mini" type="primary" icon="el-icon-plus" @click="openDialog('addEnvironment')">新增</el-button>
         <el-popover v-model:visible="deleteVisible" placement="top" width="160">
           <p>确定要删除吗？</p>
           <div style="text-align: right; margin-top: 8px;">
-            <el-button size="mini" type="text" @click="deleteVisible = false">取消</el-button>
-            <el-button size="mini" type="primary" @click="onDelete">确定</el-button>
+            <el-button size="small" type="text" @click="deleteVisible = false">取消</el-button>
+            <el-button size="small" type="primary" @click="onDelete">确定</el-button>
           </div>
           <template #reference>
-            <el-button icon="el-icon-delete" size="mini" :disabled="!servers.length" style="margin-left: 10px;">删除</el-button>
+            <el-button icon="el-icon-delete" size="mini" :disabled="!environments.length" style="margin-left: 10px;">删除</el-button>
           </template>
         </el-popover>
-        <el-dropdown>
-          <div class="dp-flex justify-content-center align-items height-full width-full">
-            <span style="cursor: pointer">
-              <span style="margin-left: 5px">{{ currentProject.Name }}</span>
-              <i class="el-icon-arrow-down" />
-            </span>
-          </div>
+        <el-dropdown  size="small" split-button type="primary">
+          {{ currentProject.name }}
           <template #dropdown>
-            <el-dropdown-menu class="dropdown-group">
-              <el-dropdown-item v-for="(item,index) in projects" :key="index" @click="setCurrentProject" v-text="item.Name"></el-dropdown-item>
+            <el-dropdown-menu>
+              <el-dropdown-item v-for="(item,index) in projects" :key="index" @click="setCurrentProject(item)">{{ item.name }}</el-dropdown-item>
             </el-dropdown-menu>
           </template>
         </el-dropdown>
@@ -149,9 +144,9 @@ export default {
       path: path
     }
   },
-  created() {
-    this.getProjects()
-    this.getTableData()
+  async created() {
+    await this.getProjects()
+    await this.getTableData()
   },
   methods: {
     //  选中api
@@ -293,11 +288,13 @@ export default {
       if (table.code === 0) {
         this.projects = table.data.list
         this.currentProject = this.projects[0]
-        this.searchInfo = this.currentProject.ID
+        this.searchInfo = { projectId: this.currentProject.ID }
       }
     },
     async setCurrentProject(val) {
       this.currentProject = val
+      this.searchInfo = { projectId: this.currentProject.ID }
+      await this.getTableData()
     },
   }
 }
@@ -315,5 +312,9 @@ export default {
 }
 .excel-btn+.excel-btn{
   margin-left: 10px;
+}
+.gva-btn-list :deep(.el-dropdown) {
+  float: right;
+  height: 32px;
 }
 </style>

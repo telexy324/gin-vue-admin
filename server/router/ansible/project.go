@@ -15,7 +15,7 @@ func (s *ProjectRouter) InitProjectRouter(Router *gin.RouterGroup) (R gin.IRoute
 	projectRouterWithoutRecordAdmin := Router.Group("ansible/project").Use(middleware.MustBeAdmin())
 	var authorityProjectApi = v1.ApiGroupApp.AnsibleApiGroup.ProjectApi
 	{
-		projectRouterWithoutRecordAdmin.POST("addProject", authorityProjectApi.AddProject)       // 新增菜单
+		projectRouterWithoutRecord.POST("addProject", authorityProjectApi.AddProject)       // 新增菜单
 		projectRouter.POST("deleteProject", authorityProjectApi.DeleteProject)                   // 删除菜单
 		projectRouterWithoutRecordAdmin.POST("updateProject", authorityProjectApi.UpdateProject) // 更新菜单
 	}

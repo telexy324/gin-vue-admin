@@ -1348,7 +1348,7 @@ $mainHight: 100vh;
 .gva-btn-list {
     margin-bottom: 12px;
     display: flex;
-    .el-button+.el-button {
+    .el-button+.el-button+.el-dropdown {
         margin-left: 12px;
     }
 }
