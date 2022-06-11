@@ -20,19 +20,19 @@ const (
 //Task is a model of a task which will be executed by the runner
 type Task struct {
 	global.GVA_MODEL
-	TemplateID int `gorm:"column:template_id" json:"template_id"`
-	ProjectID  int `gorm:"column:project_id" json:"project_id"`
+	TemplateID int `gorm:"column:template_id" json:"templateId"`
+	ProjectID  int `gorm:"column:project_id" json:"projectId"`
 
 	Status TaskStatus `gorm:"column:status" json:"status"`
 	Debug  bool       `gorm:"column:debug" json:"debug"`
 
-	DryRun bool `gorm:"column:dry_run" json:"dry_run"`
+	DryRun bool `gorm:"column:dry_run" json:"dryRun"`
 
 	// override variables
 	Playbook    string `gorm:"column:playbook" json:"playbook"`
 	Environment string `gorm:"column:environment" json:"environment"`
 
-	UserID *int `gorm:"column:user_id" json:"user_id"`
+	UserID *int `gorm:"column:user_id" json:"userId"`
 
 	Created time.Time  `gorm:"column:created" json:"created"`
 	Start   *time.Time `gorm:"column:start" json:"start"`
@@ -42,12 +42,12 @@ type Task struct {
 
 	// CommitMessage is a git commit hash of playbook repository which
 	// was active when task was created.
-	CommitHash *string `gorm:"column:commit_hash" json:"commit_hash"`
+	CommitHash *string `gorm:"column:commit_hash" json:"commitHash"`
 	// CommitMessage contains message retrieved from git repository after checkout to CommitHash.
 	// It is readonly by API.
-	CommitMessage string `gorm:"column:commit_message" json:"commit_message"`
+	CommitMessage string `gorm:"column:commit_message" json:"commitMessage"`
 
-	BuildTaskID *int `gorm:"column:build_task_id" json:"build_task_id"`
+	BuildTaskID *int `gorm:"column:build_task_id" json:"buildTaskId"`
 
 	// Version is a build version.
 	// This field available only for Build tasks.
@@ -62,17 +62,17 @@ type Task struct {
 // TaskWithTpl is the task data with additional fields
 type TaskWithTpl struct {
 	Task             Task         `gorm:"-" json:"task"`
-	TemplatePlaybook string       `gorm:"-" json:"tpl_playbook"`
-	TemplateAlias    string       `gorm:"-" json:"tpl_alias"`
-	TemplateType     TemplateType `gorm:"-" json:"tpl_type"`
-	UserName         *string      `gorm:"-" json:"user_name"`
-	BuildTask        *Task        `gorm:"-" json:"build_task"`
+	TemplatePlaybook string       `gorm:"-" json:"tplPlaybook"`
+	TemplateAlias    string       `gorm:"-" json:"tplAlias"`
+	TemplateType     TemplateType `gorm:"-" json:"tplType"`
+	UserName         *string      `gorm:"-" json:"userName"`
+	BuildTask        *Task        `gorm:"-" json:"buildTask"`
 }
 
 // TaskOutput is the ansible log output from the task
 type TaskOutput struct {
 	global.GVA_MODEL
-	TaskID int       `gorm:"column:task_id" json:"task_id"`
+	TaskID int       `gorm:"column:task_id" json:"taskId"`
 	Task   string    `gorm:"column:task" json:"task"`
 	Time   time.Time `gorm:"column:time" json:"time"`
 	Output string    `gorm:"column:output" json:"output"`

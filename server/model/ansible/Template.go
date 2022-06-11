@@ -35,9 +35,9 @@ type TemplateFilter struct {
 type Template struct {
 	global.GVA_MODEL
 
-	ProjectID     int  `gorm:"column:project_id" json:"project_id"`
-	InventoryID   int  `gorm:"column:inventory_id" json:"inventory_id"`
-	EnvironmentID *int `gorm:"column:environment_id" json:"environment_id"`
+	ProjectID     int  `gorm:"column:project_id" json:"projectId"`
+	InventoryID   int  `gorm:"column:inventory_id" json:"inventoryId"`
+	EnvironmentID *int `gorm:"column:environment_id" json:"environmentId"`
 
 	// Name as described in https://github.com/ansible-semaphore/semaphore/issues/188
 	Name string `gorm:"column:name" json:"name"`
@@ -46,20 +46,20 @@ type Template struct {
 	// to fit into []string
 	Arguments *string `gorm:"column:arguments" json:"arguments"`
 	// if true, semaphore will not prepend any arguments to `arguments` like inventory, etc
-	AllowOverrideArgsInTask bool `gorm:"column:allow_override_args_in_task" json:"allow_override_args_in_task"`
+	AllowOverrideArgsInTask bool `gorm:"column:allow_override_args_in_task" json:"allowOverrideArgsInTask"`
 
 	Description *string `gorm:"column:description" json:"description"`
 
-	VaultKeyID *int      `gorm:"column:vault_key_id" json:"vault_key_id"`
+	VaultKeyID *int      `gorm:"column:vault_key_id" json:"vaultKeyId"`
 	VaultKey   AccessKey `gorm:"-" json:"-"`
 
 	Type            TemplateType `gorm:"column:type" json:"type"`
-	StartVersion    *string      `gorm:"column:start_version" json:"start_version"`
-	BuildTemplateID *int         `gorm:"column:build_template_id" json:"build_template_id"`
+	StartVersion    *string      `gorm:"column:start_version" json:"startVersion"`
+	BuildTemplateID *int         `gorm:"column:build_template_id" json:"buildTemplateId"`
 
-	ViewID *int `gorm:"column:view_id" json:"view_id"`
+	ViewID *int `gorm:"column:view_id" json:"viewId"`
 
-	LastTask *TaskWithTpl `gorm:"-" json:"last_task"`
+	LastTask *TaskWithTpl `gorm:"-" json:"lastTask"`
 
 	Autorun bool `gorm:"column:autorun" json:"autorun"`
 
@@ -67,9 +67,9 @@ type Template struct {
 	// It is not used for store survey vars to database.
 	// Do not use it in your code. Use SurveyVars instead.
 	SurveyVarsJSON *string     `gorm:"column:survey_vars" json:"-"`
-	SurveyVars     []SurveyVar `gorm:"-" json:"survey_vars"`
+	SurveyVars     []SurveyVar `gorm:"-" json:"surveyVars"`
 
-	SuppressSuccessAlerts bool `gorm:"column:suppress_success_alerts" json:"suppress_success_alerts"`
+	SuppressSuccessAlerts bool `gorm:"column:suppress_success_alerts" json:"suppressSuccessAlerts"`
 }
 
 func (m *Template) TableName() string {

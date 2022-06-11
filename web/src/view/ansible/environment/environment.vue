@@ -5,9 +5,6 @@
         <el-form-item label="environment name">
           <el-input v-model="searchInfo.name" placeholder="name" />
         </el-form-item>
-        <el-form-item label="project id">
-          <el-input v-model="searchInfo.projectIp" placeholder="projectIp" />
-        </el-form-item>
         <el-form-item>
           <el-button size="mini" type="primary" icon="el-icon-search" @click="onSubmit">查询</el-button>
           <el-button size="mini" icon="el-icon-refresh" @click="onReset">重置</el-button>
@@ -43,7 +40,7 @@
         />
         <el-table-column align="left" label="id" min-width="60" prop="ID" sortable="custom" />
         <el-table-column align="left" label="name" min-width="150" prop="name" sortable="custom" />
-        <el-table-column align="left" label="project_id" min-width="150" prop="projectIp" sortable="custom" />
+        <el-table-column align="left" label="projectId" min-width="150" prop="projectId" sortable="custom" />
         <el-table-column align="left" fixed="right" label="操作" width="200">
           <template #default="scope">
             <el-button
@@ -76,13 +73,16 @@
     </div>
 
     <el-dialog v-model="dialogFormVisible" :before-close="closeDialog" :title="dialogTitle">
-      <warning-bar title="新增服务器" />
-      <el-form ref="serverForm" :model="form" :rules="rules" label-width="80px">
+      <warning-bar title="新增environment" />
+      <el-form ref="environmentForm" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="name" prop="name">
-          <el-input v-model="form.hostname" autocomplete="off" />
+          <el-input v-model="form.name" autocomplete="off" />
         </el-form-item>
         <el-form-item label="projectId" prop="projectId">
-          <el-input v-model="form.architecture" autocomplete="off" />
+          <el-input v-model="form.projectId" :disabled="true" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="password" prop="password">
+          <el-input v-model="form.password" autocomplete="off" />
         </el-form-item>
         <el-form-item label="json" prop="json">
           <el-input v-model="form.json" type="textarea" />
@@ -109,17 +109,17 @@ import {
   deleteEnvironment,
   getEnvironmentById
 } from '@/api/ansibleEnvironment'
-import { getProjectList } from '@/api/ansibleProject'
 import infoList from '@/mixins/infoList'
 import { toSQLLine } from '@/utils/stringFun'
 import warningBar from '@/components/warningBar/warningBar.vue'
+import ansibleProjects from '@/mixins/ansibleProjects'
 
 export default {
   name: 'Environment',
   components: {
     warningBar
   },
-  mixins: [infoList],
+  mixins: [infoList, ansibleProjects],
   data() {
     return {
       deleteVisible: false,
@@ -127,17 +127,16 @@ export default {
       dialogFormVisible: false,
       dialogTitle: '新增environment',
       environments: [],
-      projects: [],
-      currentProject: {},
       form: {
         name: '',
-        projectIp: '',
-        json: ''
+        projectId: '',
+        json: '',
+        password: ''
       },
       type: '',
       rules: {
         name: [{ required: true, message: '请输入environment name', trigger: 'blur' }],
-        projectIp: [
+        projectId: [
           { required: true, message: '请输入project ip', trigger: 'blur' }
         ]
       },
@@ -183,14 +182,16 @@ export default {
     onSubmit() {
       this.page = 1
       this.pageSize = 10
+      this.searchInfo.projectId = this.currentProject.ID
       this.getTableData()
     },
     initForm() {
-      this.$refs.serverForm.resetFields()
+      this.$refs.environmentForm.resetFields()
       this.form = {
         name: '',
+        projectId: '',
         json: '',
-        projectIp: ''
+        password: ''
       }
     },
     closeDialog() {
@@ -201,6 +202,7 @@ export default {
       switch (type) {
         case 'addEnvironment':
           this.dialogTitle = '新增Environment'
+          this.form.projectId = this.currentProject.ID
           break
         case 'edit':
           this.dialogTitle = '编辑Environment'
@@ -212,8 +214,8 @@ export default {
       this.dialogFormVisible = true
     },
     async editEnvironment(row) {
-      const res = await getEnvironmentById({ id: row.ID })
-      this.form = res.data.server
+      const res = await getEnvironmentById({ id: row.ID, projectId: this.currentProject.ID })
+      this.form = res.data.environment
       this.openDialog('edit')
     },
     async deleteEnvironment(row) {
@@ -237,7 +239,7 @@ export default {
         })
     },
     async enterDialog() {
-      this.$refs.serverForm.validate(async valid => {
+      this.$refs.environmentForm.validate(async valid => {
         if (valid) {
           switch (this.type) {
             case 'addEnvironment':
@@ -282,19 +284,6 @@ export default {
           }
         }
       })
-    },
-    async getProjects() {
-      const table = await getProjectList({ page: 1, pageSize: 10 })
-      if (table.code === 0) {
-        this.projects = table.data.list
-        this.currentProject = this.projects[0]
-        this.searchInfo = { projectId: this.currentProject.ID }
-      }
-    },
-    async setCurrentProject(val) {
-      this.currentProject = val
-      this.searchInfo = { projectId: this.currentProject.ID }
-      await this.getTableData()
     },
   }
 }

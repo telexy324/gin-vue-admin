@@ -11,14 +11,14 @@ const (
 type Inventory struct {
 	global.GVA_MODEL
 	Name      string `gorm:"column:name" json:"name" binding:"required"`
-	ProjectID int    `gorm:"column:project_id" json:"project_id"`
+	ProjectID int    `gorm:"column:project_id" json:"projectId"`
 	Inventory string `gorm:"column:inventory" json:"inventory"`
 
 	// accesses hosts in inventory
-	SSHKeyID *int      `gorm:"column:ssh_key_id" json:"ssh_key_id"`
+	SSHKeyID *int      `gorm:"column:ssh_key_id" json:"sshKeyId"`
 	SSHKey   AccessKey `gorm:"-" json:"-"`
 
-	BecomeKeyID *int      `gorm:"column:become_key_id" json:"become_key_id"`
+	BecomeKeyID *int      `gorm:"column:become_key_id" json:"becomeKeyId"`
 	BecomeKey   AccessKey `gorm:"-" json:"-"`
 
 	// static/file

@@ -18,16 +18,16 @@ type AccessKey struct {
 	// 'ssh/login_password/none'
 	Type AccessKeyType `gorm:"column:type" json:"type"`
 
-	ProjectID *int `gorm:"column:project_id" json:"project_id"`
+	ProjectID *int `gorm:"column:project_id" json:"projectId"`
 
 	// Secret used internally, do not assign this field.
 	// You should use methods SerializeSecret to fill this field.
 	Secret *string `gorm:"column:secret" json:"-"`
 
-	LoginPassword  LoginPassword `gorm:"-" json:"login_password"`
+	LoginPassword  LoginPassword `gorm:"-" json:"loginPassword"`
 	SshKey         SshKey        `gorm:"-" json:"ssh"`
 	PAT            string        `gorm:"-" json:"pat"`
-	OverrideSecret bool          `gorm:"-" json:"override_secret"`
+	OverrideSecret bool          `gorm:"-" json:"overrideSecret"`
 
 	InstallationKey int64 `gorm:"-" json:"-"`
 }
@@ -44,7 +44,7 @@ type LoginPassword struct {
 type SshKey struct {
 	Login      string `json:"login"`
 	Passphrase string `json:"passphrase"`
-	PrivateKey string `json:"private_key"`
+	PrivateKey string `json:"privateKey"`
 }
 
 type AccessKeyRole int

@@ -5,9 +5,9 @@ import (
 )
 
 type InventoriesResponse struct {
-	Inventories []ansible.Inventory `json:"Inventories"`
+	Inventories []ansible.Inventory `json:"inventories"`
 }
 
 type InventoryResponse struct {
-	Inventory ansible.Inventory `json:"Inventory"`
+	Inventory ansible.Inventory `json:"inventory"`
 }

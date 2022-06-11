@@ -10,7 +10,7 @@ import (
 type Environment struct {
 	global.GVA_MODEL
 	Name      string  `gorm:"column:name" json:"name" binding:"required"`
-	ProjectID int     `gorm:"column:project_id" json:"project_id"`
+	ProjectID int     `gorm:"column:project_id" json:"projectId"`
 	Password  *string `gorm:"column:password" json:"password"`
 	JSON      string  `gorm:"column:json" json:"json" binding:"required"`
 }

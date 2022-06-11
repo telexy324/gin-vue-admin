@@ -16,8 +16,8 @@ type Project struct {
 	Name             string    `gorm:"column:name" json:"name" binding:"required"`
 	Created          time.Time `gorm:"column:created" json:"created"`
 	Alert            bool      `gorm:"column:alert" json:"alert"`
-	AlertChat        *string   `gorm:"column:alert_chat" json:"alert_chat"`
-	MaxParallelTasks int       `gorm:"column:max_parallel_tasks" json:"max_parallel_tasks"`
+	AlertChat        *string   `gorm:"column:alert_chat" json:"alertChat"`
+	MaxParallelTasks int       `gorm:"column:max_parallel_tasks" json:"maxParallelTasks"`
 }
 
 type ProjectUser struct {
