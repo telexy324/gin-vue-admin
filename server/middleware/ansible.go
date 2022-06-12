@@ -3,7 +3,6 @@ package middleware
 import (
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/ansible"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/ansible/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/response"
 	"github.com/flipped-aurora/gin-vue-admin/server/service"
 	"github.com/flipped-aurora/gin-vue-admin/server/utils"
@@ -15,7 +14,7 @@ var ansibleUserService = service.ServiceGroupApp.AnsibleServiceGroup.UserService
 
 func MustBeAdmin() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var project request.GetByProjectId
+		var project ansible.Project
 		if err := c.ShouldBindJSON(&project); err != nil {
 			global.GVA_LOG.Info("error", zap.Any("err", err))
 			response.FailWithMessage(err.Error(), c)
@@ -26,7 +25,7 @@ func MustBeAdmin() gin.HandlerFunc {
 			return
 		}
 		userID := int(utils.GetUserID(c))
-		user, err := ansibleUserService.GetProjectUser(project.ProjectId, float64(userID))
+		user, err := ansibleUserService.GetProjectUser(float64(project.ID), float64(userID))
 		if err != nil {
 			global.GVA_LOG.Error("获取project管理员失败!", zap.Any("err", err))
 			response.FailWithMessage("验证失败", c)
