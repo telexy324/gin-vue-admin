@@ -103,11 +103,10 @@ const path = import.meta.env.VITE_BASE_API
 // 获取列表内容封装在mixins内部  getTableData方法 初始化已封装完成 条件搜索时候 请把条件安好后台定制的结构体字段 放到 this.searchInfo 中即可实现条件搜索
 
 import {
-  getUserList,
+  getProjectUsers,
   addUser,
   updateUser,
-  deleteUser,
-  getUserById
+  deleteUser
 } from '@/api/ansibleUser'
 import infoList from '@/mixins/infoList'
 import { toSQLLine } from '@/utils/stringFun'
@@ -123,7 +122,7 @@ export default {
   data() {
     return {
       deleteVisible: false,
-      listApi: getUserList,
+      listApi: getProjectUsers,
       dialogFormVisible: false,
       dialogTitle: '新增user',
       users: [],

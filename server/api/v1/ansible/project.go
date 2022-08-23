@@ -8,6 +8,7 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/response"
 	"github.com/flipped-aurora/gin-vue-admin/server/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 	"go.uber.org/zap"
 )
 
@@ -24,7 +25,7 @@ type ProjectApi struct {
 // @Router /ansible/project/deleteProject [post]
 func (a *ProjectApi) DeleteProject(c *gin.Context) {
 	var project request.GetById
-	if err := c.ShouldBindJSON(&project); err != nil {
+	if err := c.ShouldBindBodyWith(&project, binding.JSON); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -51,7 +52,7 @@ func (a *ProjectApi) DeleteProject(c *gin.Context) {
 // @Router /ansible/project/updateProject [post]
 func (a *ProjectApi) UpdateProject(c *gin.Context) {
 	var project ansible.Project
-	if err := c.ShouldBindJSON(&project); err != nil {
+	if err := c.ShouldBindBodyWith(&project, binding.JSON); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
 		return
