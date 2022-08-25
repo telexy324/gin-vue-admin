@@ -2,7 +2,7 @@
   <div>
     <div class="gva-search-box">
       <el-form ref="searchForm" :inline="true" :model="searchInfo">
-        <el-form-item label="inventory name">
+        <el-form-item label="template name">
           <el-input v-model="searchInfo.name" placeholder="name" />
         </el-form-item>
         <el-form-item>
@@ -13,7 +13,7 @@
     </div>
     <div class="gva-table-box">
       <div class="gva-btn-list">
-        <el-button size="mini" type="primary" icon="el-icon-plus" @click="openDialog('addInventory')">新增</el-button>
+        <el-button size="mini" type="primary" icon="el-icon-plus" @click="openDialog('addTemplate')">新增</el-button>
         <el-popover v-model:visible="deleteVisible" placement="top" width="160">
           <p>确定要删除吗？</p>
           <div style="text-align: right; margin-top: 8px;">
@@ -21,7 +21,7 @@
             <el-button size="small" type="primary" @click="onDelete">确定</el-button>
           </div>
           <template #reference>
-            <el-button icon="el-icon-delete" size="mini" :disabled="!inventorys.length" style="margin-left: 10px;">删除</el-button>
+            <el-button icon="el-icon-delete" size="mini" :disabled="!templates.length" style="margin-left: 10px;">删除</el-button>
           </template>
         </el-popover>
         <el-dropdown  size="small" split-button type="primary">
@@ -47,13 +47,13 @@
               icon="el-icon-edit"
               size="small"
               type="text"
-              @click="editInventory(scope.row)"
+              @click="editTemplate(scope.row)"
             >编辑</el-button>
             <el-button
               icon="el-icon-delete"
               size="small"
               type="text"
-              @click="deleteInventory(scope.row)"
+              @click="deleteTemplate(scope.row)"
             >删除</el-button>
           </template>
         </el-table-column>
@@ -73,8 +73,8 @@
     </div>
 
     <el-dialog v-model="dialogFormVisible" :before-close="closeDialog" :title="dialogTitle">
-      <warning-bar title="新增inventory" />
-      <el-form ref="inventoryForm" :model="form" :rules="rules" label-width="80px">
+      <warning-bar title="新增template" />
+      <el-form ref="templateForm" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="name" prop="name">
           <el-input v-model="form.name" autocomplete="off" />
         </el-form-item>
@@ -84,8 +84,8 @@
         <el-form-item label="type" prop="type">
           <el-input v-model="form.type" autocomplete="off" />
         </el-form-item>
-        <el-form-item label="inventory" prop="inventory">
-          <el-input v-model="form.inventory" type="textarea" />
+        <el-form-item label="template" prop="template">
+          <el-input v-model="form.template" type="textarea" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -103,19 +103,19 @@ const path = import.meta.env.VITE_BASE_API
 // 获取列表内容封装在mixins内部  getTableData方法 初始化已封装完成 条件搜索时候 请把条件安好后台定制的结构体字段 放到 this.searchInfo 中即可实现条件搜索
 
 import {
-  getInventoryList,
-  addInventory,
-  updateInventory,
-  deleteInventory,
-  getInventoryById
-} from '@/api/ansibleInventory'
+  getTemplateList,
+  addTemplate,
+  updateTemplate,
+  deleteTemplate,
+  getTemplateById
+} from '@/api/ansibleTemplate'
 import infoList from '@/mixins/infoList'
 import { toSQLLine } from '@/utils/stringFun'
 import warningBar from '@/components/warningBar/warningBar.vue'
 import ansibleProjects from '@/mixins/ansibleProjects'
 
 export default {
-  name: 'Inventory',
+  name: 'Template',
   components: {
     warningBar
   },
@@ -123,19 +123,19 @@ export default {
   data() {
     return {
       deleteVisible: false,
-      listApi: getInventoryList,
+      listApi: getTemplateList,
       dialogFormVisible: false,
-      dialogTitle: '新增inventory',
-      inventorys: [],
+      dialogTitle: '新增template',
+      templates: [],
       form: {
         name: '',
         projectId: '',
         type: '',
-        inventory: ''
+        template: ''
       },
       type: '',
       rules: {
-        name: [{ required: true, message: '请输入inventory name', trigger: 'blur' }],
+        name: [{ required: true, message: '请输入template name', trigger: 'blur' }],
         projectId: [
           { required: true, message: '请输入project ip', trigger: 'blur' }
         ]
@@ -150,11 +150,11 @@ export default {
   methods: {
     //  选中api
     handleSelectionChange(val) {
-      this.inventorys = val
+      this.templates = val
     },
     async onDelete() {
-      const ids = this.inventorys.map(item => item.ID)
-      const res = await deleteInventory({ ids })
+      const ids = this.templates.map(item => item.ID)
+      const res = await deleteTemplate({ ids })
       if (res.code === 0) {
         this.$message({
           type: 'success',
@@ -186,7 +186,7 @@ export default {
       this.getTableData()
     },
     initForm() {
-      this.$refs.inventoryForm.resetFields()
+      this.$refs.templateForm.resetFields()
       this.form = {
         name: '',
         projectId: '',
@@ -200,12 +200,12 @@ export default {
     },
     openDialog(type) {
       switch (type) {
-        case 'addInventory':
-          this.dialogTitle = '新增Inventory'
+        case 'addTemplate':
+          this.dialogTitle = '新增Template'
           this.form.projectId = this.currentProject.ID
           break
         case 'edit':
-          this.dialogTitle = '编辑Inventory'
+          this.dialogTitle = '编辑Template'
           break
         default:
           break
@@ -213,19 +213,19 @@ export default {
       this.type = type
       this.dialogFormVisible = true
     },
-    async editInventory(row) {
-      const res = await getInventoryById({ id: row.ID, projectId: this.currentProject.ID })
-      this.form = res.data.inventory
+    async editTemplate(row) {
+      const res = await getTemplateById({ id: row.ID, projectId: this.currentProject.ID })
+      this.form = res.data.template
       this.openDialog('edit')
     },
-    async deleteInventory(row) {
-      this.$confirm('此操作将永久删除Inventory?', '提示', {
+    async deleteTemplate(row) {
+      this.$confirm('此操作将永久删除Template?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       })
         .then(async() => {
-          const res = await deleteInventory(row)
+          const res = await deleteTemplate(row)
           if (res.code === 0) {
             this.$message({
               type: 'success',
@@ -239,12 +239,12 @@ export default {
         })
     },
     async enterDialog() {
-      this.$refs.inventoryForm.validate(async valid => {
+      this.$refs.templateForm.validate(async valid => {
         if (valid) {
           switch (this.type) {
-            case 'addInventory':
+            case 'addTemplate':
               {
-                const res = await addInventory(this.form)
+                const res = await addTemplate(this.form)
                 if (res.code === 0) {
                   this.$message({
                     type: 'success',
@@ -259,7 +259,7 @@ export default {
               break
             case 'edit':
               {
-                const res = await updateInventory(this.form)
+                const res = await updateTemplate(this.form)
                 if (res.code === 0) {
                   this.$message({
                     type: 'success',
