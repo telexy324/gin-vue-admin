@@ -40,7 +40,16 @@
         />
         <el-table-column align="left" label="id" min-width="60" prop="ID" sortable="custom" />
         <el-table-column align="left" label="name" min-width="150" prop="name" sortable="custom" />
-        <el-table-column align="left" label="projectId" min-width="150" prop="projectId" sortable="custom" />
+        <el-table-column align="left" label="projectId" min-width="50" prop="projectId" sortable="custom" />
+        <el-table-column align="left" label="inventoryId" min-width="50" prop="inventoryId" sortable="custom" />
+        <el-table-column align="left" label="environmentId" min-width="50" prop="environmentId" sortable="custom" />
+        <el-table-column align="left" label="playbook" min-width="150" prop="playbook" sortable="custom" />
+        <el-table-column align="left" label="arguments" min-width="150" prop="arguments" sortable="custom" />
+        <el-table-column align="left" label="description" min-width="150" prop="description" sortable="custom" />
+        <el-table-column align="left" label="becomeKeyId" min-width="50" prop="becomeKeyId" sortable="custom" />
+        <el-table-column align="left" label="vaultKeyId" min-width="50" prop="vaultKeyId" sortable="custom" />
+        <el-table-column align="left" label="surveyVars" min-width="150" prop="surveyVars" sortable="custom" />
+        <el-table-column align="left" label="vaultKeyId" min-width="150" prop="vaultKeyId" sortable="custom" />
         <el-table-column align="left" fixed="right" label="操作" width="200">
           <template #default="scope">
             <el-button
