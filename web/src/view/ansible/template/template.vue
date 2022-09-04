@@ -50,6 +50,14 @@
         <el-table-column align="left" label="vaultKeyId" min-width="50" prop="vaultKeyId" sortable="custom" />
         <el-table-column align="left" label="surveyVars" min-width="150" prop="surveyVars" sortable="custom" />
         <el-table-column align="left" label="vaultKeyId" min-width="150" prop="vaultKeyId" sortable="custom" />
+        <el-table-column align="left" label="viewId" min-width="150" prop="viewId" sortable="custom" />
+        <el-table-column align="left" label="surveyVars" min-width="150" prop="surveyVars" sortable="custom" />
+        <el-table-column align="left" label="autorun" min-width="150" prop="autorun" sortable="custom" />
+        <el-table-column align="left" label="allowOverrideArgsInTask" min-width="150" prop="allowOverrideArgsInTask" sortable="custom" />
+        <el-table-column align="left" label="suppressSuccessAlerts" min-width="150" prop="allowOverrideArgsInTask" sortable="custom" />
+        <el-table-column align="left" label="buildTemplateId" min-width="150" prop="allowOverrideArgsInTask" sortable="custom" />
+        <el-table-column align="left" label="startVersion" min-width="150" prop="allowOverrideArgsInTask" sortable="custom" />
+        <el-table-column align="left" label="type" min-width="150" prop="allowOverrideArgsInTask" sortable="custom" />
         <el-table-column align="left" fixed="right" label="操作" width="200">
           <template #default="scope">
             <el-button
@@ -90,11 +98,53 @@
         <el-form-item label="projectId" prop="projectId">
           <el-input v-model="form.projectId" :disabled="true" autocomplete="off" />
         </el-form-item>
+        <el-form-item label="inventoryId" prop="inventoryId">
+          <el-input v-model="form.inventoryId" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="environmentId" prop="environmentId">
+          <el-input v-model="form.environmentId" type="textarea" />
+        </el-form-item>
+        <el-form-item label="playbook" prop="type">
+          <el-input v-model="form.playbook" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="type" prop="type">
+          <el-input v-model="form.arguments" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="type" prop="type">
+          <el-input v-model="form.description" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="type" prop="type">
+          <el-input v-model="form.becomeKeyId" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="type" prop="type">
+          <el-input v-model="form.vaultKeyId" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="type" prop="type">
+          <el-input v-model="form.viewId" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="type" prop="type">
+          <el-input v-model="form.surveyVars" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="type" prop="type">
+          <el-input v-model="form.autorun" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="type" prop="type">
+          <el-input v-model="form.allowOverrideArgsInTask" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="type" prop="type">
+          <el-input v-model="form.name" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="type" prop="type">
+          <el-input v-model="form.suppressSuccessAlerts" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="type" prop="type">
+          <el-input v-model="form.buildTemplateId" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="type" prop="type">
+          <el-input v-model="form.startVersion" autocomplete="off" />
+        </el-form-item>
         <el-form-item label="type" prop="type">
           <el-input v-model="form.type" autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="template" prop="template">
-          <el-input v-model="form.template" type="textarea" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -137,10 +187,24 @@ export default {
       dialogTitle: '新增template',
       templates: [],
       form: {
-        name: '',
         projectId: '',
-        type: '',
-        template: ''
+        template: '',
+        inventoryId: '',
+        environmentId: '',
+        playbook: '',
+        arguments: '',
+        description: '',
+        becomeKeyId: '',
+        vaultKeyId: '',
+        viewId: '',
+        surveyVars: '',
+        autorun: '',
+        allowOverrideArgsInTask: '',
+        name: '',
+        suppressSuccessAlerts: '',
+        buildTemplateId: '',
+        startVersion: '',
+        type: ''
       },
       type: '',
       rules: {
