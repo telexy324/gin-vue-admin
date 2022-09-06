@@ -92,60 +92,96 @@
     <el-dialog v-model="dialogFormVisible" :before-close="closeDialog" :title="dialogTitle">
       <warning-bar title="新增template" />
       <el-form ref="templateForm" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="name" prop="name">
-          <el-input v-model="form.name" autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="projectId" prop="projectId">
-          <el-input v-model="form.projectId" :disabled="true" autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="inventoryId" prop="inventoryId">
-          <el-input v-model="form.inventoryId" autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="environmentId" prop="environmentId">
-          <el-input v-model="form.environmentId" type="textarea" />
-        </el-form-item>
-        <el-form-item label="playbook" prop="type">
-          <el-input v-model="form.playbook" autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="type" prop="type">
-          <el-input v-model="form.arguments" autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="type" prop="type">
-          <el-input v-model="form.description" autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="type" prop="type">
-          <el-input v-model="form.becomeKeyId" autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="type" prop="type">
-          <el-input v-model="form.vaultKeyId" autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="type" prop="type">
-          <el-input v-model="form.viewId" autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="type" prop="type">
-          <el-input v-model="form.surveyVars" autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="type" prop="type">
-          <el-input v-model="form.autorun" autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="type" prop="type">
-          <el-input v-model="form.allowOverrideArgsInTask" autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="type" prop="type">
-          <el-input v-model="form.name" autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="type" prop="type">
-          <el-input v-model="form.suppressSuccessAlerts" autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="type" prop="type">
-          <el-input v-model="form.buildTemplateId" autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="type" prop="type">
-          <el-input v-model="form.startVersion" autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="type" prop="type">
-          <el-input v-model="form.type" autocomplete="off" />
-        </el-form-item>
+        <el-col :span="6" :xl="6" :lg="6" :md="6" :sm="12" :xs="24">
+          <el-form-item label="name" prop="name">
+            <el-input v-model="form.name" autocomplete="off" />
+          </el-form-item>
+        </el-col>
+        <el-col :span="6" :xl="6" :lg="6" :md="6" :sm="12" :xs="24">
+          <el-form-item label="projectId" prop="projectId">
+            <el-input v-model="form.projectId" :disabled="true" autocomplete="off" />
+          </el-form-item>
+        </el-col>
+        <el-col :span="6" :xl="6" :lg="6" :md="6" :sm="12" :xs="24">
+          <el-form-item label="inventoryId" prop="inventoryId">
+            <el-input v-model="form.inventoryId" autocomplete="off" />
+          </el-form-item>
+        </el-col>
+        <el-col :span="6" :xl="6" :lg="6" :md="6" :sm="12" :xs="24">
+          <el-form-item label="environmentId" prop="environmentId">
+            <el-input v-model="form.environmentId" type="textarea" />
+          </el-form-item>
+        </el-col>
+        <el-col :span="6" :xl="6" :lg="6" :md="6" :sm="12" :xs="24">
+          <el-form-item label="playbook" prop="playbook">
+            <el-input v-model="form.playbook" autocomplete="off" />
+          </el-form-item>
+        </el-col>
+        <el-col :span="6" :xl="6" :lg="6" :md="6" :sm="12" :xs="24">
+          <el-form-item label="arguments" prop="arguments">
+            <el-input v-model="form.arguments" autocomplete="off" />
+          </el-form-item>
+        </el-col>
+        <el-col :span="6" :xl="6" :lg="6" :md="6" :sm="12" :xs="24">
+          <el-form-item label="description" prop="description">
+            <el-input v-model="form.description" autocomplete="off" />
+          </el-form-item>
+        </el-col>
+        <el-col :span="6" :xl="6" :lg="6" :md="6" :sm="12" :xs="24">
+          <el-form-item label="becomeKeyId" prop="becomeKeyId">
+            <el-input v-model="form.becomeKeyId" autocomplete="off" />
+          </el-form-item>
+        </el-col>
+        <el-col :span="6" :xl="6" :lg="6" :md="6" :sm="12" :xs="24">
+          <el-form-item label="vaultKeyId" prop="vaultKeyId">
+            <el-input v-model="form.vaultKeyId" autocomplete="off" />
+          </el-form-item>
+        </el-col>
+        <el-col :span="6" :xl="6" :lg="6" :md="6" :sm="12" :xs="24">
+          <el-form-item label="viewId" prop="viewId">
+            <el-input v-model="form.viewId" autocomplete="off" />
+          </el-form-item>
+        </el-col>
+        <el-col :span="6" :xl="6" :lg="6" :md="6" :sm="12" :xs="24">
+          <el-form-item label="surveyVars" prop="surveyVars">
+            <el-input v-model="form.surveyVars" autocomplete="off" />
+          </el-form-item>
+        </el-col>
+        <el-col :span="6" :xl="6" :lg="6" :md="6" :sm="12" :xs="24">
+          <el-form-item label="autorun" prop="autorun">
+            <el-input v-model="form.autorun" autocomplete="off" />
+          </el-form-item>
+        </el-col>
+        <el-col :span="6" :xl="6" :lg="6" :md="6" :sm="12" :xs="24">
+          <el-form-item label="allowOverrideArgsInTask" prop="allowOverrideArgsInTask">
+            <el-input v-model="form.allowOverrideArgsInTask" autocomplete="off" />
+          </el-form-item>
+        </el-col>
+        <el-col :span="6" :xl="6" :lg="6" :md="6" :sm="12" :xs="24">
+          <el-form-item label="name" prop="name">
+            <el-input v-model="form.name" autocomplete="off" />
+          </el-form-item>
+        </el-col>
+        <el-col :span="6" :xl="6" :lg="6" :md="6" :sm="12" :xs="24">
+          <el-form-item label="suppressSuccessAlerts" prop="suppressSuccessAlerts">
+            <el-input v-model="form.suppressSuccessAlerts" autocomplete="off" />
+          </el-form-item>
+        </el-col>
+        <el-col :span="6" :xl="6" :lg="6" :md="6" :sm="12" :xs="24">
+          <el-form-item label="buildTemplateId" prop="buildTemplateId">
+            <el-input v-model="form.buildTemplateId" autocomplete="off" />
+          </el-form-item>
+        </el-col>
+        <el-col :span="6" :xl="6" :lg="6" :md="6" :sm="12" :xs="24">
+          <el-form-item label="startVersion" prop="startVersion">
+            <el-input v-model="form.startVersion" autocomplete="off" />
+          </el-form-item>
+        </el-col>
+        <el-col :span="6" :xl="6" :lg="6" :md="6" :sm="12" :xs="24">
+          <el-form-item label="type" prop="type">
+            <el-input v-model="form.type" autocomplete="off" />
+          </el-form-item>
+        </el-col>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
