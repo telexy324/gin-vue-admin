@@ -21,14 +21,17 @@
             <el-button size="small" type="primary" @click="onDelete">确定</el-button>
           </div>
           <template #reference>
-            <el-button icon="el-icon-delete" size="mini" :disabled="!templates.length" style="margin-left: 10px;">删除</el-button>
+            <el-button icon="el-icon-delete" size="mini" :disabled="!templates.length" style="margin-left: 10px;">删除
+            </el-button>
           </template>
         </el-popover>
-        <el-dropdown  size="small" split-button type="primary">
+        <el-dropdown size="small" split-button type="primary">
           {{ currentProject.name }}
           <template #dropdown>
             <el-dropdown-menu>
-              <el-dropdown-item v-for="(item,index) in projects" :key="index" @click="setCurrentProject(item)">{{ item.name }}</el-dropdown-item>
+              <el-dropdown-item v-for="(item,index) in projects" :key="index" @click="setCurrentProject(item)">
+                {{ item.name }}
+              </el-dropdown-item>
             </el-dropdown-menu>
           </template>
         </el-dropdown>
@@ -53,10 +56,34 @@
         <el-table-column align="left" label="viewId" min-width="150" prop="viewId" sortable="custom" />
         <el-table-column align="left" label="surveyVars" min-width="150" prop="surveyVars" sortable="custom" />
         <el-table-column align="left" label="autorun" min-width="150" prop="autorun" sortable="custom" />
-        <el-table-column align="left" label="allowOverrideArgsInTask" min-width="150" prop="allowOverrideArgsInTask" sortable="custom" />
-        <el-table-column align="left" label="suppressSuccessAlerts" min-width="150" prop="allowOverrideArgsInTask" sortable="custom" />
-        <el-table-column align="left" label="buildTemplateId" min-width="150" prop="allowOverrideArgsInTask" sortable="custom" />
-        <el-table-column align="left" label="startVersion" min-width="150" prop="allowOverrideArgsInTask" sortable="custom" />
+        <el-table-column
+          align="left"
+          label="allowOverrideArgsInTask"
+          min-width="150"
+          prop="allowOverrideArgsInTask"
+          sortable="custom"
+        />
+        <el-table-column
+          align="left"
+          label="suppressSuccessAlerts"
+          min-width="150"
+          prop="allowOverrideArgsInTask"
+          sortable="custom"
+        />
+        <el-table-column
+          align="left"
+          label="buildTemplateId"
+          min-width="150"
+          prop="allowOverrideArgsInTask"
+          sortable="custom"
+        />
+        <el-table-column
+          align="left"
+          label="startVersion"
+          min-width="150"
+          prop="allowOverrideArgsInTask"
+          sortable="custom"
+        />
         <el-table-column align="left" label="type" min-width="150" prop="allowOverrideArgsInTask" sortable="custom" />
         <el-table-column align="left" fixed="right" label="操作" width="200">
           <template #default="scope">
@@ -65,13 +92,15 @@
               size="small"
               type="text"
               @click="editTemplate(scope.row)"
-            >编辑</el-button>
+            >编辑
+            </el-button>
             <el-button
               icon="el-icon-delete"
               size="small"
               type="text"
               @click="deleteTemplate(scope.row)"
-            >删除</el-button>
+            >删除
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -92,96 +121,105 @@
     <el-dialog v-model="dialogFormVisible" :before-close="closeDialog" :title="dialogTitle">
       <warning-bar title="新增template" />
       <el-form ref="templateForm" :model="form" :rules="rules" label-width="80px">
-        <el-col :span="6" :xl="6" :lg="6" :md="6" :sm="12" :xs="24">
-          <el-form-item label="name" prop="name">
-            <el-input v-model="form.name" autocomplete="off" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="6" :xl="6" :lg="6" :md="6" :sm="12" :xs="24">
-          <el-form-item label="projectId" prop="projectId">
-            <el-input v-model="form.projectId" :disabled="true" autocomplete="off" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="6" :xl="6" :lg="6" :md="6" :sm="12" :xs="24">
-          <el-form-item label="inventoryId" prop="inventoryId">
-            <el-input v-model="form.inventoryId" autocomplete="off" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="6" :xl="6" :lg="6" :md="6" :sm="12" :xs="24">
-          <el-form-item label="environmentId" prop="environmentId">
-            <el-input v-model="form.environmentId" type="textarea" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="6" :xl="6" :lg="6" :md="6" :sm="12" :xs="24">
-          <el-form-item label="playbook" prop="playbook">
-            <el-input v-model="form.playbook" autocomplete="off" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="6" :xl="6" :lg="6" :md="6" :sm="12" :xs="24">
-          <el-form-item label="arguments" prop="arguments">
-            <el-input v-model="form.arguments" autocomplete="off" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="6" :xl="6" :lg="6" :md="6" :sm="12" :xs="24">
-          <el-form-item label="description" prop="description">
-            <el-input v-model="form.description" autocomplete="off" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="6" :xl="6" :lg="6" :md="6" :sm="12" :xs="24">
-          <el-form-item label="becomeKeyId" prop="becomeKeyId">
-            <el-input v-model="form.becomeKeyId" autocomplete="off" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="6" :xl="6" :lg="6" :md="6" :sm="12" :xs="24">
-          <el-form-item label="vaultKeyId" prop="vaultKeyId">
-            <el-input v-model="form.vaultKeyId" autocomplete="off" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="6" :xl="6" :lg="6" :md="6" :sm="12" :xs="24">
-          <el-form-item label="viewId" prop="viewId">
-            <el-input v-model="form.viewId" autocomplete="off" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="6" :xl="6" :lg="6" :md="6" :sm="12" :xs="24">
-          <el-form-item label="surveyVars" prop="surveyVars">
-            <el-input v-model="form.surveyVars" autocomplete="off" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="6" :xl="6" :lg="6" :md="6" :sm="12" :xs="24">
-          <el-form-item label="autorun" prop="autorun">
-            <el-input v-model="form.autorun" autocomplete="off" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="6" :xl="6" :lg="6" :md="6" :sm="12" :xs="24">
-          <el-form-item label="allowOverrideArgsInTask" prop="allowOverrideArgsInTask">
-            <el-input v-model="form.allowOverrideArgsInTask" autocomplete="off" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="6" :xl="6" :lg="6" :md="6" :sm="12" :xs="24">
-          <el-form-item label="name" prop="name">
-            <el-input v-model="form.name" autocomplete="off" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="6" :xl="6" :lg="6" :md="6" :sm="12" :xs="24">
-          <el-form-item label="suppressSuccessAlerts" prop="suppressSuccessAlerts">
-            <el-input v-model="form.suppressSuccessAlerts" autocomplete="off" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="6" :xl="6" :lg="6" :md="6" :sm="12" :xs="24">
-          <el-form-item label="buildTemplateId" prop="buildTemplateId">
-            <el-input v-model="form.buildTemplateId" autocomplete="off" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="6" :xl="6" :lg="6" :md="6" :sm="12" :xs="24">
-          <el-form-item label="startVersion" prop="startVersion">
-            <el-input v-model="form.startVersion" autocomplete="off" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="6" :xl="6" :lg="6" :md="6" :sm="12" :xs="24">
-          <el-form-item label="type" prop="type">
-            <el-input v-model="form.type" autocomplete="off" />
-          </el-form-item>
-        </el-col>
+        <el-row>
+          <el-col :span="12" :xl="12" :lg="12" :md="12" :sm="12" :xs="24">
+            <el-form-item label="name" prop="name">
+              <el-input v-model="form.name" autocomplete="off" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="8" :xl="8" :lg="8" :md="8" :sm="12" :xs="24">
+            <el-form-item label="projectId" prop="projectId" label-width="120px">
+              <el-input v-model="form.projectId" :disabled="true" autocomplete="off" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8" :xl="8" :lg="8" :md="8" :sm="12" :xs="24">
+            <el-form-item label="inventoryId" prop="inventoryId" label-width="120px">
+              <el-input v-model="form.inventoryId" autocomplete="off" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8" :xl="8" :lg="8" :md="8" :sm="12" :xs="24">
+            <el-form-item label="environmentId" prop="environmentId" label-width="120px">
+              <el-input v-model="form.environmentId" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="24" :xl="24" :lg="24" :md="24" :sm="24" :xs="24">
+            <el-form-item label="playbook" prop="playbook">
+              <el-input v-model="form.playbook" type="textarea" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12" :xl="12" :lg="12" :md="12" :sm="12" :xs="24">
+            <el-form-item label="arguments" prop="arguments">
+              <el-input v-model="form.arguments" autocomplete="off" type="textarea" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12" :xl="12" :lg="12" :md="12" :sm="12" :xs="24">
+            <el-form-item label="description" prop="description" label-width="120px">
+              <el-input v-model="form.description" autocomplete="off" type="textarea" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="8" :xl="8" :lg="8" :md="8" :sm="12" :xs="24">
+            <el-form-item label="becomeKeyId" prop="becomeKeyId" label-width="120px">
+              <el-input v-model="form.becomeKeyId" autocomplete="off" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8" :xl="8" :lg="8" :md="8" :sm="12" :xs="24">
+            <el-form-item label="vaultKeyId" prop="vaultKeyId" label-width="120px">
+              <el-input v-model="form.vaultKeyId" autocomplete="off" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8" :xl="8" :lg="8" :md="8" :sm="12" :xs="24">
+            <el-form-item label="viewId" prop="viewId" label-width="120px">
+              <el-input v-model="form.viewId" autocomplete="off" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12" :xl="12" :lg="12" :md="12" :sm="12" :xs="24">
+            <el-form-item label="surveyVars" prop="surveyVars">
+              <el-input v-model="form.surveyVars" autocomplete="off" type="textarea" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="6" :xl="6" :lg="6" :md="6" :sm="12" :xs="24">
+            <el-form-item label="autorun" prop="autorun">
+              <el-input v-model="form.autorun" autocomplete="off" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="6" :xl="6" :lg="6" :md="6" :sm="12" :xs="24">
+            <el-form-item label="allowOverride" prop="allowOverrideArgsInTask" label-width="120px">
+              <el-input v-model="form.allowOverrideArgsInTask" autocomplete="off" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="6" :xl="6" :lg="6" :md="6" :sm="12" :xs="24">
+            <el-form-item label="suppressAlerts" prop="suppressSuccessAlerts" label-width="120px">
+              <el-input v-model="form.suppressSuccessAlerts" autocomplete="off" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="6" :xl="6" :lg="6" :md="6" :sm="12" :xs="24">
+            <el-form-item label="buildTemplateId" prop="buildTemplateId" label-width="120px">
+              <el-input v-model="form.buildTemplateId" autocomplete="off" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="6" :xl="6" :lg="6" :md="6" :sm="12" :xs="24">
+            <el-form-item label="startVersion" prop="startVersion" label-width="100px">
+              <el-input v-model="form.startVersion" autocomplete="off" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="6" :xl="6" :lg="6" :md="6" :sm="12" :xs="24">
+            <el-form-item label="type" prop="type">
+              <el-input v-model="form.type" autocomplete="off" />
+            </el-form-item>
+          </el-col>
+        </el-row>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
@@ -198,11 +236,7 @@ const path = import.meta.env.VITE_BASE_API
 // 获取列表内容封装在mixins内部  getTableData方法 初始化已封装完成 条件搜索时候 请把条件安好后台定制的结构体字段 放到 this.searchInfo 中即可实现条件搜索
 
 import {
-  getTemplateList,
-  addTemplate,
-  updateTemplate,
-  deleteTemplate,
-  getTemplateById
+  getTemplateList, addTemplate, updateTemplate, deleteTemplate, getTemplateById
 } from '@/api/ansibleTemplate'
 import infoList from '@/mixins/infoList'
 import { toSQLLine } from '@/utils/stringFun'
@@ -210,12 +244,9 @@ import warningBar from '@/components/warningBar/warningBar.vue'
 import ansibleProjects from '@/mixins/ansibleProjects'
 
 export default {
-  name: 'Template',
-  components: {
+  name: 'Template', components: {
     warningBar
-  },
-  mixins: [infoList, ansibleProjects],
-  data() {
+  }, mixins: [infoList, ansibleProjects], data() {
     return {
       deleteVisible: false,
       listApi: getTemplateList,
@@ -245,29 +276,23 @@ export default {
       type: '',
       rules: {
         name: [{ required: true, message: '请输入template name', trigger: 'blur' }],
-        projectId: [
-          { required: true, message: '请输入project ip', trigger: 'blur' }
-        ]
+        projectId: [{ required: true, message: '请输入project ip', trigger: 'blur' }]
       },
       path: path
     }
-  },
-  async created() {
+  }, async created() {
     await this.getProjects()
     await this.getTableData()
-  },
-  methods: {
+  }, methods: {
     //  选中api
     handleSelectionChange(val) {
       this.templates = val
-    },
-    async onDelete() {
+    }, async onDelete() {
       const ids = this.templates.map(item => item.ID)
       const res = await deleteTemplate({ ids })
       if (res.code === 0) {
         this.$message({
-          type: 'success',
-          message: res.msg
+          type: 'success', message: res.msg
         })
         if (this.tableData.length === ids.length && this.page > 1) {
           this.page--
@@ -275,39 +300,30 @@ export default {
         this.deleteVisible = false
         this.getTableData()
       }
-    },
-    // 排序
+    }, // 排序
     sortChange({ prop, order }) {
       if (prop) {
         this.searchInfo.orderKey = toSQLLine(prop)
         this.searchInfo.desc = order === 'descending'
       }
       this.getTableData()
-    },
-    onReset() {
+    }, onReset() {
       this.searchInfo = {}
-    },
-    // 条件搜索前端看此方法
+    }, // 条件搜索前端看此方法
     onSubmit() {
       this.page = 1
       this.pageSize = 10
       this.searchInfo.projectId = this.currentProject.ID
       this.getTableData()
-    },
-    initForm() {
+    }, initForm() {
       this.$refs.templateForm.resetFields()
       this.form = {
-        name: '',
-        projectId: '',
-        json: '',
-        password: ''
+        name: '', projectId: '', json: '', password: ''
       }
-    },
-    closeDialog() {
+    }, closeDialog() {
       this.initForm()
       this.dialogFormVisible = false
-    },
-    openDialog(type) {
+    }, openDialog(type) {
       switch (type) {
         case 'addTemplate':
           this.dialogTitle = '新增Template'
@@ -321,24 +337,19 @@ export default {
       }
       this.type = type
       this.dialogFormVisible = true
-    },
-    async editTemplate(row) {
+    }, async editTemplate(row) {
       const res = await getTemplateById({ id: row.ID, projectId: this.currentProject.ID })
       this.form = res.data.template
       this.openDialog('edit')
-    },
-    async deleteTemplate(row) {
+    }, async deleteTemplate(row) {
       this.$confirm('此操作将永久删除Template?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
+        confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning'
       })
         .then(async() => {
           const res = await deleteTemplate(row)
           if (res.code === 0) {
             this.$message({
-              type: 'success',
-              message: '删除成功!'
+              type: 'success', message: '删除成功!'
             })
             if (this.tableData.length === 1 && this.page > 1) {
               this.page--
@@ -346,47 +357,38 @@ export default {
             this.getTableData()
           }
         })
-    },
-    async enterDialog() {
+    }, async enterDialog() {
       this.$refs.templateForm.validate(async valid => {
         if (valid) {
           switch (this.type) {
-            case 'addTemplate':
-              {
-                const res = await addTemplate(this.form)
-                if (res.code === 0) {
-                  this.$message({
-                    type: 'success',
-                    message: '添加成功',
-                    showClose: true
-                  })
-                }
-                this.getTableData()
-                this.closeDialog()
+            case 'addTemplate': {
+              const res = await addTemplate(this.form)
+              if (res.code === 0) {
+                this.$message({
+                  type: 'success', message: '添加成功', showClose: true
+                })
               }
+              this.getTableData()
+              this.closeDialog()
+            }
 
               break
-            case 'edit':
-              {
-                const res = await updateTemplate(this.form)
-                if (res.code === 0) {
-                  this.$message({
-                    type: 'success',
-                    message: '编辑成功',
-                    showClose: true
-                  })
-                }
-                this.getTableData()
-                this.closeDialog()
+            case 'edit': {
+              const res = await updateTemplate(this.form)
+              if (res.code === 0) {
+                this.$message({
+                  type: 'success', message: '编辑成功', showClose: true
+                })
               }
+              this.getTableData()
+              this.closeDialog()
+            }
               break
             default:
               // eslint-disable-next-line no-lone-blocks
               {
                 this.$message({
-                  type: 'error',
-                  message: '未知操作',
-                  showClose: true
+                  type: 'error', message: '未知操作', showClose: true
                 })
               }
               break
@@ -401,16 +403,20 @@ export default {
 <style scoped lang="scss">
 .button-box {
   padding: 10px 20px;
+
   .el-button {
     float: right;
   }
 }
+
 .warning {
   color: #dc143c;
 }
-.excel-btn+.excel-btn{
+
+.excel-btn + .excel-btn {
   margin-left: 10px;
 }
+
 .gva-btn-list :deep(.el-dropdown) {
   float: right;
   height: 32px;
