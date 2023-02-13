@@ -1,5 +1,5 @@
-package application
+package ssh
 
 type ServiceGroup struct {
-	StaffService
+	SshService
 }

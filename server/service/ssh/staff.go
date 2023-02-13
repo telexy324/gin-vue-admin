@@ -1,4 +1,4 @@
-package application
+package ssh
 
 import (
 	"errors"
@@ -19,7 +19,7 @@ type SshService struct {
 //@return: error
 
 func (staffService *SshService) AddAdmin(admin application.Admin) error {
-	if !errors.Is(global.GVA_DB.Where("name = ? or mobile = ?", admin.Name,admin.Mobile).First(&application.Admin{}).Error, gorm.ErrRecordNotFound) {
+	if !errors.Is(global.GVA_DB.Where("name = ? or mobile = ?", admin.Name, admin.Mobile).First(&application.Admin{}).Error, gorm.ErrRecordNotFound) {
 		return errors.New("存在重复姓名或电话，请修改")
 	}
 	return global.GVA_DB.Create(&admin).Error
@@ -113,10 +113,10 @@ func (staffService *SshService) GetAdminList(info request2.AdminSearch) (err err
 	return err, adminList, total
 }
 
-//@author: [telexy324](https://github.com/telexy324)
-//@function: GetDepartmentAll
-//@description: 获取全部部门
-//@return: err error, departmentList []application.Department
+// @author: [telexy324](https://github.com/telexy324)
+// @function: GetDepartmentAll
+// @description: 获取全部部门
+// @return: err error, departmentList []application.Department
 func (staffService *SshService) GetDepartmentAll() (err error, departmentList []application.Department) {
 	db := global.GVA_DB.Model(&application.Department{})
 	err = db.Find(&departmentList).Error
