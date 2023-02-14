@@ -33,12 +33,12 @@ type Terminal struct {
 }
 
 type SSHClient struct {
-	Username  string `json:"username"`
-	Password  string `json:"password"`
-	Server  *application.ApplicationServer
-	Session *ssh.Session
-	Client  *ssh.Client
-	channel ssh.Channel
+	Username string                         `json:"username"`
+	Password string                         `json:"password"`
+	Server   *application.ApplicationServer `json:"server"`
+	Session  *ssh.Session
+	Client   *ssh.Client
+	channel  ssh.Channel
 }
 
 func NewSSHClient() SSHClient {

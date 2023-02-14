@@ -113,27 +113,26 @@
       </template>
     </el-dialog>
 
-    <el-dialog v-model="dialogSSHFormVisible" :before-close="closeDialog" :title="dialogTitle">
+    <el-dialog v-model="dialogSSHFormVisible" :before-close="closeDialog" :title="dialogSSHTitle">
       <warning-bar title="连接信息" />
-      <el-form ref="sshForm" :model="form" :rules="rules" label-width="80px">
+      <el-form ref="sshForm" :model="sshForm" :rules="rules" label-width="80px">
         <el-form-item label="管理IP" prop="manageIp">
-          <el-input v-model="form.manageIp" autocomplete="off" />
+          <el-input v-model="sshForm.manageIp" autocomplete="off" />
         </el-form-item>
         <el-form-item label="SSH端口" prop="sshPort">
-          <el-input v-model="form.architecture" autocomplete="off" />
+          <el-input v-model="sshForm.sshPort" autocomplete="off" />
         </el-form-item>
-
-        <el-form-item label="系统" prop="os">
-          <el-input v-model="form.os" autocomplete="off" />
+        <el-form-item label="用户名" prop="username">
+          <el-input v-model="sshForm.username" autocomplete="off" />
         </el-form-item>
-        <el-form-item label="版本" prop="osVersion">
-          <el-input v-model="form.osVersion" autocomplete="off" />
+        <el-form-item label="密码" prop="password">
+          <el-input v-model="sshForm.password" autocomplete="off" />
         </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button size="small" @click="closeDialog">取 消</el-button>
-          <el-button size="small" type="primary" @click="enterDialog">确 定</el-button>
+          <el-button size="small" @click="closeSSHDialog">取 消</el-button>
+          <el-button size="small" type="primary" @click="enterSSHDialog">连 接</el-button>
         </div>
       </template>
     </el-dialog>
@@ -151,6 +150,7 @@ import {
   deleteServer,
   getServerById
 } from '@/api/cmdb'
+import runSsh from '@/api/ssh'
 import infoList from '@/mixins/infoList'
 import { toSQLLine } from '@/utils/stringFun'
 import warningBar from '@/components/warningBar/warningBar.vue'
@@ -169,6 +169,7 @@ export default {
       dialogFormVisible: false,
       dialogSSHFormVisible: false,
       dialogTitle: '新增server',
+      dialogSSHTitle: '服务器信息',
       servers: [],
       form: {
         hostname: '',
@@ -178,11 +179,12 @@ export default {
         osVersion: ''
       },
       sshForm: {
-        manageIp: '',
-        sshPort: '',
+        server: {
+          manageIp: '',
+          sshPort: '',
+        },
         username: '',
-        password: '',
-
+        password: ''
       },
       type: '',
       rules: {
@@ -258,13 +260,14 @@ export default {
       this.dialogFormVisible = false
     },
     initSSHForm() {
-      this.$refs.serverForm.resetFields()
-      this.form = {
-        hostname: '',
-        architecture: '',
-        manageIp: '',
-        os: '',
-        osVersion: ''
+      this.$refs.sshForm.resetFields()
+      this.sshForm = {
+        server: {
+          manageIp: '',
+          sshPort: '',
+        },
+        username: '',
+        password: ''
       }
     },
     closeSSHDialog() {
@@ -366,6 +369,21 @@ export default {
               }
               break
           }
+        }
+      })
+    },
+    async enterSSHDialog() {
+      this.$refs.sshForm.validate(async valid => {
+        if (valid) {
+          const res = await runSsh(this.form)
+          if (res.code === 0) {
+            this.$message({
+              type: 'success',
+              message: '已连接',
+              showClose: true
+            })
+          }
+          this.closeDialog()
         }
       })
     },

@@ -7,12 +7,10 @@ import service from '@/utils/request'
 // @Produce  application/json
 // @Success 200
 // @Router /ssh/run [get]
-export const downloadTemplate = () => {
+export const runSsh = (data) => {
   return service({
     url: '/ssh/run',
     method: 'get',
-    responseType: 'blob'
-  }).then((res) => {
-    download(res, fileName)
+    data
   })
 }
