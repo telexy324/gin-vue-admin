@@ -112,6 +112,31 @@
         </div>
       </template>
     </el-dialog>
+
+    <el-dialog v-model="dialogSSHFormVisible" :before-close="closeDialog" :title="dialogTitle">
+      <warning-bar title="连接信息" />
+      <el-form ref="sshForm" :model="form" :rules="rules" label-width="80px">
+        <el-form-item label="管理IP" prop="manageIp">
+          <el-input v-model="form.manageIp" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="SSH端口" prop="sshPort">
+          <el-input v-model="form.architecture" autocomplete="off" />
+        </el-form-item>
+
+        <el-form-item label="系统" prop="os">
+          <el-input v-model="form.os" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="版本" prop="osVersion">
+          <el-input v-model="form.osVersion" autocomplete="off" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button size="small" @click="closeDialog">取 消</el-button>
+          <el-button size="small" type="primary" @click="enterDialog">确 定</el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -142,6 +167,7 @@ export default {
       deleteVisible: false,
       listApi: getServerList,
       dialogFormVisible: false,
+      dialogSSHFormVisible: false,
       dialogTitle: '新增server',
       servers: [],
       form: {
@@ -150,6 +176,13 @@ export default {
         manageIp: '',
         os: '',
         osVersion: ''
+      },
+      sshForm: {
+        manageIp: '',
+        sshPort: '',
+        username: '',
+        password: '',
+
       },
       type: '',
       rules: {
@@ -224,6 +257,20 @@ export default {
       this.initForm()
       this.dialogFormVisible = false
     },
+    initSSHForm() {
+      this.$refs.serverForm.resetFields()
+      this.form = {
+        hostname: '',
+        architecture: '',
+        manageIp: '',
+        os: '',
+        osVersion: ''
+      }
+    },
+    closeSSHDialog() {
+      this.initSSHForm()
+      this.dialogSSHFormVisible = false
+    },
     openDialog(type) {
       switch (type) {
         case 'addServer':
@@ -269,6 +316,11 @@ export default {
         params: { cid: row.id }
       })
       window.open(routeData.href, '_blank')
+    },
+    async runSsh(row) {
+      const res = await getServerById({ id: row.ID })
+      this.form = res.data.server
+      this.openDialog('edit')
     },
     async enterDialog() {
       this.$refs.serverForm.validate(async valid => {

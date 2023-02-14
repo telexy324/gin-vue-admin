@@ -14,7 +14,7 @@ func (s *SshRouter) InitSshRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 	sshRouterWithoutRecord := Router.Group("ssh")
 	var authoritySshApi = v1.ApiGroupApp.SshApiGroup.SshApi
 	{
-		sshRouterWithoutRecord.GET("addAdmin", authoritySshApi.ShellWeb)       // 新增管理员
+		sshRouterWithoutRecord.GET("run", authoritySshApi.ShellWeb)       // 新增管理员
 	}
 	return sshRouter
 }
