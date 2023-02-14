@@ -3,6 +3,7 @@ package ssh
 import (
 	"fmt"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/common/response"
 	ssh2 "github.com/flipped-aurora/gin-vue-admin/server/service/ssh"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -23,24 +24,27 @@ var (
 	}
 )
 
-func (a *SshApi) ShellWeb(c *gin.Context) error {
+func (a *SshApi) ShellWeb(c *gin.Context) {
 	var err error
 
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		global.GVA_LOG.Error("websocket upgrade 失败", zap.Error(err))
-		return err
+		response.FailWithMessage(err.Error(), c)
+		return
 	}
 	_, readContent, err := conn.ReadMessage()
 	if err != nil {
 		global.GVA_LOG.Error("websocket 读取ip、用户名、密码 失败", zap.Error(err))
-		return err
+		response.FailWithMessage(err.Error(), c)
+		return
 	}
 	fmt.Printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ readContent: %v\n", string(readContent))
 
 	sshClient, err := sshService.DecodeMsgToSSHClient(string(readContent))
 	if err != nil {
-		return err
+		response.FailWithMessage(err.Error(), c)
+		return
 	}
 	fmt.Printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ sshClient: %v\n", sshClient)
 
@@ -53,7 +57,8 @@ func (a *SshApi) ShellWeb(c *gin.Context) error {
 	if err != nil {
 		conn.WriteMessage(1, []byte(err.Error()))
 		conn.Close()
-		return err
+		response.FailWithMessage(err.Error(), c)
+		return
 	}
 	sshClient.Server = &server
 
@@ -61,9 +66,10 @@ func (a *SshApi) ShellWeb(c *gin.Context) error {
 	if err != nil {
 		conn.WriteMessage(1, []byte(err.Error()))
 		conn.Close()
-		return err
+		response.FailWithMessage(err.Error(), c)
+		return
 	}
 	sshClient.RequestTerminal(terminal)
 	sshClient.Connect(conn)
-	return nil
+	return
 }

@@ -12,11 +12,11 @@ require (
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/fvbock/endless v0.0.0-20170109170031-447134032cb6
 	github.com/gin-gonic/gin v1.6.3
-	github.com/go-echarts/go-echarts/v2 v2.2.4 // indirect
 	github.com/go-openapi/spec v0.20.4 // indirect
 	github.com/go-redis/redis/v8 v8.11.0
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gookit/color v1.3.1
+	github.com/gorilla/websocket v1.4.2
 	github.com/jordan-wright/email v0.0.0-20200824153738-3f5bafa1cd84
 	github.com/mojocn/base64Captcha v1.3.1
 	github.com/natefinch/lumberjack v2.0.0+incompatible
@@ -34,6 +34,7 @@ require (
 	github.com/unrolled/secure v1.0.7
 	github.com/xuri/excelize/v2 v2.4.1
 	go.uber.org/zap v1.16.0
+	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
 	golang.org/x/net v0.0.0-20211105192438-b53810dc28af // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	golang.org/x/sys v0.0.0-20211106132015-ebca88c72f68 // indirect

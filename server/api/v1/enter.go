@@ -4,6 +4,7 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/api/v1/application"
 	"github.com/flipped-aurora/gin-vue-admin/server/api/v1/autocode"
 	"github.com/flipped-aurora/gin-vue-admin/server/api/v1/example"
+	"github.com/flipped-aurora/gin-vue-admin/server/api/v1/ssh"
 	"github.com/flipped-aurora/gin-vue-admin/server/api/v1/system"
 )
 
@@ -12,6 +13,7 @@ type ApiGroup struct {
 	SystemApiGroup      system.ApiGroup
 	AutoCodeApiGroup    autocode.ApiGroup
 	ApplicationApiGroup application.ApiGroup
+	SshApiGroup         ssh.ApiGroup
 }
 
 var ApiGroupApp = new(ApiGroup)
