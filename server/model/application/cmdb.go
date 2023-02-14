@@ -17,6 +17,7 @@ type ApplicationServer struct {
 	SystemId     int    `json:"systemId" gorm:"column:system_id"`        // 所属系统id
 	AppIds       string `json:"appIds" gorm:"column:app_ids"`            // 安装应用列表
 	Apps         []App  `json:"apps" gorm:"-"`                           // 安装应用列表
+	SshPort      int    `json:"sshPort" gorm:"column:ssh_port"`          // ssh端口
 }
 
 func (m *ApplicationServer) AfterFind(tx *gorm.DB) (err error) {

@@ -2,6 +2,9 @@ package ssh
 
 import (
 	"fmt"
+	"github.com/flipped-aurora/gin-vue-admin/server/global"
+	ssh2 "github.com/flipped-aurora/gin-vue-admin/server/service/ssh"
+	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"go.uber.org/zap"
 	"net/http"
@@ -20,34 +23,41 @@ var (
 	}
 )
 
-func ShellWeb(c echo.Context) error {
+func (a *SshApi) ShellWeb(c *gin.Context) error {
 	var err error
 
-	conn, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
+	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
-		ubzer.MLog.Error("websocket upgrade 失败", zap.Error(err))
+		global.GVA_LOG.Error("websocket upgrade 失败", zap.Error(err))
 		return err
 	}
 	_, readContent, err := conn.ReadMessage()
 	if err != nil {
-		ubzer.MLog.Error("websocket 读取ip、用户名、密码 失败", zap.Error(err))
+		global.GVA_LOG.Error("websocket 读取ip、用户名、密码 失败", zap.Error(err))
 		return err
 	}
 	fmt.Printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ readContent: %v\n", string(readContent))
 
-	sshClient, err := connections.DecodeMsgToSSHClient(string(readContent))
+	sshClient, err := sshService.DecodeMsgToSSHClient(string(readContent))
 	if err != nil {
 		return err
 	}
 	fmt.Printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ sshClient: %v\n", sshClient)
 
-	terminal := connections.Terminal{
+	terminal := ssh2.Terminal{
 		Columns: 150,
 		Rows:    35,
 	}
 
-	var port = 22
-	err = sshClient.GenerateClient(sshClient.IpAddress, sshClient.Username, sshClient.Password, port)
+	err, server := cmdbServerService.GetServerById(float64(sshClient.Server.ID))
+	if err != nil {
+		conn.WriteMessage(1, []byte(err.Error()))
+		conn.Close()
+		return err
+	}
+	sshClient.Server = &server
+
+	err = sshClient.GenerateClient(sshClient.Server.ManageIp, sshClient.Username, sshClient.Password, sshClient.Server.SshPort)
 	if err != nil {
 		conn.WriteMessage(1, []byte(err.Error()))
 		conn.Close()

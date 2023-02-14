@@ -5,18 +5,49 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/application"
 	"log"
 	"net"
 	"time"
 	"unicode/utf8"
 
-	ssh2 "github.com/flipped-aurora/gin-vue-admin/server/model/ssh"
 	"github.com/gorilla/websocket"
 	"golang.org/x/crypto/ssh"
 )
 
-func DecodeMsgToSSHClient(msg string) (ssh2.SSHClient, error) {
-	client := ssh2.NewSSHClient()
+type SshService struct {
+}
+
+type PtyRequestMsg struct {
+	Term     string
+	Columns  uint32
+	Rows     uint32
+	Width    uint32
+	Height   uint32
+	ModeList string
+}
+
+type Terminal struct {
+	Columns uint32 `json:"cols"`
+	Rows    uint32 `json:"rows"`
+}
+
+type SSHClient struct {
+	Username  string `json:"username"`
+	Password  string `json:"password"`
+	Server  *application.ApplicationServer
+	Session *ssh.Session
+	Client  *ssh.Client
+	channel ssh.Channel
+}
+
+func NewSSHClient() SSHClient {
+	client := SSHClient{}
+	return client
+}
+
+func (sshService *SshService) DecodeMsgToSSHClient(msg string) (SSHClient, error) {
+	client := NewSSHClient()
 	decoded, err := base64.StdEncoding.DecodeString(msg)
 	if err != nil {
 		return client, err
@@ -28,7 +59,7 @@ func DecodeMsgToSSHClient(msg string) (ssh2.SSHClient, error) {
 	return client, nil
 }
 
-func (c *ssh2.SSHClient) GenerateClient(ip, name, password string, port int) error {
+func (c *SSHClient) GenerateClient(ip, name, password string, port int) error {
 	var (
 		auth         []ssh.AuthMethod
 		addr         string
@@ -56,21 +87,21 @@ func (c *ssh2.SSHClient) GenerateClient(ip, name, password string, port int) err
 	if client, err = ssh.Dial("tcp", addr, clientConfig); err != nil {
 		return err
 	}
-	this.Client = client
+	c.Client = client
 	return nil
 }
 
-func (this *ssh2.SSHClient) RequestTerminal(terminal Terminal) *SSHClient {
-	session, err := this.Client.NewSession()
+func (c *SSHClient) RequestTerminal(terminal Terminal) *SSHClient {
+	session, err := c.Client.NewSession()
 	if err != nil {
 		return nil
 	}
-	this.Session = session
-	channel, inRequests, err := this.Client.OpenChannel("session", nil)
+	c.Session = session
+	channel, inRequests, err := c.Client.OpenChannel("session", nil)
 	if err != nil {
 		return nil
 	}
-	this.channel = channel
+	c.channel = channel
 	go func() {
 		for req := range inRequests {
 			if req.WantReply {
@@ -92,7 +123,7 @@ func (this *ssh2.SSHClient) RequestTerminal(terminal Terminal) *SSHClient {
 		modeList = append(modeList, ssh.Marshal(&kv)...)
 	}
 	modeList = append(modeList, 0)
-	req := ptyRequestMsg{
+	req := PtyRequestMsg{
 		Term:     "xterm",
 		Columns:  terminal.Columns,
 		Rows:     terminal.Rows,
@@ -108,17 +139,17 @@ func (this *ssh2.SSHClient) RequestTerminal(terminal Terminal) *SSHClient {
 	if !ok || err != nil {
 		return nil
 	}
-	return this
+	return c
 }
 
-func (this *SSHClient) Connect(ws *websocket.Conn) {
+func (c *SSHClient) Connect(ws *websocket.Conn) {
 	go func() {
 		for {
 			_, p, err := ws.ReadMessage()
 			if err != nil {
 				return
 			}
-			_, err = this.channel.Write(p)
+			_, err = c.channel.Write(p)
 			if err != nil {
 				return
 			}
@@ -126,15 +157,15 @@ func (this *SSHClient) Connect(ws *websocket.Conn) {
 	}()
 
 	go func() {
-		br := bufio.NewReader(this.channel)
+		br := bufio.NewReader(c.channel)
 		buf := []byte{}
 		t := time.NewTimer(time.Microsecond * 100)
 		defer t.Stop()
 		r := make(chan rune)
 
 		go func() {
-			defer this.Client.Close()
-			defer this.Client.Close()
+			defer c.Client.Close()
+			defer c.Client.Close()
 
 			for {
 				x, size, err := br.ReadRune()

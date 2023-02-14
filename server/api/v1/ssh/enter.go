@@ -7,3 +7,4 @@ type ApiGroup struct {
 }
 
 var sshService = service.ServiceGroupApp.SshServiceGroup.SshService
+var cmdbServerService = service.ServiceGroupApp.ApplicationServiceGroup.CmdbServerService
