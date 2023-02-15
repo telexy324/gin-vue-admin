@@ -159,6 +159,10 @@ import infoList from '@/mixins/infoList'
 import { toSQLLine } from '@/utils/stringFun'
 import warningBar from '@/components/warningBar/warningBar.vue'
 import { exportExcel, downloadTemplate } from '@/api/cmdb'
+import 'xterm/css/xterm.css'
+import { Terminal } from 'xterm'
+import { FitAddon } from 'xterm-addon-fit'
+import { ref, onMounted } from 'vue'
 
 export default {
   name: 'Server',
@@ -206,7 +210,10 @@ export default {
           { required: true, message: '请输入系统版本', trigger: 'blur' }
         ]
       },
-      path: path
+      path: path,
+      terminalBox: ref(null),
+      term: '',
+      socket: ''
     }
   },
   created() {
