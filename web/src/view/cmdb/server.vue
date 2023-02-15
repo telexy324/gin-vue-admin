@@ -67,8 +67,8 @@
               icon="el-icon-orange"
               size="small"
               type="text"
-              @click="relation(scope.row)"
-            >关系图</el-button>
+              @click="runSsh(scope.row)"
+            >执行</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -117,10 +117,10 @@
       <warning-bar title="连接信息" />
       <el-form ref="sshForm" :model="sshForm" :rules="rules" label-width="80px">
         <el-form-item label="管理IP" prop="manageIp">
-          <el-input v-model="sshForm.manageIp" autocomplete="off" />
+          <el-input v-model="sshForm.server.manageIp" autocomplete="off" />
         </el-form-item>
         <el-form-item label="SSH端口" prop="sshPort">
-          <el-input v-model="sshForm.sshPort" autocomplete="off" />
+          <el-input v-model="sshForm.server.sshPort" autocomplete="off" />
         </el-form-item>
         <el-form-item label="用户名" prop="username">
           <el-input v-model="sshForm.username" autocomplete="off" />
@@ -136,6 +136,10 @@
         </div>
       </template>
     </el-dialog>
+
+    <div class="term1">
+      <div ref="terminalBox" style="height: 60vh;"></div>
+    </div>
   </div>
 </template>
 
@@ -150,7 +154,7 @@ import {
   deleteServer,
   getServerById
 } from '@/api/cmdb'
-import runSsh from '@/api/ssh'
+import { runSsh } from '@/api/ssh'
 import infoList from '@/mixins/infoList'
 import { toSQLLine } from '@/utils/stringFun'
 import warningBar from '@/components/warningBar/warningBar.vue'
@@ -322,8 +326,11 @@ export default {
     },
     async runSsh(row) {
       const res = await getServerById({ id: row.ID })
-      this.form = res.data.server
-      this.openDialog('edit')
+      this.sshForm.server = res.data.server
+      this.openSSHDialog()
+    },
+    openSSHDialog() {
+      this.dialogSSHFormVisible = true
     },
     async enterDialog() {
       this.$refs.serverForm.validate(async valid => {
