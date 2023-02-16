@@ -158,14 +158,6 @@ import infoList from '@/mixins/infoList'
 import { toSQLLine } from '@/utils/stringFun'
 import warningBar from '@/components/warningBar/warningBar.vue'
 import { exportExcel, downloadTemplate } from '@/api/cmdb'
-import 'xterm/css/xterm.css'
-import { Terminal } from 'xterm'
-import { FitAddon } from 'xterm-addon-fit'
-import { ref } from 'vue'
-
-const terminalBox = ref(null)
-let term
-let socket
 
 export default {
   name: 'Server',
@@ -214,9 +206,6 @@ export default {
         ]
       },
       path: path,
-      terminalBox: ref(null),
-      term: '',
-      socket: ''
     }
   },
   created() {
@@ -413,54 +402,6 @@ export default {
     downloadExcelTemplate() {
       downloadTemplate('ExcelTemplate.xlsx')
     },
-    runTerminal(username, ipaddress, port, password) {
-      term = new Terminal({
-        rendererType: 'canvas',
-        cursorBlink: true,
-        cursorStyle: 'bar'
-      })
-      const fitAddon = new FitAddon()
-      term.loadAddon(fitAddon)
-      term.open(terminalBox.value)
-      fitAddon.fit()
-
-      term.write('正在连接...\r\n')
-      /
-
-      socket.onopen = function() {
-        term.write('连接成功...\r\n')
-        fitAddon.fit()
-        term.onData(function(data) {
-          // socket.send(JSON.stringify({ type: "stdin", data: data }))
-          // console.log(data)
-          socket.send(data)
-          // console.log(data)
-        })
-        // ElMessage.success("会话成功连接！")
-        var jsonStr = `{"username":"${username}", "ipaddress":"${ipaddress}", "port":${port}, "password":"${password}"}`
-        var datMsg = window.btoa(jsonStr)
-        // socket.send(JSON.stringify({ ip: ip.value, name: name.value, password: password.value }))
-        socket.send(datMsg)
-      }
-      socket.onclose = function() {
-        term.writeln('连接关闭')
-      }
-      socket.onerror = function(err) {
-        // console.log(err)
-        term.writeln('读取数据异常：', err)
-      }
-      // 接收数据
-      socket.onmessage = function (recv) {
-        try {
-          term.write(recv.data)
-        } catch (e) {
-          console.log('unsupport data', recv.data)
-        }
-      }
-      window.addEventListener('resize', () => {
-        fitAddon.fit()
-      }, false)
-    },
   }
 }
 </script>
@@ -477,16 +418,5 @@ export default {
 }
 .excel-btn+.excel-btn{
   margin-left: 10px;
-}
-.upload {
-  min-height: 100px;
-}
-.term1 {
-  margin-left: 60px;
-}
-.go_out {
-  margin-left: -89%;
-  margin-top: 20px;
-  margin-bottom: 20px;
 }
 </style>

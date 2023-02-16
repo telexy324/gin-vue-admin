@@ -11,33 +11,21 @@ import { FitAddon } from 'xterm-addon-fit'
 import { ref } from 'vue'
 
 export default {
-  name: 'SSH',
-  props: {
-    username: String,
-    ipaddress: String,
-    port: Number,
-    password: String,
-  },
-  data() {
+  name: 'SSH', props: {
+    username: String, ipaddress: String, port: Number, password: String,
+  }, data() {
     return {
-      terminalBox: ref(null),
-      term: null,
-      socket: null
+      terminalBox: ref(null), term: null, socket: null
     }
-  },
-  mounted() {
+  }, mounted() {
     this.initSocket()
-  },
-  beforeDestroy() {
+  }, beforeDestroy() {
     this.socket.close()
     this.term.dispose()
-  },
-  methods: {
+  }, methods: {
     initTerm() {
       const term = new Terminal({
-        rendererType: 'canvas',
-        cursorBlink: true,
-        cursorStyle: 'bar'
+        rendererType: 'canvas', cursorBlink: true, cursorStyle: 'bar'
       })
       const fitAddon = new FitAddon()
       term.loadAddon(fitAddon)
@@ -45,34 +33,65 @@ export default {
       fitAddon.fit()
       this.term = term
       this.term.write('正在连接...\r\n')
-    },
-    initSocket() {
+    }, initSocket() {
       this.socket = new WebSocket('ws://' + location.hostname + ':8080/ssh/run')
       this.socket.binaryType = 'arraybuffer'
       this.socketOnClose()
       this.socketOnOpen()
       this.socketOnError()
-    },
-    socketOnOpen() {
+      this.socketOnMessage()
+    }, socketOnOpen() {
       this.socket.onopen = () => {
-        // 链接成功后
         this.initTerm()
+        this.term.write('连接成功...\r\n')
+        // fitAddon.fit()
+        this.term.onData(function(data) {
+          // socket.send(JSON.stringify({ type: "stdin", data: data }))
+          // console.log(data)
+          this.socket.send(data)
+          // console.log(data)
+        })
+        // ElMessage.success("会话成功连接！")
+        var jsonStr = `{"username":"${this.username}", "ipaddress":"${this.ipaddress}", "port":${this.port}, "password":"${this.password}"}`
+        var datMsg = window.btoa(jsonStr)
+        // socket.send(JSON.stringify({ ip: ip.value, name: name.value, password: password.value }))
+        this.socket.send(datMsg)
       }
-    },
-    socketOnClose() {
+    }, socketOnClose() {
       this.socket.onclose = () => {
-        // console.log('close socket')
+        this.term.writeln('连接关闭')
+      }
+    }, socketOnError() {
+      this.socket.onerror = err => {
+        // console.log(err)
+        this.term.writeln('读取数据异常：', err)
+      }
+    }, socketOnMessage() {
+      // 接收数据
+      this.socket.onmessage = recv => {
+        try {
+          this.term.write(recv.data)
+        } catch (e) {
+          this.console.log('unsupport data', recv.data)
+        }
       }
     },
-    socketOnError() {
-      this.socket.onerror = () => {
-        // console.log('socket 链接失败')
-      }
-    }
   }
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+.upload {
+  min-height: 100px;
+}
 
+.term1 {
+  margin-left: 60px;
+}
+
+.go_out {
+  margin-left: -89%;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
 </style>
