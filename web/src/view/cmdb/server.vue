@@ -425,9 +425,7 @@ export default {
       fitAddon.fit()
 
       term.write('正在连接...\r\n')
-      socket = new WebSocket('ws://' + location.hostname + ':8080/ssh/run')
-
-      socket.binaryType = 'arraybuffer'
+      /
 
       socket.onopen = function() {
         term.write('连接成功...\r\n')
