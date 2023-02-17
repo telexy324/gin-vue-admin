@@ -48,18 +48,20 @@ export default {
       const fitAddon = new FitAddon()
       term.loadAddon(fitAddon)
       console.log(this.manageIp)
-      term.open(this.terminalBox.value)
+      term.open(this.$refs.terminalBox)
       fitAddon.fit()
       this.term = term
       this.term.write('正在连接...\r\n')
-    }, initSocket() {
+    },
+    initSocket() {
       this.socket = new WebSocket('ws://' + location.hostname + ':8888/ssh/run')
       this.socket.binaryType = 'arraybuffer'
       this.socketOnClose()
       this.socketOnOpen()
       this.socketOnError()
       this.socketOnMessage()
-    }, socketOnOpen() {
+    },
+    socketOnOpen() {
       this.socket.onopen = () => {
         // this.initTerm()
         this.term.write('连接成功...\r\n')
@@ -71,21 +73,25 @@ export default {
           // console.log(data)
         })
         // ElMessage.success("会话成功连接！")
-        var jsonStr = `{"username":"${this.username}", "ipaddress":"${this.manageIp}", "port":${this.port}, "password":"${this.password}"}`
+        var jsonStr = `{"server":{"manageIp":"${this.manageIp}", "sshPort":${this.sshPort}}, "username":"${this.username}", "password":"${this.password}"}`
+        console.log(jsonStr)
         var datMsg = window.btoa(jsonStr)
         // socket.send(JSON.stringify({ ip: ip.value, name: name.value, password: password.value }))
         this.socket.send(datMsg)
       }
-    }, socketOnClose() {
+    },
+    socketOnClose() {
       this.socket.onclose = () => {
         this.term.writeln('连接关闭')
       }
-    }, socketOnError() {
+    },
+    socketOnError() {
       this.socket.onerror = err => {
         // console.log(err)
         this.term.writeln('读取数据异常：', err)
       }
-    }, socketOnMessage() {
+    },
+    socketOnMessage() {
       // 接收数据
       this.socket.onmessage = recv => {
         try {

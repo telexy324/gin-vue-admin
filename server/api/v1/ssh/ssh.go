@@ -44,6 +44,7 @@ func (a *SshApi) ShellWeb(c *gin.Context) {
 
 	sshClient, err := sshService.DecodeMsgToSSHClient(string(readContent))
 	if err != nil {
+		global.GVA_LOG.Error(err.Error())
 		response.FailWithMessage(err.Error(), c)
 		return
 	}

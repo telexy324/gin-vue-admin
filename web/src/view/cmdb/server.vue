@@ -263,7 +263,7 @@ export default {
       this.dialogFormVisible = false
     },
     initSSHForm() {
-      this.sshForm.resetFields()
+      this.$refs.sshForm.resetFields()
       this.sshForm = {
         server: {
           manageIp: '',
@@ -384,10 +384,10 @@ export default {
           await this.$router.push({
             name: 'ssh',
             params: {
-              manageIp: this.$refs.sshForm.manageIp,
-              username: this.$refs.sshForm.username,
-              password: this.$refs.sshForm.password,
-              sshPort: this.$refs.sshForm.sshPort
+              manageIp: this.sshForm.server.manageIp,
+              username: this.sshForm.username,
+              password: this.sshForm.password,
+              sshPort: this.sshForm.server.sshPort
             }
           })
           console.log(this.sshForm.server.manageIp)
