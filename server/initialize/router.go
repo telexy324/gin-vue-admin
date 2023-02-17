@@ -41,6 +41,7 @@ func Routers() *gin.Engine {
 	exampleRouter := router.RouterGroupApp.Example
 	autocodeRouter := router.RouterGroupApp.Autocode
 	applicationRouter := router.RouterGroupApp.Application
+	sshRouter := router.RouterGroupApp.Ssh
 	PublicGroup := Router.Group("")
 	{
 		// 健康监测
@@ -53,6 +54,7 @@ func Routers() *gin.Engine {
 		systemRouter.InitInitRouter(PublicGroup) // 自动初始化相关
 
 		applicationRouter.InitCmdbRouter(PublicGroup)
+		sshRouter.InitSshRouter(PublicGroup)
 		//systemRouter.InitMenuRouter(PublicGroup)                   // 注册menu路由
 	}
 	PrivateGroup := Router.Group("")

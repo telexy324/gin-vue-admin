@@ -34,6 +34,7 @@ func (a *SshApi) ShellWeb(c *gin.Context) {
 		return
 	}
 	_, readContent, err := conn.ReadMessage()
+	fmt.Println(err)
 	if err != nil {
 		global.GVA_LOG.Error("websocket 读取ip、用户名、密码 失败", zap.Error(err))
 		response.FailWithMessage(err.Error(), c)

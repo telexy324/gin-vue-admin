@@ -263,7 +263,7 @@ export default {
       this.dialogFormVisible = false
     },
     initSSHForm() {
-      this.$refs.sshForm.resetFields()
+      this.sshForm.resetFields()
       this.sshForm = {
         server: {
           manageIp: '',
@@ -381,15 +381,18 @@ export default {
     async enterSSHDialog() {
       this.$refs.sshForm.validate(async valid => {
         if (valid) {
-          const res = this.runTerminal(this.sshForm.username, this.sshForm.server.manageIp, this.sshForm.server.sshPort, this.sshForm.password)
-          if (res.code === 0) {
-            this.$message({
-              type: 'success',
-              message: '已连接',
-              showClose: true
-            })
-          }
-          this.closeDialog()
+          await this.$router.push({
+            name: 'ssh',
+            params: {
+              manageIp: this.$refs.sshForm.manageIp,
+              username: this.$refs.sshForm.username,
+              password: this.$refs.sshForm.password,
+              sshPort: this.$refs.sshForm.sshPort
+            }
+          })
+          console.log(this.sshForm.server.manageIp)
+          // window.open(routeData.href, '_self')
+          this.closeSSHDialog()
         }
       })
     },

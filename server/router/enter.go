@@ -4,6 +4,7 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/router/application"
 	"github.com/flipped-aurora/gin-vue-admin/server/router/autocode"
 	"github.com/flipped-aurora/gin-vue-admin/server/router/example"
+	"github.com/flipped-aurora/gin-vue-admin/server/router/ssh"
 	"github.com/flipped-aurora/gin-vue-admin/server/router/system"
 )
 
@@ -12,6 +13,7 @@ type RouterGroup struct {
 	Example     example.RouterGroup
 	Autocode    autocode.RouterGroup
 	Application application.RouterGroup
+	Ssh         ssh.RouterGroup
 }
 
 var RouterGroupApp = new(RouterGroup)

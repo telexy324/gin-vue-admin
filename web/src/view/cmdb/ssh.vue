@@ -11,30 +11,49 @@ import { FitAddon } from 'xterm-addon-fit'
 import { ref } from 'vue'
 
 export default {
-  name: 'SSH', props: {
-    username: String, ipaddress: String, port: Number, password: String,
-  }, data() {
+  name: 'SSH',
+  data() {
     return {
-      terminalBox: ref(null), term: null, socket: null
+      terminalBox: ref(null),
+      term: null,
+      socket: null,
+      manageIp: '',
+      username: '',
+      password: '',
+      sshPort: ''
     }
-  }, mounted() {
+  },
+  mounted() {
+    const manageIp = this.$route.params.manageIp
+    const username = this.$route.params.username
+    const password = this.$route.params.password
+    const sshPort = this.$route.params.sshPort
+    this.manageIp = manageIp
+    this.username = username
+    this.password = password
+    this.sshPort = sshPort
+    console.log(sshPort)
+    this.initTerm()
     this.initSocket()
-  }, beforeDestroy() {
+  },
+  beforeDestroy() {
     this.socket.close()
     this.term.dispose()
-  }, methods: {
+  },
+  methods: {
     initTerm() {
       const term = new Terminal({
         rendererType: 'canvas', cursorBlink: true, cursorStyle: 'bar'
       })
       const fitAddon = new FitAddon()
       term.loadAddon(fitAddon)
+      console.log(this.manageIp)
       term.open(this.terminalBox.value)
       fitAddon.fit()
       this.term = term
       this.term.write('正在连接...\r\n')
     }, initSocket() {
-      this.socket = new WebSocket('ws://' + location.hostname + ':8080/ssh/run')
+      this.socket = new WebSocket('ws://' + location.hostname + ':8888/ssh/run')
       this.socket.binaryType = 'arraybuffer'
       this.socketOnClose()
       this.socketOnOpen()
@@ -42,7 +61,7 @@ export default {
       this.socketOnMessage()
     }, socketOnOpen() {
       this.socket.onopen = () => {
-        this.initTerm()
+        // this.initTerm()
         this.term.write('连接成功...\r\n')
         // fitAddon.fit()
         this.term.onData(function(data) {
@@ -52,7 +71,7 @@ export default {
           // console.log(data)
         })
         // ElMessage.success("会话成功连接！")
-        var jsonStr = `{"username":"${this.username}", "ipaddress":"${this.ipaddress}", "port":${this.port}, "password":"${this.password}"}`
+        var jsonStr = `{"username":"${this.username}", "ipaddress":"${this.manageIp}", "port":${this.port}, "password":"${this.password}"}`
         var datMsg = window.btoa(jsonStr)
         // socket.send(JSON.stringify({ ip: ip.value, name: name.value, password: password.value }))
         this.socket.send(datMsg)

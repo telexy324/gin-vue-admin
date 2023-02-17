@@ -17,7 +17,7 @@ import echarts from 'echarts'
 // import { isMobile } from '@common/utils/util'
 
 export default {
-  name: 'relation',
+  name: 'Relation',
   mixins: [echartMixins('#chart')],
   // props: {
   //   cid: {
