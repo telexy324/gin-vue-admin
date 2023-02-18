@@ -55,14 +55,14 @@ func (a *SshApi) ShellWeb(c *gin.Context) {
 		Rows:    35,
 	}
 
-	err, server := cmdbServerService.GetServerById(float64(sshClient.Server.ID))
-	if err != nil {
-		conn.WriteMessage(1, []byte(err.Error()))
-		conn.Close()
-		response.FailWithMessage(err.Error(), c)
-		return
-	}
-	sshClient.Server = &server
+	//err, server := cmdbServerService.GetServerById(float64(sshClient.Server.ID))
+	//if err != nil {
+	//	conn.WriteMessage(1, []byte(err.Error()))
+	//	conn.Close()
+	//	response.FailWithMessage(err.Error(), c)
+	//	return
+	//}
+	//sshClient.Server = &server
 
 	err = sshClient.GenerateClient(sshClient.Server.ManageIp, sshClient.Username, sshClient.Password, sshClient.Server.SshPort)
 	if err != nil {

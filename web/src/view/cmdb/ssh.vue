@@ -32,7 +32,6 @@ export default {
     this.username = username
     this.password = password
     this.sshPort = sshPort
-    console.log(sshPort)
     this.initTerm()
     this.initSocket()
   },
@@ -62,6 +61,7 @@ export default {
       this.socketOnMessage()
     },
     socketOnOpen() {
+      const _this = this
       this.socket.onopen = () => {
         // this.initTerm()
         this.term.write('连接成功...\r\n')
@@ -69,7 +69,7 @@ export default {
         this.term.onData(function(data) {
           // socket.send(JSON.stringify({ type: "stdin", data: data }))
           // console.log(data)
-          this.socket.send(data)
+          _this.socket.send(data)
           // console.log(data)
         })
         // ElMessage.success("会话成功连接！")
