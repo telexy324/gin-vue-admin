@@ -6,8 +6,10 @@ type ApiGroup struct {
 	CmdbServerApi
 	CmdbSystemApi
 	StaffApi
+	TaskApi
 }
 
 var cmdbServerService = service.ServiceGroupApp.ApplicationServiceGroup.CmdbServerService
 var cmdbSystemService = service.ServiceGroupApp.ApplicationServiceGroup.CmdbSystemService
 var staffService = service.ServiceGroupApp.ApplicationServiceGroup.StaffService
+var taskService = service.ServiceGroupApp.ApplicationServiceGroup.TaskService
