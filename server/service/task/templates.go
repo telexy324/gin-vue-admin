@@ -4,50 +4,43 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/ansible"
-	request2 "github.com/flipped-aurora/gin-vue-admin/server/model/template/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/task"
+	request2 "github.com/flipped-aurora/gin-vue-admin/server/model/task/request"
 	"gorm.io/gorm"
 )
 
-type TemplatesService struct {
+type TaskTemplatesService struct {
 }
 
-var TemplatesServiceApp = new(TemplatesService)
+var TaskTemplatesServiceApp = new(TaskTemplatesService)
 
-func (templateService *TemplatesService) CreateTemplate(template ansible.Template) (ansible.Template, error) {
-	surveyVarJson, err := json.Marshal(template.SurveyVars)
+func (templateService *TaskTemplatesService) CreateTaskTemplate(template task.TaskTemplate) (task.TaskTemplate, error) {
+	targetServersJson, err := json.Marshal(template.TargetServers)
 	if err != nil {
 		return template, err
 	}
-	s := string(surveyVarJson)
-	template.SurveyVarsJSON = &s
+	s := string(targetServersJson)
+	template.TargetServerIds = s
 	err = global.GVA_DB.Create(&template).Error
 	return template, err
 }
 
-func (templateService *TemplatesService) UpdateTemplate(template ansible.Template) error {
-	var oldTemplate ansible.Template
-	_, surveyVarsJson := json.Marshal(template.SurveyVars)
+func (templateService *TaskTemplatesService) UpdateTaskTemplate(template task.TaskTemplate) error {
+	var oldTaskTemplate task.TaskTemplate
+	_, targetServersJson := json.Marshal(template.TargetServers)
 	upDateMap := make(map[string]interface{})
-	upDateMap["inventory_id"] = template.InventoryID
-	upDateMap["environment_id"] = template.EnvironmentID
 	upDateMap["name"] = template.Name
-	upDateMap["playbook"] = template.Playbook
-	upDateMap["arguments"] = template.Arguments
-	upDateMap["allow_override_args_in_task"] = template.AllowOverrideArgsInTask
 	upDateMap["description"] = template.Description
-	upDateMap["vault_key_id"] = template.VaultKeyID
-	upDateMap["`type`"] = template.Type
-	upDateMap["start_version"] = template.StartVersion
-	upDateMap["build_template_id"] = template.BuildTemplateID
-	upDateMap["view_id"] = template.ViewID
-	upDateMap["autorun"] = template.Autorun
-	upDateMap["survey_vars"] = surveyVarsJson
-	upDateMap["suppress_success_alerts"] = template.SuppressSuccessAlerts
+	upDateMap["target_server_ids"] = targetServersJson
+	upDateMap["mode"] = template.Mode
+	upDateMap["command"] = template.Command
+	upDateMap["script_path"] = template.ScriptPath
+	upDateMap["cron"] = template.Cron
+	upDateMap["last_task_id"] = template.LastTaskId
 
 	err := global.GVA_DB.Transaction(func(tx *gorm.DB) error {
-		db := tx.Where("id = ? and project_id = ?", template.ID, template.ProjectID).Find(&oldTemplate)
+		db := tx.Where("id = ?", template.ID).Find(&oldTaskTemplate)
 		txErr := db.Updates(upDateMap).Error
 		if txErr != nil {
 			global.GVA_LOG.Debug(txErr.Error())
@@ -58,20 +51,11 @@ func (templateService *TemplatesService) UpdateTemplate(template ansible.Templat
 	return err
 }
 
-func (templateService *TemplatesService) GetTemplates(info request2.GetByProjectId, filter ansible.TemplateFilter) (err error, list interface{}, total int64) {
+func (templateService *TaskTemplatesService) GetTaskTemplates(info request2.GetByProjectId) (err error, list interface{}, total int64) {
 	limit := info.PageSize
 	offset := info.PageSize * (info.Page - 1)
-	var templates []ansible.Template
-	db := global.GVA_DB.Model(&ansible.Template{})
-	if filter.ViewID != nil {
-		db = db.Where("view_id=?", *filter.ViewID)
-	}
-	if filter.BuildTemplateID != nil {
-		db = db.Where("build_template_id=?", *filter.BuildTemplateID)
-		if filter.AutorunOnly {
-			db = db.Where("autorun=true")
-		}
-	}
+	var templates []task.TaskTemplate
+	db := global.GVA_DB.Model(&task.TaskTemplate{})
 	order := ""
 	if info.SortInverted {
 		order = "desc"
@@ -104,59 +88,53 @@ func (templateService *TemplatesService) GetTemplates(info request2.GetByProject
 	if err != nil {
 		return
 	}
-	err = templateService.FillTemplates(templates)
+	err = templateService.FillTaskTemplates(templates)
 	return err, templates, total
 }
 
-func (templateService *TemplatesService) GetTemplate(projectID float64, templateID float64) (template ansible.Template, err error) {
+func (templateService *TaskTemplatesService) GetTaskTemplate(projectID float64, templateID float64) (template task.TaskTemplate, err error) {
 	err = global.GVA_DB.Where("project_id=? and id =?", projectID, templateID).First(&template).Error
 	if err != nil {
 		return
 	}
-	err = templateService.FillTemplate(&template)
+	err = templateService.FillTaskTemplate(&template)
 	return
 }
 
-func (templateService *TemplatesService) DeleteTemplate(projectID float64, templateID float64) error {
-	err := global.GVA_DB.Where("id = ? and project_id = ?", templateID, projectID).First(&ansible.Template{}).Error
+func (templateService *TaskTemplatesService) DeleteTaskTemplate(projectID float64, templateID float64) error {
+	err := global.GVA_DB.Where("id = ? and project_id = ?", templateID, projectID).First(&task.TaskTemplate{}).Error
 	if err != nil {
 		return err
 	}
-	var template ansible.Template
+	var template task.TaskTemplate
 	return global.GVA_DB.Where("id = ? and project_id = ?", templateID, projectID).First(&template).Delete(&template).Error
 }
 
-//func (d *SqlDb) GetTemplateRefs(projectID int, templateID int) (db.ObjectReferrers, error) {
-//	return d.getObjectRefs(projectID, db.TemplateProps, templateID)
+//func (d *SqlDb) GetTaskTemplateRefs(projectID int, templateID int) (db.ObjectReferrers, error) {
+//	return d.getObjectRefs(projectID, db.TaskTemplateProps, templateID)
 //}
 
-func (templateService *TemplatesService) Validate(tpl ansible.Template) error {
+func (templateService *TaskTemplatesService) Validate(tpl task.TaskTemplate) error {
 	if tpl.Name == "" {
 		return errors.New("template name can not be empty")
 	}
 
-	if tpl.Playbook == "" {
+	if tpl.Command == "" && tpl.ScriptPath == "" {
 		return errors.New("template playbook can not be empty")
-	}
-
-	if tpl.Arguments != nil {
-		if !json.Valid([]byte(*tpl.Arguments)) {
-			return errors.New("template arguments must be valid JSON")
-		}
 	}
 
 	return nil
 }
 
-func (templateService *TemplatesService) FillTemplates(templates []ansible.Template) (err error) {
+func (templateService *TaskTemplatesService) FillTaskTemplates(templates []task.TaskTemplate) (err error) {
 	for i := range templates {
 		tpl := &templates[i]
-		var tasks []ansible.TaskWithTpl
-		e, iTasks, _ := TaskServiceApp.GetTemplateTasks(tpl.ProjectID, int(tpl.ID), request.PageInfo{
+		var tasks []task.TaskWithTpl
+		e, iTasks, _ := TaskServiceApp.GetTaskTemplateTasks(tpl.ProjectID, int(tpl.ID), request.PageInfo{
 			Page:     1,
 			PageSize: 1,
 		})
-		tasks = iTasks.([]ansible.TaskWithTpl)
+		tasks = iTasks.([]task.TaskWithTpl)
 		if e != nil {
 			return e
 		}
@@ -167,7 +145,7 @@ func (templateService *TemplatesService) FillTemplates(templates []ansible.Templ
 	return
 }
 
-func (templateService *TemplatesService) FillTemplate(template *ansible.Template) (err error) {
+func (templateService *TaskTemplatesService) FillTaskTemplate(template *task.TaskTemplate) (err error) {
 	if template.VaultKeyID != nil {
 		template.VaultKey, err = KeyServiceApp.GetAccessKey(float64(template.ProjectID), float64(*template.VaultKeyID))
 	}
@@ -176,7 +154,7 @@ func (templateService *TemplatesService) FillTemplate(template *ansible.Template
 		return
 	}
 
-	err = templateService.FillTemplates([]ansible.Template{*template})
+	err = templateService.FillTaskTemplates([]task.TaskTemplate{*template})
 
 	if err != nil {
 		return
