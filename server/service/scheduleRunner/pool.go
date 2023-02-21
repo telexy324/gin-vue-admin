@@ -1,13 +1,14 @@
 package schedules
 
 import (
-	log "github.com/Sirupsen/logrus"
-	"github.com/ansible-semaphore/semaphore/db"
-	"github.com/ansible-semaphore/semaphore/lib"
-	"github.com/ansible-semaphore/semaphore/services/tasks"
+	"github.com/flipped-aurora/gin-vue-admin/server/global"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/ansible"
+	"github.com/flipped-aurora/gin-vue-admin/server/services/tasks"
 	"github.com/robfig/cron/v3"
 	"sync"
 )
+
+var AnsibleSchedulePool *SchedulePool
 
 type ScheduleRunner struct {
 	projectID  int
@@ -15,73 +16,26 @@ type ScheduleRunner struct {
 	pool       *SchedulePool
 }
 
-func (r ScheduleRunner) tryUpdateScheduleCommitHash(schedule db.Schedule) (updated bool, err error) {
-	repo, err := r.pool.store.GetRepository(schedule.ProjectID, *schedule.RepositoryID)
-	if err != nil {
-		return
-	}
-
-	err = repo.SSHKey.DeserializeSecret()
-	if err != nil {
-		return
-	}
-
-	remoteHash, err := lib.GitRepository{
-		Logger:     nil,
-		TemplateID: schedule.TemplateID,
-		Repository: repo,
-	}.GetLastRemoteCommitHash()
-
-	if err != nil {
-		return
-	}
-
-	if schedule.LastCommitHash != nil && remoteHash == *schedule.LastCommitHash {
-		return
-	}
-
-	err = r.pool.store.SetScheduleCommitHash(schedule.ProjectID, schedule.ID, remoteHash)
-	if err != nil {
-		return
-	}
-
-	updated = true
-	return
-}
-
 func (r ScheduleRunner) Run() {
-	schedule, err := r.pool.store.GetSchedule(r.projectID, r.scheduleID)
+	schedule, err := scheduleService.GetSchedule(float64(r.projectID), float64(r.scheduleID))
 	if err != nil {
-		log.Error(err)
+		global.GVA_LOG.Error(err.Error())
 		return
 	}
 
-	if schedule.RepositoryID != nil {
-		var updated bool
-		updated, err = r.tryUpdateScheduleCommitHash(schedule)
-		if err != nil {
-			log.Error(err)
-			return
-		}
-		if !updated {
-			return
-		}
-	}
-
-	_, err = r.pool.taskPool.AddTask(db.Task{
+	_, err = r.pool.taskPool.AddTask(ansible.Task{
 		TemplateID: schedule.TemplateID,
 		ProjectID:  schedule.ProjectID,
 	}, nil, schedule.ProjectID)
 
 	if err != nil {
-		log.Error(err)
+		global.GVA_LOG.Error(err.Error())
 	}
 }
 
 type SchedulePool struct {
 	cron     *cron.Cron
 	locker   sync.Locker
-	store    db.Store
 	taskPool *tasks.TaskPool
 }
 
@@ -93,10 +47,10 @@ func (p *SchedulePool) init() {
 func (p *SchedulePool) Refresh() {
 	defer p.locker.Unlock()
 
-	schedules, err := p.store.GetSchedules()
+	schedules, err := scheduleService.GetSchedules()
 
 	if err != nil {
-		log.Error(err)
+		global.GVA_LOG.Error(err.Error())
 		return
 	}
 
@@ -105,11 +59,11 @@ func (p *SchedulePool) Refresh() {
 	for _, schedule := range schedules {
 		_, err := p.addRunner(ScheduleRunner{
 			projectID:  schedule.ProjectID,
-			scheduleID: schedule.ID,
+			scheduleID: int(schedule.ID),
 			pool:       p,
 		}, schedule.CronFormat)
 		if err != nil {
-			log.Error(err)
+			global.GVA_LOG.Error(err.Error())
 		}
 	}
 }
@@ -143,9 +97,8 @@ func (p *SchedulePool) Destroy() {
 	p.cron = nil
 }
 
-func CreateSchedulePool(store db.Store, taskPool *tasks.TaskPool) SchedulePool {
+func CreateSchedulePool(taskPool *tasks.TaskPool) SchedulePool {
 	pool := SchedulePool{
-		store:    store,
 		taskPool: taskPool,
 	}
 	pool.init()
