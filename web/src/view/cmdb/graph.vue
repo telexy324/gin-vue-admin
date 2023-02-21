@@ -35,7 +35,7 @@ export default {
       cname: null,
       // echarts 实例
       myChart: null,
-      cid: null,
+      cid: 2,
     }
   },
   computed: {},

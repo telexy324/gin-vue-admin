@@ -1,6 +1,7 @@
-package application
+package task
 
 import (
+	"github.com/flipped-aurora/gin-vue-admin/server/api/v1/application"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	request2 "github.com/flipped-aurora/gin-vue-admin/server/model/application/request"
 	applicationRes "github.com/flipped-aurora/gin-vue-admin/server/model/application/response"
@@ -207,7 +208,7 @@ func (a *TaskApi) DeleteTaskTemplate(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err := taskService.DeleteTaskTemplate(server.ID); err != nil {
+	if err :=taskService.DeleteTaskTemplate(server.ID); err != nil {
 		global.GVA_LOG.Error("删除失败!", zap.Any("err", err))
 		response.FailWithMessage("删除失败", c)
 	} else {

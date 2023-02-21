@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/ansible-semaphore/semaphore/lib"
+	sockets "github.com/flipped-aurora/gin-vue-admin/server/api/v1/task"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/application"
 	"io"
@@ -85,8 +86,11 @@ func (t *TaskRunner) updateStatus() {
 			"template_id": t.task.TemplateId,
 		})
 
-		global.GVA_LOG.
-			sockets.Message(user, b)
+		if err !=nil {
+			global.GVA_LOG.Fatal(err.Error())
+		}
+
+		sockets.Message(user, b)
 	}
 
 	if err := t.pool.store.UpdateTask(t.task); err != nil {
