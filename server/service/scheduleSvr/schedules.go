@@ -1,4 +1,4 @@
-package schedule
+package scheduleSvr
 
 import (
 	"github.com/flipped-aurora/gin-vue-admin/server/global"

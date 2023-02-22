@@ -1,14 +1,14 @@
-package tasks
+package taskRunnerSvr
 
 import (
 	"bufio"
 	"encoding/json"
+	"github.com/flipped-aurora/gin-vue-admin/server/api/v1/task"
+	"github.com/flipped-aurora/gin-vue-admin/server/api/v1/taskApp"
+	"github.com/flipped-aurora/gin-vue-admin/server/global"
+	"go.uber.org/zap"
 	"os/exec"
 	"time"
-
-	log "github.com/Sirupsen/logrus"
-	"github.com/ansible-semaphore/semaphore/api/sockets"
-	"github.com/ansible-semaphore/semaphore/util"
 )
 
 func (t *TaskRunner) Log(msg string) {
@@ -16,16 +16,17 @@ func (t *TaskRunner) Log(msg string) {
 
 	for _, user := range t.users {
 		b, err := json.Marshal(&map[string]interface{}{
-			"type":       "log",
-			"output":     msg,
-			"time":       now,
-			"task_id":    t.task.ID,
-			"project_id": t.task.ProjectID,
+			"type":    "log",
+			"output":  msg,
+			"time":    now,
+			"task_id": t.task.ID,
 		})
 
-		util.LogPanic(err)
+		if err != nil {
+			global.GVA_LOG.Fatal(err.Error())
+		}
 
-		sockets.Message(user, b)
+		taskApp.Message(user, b)
 	}
 
 	t.pool.logger <- logRecord{
@@ -59,7 +60,7 @@ func (t *TaskRunner) logPipe(reader *bufio.Reader) {
 
 	if err != nil && err.Error() != "EOF" {
 		//don't panic on these errors, sometimes it throws not dangerous "read |0: file already closed" error
-		util.LogWarningWithFields(err, log.Fields{"error": "Failed to read TaskRunner output"})
+		global.GVA_LOG.Warn("Failed to read TaskRunner output", zap.Any("err", err))
 	}
 
 }
@@ -75,6 +76,6 @@ func (t *TaskRunner) LogCmd(cmd *exec.Cmd) {
 func (t *TaskRunner) panicOnError(err error, msg string) {
 	if err != nil {
 		t.Log(msg)
-		util.LogPanicWithFields(err, log.Fields{"error": msg})
+		global.GVA_LOG.Fatal(msg, zap.Any("err", err))
 	}
 }

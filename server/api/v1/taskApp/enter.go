@@ -1,4 +1,4 @@
-package task
+package taskApp
 
 import "github.com/flipped-aurora/gin-vue-admin/server/service"
 

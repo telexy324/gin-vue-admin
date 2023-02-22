@@ -1,14 +1,13 @@
-package tasks
+package taskRunnerSvr
 
 import (
-	"github.com/ansible-semaphore/semaphore/db"
+	"github.com/flipped-aurora/gin-vue-admin/server/global"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl"
+	"go.uber.org/zap"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
-
-	log "github.com/Sirupsen/logrus"
-	"github.com/ansible-semaphore/semaphore/util"
 )
 
 type logRecord struct {
@@ -29,7 +28,7 @@ type TaskPool struct {
 	// register channel used to put tasks to queue.
 	register chan *TaskRunner
 
-	activeProj map[int]map[int]*TaskRunner
+	activeTask map[int]*TaskRunner
 
 	// runningTasks contains tasks with status TaskRunningStatus.
 	runningTasks map[int]*TaskRunner
@@ -37,7 +36,7 @@ type TaskPool struct {
 	// logger channel used to putting log records to database.
 	logger chan logRecord
 
-	store db.Store
+	//store db.Store
 
 	resourceLocker chan *resourceLock
 }
@@ -45,7 +44,7 @@ type TaskPool struct {
 func (p *TaskPool) GetTask(id int) (task *TaskRunner) {
 
 	for _, t := range p.queue {
-		if t.task.ID == id {
+		if int(t.task.ID) == id {
 			task = t
 			break
 		}
@@ -53,7 +52,7 @@ func (p *TaskPool) GetTask(id int) (task *TaskRunner) {
 
 	if task == nil {
 		for _, t := range p.runningTasks {
-			if t.task.ID == id {
+			if int(t.task.ID) == id {
 				task = t
 				break
 			}
@@ -82,45 +81,40 @@ func (p *TaskPool) Run() {
 					panic("Trying to lock an already locked resource!")
 				}
 
-				projTasks, ok := p.activeProj[t.task.ProjectID]
-				if !ok {
-					projTasks = make(map[int]*TaskRunner)
-					p.activeProj[t.task.ProjectID] = projTasks
-				}
-				projTasks[t.task.ID] = t
-				p.runningTasks[t.task.ID] = t
+				p.activeTask[int(t.task.ID)] = t
+				p.runningTasks[int(t.task.ID)] = t
 				continue
 			}
 
-			if p.activeProj[t.task.ProjectID] != nil && p.activeProj[t.task.ProjectID][t.task.ID] != nil {
-				delete(p.activeProj[t.task.ProjectID], t.task.ID)
-				if len(p.activeProj[t.task.ProjectID]) == 0 {
-					delete(p.activeProj, t.task.ProjectID)
-				}
+			if p.activeTask != nil && p.activeTask[int(t.task.ID)] != nil {
+				delete(p.activeTask, int(t.task.ID))
+				//if len(p.activeTask) == 0 {
+				//	delete(p.activeProj, t.task.ProjectID)
+				//}
 			}
 
-			delete(p.runningTasks, t.task.ID)
+			delete(p.runningTasks, int(t.task.ID))
 		}
 	}(p.resourceLocker)
 
 	for {
 		select {
 		case record := <-p.logger: // new log message which should be put to database
-			_, err := record.task.pool.store.CreateTaskOutput(db.TaskOutput{
-				TaskID: record.task.task.ID,
-				Output: record.output,
-				Time:   record.time,
+			_, err := taskService.CreateTaskOutput(taskMdl.TaskOutput{
+				TaskId:     int(record.task.task.ID),
+				Output:     record.output,
+				RecordTime: record.time,
 			})
 
 			if err != nil {
-				log.Error(err)
+				global.GVA_LOG.Error(err.Error())
 			}
 		case task := <-p.register: // new task created by API or schedule
 			p.queue = append(p.queue, task)
-			log.Debug(task)
-			msg := "Task " + strconv.Itoa(task.task.ID) + " added to queue"
+			//log.Debug(task)
+			msg := "Task " + strconv.Itoa(int(task.task.ID)) + " added to queue"
 			task.Log(msg)
-			log.Info(msg)
+			global.GVA_LOG.Info(msg)
 			task.updateStatus()
 
 		case <-ticker.C: // timer 5 seconds
@@ -130,10 +124,10 @@ func (p *TaskPool) Run() {
 
 			//get TaskRunner from top of queue
 			t := p.queue[0]
-			if t.task.Status == db.TaskFailStatus {
+			if t.task.Status == taskMdl.TaskFailStatus {
 				//delete failed TaskRunner from queue
 				p.queue = p.queue[1:]
-				log.Info("Task " + strconv.Itoa(t.task.ID) + " removed from queue")
+				global.GVA_LOG.Info("Task removed from queue ",zap.Uint("Task ID ",t.task.ID))
 				continue
 			}
 			if p.blocks(t) {
@@ -141,7 +135,7 @@ func (p *TaskPool) Run() {
 				p.queue = append(p.queue[1:], t)
 				continue
 			}
-			log.Info("Set resource locker with TaskRunner " + strconv.Itoa(t.task.ID))
+			global.GVA_LOG.Info("Set resource locker with ",zap.Uint("TaskRunner ",t.task.ID))
 			p.resourceLocker <- &resourceLock{lock: true, holder: t}
 			if !t.prepared {
 				go t.prepareRun()
@@ -149,51 +143,51 @@ func (p *TaskPool) Run() {
 			}
 			go t.run()
 			p.queue = p.queue[1:]
-			log.Info("Task " + strconv.Itoa(t.task.ID) + " removed from queue")
+			global.GVA_LOG.Info("Task removed from queue ",zap.Uint("Task ID ",t.task.ID))
 		}
 	}
 }
 
 func (p *TaskPool) blocks(t *TaskRunner) bool {
 
-	if len(p.runningTasks) >= util.Config.MaxParallelTasks {
+	if len(p.runningTasks) >= global.GVA_CONFIG.Task.MaxParallelTasks {
 		return true
 	}
 
-	if p.activeProj[t.task.ProjectID] == nil || len(p.activeProj[t.task.ProjectID]) == 0 {
+	if p.activeTask == nil || len(p.activeTask) == 0 {
 		return false
 	}
 
-	for _, r := range p.activeProj[t.task.ProjectID] {
-		if r.template.ID == t.task.TemplateID {
+	for _, r := range p.activeTask {
+		if int(r.template.ID) == t.task.TemplateId {
 			return true
 		}
 	}
 
-	proj, err := p.store.GetProject(t.task.ProjectID)
-
-	if err != nil {
-		log.Error(err)
-		return false
-	}
-
-	return proj.MaxParallelTasks > 0 && len(p.activeProj[t.task.ProjectID]) >= proj.MaxParallelTasks
+	//proj, err := p.store.GetProject(t.task.ProjectID)
+	//
+	//if err != nil {
+	//	log.Error(err)
+	//	return false
+	//}
+	//
+	//return proj.MaxParallelTasks > 0 && len(p.activeProj[t.task.ProjectID]) >= proj.MaxParallelTasks
+	return false
 }
 
-func CreateTaskPool(store db.Store) TaskPool {
+func CreateTaskPool() TaskPool {
 	return TaskPool{
 		queue:          make([]*TaskRunner, 0), // queue of waiting tasks
 		register:       make(chan *TaskRunner), // add TaskRunner to queue
-		activeProj:     make(map[int]map[int]*TaskRunner),
+		activeTask:     make(map[int]*TaskRunner),
 		runningTasks:   make(map[int]*TaskRunner),   // working tasks
 		logger:         make(chan logRecord, 10000), // store log records to database
-		store:          store,
 		resourceLocker: make(chan *resourceLock),
 	}
 }
 
-func (p *TaskPool) StopTask(targetTask db.Task) error {
-	tsk := p.GetTask(targetTask.ID)
+func (p *TaskPool) StopTask(targetTask taskMdl.Task) error {
+	tsk := p.GetTask(int(targetTask.ID))
 	if tsk == nil { // task not active, but exists in database
 		tsk = &TaskRunner{
 			task: targetTask,
@@ -203,12 +197,12 @@ func (p *TaskPool) StopTask(targetTask db.Task) error {
 		if err != nil {
 			return err
 		}
-		tsk.setStatus(db.TaskStoppedStatus)
+		tsk.setStatus(taskMdl.TaskStoppedStatus)
 		tsk.createTaskEvent()
 	} else {
 		status := tsk.task.Status
-		tsk.setStatus(db.TaskStoppingStatus)
-		if status == db.TaskRunningStatus {
+		tsk.setStatus(taskMdl.TaskStoppingStatus)
+		if status == taskMdl.TaskRunningStatus {
 			if tsk.process == nil {
 				panic("running process can not be nil")
 			}
@@ -276,37 +270,35 @@ func getNextBuildVersion(startVersion string, currentVersion string) string {
 	return prefix + strconv.Itoa(newVer) + suffix
 }
 
-func (p *TaskPool) AddTask(taskObj db.Task, userID *int, projectID int) (newTask db.Task, err error) {
-	taskObj.Created = time.Now()
-	taskObj.Status = db.TaskWaitingStatus
-	taskObj.UserID = userID
-	taskObj.ProjectID = projectID
+func (p *TaskPool) AddTask(taskObj taskMdl.Task, userID int, projectID int) (newTask taskMdl.Task, err error) {
+	taskObj.Status = taskMdl.TaskWaitingStatus
+	taskObj.SystemUserId = userID
 
-	tpl, err := p.store.GetTemplate(projectID, taskObj.TemplateID)
-	if err != nil {
-		return
-	}
+	//tpl, err := taskService.GetTaskTemplate(float64(taskObj.TemplateId))
+	//if err != nil {
+	//	return
+	//}
 
-	err = taskObj.ValidateNewTask(tpl)
-	if err != nil {
-		return
-	}
+	//err = taskObj.ValidateNewTask(tpl)
+	//if err != nil {
+	//	return
+	//}
 
-	if tpl.Type == db.TemplateBuild { // get next version for TaskRunner if it is a Build
-		var builds []db.TaskWithTpl
-		builds, err = p.store.GetTemplateTasks(tpl.ProjectID, tpl.ID, db.RetrieveQueryParams{Count: 1})
-		if err != nil {
-			return
-		}
-		if len(builds) == 0 || builds[0].Version == nil {
-			taskObj.Version = tpl.StartVersion
-		} else {
-			v := getNextBuildVersion(*tpl.StartVersion, *builds[0].Version)
-			taskObj.Version = &v
-		}
-	}
+	//if tpl.Type == db.TemplateBuild { // get next version for TaskRunner if it is a Build
+	//	var builds []db.TaskWithTpl
+	//	builds, err = p.store.GetTemplateTasks(tpl.ProjectID, tpl.ID, db.RetrieveQueryParams{Count: 1})
+	//	if err != nil {
+	//		return
+	//	}
+	//	if len(builds) == 0 || builds[0].Version == nil {
+	//		taskObj.Version = tpl.StartVersion
+	//	} else {
+	//		v := getNextBuildVersion(*tpl.StartVersion, *builds[0].Version)
+	//		taskObj.Version = &v
+	//	}
+	//}
 
-	newTask, err = p.store.CreateTask(taskObj)
+	newTask, err = taskService.CreateTask(taskObj)
 	if err != nil {
 		return
 	}
@@ -325,15 +317,15 @@ func (p *TaskPool) AddTask(taskObj db.Task, userID *int, projectID int) (newTask
 
 	p.register <- &taskRunner
 
-	objType := db.EventTask
-	desc := "Task ID " + strconv.Itoa(newTask.ID) + " queued for running"
-	_, err = p.store.CreateEvent(db.Event{
-		UserID:      userID,
-		ProjectID:   &projectID,
-		ObjectType:  &objType,
-		ObjectID:    &newTask.ID,
-		Description: &desc,
-	})
+	//objType := db.EventTask
+	//desc := "Task ID " + strconv.Itoa(newTask.ID) + " queued for running"
+	//_, err = p.store.CreateEvent(db.Event{
+	//	UserID:      userID,
+	//	ProjectID:   &projectID,
+	//	ObjectType:  &objType,
+	//	ObjectID:    &newTask.ID,
+	//	Description: &desc,
+	//})
 
 	return
 }

@@ -1,13 +1,15 @@
-package tasks
+package taskRunnerSvr
 
 import (
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
 	"github.com/ansible-semaphore/semaphore/lib"
-	sockets "github.com/flipped-aurora/gin-vue-admin/server/api/v1/task"
+	sockets "github.com/flipped-aurora/gin-vue-admin/server/api/v1/taskApp"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/application"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl"
+	"github.com/flipped-aurora/gin-vue-admin/server/service/taskSvr"
+	"go.uber.org/zap"
 	"io"
 	"io/ioutil"
 	"os"
@@ -16,7 +18,7 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/ansible-semaphore/semaphore/db"
+	"github.com/ansible-semaphore/semaphore/taskMdl"
 	"github.com/ansible-semaphore/semaphore/util"
 )
 
@@ -24,8 +26,8 @@ type TaskRunnerService struct {
 }
 
 type TaskRunner struct {
-	task     application.Task
-	template application.TaskTemplate
+	task     taskMdl.Task
+	template taskMdl.TaskTemplate
 
 	users []int
 	//alert     bool
@@ -49,12 +51,12 @@ func getMD5Hash(filepath string) (string, error) {
 	return fmt.Sprintf("%x", hash.Sum(nil)), nil
 }
 
-func (t *TaskRunner) setStatus(status application.TaskStatus) {
-	if t.task.Status == application.TaskStoppingStatus {
+func (t *TaskRunner) setStatus(status taskMdl.TaskStatus) {
+	if t.task.Status == taskMdl.TaskStoppingStatus {
 		switch status {
-		case application.TaskFailStatus:
-			status = application.TaskStoppedStatus
-		case application.TaskStoppedStatus:
+		case taskMdl.TaskFailStatus:
+			status = taskMdl.TaskStoppedStatus
+		case taskMdl.TaskStoppedStatus:
 		default:
 			panic("stopping TaskRunner cannot be " + status)
 		}
@@ -66,11 +68,11 @@ func (t *TaskRunner) setStatus(status application.TaskStatus) {
 
 	// t.sendSlackAlert()
 
-	//if status == db.TaskFailStatus {
+	//if status == taskMdl.TaskFailStatus {
 	//	t.sendMailAlert()
 	//}
 	//
-	//if status == db.TaskSuccessStatus || status == db.TaskFailStatus {
+	//if status == taskMdl.TaskSuccessStatus || status == taskMdl.TaskFailStatus {
 	//	t.sendTelegramAlert()
 	//}
 }
@@ -93,172 +95,170 @@ func (t *TaskRunner) updateStatus() {
 		sockets.Message(user, b)
 	}
 
-	if err := t.pool.store.UpdateTask(t.task); err != nil {
+	if err := taskService.UpdateTask(t.task); err != nil {
 		t.panicOnError(err, "Failed to update TaskRunner status")
 	}
 }
 
 func (t *TaskRunner) fail() {
-	t.setStatus(db.TaskFailStatus)
+	t.setStatus(taskMdl.TaskFailStatus)
 }
 
-func (t *TaskRunner) destroyKeys() {
-	err := t.inventory.SSHKey.Destroy()
-	if err != nil {
-		t.Log("Can't destroy inventory user key, error: " + err.Error())
-	}
-
-	err = t.inventory.BecomeKey.Destroy()
-	if err != nil {
-		t.Log("Can't destroy inventory become user key, error: " + err.Error())
-	}
-
-	err = t.template.VaultKey.Destroy()
-	if err != nil {
-		t.Log("Can't destroy inventory vault password file, error: " + err.Error())
-	}
-}
-
-func (t *TaskRunner) createTaskEvent() {
-	objType := db.EventTask
-	desc := "Task ID " + strconv.Itoa(t.task.ID) + " (" + t.template.Name + ")" + " finished - " + strings.ToUpper(string(t.task.Status))
-
-	_, err := t.pool.store.CreateEvent(db.Event{
-		UserID:      t.task.UserID,
-		ProjectID:   &t.task.ProjectID,
-		ObjectType:  &objType,
-		ObjectID:    &t.task.ID,
-		Description: &desc,
-	})
-
-	if err != nil {
-		t.panicOnError(err, "Fatal error inserting an event")
-	}
-}
+//func (t *TaskRunner) destroyKeys() {
+//	err := t.inventory.SSHKey.Destroy()
+//	if err != nil {
+//		t.Log("Can't destroy inventory user key, error: " + err.Error())
+//	}
+//
+//	err = t.inventory.BecomeKey.Destroy()
+//	if err != nil {
+//		t.Log("Can't destroy inventory become user key, error: " + err.Error())
+//	}
+//
+//	err = t.template.VaultKey.Destroy()
+//	if err != nil {
+//		t.Log("Can't destroy inventory vault password file, error: " + err.Error())
+//	}
+//}
+//
+//func (t *TaskRunner) createTaskEvent() {
+//	objType := taskMdl.EventTask
+//	desc := "Task ID " + strconv.Itoa(t.task.ID) + " (" + t.template.Name + ")" + " finished - " + strings.ToUpper(string(t.task.Status))
+//
+//	_, err := t.pool.store.CreateEvent(taskMdl.Event{
+//		UserID:      t.task.UserID,
+//		ProjectID:   &t.task.ProjectID,
+//		ObjectType:  &objType,
+//		ObjectID:    &t.task.ID,
+//		Description: &desc,
+//	})
+//
+//	if err != nil {
+//		t.panicOnError(err, "Fatal error inserting an event")
+//	}
+//}
 
 func (t *TaskRunner) prepareRun() {
 	t.prepared = false
 
 	defer func() {
-		log.Info("Stopped preparing TaskRunner " + strconv.Itoa(t.task.ID))
-		log.Info("Release resource locker with TaskRunner " + strconv.Itoa(t.task.ID))
+		global.GVA_LOG.Info("Stopped preparing TaskRunner ",zap.Uint("task ID ",t.task.ID))
+		global.GVA_LOG.Info("Release resource locker with TaskRunner ",zap.Uint("task ID ",t.task.ID))
 		t.pool.resourceLocker <- &resourceLock{lock: false, holder: t}
 
-		t.createTaskEvent()
+		//t.createTaskEvent()
 	}()
 
-	t.Log("Preparing: " + strconv.Itoa(t.task.ID))
+	t.Log("Preparing: " + strconv.Itoa(int(t.task.ID)))
 
-	if err := checkTmpDir(util.Config.TmpPath); err != nil {
+	if err := checkTmpDir(global.GVA_CONFIG.Task.TmpPath); err != nil {
 		t.Log("Creating tmp dir failed: " + err.Error())
 		t.fail()
 		return
 	}
 
-	objType := db.EventTask
-	desc := "Task ID " + strconv.Itoa(t.task.ID) + " (" + t.template.Name + ")" + " is preparing"
-	evt := db.Event{
-		UserID:      t.task.UserID,
-		ProjectID:   &t.task.ProjectID,
-		ObjectType:  &objType,
-		ObjectID:    &t.task.ID,
-		Description: &desc,
-	}
-
-	if _, err := t.pool.store.CreateEvent(evt); err != nil {
-		t.Log("Fatal error inserting an event")
-		panic(err)
-	}
+	//objType := taskMdl.EventTask
+	//desc := "Task ID " + strconv.Itoa(t.task.ID) + " (" + t.template.Name + ")" + " is preparing"
+	//evt := taskMdl.Event{
+	//	UserID:      t.task.UserID,
+	//	ProjectID:   &t.task.ProjectID,
+	//	ObjectType:  &objType,
+	//	ObjectID:    &t.task.ID,
+	//	Description: &desc,
+	//}
+	//
+	//if _, err := t.pool.store.CreateEvent(evt); err != nil {
+	//	t.Log("Fatal error inserting an event")
+	//	panic(err)
+	//}
 
 	t.Log("Prepare TaskRunner with template: " + t.template.Name + "\n")
 
 	t.updateStatus()
 
-	if t.repository.GetType() == db.RepositoryLocal {
-		if _, err := os.Stat(t.repository.GitURL); err != nil {
-			t.Log("Failed in finding static repository at " + t.repository.GitURL + ": " + err.Error())
-			t.fail()
-			return
-		}
-	} else {
-		if err := t.updateRepository(); err != nil {
-			t.Log("Failed updating repository: " + err.Error())
-			t.fail()
-			return
-		}
-		if err := t.checkoutRepository(); err != nil {
-			t.Log("Failed to checkout repository to required commit: " + err.Error())
-			t.fail()
-			return
-		}
-	}
-
-	if err := t.installInventory(); err != nil {
-		t.Log("Failed to install inventory: " + err.Error())
-		t.fail()
-		return
-	}
-
-	if err := t.installRequirements(); err != nil {
-		t.Log("Running galaxy failed: " + err.Error())
-		t.fail()
-		return
-	}
-
-	if err := t.installVaultKeyFile(); err != nil {
-		t.Log("Failed to install vault password file: " + err.Error())
-		t.fail()
-		return
-	}
+	//if t.repository.GetType() == taskMdl.RepositoryLocal {
+	//	if _, err := os.Stat(t.repository.GitURL); err != nil {
+	//		t.Log("Failed in finding static repository at " + t.repository.GitURL + ": " + err.Error())
+	//		t.fail()
+	//		return
+	//	}
+	//} else {
+	//	if err := t.updateRepository(); err != nil {
+	//		t.Log("Failed updating repository: " + err.Error())
+	//		t.fail()
+	//		return
+	//	}
+	//	if err := t.checkoutRepository(); err != nil {
+	//		t.Log("Failed to checkout repository to required commit: " + err.Error())
+	//		t.fail()
+	//		return
+	//	}
+	//}
+	//
+	//if err := t.installInventory(); err != nil {
+	//	t.Log("Failed to install inventory: " + err.Error())
+	//	t.fail()
+	//	return
+	//}
+	//
+	//if err := t.installRequirements(); err != nil {
+	//	t.Log("Running galaxy failed: " + err.Error())
+	//	t.fail()
+	//	return
+	//}
+	//
+	//if err := t.installVaultKeyFile(); err != nil {
+	//	t.Log("Failed to install vault password file: " + err.Error())
+	//	t.fail()
+	//	return
+	//}
 
 	t.prepared = true
 }
 
 func (t *TaskRunner) run() {
 	defer func() {
-		log.Info("Stopped running TaskRunner " + strconv.Itoa(t.task.ID))
-		log.Info("Release resource locker with TaskRunner " + strconv.Itoa(t.task.ID))
+		global.GVA_LOG.Info("Stopped running TaskRunner ",zap.Uint("task ID ",t.task.ID))
+		global.GVA_LOG.Info("Release resource locker with TaskRunner ",zap.Uint("task ID ",t.task.ID))
 		t.pool.resourceLocker <- &resourceLock{lock: false, holder: t}
 
-		now := time.Now()
-		t.task.End = &now
+		t.task.EndTime = time.Now()
 		t.updateStatus()
-		t.createTaskEvent()
-		t.destroyKeys()
+		//t.createTaskEvent()
+		//t.destroyKeys()
 	}()
 
 	// TODO: more details
-	if t.task.Status == db.TaskStoppingStatus {
-		t.setStatus(db.TaskStoppedStatus)
+	if t.task.Status == taskMdl.TaskStoppingStatus {
+		t.setStatus(taskMdl.TaskStoppedStatus)
 		return
 	}
 
-	now := time.Now()
-	t.task.Start = &now
-	t.setStatus(db.TaskRunningStatus)
+	t.task.BeginTime = time.Now()
+	t.setStatus(taskMdl.TaskRunningStatus)
 
-	objType := db.EventTask
-	desc := "Task ID " + strconv.Itoa(t.task.ID) + " (" + t.template.Name + ")" + " is running"
+	//objType := taskMdl.EventTask
+	//desc := "Task ID " + strconv.Itoa(t.task.ID) + " (" + t.template.Name + ")" + " is running"
+	//
+	//_, err := t.pool.store.CreateEvent(taskMdl.Event{
+	//	UserID:      t.task.UserID,
+	//	ProjectID:   &t.task.ProjectID,
+	//	ObjectType:  &objType,
+	//	ObjectID:    &t.task.ID,
+	//	Description: &desc,
+	//})
 
-	_, err := t.pool.store.CreateEvent(db.Event{
-		UserID:      t.task.UserID,
-		ProjectID:   &t.task.ProjectID,
-		ObjectType:  &objType,
-		ObjectID:    &t.task.ID,
-		Description: &desc,
-	})
+	//if err != nil {
+	//	t.Log("Fatal error inserting an event")
+	//	panic(err)
+	//}
 
-	if err != nil {
-		t.Log("Fatal error inserting an event")
-		panic(err)
-	}
-
-	t.Log("Started: " + strconv.Itoa(t.task.ID))
+	t.Log("Started: " + strconv.Itoa(int(t.task.ID)))
 	t.Log("Run TaskRunner with template: " + t.template.Name + "\n")
 
 	// TODO: ?????
-	if t.task.Status == db.TaskStoppingStatus {
-		t.setStatus(db.TaskStoppedStatus)
+	if t.task.Status == taskMdl.TaskStoppingStatus {
+		t.setStatus(taskMdl.TaskStoppedStatus)
 		return
 	}
 
@@ -269,19 +269,19 @@ func (t *TaskRunner) run() {
 		return
 	}
 
-	t.setStatus(db.TaskSuccessStatus)
+	t.setStatus(taskMdl.TaskSuccessStatus)
 
-	templates, err := t.pool.store.GetTemplates(t.task.ProjectID, db.TemplateFilter{
+	templates, err := t.pool.store.GetTemplates(t.task.ProjectID, taskMdl.TemplateFilter{
 		BuildTemplateID: &t.task.TemplateID,
 		AutorunOnly:     true,
-	}, db.RetrieveQueryParams{})
+	}, taskMdl.RetrieveQueryParams{})
 	if err != nil {
 		t.Log("Running playbook failed: " + err.Error())
 		return
 	}
 
 	for _, tpl := range templates {
-		_, err = t.pool.AddTask(db.Task{
+		_, err = t.pool.AddTask(taskMdl.Task{
 			TemplateID:  tpl.ID,
 			ProjectID:   tpl.ProjectID,
 			BuildTaskID: &t.task.ID,
@@ -294,7 +294,7 @@ func (t *TaskRunner) run() {
 }
 
 func (t *TaskRunner) prepareError(err error, errMsg string) error {
-	if err == db.ErrNotFound {
+	if err == taskMdl.ErrNotFound {
 		t.Log(errMsg)
 		return err
 	}
@@ -327,7 +327,7 @@ func (t *TaskRunner) populateDetails() error {
 	t.alertChat = project.AlertChat
 
 	// get project users
-	users, err := t.pool.store.GetProjectUsers(t.template.ProjectID, db.RetrieveQueryParams{})
+	users, err := t.pool.store.GetProjectUsers(t.template.ProjectID, taskMdl.RetrieveQueryParams{})
 	if err != nil {
 		return t.prepareError(err, "Users not found!")
 	}
@@ -399,7 +399,7 @@ func (t *TaskRunner) installVaultKeyFile() error {
 		return nil
 	}
 
-	return t.template.VaultKey.Install(db.AccessKeyRoleAnsiblePasswordVault)
+	return t.template.VaultKey.Install(taskMdl.AccessKeyRoleAnsiblePasswordVault)
 }
 
 func (t *TaskRunner) checkoutRepository() error {
@@ -599,20 +599,20 @@ func (t *TaskRunner) getEnvironmentExtraVars() (str string, err error) {
 	}
 
 	if t.task.UserID != nil {
-		var user db.User
+		var user taskMdl.User
 		user, err = t.pool.store.GetUser(*t.task.UserID)
 		if err == nil {
 			taskDetails["username"] = user.Username
 		}
 	}
 
-	if t.template.Type != db.TemplateTask {
+	if t.template.Type != taskMdl.TemplateTask {
 		taskDetails["type"] = t.template.Type
 		incomingVersion := t.task.GetIncomingVersion(t.pool.store)
 		if incomingVersion != nil {
 			taskDetails["incoming_version"] = incomingVersion
 		}
-		if t.template.Type == db.TemplateBuild {
+		if t.template.Type == taskMdl.TemplateBuild {
 			taskDetails["target_version"] = t.task.Version
 		}
 	}
@@ -640,11 +640,11 @@ func (t *TaskRunner) getPlaybookArgs() (args []string, err error) {
 
 	var inventory string
 	switch t.inventory.Type {
-	case db.InventoryFile:
+	case taskMdl.InventoryFile:
 		inventory = t.inventory.Inventory
-	case db.InventoryStatic, db.InventoryStaticYaml:
+	case taskMdl.InventoryStatic, taskMdl.InventoryStaticYaml:
 		inventory = util.Config.TmpPath + "/inventory_" + strconv.Itoa(t.task.ID)
-		if t.inventory.Type == db.InventoryStaticYaml {
+		if t.inventory.Type == taskMdl.InventoryStaticYaml {
 			inventory += ".yml"
 		}
 	default:
@@ -658,15 +658,15 @@ func (t *TaskRunner) getPlaybookArgs() (args []string, err error) {
 
 	if t.inventory.SSHKeyID != nil {
 		switch t.inventory.SSHKey.Type {
-		case db.AccessKeySSH:
+		case taskMdl.AccessKeySSH:
 			args = append(args, "--private-key="+t.inventory.SSHKey.GetPath())
 			//args = append(args, "--extra-vars={\"ansible_ssh_private_key_file\": \""+t.inventory.SSHKey.GetPath()+"\"}")
 			if t.inventory.SSHKey.SshKey.Login != "" {
 				args = append(args, "--extra-vars={\"ansible_user\": \""+t.inventory.SSHKey.SshKey.Login+"\"}")
 			}
-		case db.AccessKeyLoginPassword:
+		case taskMdl.AccessKeyLoginPassword:
 			args = append(args, "--extra-vars=@"+t.inventory.SSHKey.GetPath())
-		case db.AccessKeyNone:
+		case taskMdl.AccessKeyNone:
 		default:
 			err = fmt.Errorf("access key does not suite for inventory's user credentials")
 			return
@@ -675,9 +675,9 @@ func (t *TaskRunner) getPlaybookArgs() (args []string, err error) {
 
 	if t.inventory.BecomeKeyID != nil {
 		switch t.inventory.BecomeKey.Type {
-		case db.AccessKeyLoginPassword:
+		case taskMdl.AccessKeyLoginPassword:
 			args = append(args, "--extra-vars=@"+t.inventory.BecomeKey.GetPath())
-		case db.AccessKeyNone:
+		case taskMdl.AccessKeyNone:
 		default:
 			err = fmt.Errorf("access key does not suite for inventory's sudo user credentials")
 			return

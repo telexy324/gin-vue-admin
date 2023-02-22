@@ -1,9 +1,9 @@
-package task
+package taskSvr
 
 import (
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/task"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl"
 	"gorm.io/gorm"
 )
 
@@ -12,13 +12,13 @@ type TaskService struct {
 
 var TaskServiceApp = new(TaskService)
 
-func (taskService *TaskService) CreateTask(task task.Task) (task.Task, error) {
+func (taskService *TaskService) CreateTask(task taskMdl.Task) (taskMdl.Task, error) {
 	err := global.GVA_DB.Create(&task).Error
 	return task, err
 }
 
-func (taskService *TaskService) UpdateTask(t task.Task) error {
-	var oldTask task.Task
+func (taskService *TaskService) UpdateTask(t taskMdl.Task) error {
+	var oldTask taskMdl.Task
 	upDateMap := make(map[string]interface{})
 	upDateMap["status"] = t.Status
 	upDateMap["begin_time"] = t.BeginTime
@@ -36,7 +36,7 @@ func (taskService *TaskService) UpdateTask(t task.Task) error {
 	return err
 }
 
-func (taskService *TaskService) CreateTaskOutput(output task.TaskOutput) (task.TaskOutput, error) {
+func (taskService *TaskService) CreateTaskOutput(output taskMdl.TaskOutput) (taskMdl.TaskOutput, error) {
 	err := global.GVA_DB.Create(&output).Error
 	return output, err
 }
@@ -44,7 +44,7 @@ func (taskService *TaskService) CreateTaskOutput(output task.TaskOutput) (task.T
 func (taskService *TaskService) getTasks(projectID int, templateID *int, info request.PageInfo) (err error, list interface{}, total int64) {
 	limit := info.PageSize
 	offset := info.PageSize * (info.Page - 1)
-	db := global.GVA_DB.Model(&task.Task{}).Preload("User")
+	db := global.GVA_DB.Model(&taskMdl.Task{}).Preload("User")
 	if templateID == nil {
 		db = db.Preload("Template", "project_id=?", projectID)
 	} else {
@@ -55,7 +55,7 @@ func (taskService *TaskService) getTasks(projectID int, templateID *int, info re
 	if err != nil {
 		return
 	}
-	var Tasks []task.Task
+	var Tasks []taskMdl.Task
 	//var TaskWithTpls []task.TaskWithTpl
 	err = db.Limit(limit).Offset(offset).Find(&Tasks).Error
 
@@ -72,7 +72,7 @@ func (taskService *TaskService) getTasks(projectID int, templateID *int, info re
 	return err, Tasks, total
 }
 
-func (taskService *TaskService) GetTask(projectID int, taskID int) (task task.Task, err error) {
+func (taskService *TaskService) GetTask(projectID int, taskID int) (task taskMdl.Task, err error) {
 	err = global.GVA_DB.Preload("Template", "project_id=?", projectID).
 		Where("id = ?", taskID).First(&task).Error
 	return
@@ -92,8 +92,8 @@ func (taskService *TaskService) DeleteTaskWithOutputs(projectID int, taskID int)
 	if err != nil {
 		return
 	}
-	var t task.Task
-	var taskOutputs []task.TaskOutput
+	var t taskMdl.Task
+	var taskOutputs []taskMdl.TaskOutput
 	err = global.GVA_DB.Transaction(func(tx *gorm.DB) error {
 		txErr := tx.Where("task_id = ?", taskID).Find(&taskOutputs).Delete(&taskOutputs).Error
 		if txErr != nil {
@@ -108,7 +108,7 @@ func (taskService *TaskService) DeleteTaskWithOutputs(projectID int, taskID int)
 	return
 }
 
-func (taskService *TaskService) GetTaskOutputs(projectID int, taskID int) (output []task.TaskOutput, err error) {
+func (taskService *TaskService) GetTaskOutputs(projectID int, taskID int) (output []taskMdl.TaskOutput, err error) {
 	// check if task exists in the project
 	_, err = taskService.GetTask(projectID, taskID)
 	if err != nil {

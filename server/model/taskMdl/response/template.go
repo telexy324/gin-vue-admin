@@ -5,9 +5,9 @@ import (
 )
 
 type TaskTemplatesResponse struct {
-	Templates []task.TaskTemplate `json:"taskTemplates"`
+	Templates []taskMdl.TaskTemplate `json:"taskTemplates"`
 }
 
 type TaskTemplateResponse struct {
-	Template task.TaskTemplate `json:"taskTemplate"`
+	Template taskMdl.TaskTemplate `json:"taskTemplate"`
 }

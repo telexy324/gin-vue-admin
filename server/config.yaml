@@ -98,3 +98,6 @@ zap:
   encode-level: LowercaseColorLevelEncoder
   stacktrace-key: stacktrace
   log-in-console: true
+task:
+  tmp_path: /tmp
+  max_parallel_tasks: 8

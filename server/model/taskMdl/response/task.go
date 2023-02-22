@@ -5,13 +5,13 @@ import (
 )
 
 type TasksResponse struct {
-	Tasks []task.Task `json:"tasks"`
+	Tasks []taskMdl.Task `json:"tasks"`
 }
 
 type TaskResponse struct {
-	Task task.Task `json:"task"`
+	Task taskMdl.Task `json:"task"`
 }
 
 type TaskOutputsResponse struct {
-	TaskOutputs []task.TaskOutput `json:"taskOutputs"`
+	TaskOutputs []taskMdl.TaskOutput `json:"taskOutputs"`
 }

@@ -1,4 +1,4 @@
-package task
+package taskMdl
 
 import (
 	"github.com/flipped-aurora/gin-vue-admin/server/global"

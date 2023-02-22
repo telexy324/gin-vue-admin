@@ -5,9 +5,9 @@ import (
 )
 
 type SchedulesResponse struct {
-	Schedules []schedule.Schedule `json:"schedules"`
+	Schedules []scheduleMdl.Schedule `json:"schedules"`
 }
 
 type ScheduleResponse struct {
-	Schedule schedule.Schedule `json:"schedule"`
+	Schedule scheduleMdl.Schedule `json:"schedule"`
 }
