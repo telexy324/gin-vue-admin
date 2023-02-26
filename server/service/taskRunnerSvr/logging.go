@@ -3,7 +3,6 @@ package taskRunnerSvr
 import (
 	"bufio"
 	"encoding/json"
-	"github.com/flipped-aurora/gin-vue-admin/server/api/v1/task"
 	"github.com/flipped-aurora/gin-vue-admin/server/api/v1/taskApp"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"go.uber.org/zap"
@@ -66,6 +65,14 @@ func (t *TaskRunner) logPipe(reader *bufio.Reader) {
 }
 
 func (t *TaskRunner) LogCmd(cmd *exec.Cmd) {
+	stderr, _ := cmd.StderrPipe()
+	stdout, _ := cmd.StdoutPipe()
+
+	go t.logPipe(bufio.NewReader(stderr))
+	go t.logPipe(bufio.NewReader(stdout))
+}
+
+func (t *TaskRunner) LogSsh(cmd *exec.Cmd) {
 	stderr, _ := cmd.StderrPipe()
 	stdout, _ := cmd.StdoutPipe()
 

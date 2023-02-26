@@ -62,7 +62,7 @@ func (p *TaskPool) GetTask(id int) (task *TaskRunner) {
 	return
 }
 
-//nolint: gocyclo
+// nolint: gocyclo
 func (p *TaskPool) Run() {
 	ticker := time.NewTicker(5 * time.Second)
 
@@ -127,7 +127,7 @@ func (p *TaskPool) Run() {
 			if t.task.Status == taskMdl.TaskFailStatus {
 				//delete failed TaskRunner from queue
 				p.queue = p.queue[1:]
-				global.GVA_LOG.Info("Task removed from queue ",zap.Uint("Task ID ",t.task.ID))
+				global.GVA_LOG.Info("Task removed from queue ", zap.Uint("Task ID ", t.task.ID))
 				continue
 			}
 			if p.blocks(t) {
@@ -135,7 +135,7 @@ func (p *TaskPool) Run() {
 				p.queue = append(p.queue[1:], t)
 				continue
 			}
-			global.GVA_LOG.Info("Set resource locker with ",zap.Uint("TaskRunner ",t.task.ID))
+			global.GVA_LOG.Info("Set resource locker with ", zap.Uint("TaskRunner ", t.task.ID))
 			p.resourceLocker <- &resourceLock{lock: true, holder: t}
 			if !t.prepared {
 				go t.prepareRun()
@@ -143,7 +143,7 @@ func (p *TaskPool) Run() {
 			}
 			go t.run()
 			p.queue = p.queue[1:]
-			global.GVA_LOG.Info("Task removed from queue ",zap.Uint("Task ID ",t.task.ID))
+			global.GVA_LOG.Info("Task removed from queue ", zap.Uint("Task ID ", t.task.ID))
 		}
 	}
 }
@@ -198,7 +198,7 @@ func (p *TaskPool) StopTask(targetTask taskMdl.Task) error {
 			return err
 		}
 		tsk.setStatus(taskMdl.TaskStoppedStatus)
-		tsk.createTaskEvent()
+		//tsk.createTaskEvent()
 	} else {
 		status := tsk.task.Status
 		tsk.setStatus(taskMdl.TaskStoppingStatus)

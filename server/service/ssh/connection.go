@@ -8,6 +8,8 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/model/application"
 	"log"
 	"net"
+	"os"
+	"path"
 	"time"
 	"unicode/utf8"
 
@@ -36,18 +38,18 @@ type SSHClient struct {
 	Username string                         `json:"username"`
 	Password string                         `json:"password"`
 	Server   *application.ApplicationServer `json:"server"`
-	Session  *ssh.Session
-	Client   *ssh.Client
-	channel  ssh.Channel
+	//Session  *ssh.Session
+	Client  *ssh.Client
+	channel ssh.Channel
 }
 
-func NewSSHClient() SSHClient {
+func newSSHClient() SSHClient {
 	client := SSHClient{}
 	return client
 }
 
 func (sshService *SshService) DecodeMsgToSSHClient(msg string) (SSHClient, error) {
-	client := NewSSHClient()
+	client := newSSHClient()
 	decoded, err := base64.StdEncoding.DecodeString(msg)
 	if err != nil {
 		return client, err
@@ -59,7 +61,17 @@ func (sshService *SshService) DecodeMsgToSSHClient(msg string) (SSHClient, error
 	return client, nil
 }
 
-func (c *SSHClient) GenerateClient(ip, name, password string, port int) error {
+func (sshService *SshService) FillSSHClient(ip, username, password string, port int) (SSHClient, error) {
+	client := newSSHClient()
+	client.Server = &application.ApplicationServer{
+		ManageIp: ip,
+		SshPort:  port,
+	}
+	client.Username, client.Password = username, password
+	return client, nil
+}
+
+func (c *SSHClient) GenerateClient() error {
 	var (
 		auth         []ssh.AuthMethod
 		addr         string
@@ -70,12 +82,29 @@ func (c *SSHClient) GenerateClient(ip, name, password string, port int) error {
 	)
 
 	auth = make([]ssh.AuthMethod, 0)
-	auth = append(auth, ssh.Password(password))
+	if len(c.Password) > 0 {
+		auth = append(auth, ssh.Password(c.Password))
+	} else {
+		homePath, e := os.UserHomeDir()
+		if e != nil {
+			return e
+		}
+		key, e := os.ReadFile(path.Join(homePath, ".ssh", "id_rsa"))
+		if e != nil {
+			return e
+		}
+		signer, e := ssh.ParsePrivateKey(key)
+		if e != nil {
+			return e
+		}
+		auth = append(auth, ssh.PublicKeys(signer))
+	}
+
 	config = ssh.Config{
 		Ciphers: []string{"aes128-ctr", "aes192-ctr", "aes256-ctr", "aes128-gcm@openssh.com", "arcfour256", "arcfour128", "aes128-cbc", "3des-cbc", "aes192-cbc", "aes256-cbc"},
 	}
 	clientConfig = &ssh.ClientConfig{
-		User:    name,
+		User:    c.Username,
 		Auth:    auth,
 		Timeout: 5 * time.Second,
 		Config:  config,
@@ -83,7 +112,7 @@ func (c *SSHClient) GenerateClient(ip, name, password string, port int) error {
 			return nil
 		},
 	}
-	addr = fmt.Sprintf("%s:%d", ip, port)
+	addr = fmt.Sprintf("%s:%d", c.Server.ManageIp, c.Server.SshPort)
 	if client, err = ssh.Dial("tcp", addr, clientConfig); err != nil {
 		return err
 	}
@@ -92,23 +121,24 @@ func (c *SSHClient) GenerateClient(ip, name, password string, port int) error {
 }
 
 func (c *SSHClient) RequestTerminal(terminal Terminal) *SSHClient {
-	session, err := c.Client.NewSession()
-	if err != nil {
-		return nil
-	}
-	c.Session = session
+	//session, err := c.Client.NewSession()
+	//if err != nil {
+	//	return nil
+	//}
+	//c.Session = session
 	channel, inRequests, err := c.Client.OpenChannel("session", nil)
 	if err != nil {
 		return nil
 	}
 	c.channel = channel
-	go func() {
-		for req := range inRequests {
-			if req.WantReply {
-				req.Reply(false, nil)
-			}
-		}
-	}()
+	go ssh.DiscardRequests(inRequests)
+	//go func() {
+	//	for req := range inRequests {
+	//		if req.WantReply {
+	//			req.Reply(false, nil)
+	//		}
+	//	}
+	//}()
 	modes := ssh.TerminalModes{
 		ssh.ECHO:          1,
 		ssh.TTY_OP_ISPEED: 14400,
@@ -127,8 +157,8 @@ func (c *SSHClient) RequestTerminal(terminal Terminal) *SSHClient {
 		Term:     "xterm",
 		Columns:  terminal.Columns,
 		Rows:     terminal.Rows,
-		Width:    uint32(terminal.Columns * 8),
-		Height:   uint32(terminal.Columns * 8),
+		Width:    terminal.Columns * 8,
+		Height:   terminal.Columns * 8,
 		ModeList: string(modeList),
 	}
 	ok, err := channel.SendRequest("pty-req", true, ssh.Marshal(&req))
@@ -165,7 +195,7 @@ func (c *SSHClient) Connect(ws *websocket.Conn) {
 
 		go func() {
 			defer c.Client.Close()
-			defer c.Client.Close()
+			// defer c.Client.Close()
 
 			for {
 				x, size, err := br.ReadRune()

@@ -8,18 +8,14 @@ import (
 	sockets "github.com/flipped-aurora/gin-vue-admin/server/api/v1/taskApp"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl"
-	"github.com/flipped-aurora/gin-vue-admin/server/service/taskSvr"
 	"go.uber.org/zap"
 	"io"
 	"io/ioutil"
 	"os"
 	"strconv"
-	"strings"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/ansible-semaphore/semaphore/taskMdl"
-	"github.com/ansible-semaphore/semaphore/util"
 )
 
 type TaskRunnerService struct {
@@ -88,7 +84,7 @@ func (t *TaskRunner) updateStatus() {
 			"template_id": t.task.TemplateId,
 		})
 
-		if err !=nil {
+		if err != nil {
 			global.GVA_LOG.Fatal(err.Error())
 		}
 
@@ -142,8 +138,8 @@ func (t *TaskRunner) prepareRun() {
 	t.prepared = false
 
 	defer func() {
-		global.GVA_LOG.Info("Stopped preparing TaskRunner ",zap.Uint("task ID ",t.task.ID))
-		global.GVA_LOG.Info("Release resource locker with TaskRunner ",zap.Uint("task ID ",t.task.ID))
+		global.GVA_LOG.Info("Stopped preparing TaskRunner ", zap.Uint("task ID ", t.task.ID))
+		global.GVA_LOG.Info("Release resource locker with TaskRunner ", zap.Uint("task ID ", t.task.ID))
 		t.pool.resourceLocker <- &resourceLock{lock: false, holder: t}
 
 		//t.createTaskEvent()
@@ -218,8 +214,8 @@ func (t *TaskRunner) prepareRun() {
 
 func (t *TaskRunner) run() {
 	defer func() {
-		global.GVA_LOG.Info("Stopped running TaskRunner ",zap.Uint("task ID ",t.task.ID))
-		global.GVA_LOG.Info("Release resource locker with TaskRunner ",zap.Uint("task ID ",t.task.ID))
+		global.GVA_LOG.Info("Stopped running TaskRunner ", zap.Uint("task ID ", t.task.ID))
+		global.GVA_LOG.Info("Release resource locker with TaskRunner ", zap.Uint("task ID ", t.task.ID))
 		t.pool.resourceLocker <- &resourceLock{lock: false, holder: t}
 
 		t.task.EndTime = time.Now()
@@ -262,6 +258,7 @@ func (t *TaskRunner) run() {
 		return
 	}
 
+	err = t.runTask()
 	err = t.runPlaybook()
 	if err != nil {
 		t.Log("Running playbook failed: " + err.Error())
@@ -547,191 +544,12 @@ func (t *TaskRunner) runGalaxy(args []string) error {
 	}.RunGalaxy(args)
 }
 
-func (t *TaskRunner) runPlaybook() (err error) {
-	args, err := t.getPlaybookArgs()
-	if err != nil {
-		return
-	}
-
-	environmentVariables, err := t.getEnvironmentENV()
-	if err != nil {
-		return
-	}
-
+func (t *TaskRunner) runTask() (err error) {
 	return lib.AnsiblePlaybook{
 		Logger:     t,
 		TemplateID: t.template.ID,
 		Repository: t.repository,
 	}.RunPlaybook(args, &environmentVariables, func(p *os.Process) { t.process = p })
-}
-
-func (t *TaskRunner) getEnvironmentENV() (arr []string, err error) {
-	environmentVars := make(map[string]string)
-
-	if t.environment.ENV != nil {
-		err = json.Unmarshal([]byte(*t.environment.ENV), &environmentVars)
-		if err != nil {
-			return
-		}
-	}
-
-	for key, val := range environmentVars {
-		arr = append(arr, fmt.Sprintf("%s=%s", key, val))
-	}
-
-	return
-}
-
-func (t *TaskRunner) getEnvironmentExtraVars() (str string, err error) {
-	extraVars := make(map[string]interface{})
-
-	if t.environment.JSON != "" {
-		err = json.Unmarshal([]byte(t.environment.JSON), &extraVars)
-		if err != nil {
-			return
-		}
-	}
-
-	taskDetails := make(map[string]interface{})
-
-	if t.task.Message != "" {
-		taskDetails["message"] = t.task.Message
-	}
-
-	if t.task.UserID != nil {
-		var user taskMdl.User
-		user, err = t.pool.store.GetUser(*t.task.UserID)
-		if err == nil {
-			taskDetails["username"] = user.Username
-		}
-	}
-
-	if t.template.Type != taskMdl.TemplateTask {
-		taskDetails["type"] = t.template.Type
-		incomingVersion := t.task.GetIncomingVersion(t.pool.store)
-		if incomingVersion != nil {
-			taskDetails["incoming_version"] = incomingVersion
-		}
-		if t.template.Type == taskMdl.TemplateBuild {
-			taskDetails["target_version"] = t.task.Version
-		}
-	}
-
-	vars := make(map[string]interface{})
-	vars["task_details"] = taskDetails
-	extraVars["semaphore_vars"] = vars
-
-	ev, err := json.Marshal(extraVars)
-	if err != nil {
-		return
-	}
-
-	str = string(ev)
-
-	return
-}
-
-// nolint: gocyclo
-func (t *TaskRunner) getPlaybookArgs() (args []string, err error) {
-	playbookName := t.task.Playbook
-	if playbookName == "" {
-		playbookName = t.template.Playbook
-	}
-
-	var inventory string
-	switch t.inventory.Type {
-	case taskMdl.InventoryFile:
-		inventory = t.inventory.Inventory
-	case taskMdl.InventoryStatic, taskMdl.InventoryStaticYaml:
-		inventory = util.Config.TmpPath + "/inventory_" + strconv.Itoa(t.task.ID)
-		if t.inventory.Type == taskMdl.InventoryStaticYaml {
-			inventory += ".yml"
-		}
-	default:
-		err = fmt.Errorf("invalid invetory type")
-		return
-	}
-
-	args = []string{
-		"-i", inventory,
-	}
-
-	if t.inventory.SSHKeyID != nil {
-		switch t.inventory.SSHKey.Type {
-		case taskMdl.AccessKeySSH:
-			args = append(args, "--private-key="+t.inventory.SSHKey.GetPath())
-			//args = append(args, "--extra-vars={\"ansible_ssh_private_key_file\": \""+t.inventory.SSHKey.GetPath()+"\"}")
-			if t.inventory.SSHKey.SshKey.Login != "" {
-				args = append(args, "--extra-vars={\"ansible_user\": \""+t.inventory.SSHKey.SshKey.Login+"\"}")
-			}
-		case taskMdl.AccessKeyLoginPassword:
-			args = append(args, "--extra-vars=@"+t.inventory.SSHKey.GetPath())
-		case taskMdl.AccessKeyNone:
-		default:
-			err = fmt.Errorf("access key does not suite for inventory's user credentials")
-			return
-		}
-	}
-
-	if t.inventory.BecomeKeyID != nil {
-		switch t.inventory.BecomeKey.Type {
-		case taskMdl.AccessKeyLoginPassword:
-			args = append(args, "--extra-vars=@"+t.inventory.BecomeKey.GetPath())
-		case taskMdl.AccessKeyNone:
-		default:
-			err = fmt.Errorf("access key does not suite for inventory's sudo user credentials")
-			return
-		}
-	}
-
-	if t.task.Debug {
-		args = append(args, "-vvvv")
-	}
-
-	if t.task.DryRun {
-		args = append(args, "--check")
-	}
-
-	if t.template.VaultKeyID != nil {
-		args = append(args, "--vault-password-file", t.template.VaultKey.GetPath())
-	}
-
-	extraVars, err := t.getEnvironmentExtraVars()
-	if err != nil {
-		t.Log(err.Error())
-		t.Log("Could not remove command environment, if existant it will be passed to --extra-vars. This is not fatal but be aware of side effects")
-	} else if extraVars != "" {
-		args = append(args, "--extra-vars", extraVars)
-	}
-
-	var templateExtraArgs []string
-	if t.template.Arguments != nil {
-		err = json.Unmarshal([]byte(*t.template.Arguments), &templateExtraArgs)
-		if err != nil {
-			t.Log("Invalid format of the template extra arguments, must be valid JSON")
-			return
-		}
-	}
-
-	var taskExtraArgs []string
-	if t.template.AllowOverrideArgsInTask && t.task.Arguments != nil {
-		err = json.Unmarshal([]byte(*t.task.Arguments), &taskExtraArgs)
-		if err != nil {
-			t.Log("Invalid format of the TaskRunner extra arguments, must be valid JSON")
-			return
-		}
-	}
-
-	if t.task.Limit != "" {
-		t.Log("--limit=" + t.task.Limit)
-		taskExtraArgs = append(taskExtraArgs, "--limit="+t.task.Limit)
-	}
-
-	args = append(args, templateExtraArgs...)
-	args = append(args, taskExtraArgs...)
-	args = append(args, playbookName)
-
-	return
 }
 
 func hasRequirementsChanges(requirementsFilePath string, requirementsHashFilePath string) bool {
