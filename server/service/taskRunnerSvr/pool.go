@@ -270,7 +270,7 @@ func getNextBuildVersion(startVersion string, currentVersion string) string {
 	return prefix + strconv.Itoa(newVer) + suffix
 }
 
-func (p *TaskPool) AddTask(taskObj taskMdl.Task, userID int, projectID int) (newTask taskMdl.Task, err error) {
+func (p *TaskPool) AddTask(taskObj taskMdl.Task, userID int) (newTask taskMdl.Task, err error) {
 	taskObj.Status = taskMdl.TaskWaitingStatus
 	taskObj.SystemUserId = userID
 

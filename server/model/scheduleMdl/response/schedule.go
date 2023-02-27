@@ -1,7 +1,7 @@
 package response
 
 import (
-	"github.com/flipped-aurora/gin-vue-admin/server/model/schedule"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/scheduleMdl"
 )
 
 type SchedulesResponse struct {

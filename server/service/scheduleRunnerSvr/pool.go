@@ -2,31 +2,27 @@ package schedules
 
 import (
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/ansible"
-	"github.com/flipped-aurora/gin-vue-admin/server/services/tasks"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl"
+	"github.com/flipped-aurora/gin-vue-admin/server/service/taskRunnerSvr"
 	"github.com/robfig/cron/v3"
 	"sync"
 )
 
-var AnsibleSchedulePool *SchedulePool
-
 type ScheduleRunner struct {
-	projectID  int
 	scheduleID int
 	pool       *SchedulePool
 }
 
 func (r ScheduleRunner) Run() {
-	schedule, err := scheduleService.GetSchedule(float64(r.projectID), float64(r.scheduleID))
+	schedule, err := scheduleService.GetSchedule(float64(r.scheduleID))
 	if err != nil {
 		global.GVA_LOG.Error(err.Error())
 		return
 	}
 
-	_, err = r.pool.taskPool.AddTask(ansible.Task{
-		TemplateID: schedule.TemplateID,
-		ProjectID:  schedule.ProjectID,
-	}, nil, schedule.ProjectID)
+	_, err = r.pool.taskPool.AddTask(taskMdl.Task{
+		TemplateId: schedule.TemplateID,
+	}, 0)
 
 	if err != nil {
 		global.GVA_LOG.Error(err.Error())
@@ -36,7 +32,7 @@ func (r ScheduleRunner) Run() {
 type SchedulePool struct {
 	cron     *cron.Cron
 	locker   sync.Locker
-	taskPool *tasks.TaskPool
+	taskPool *taskRunnerSvr.TaskPool
 }
 
 func (p *SchedulePool) init() {
@@ -58,7 +54,6 @@ func (p *SchedulePool) Refresh() {
 	p.clear()
 	for _, schedule := range schedules {
 		_, err := p.addRunner(ScheduleRunner{
-			projectID:  schedule.ProjectID,
 			scheduleID: int(schedule.ID),
 			pool:       p,
 		}, schedule.CronFormat)
@@ -97,7 +92,7 @@ func (p *SchedulePool) Destroy() {
 	p.cron = nil
 }
 
-func CreateSchedulePool(taskPool *tasks.TaskPool) SchedulePool {
+func CreateSchedulePool(taskPool *taskRunnerSvr.TaskPool) SchedulePool {
 	pool := SchedulePool{
 		taskPool: taskPool,
 	}

@@ -4,20 +4,17 @@ import (
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
-	"github.com/ansible-semaphore/semaphore/lib"
 	sockets "github.com/flipped-aurora/gin-vue-admin/server/api/v1/taskApp"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/common/response"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/system"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl"
-	ssh2 "github.com/flipped-aurora/gin-vue-admin/server/service/ssh"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 	"io"
-	"io/ioutil"
 	"os"
 	"strconv"
 	"time"
-
-	"github.com/ansible-semaphore/semaphore/taskMdl"
 )
 
 type TaskRunnerService struct {
@@ -292,7 +289,7 @@ func (t *TaskRunner) run() {
 }
 
 func (t *TaskRunner) prepareError(err error, errMsg string) error {
-	if err == taskMdl.ErrNotFound {
+	if err == gorm.ErrRecordNotFound {
 		t.Log(errMsg)
 		return err
 	}
@@ -310,279 +307,282 @@ func (t *TaskRunner) populateDetails() error {
 	// get template
 	var err error
 
-	t.template, err = t.pool.store.GetTemplate(t.task.ProjectID, t.task.TemplateID)
+	t.template, err = taskService.GetTaskTemplate(float64(t.task.TemplateId))
 	if err != nil {
 		return t.prepareError(err, "Template not found!")
 	}
 
 	// get project alert setting
-	project, err := t.pool.store.GetProject(t.template.ProjectID)
-	if err != nil {
-		return t.prepareError(err, "Project not found!")
-	}
-
-	t.alert = project.Alert
-	t.alertChat = project.AlertChat
+	//project, err := t.pool.store.GetProject(t.template.ProjectID)
+	//if err != nil {
+	//	return t.prepareError(err, "Project not found!")
+	//}
+	//
+	//t.alert = project.Alert
+	//t.alertChat = project.AlertChat
 
 	// get project users
-	users, err := t.pool.store.GetProjectUsers(t.template.ProjectID, taskMdl.RetrieveQueryParams{})
+	err, userList, _ := userService.GetUserInfoList(request.PageInfo{
+		Page:     1,
+		PageSize: 1000,
+	})
 	if err != nil {
 		return t.prepareError(err, "Users not found!")
 	}
 
 	t.users = []int{}
-	for _, user := range users {
-		t.users = append(t.users, user.ID)
+	for _, user := range userList.([]system.SysUser) {
+		t.users = append(t.users, int(user.ID))
 	}
 
-	// get inventory
-	t.inventory, err = t.pool.store.GetInventory(t.template.ProjectID, t.template.InventoryID)
-	if err != nil {
-		return t.prepareError(err, "Template Inventory not found!")
-	}
-
-	// get repository
-	t.repository, err = t.pool.store.GetRepository(t.template.ProjectID, t.template.RepositoryID)
-
-	if err != nil {
-		return err
-	}
-
-	err = t.repository.SSHKey.DeserializeSecret()
-	if err != nil {
-		return err
-	}
-
-	// get environment
-	if t.template.EnvironmentID != nil {
-		t.environment, err = t.pool.store.GetEnvironment(t.template.ProjectID, *t.template.EnvironmentID)
-		if err != nil {
-			return err
-		}
-	}
-
-	if t.task.Environment != "" {
-		environment := make(map[string]interface{})
-		if t.environment.JSON != "" {
-			err = json.Unmarshal([]byte(t.task.Environment), &environment)
-			if err != nil {
-				return err
-			}
-		}
-
-		taskEnvironment := make(map[string]interface{})
-		err = json.Unmarshal([]byte(t.environment.JSON), &taskEnvironment)
-		if err != nil {
-			return err
-		}
-
-		for k, v := range taskEnvironment {
-			environment[k] = v
-		}
-
-		var ev []byte
-		ev, err = json.Marshal(environment)
-		if err != nil {
-			return err
-		}
-
-		t.environment.JSON = string(ev)
-	}
+	//// get inventory
+	//t.inventory, err = t.pool.store.GetInventory(t.template.ProjectID, t.template.InventoryID)
+	//if err != nil {
+	//	return t.prepareError(err, "Template Inventory not found!")
+	//}
+	//
+	//// get repository
+	//t.repository, err = t.pool.store.GetRepository(t.template.ProjectID, t.template.RepositoryID)
+	//
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//err = t.repository.SSHKey.DeserializeSecret()
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//// get environment
+	//if t.template.EnvironmentID != nil {
+	//	t.environment, err = t.pool.store.GetEnvironment(t.template.ProjectID, *t.template.EnvironmentID)
+	//	if err != nil {
+	//		return err
+	//	}
+	//}
+	//
+	//if t.task.Environment != "" {
+	//	environment := make(map[string]interface{})
+	//	if t.environment.JSON != "" {
+	//		err = json.Unmarshal([]byte(t.task.Environment), &environment)
+	//		if err != nil {
+	//			return err
+	//		}
+	//	}
+	//
+	//	taskEnvironment := make(map[string]interface{})
+	//	err = json.Unmarshal([]byte(t.environment.JSON), &taskEnvironment)
+	//	if err != nil {
+	//		return err
+	//	}
+	//
+	//	for k, v := range taskEnvironment {
+	//		environment[k] = v
+	//	}
+	//
+	//	var ev []byte
+	//	ev, err = json.Marshal(environment)
+	//	if err != nil {
+	//		return err
+	//	}
+	//
+	//	t.environment.JSON = string(ev)
+	//}
 
 	return nil
 }
 
-func (t *TaskRunner) installVaultKeyFile() error {
-	if t.template.VaultKeyID == nil {
-		return nil
-	}
+//func (t *TaskRunner) installVaultKeyFile() error {
+//	if t.template.VaultKeyID == nil {
+//		return nil
+//	}
+//
+//	return t.template.VaultKey.Install(taskMdl.AccessKeyRoleAnsiblePasswordVault)
+//}
+//
+//func (t *TaskRunner) checkoutRepository() error {
+//
+//	repo := lib.GitRepository{
+//		Logger:     t,
+//		TemplateID: t.template.ID,
+//		Repository: t.repository,
+//	}
+//
+//	err := repo.ValidateRepo()
+//
+//	if err != nil {
+//		return err
+//	}
+//
+//	if t.task.CommitHash != nil {
+//		// checkout to commit if it is provided for TaskRunner
+//		return repo.Checkout(*t.task.CommitHash)
+//	}
+//
+//	// store commit to TaskRunner table
+//
+//	commitHash, err := repo.GetLastCommitHash()
+//
+//	if err != nil {
+//		return err
+//	}
+//
+//	commitMessage, _ := repo.GetLastCommitMessage()
+//
+//	t.task.CommitHash = &commitHash
+//	t.task.CommitMessage = commitMessage
+//
+//	return t.pool.store.UpdateTask(t.task)
+//}
+//
+//func (t *TaskRunner) updateRepository() error {
+//	repo := lib.GitRepository{
+//		Logger:     t,
+//		TemplateID: t.template.ID,
+//		Repository: t.repository,
+//	}
+//
+//	err := repo.ValidateRepo()
+//
+//	if err != nil {
+//		if !os.IsNotExist(err) {
+//			err = os.RemoveAll(repo.GetFullPath())
+//			if err != nil {
+//				return err
+//			}
+//		}
+//		return repo.Clone()
+//	}
+//
+//	if repo.CanBePulled() {
+//		err = repo.Pull()
+//		if err == nil {
+//			return nil
+//		}
+//	}
+//
+//	err = os.RemoveAll(repo.GetFullPath())
+//	if err != nil {
+//		return err
+//	}
+//
+//	return repo.Clone()
+//}
 
-	return t.template.VaultKey.Install(taskMdl.AccessKeyRoleAnsiblePasswordVault)
-}
-
-func (t *TaskRunner) checkoutRepository() error {
-
-	repo := lib.GitRepository{
-		Logger:     t,
-		TemplateID: t.template.ID,
-		Repository: t.repository,
-	}
-
-	err := repo.ValidateRepo()
-
-	if err != nil {
-		return err
-	}
-
-	if t.task.CommitHash != nil {
-		// checkout to commit if it is provided for TaskRunner
-		return repo.Checkout(*t.task.CommitHash)
-	}
-
-	// store commit to TaskRunner table
-
-	commitHash, err := repo.GetLastCommitHash()
-
-	if err != nil {
-		return err
-	}
-
-	commitMessage, _ := repo.GetLastCommitMessage()
-
-	t.task.CommitHash = &commitHash
-	t.task.CommitMessage = commitMessage
-
-	return t.pool.store.UpdateTask(t.task)
-}
-
-func (t *TaskRunner) updateRepository() error {
-	repo := lib.GitRepository{
-		Logger:     t,
-		TemplateID: t.template.ID,
-		Repository: t.repository,
-	}
-
-	err := repo.ValidateRepo()
-
-	if err != nil {
-		if !os.IsNotExist(err) {
-			err = os.RemoveAll(repo.GetFullPath())
-			if err != nil {
-				return err
-			}
-		}
-		return repo.Clone()
-	}
-
-	if repo.CanBePulled() {
-		err = repo.Pull()
-		if err == nil {
-			return nil
-		}
-	}
-
-	err = os.RemoveAll(repo.GetFullPath())
-	if err != nil {
-		return err
-	}
-
-	return repo.Clone()
-}
-
-func (t *TaskRunner) installCollectionsRequirements() error {
-	requirementsFilePath := fmt.Sprintf("%s/collections/requirements.yml", t.getRepoPath())
-	requirementsHashFilePath := fmt.Sprintf("%s.md5", requirementsFilePath)
-
-	if _, err := os.Stat(requirementsFilePath); err != nil {
-		t.Log("No collections/requirements.yml file found. Skip galaxy install process.\n")
-		return nil
-	}
-
-	if hasRequirementsChanges(requirementsFilePath, requirementsHashFilePath) {
-		if err := t.runGalaxy([]string{
-			"collection",
-			"install",
-			"-r",
-			requirementsFilePath,
-			"--force",
-		}); err != nil {
-			return err
-		}
-		if err := writeMD5Hash(requirementsFilePath, requirementsHashFilePath); err != nil {
-			return err
-		}
-	} else {
-		t.Log("collections/requirements.yml has no changes. Skip galaxy install process.\n")
-	}
-
-	return nil
-}
-
-func (t *TaskRunner) installRolesRequirements() error {
-	requirementsFilePath := fmt.Sprintf("%s/roles/requirements.yml", t.getRepoPath())
-	requirementsHashFilePath := fmt.Sprintf("%s.md5", requirementsFilePath)
-
-	if _, err := os.Stat(requirementsFilePath); err != nil {
-		t.Log("No roles/requirements.yml file found. Skip galaxy install process.\n")
-		return nil
-	}
-
-	if hasRequirementsChanges(requirementsFilePath, requirementsHashFilePath) {
-		if err := t.runGalaxy([]string{
-			"role",
-			"install",
-			"-r",
-			requirementsFilePath,
-			"--force",
-		}); err != nil {
-			return err
-		}
-		if err := writeMD5Hash(requirementsFilePath, requirementsHashFilePath); err != nil {
-			return err
-		}
-	} else {
-		t.Log("roles/requirements.yml has no changes. Skip galaxy install process.\n")
-	}
-
-	return nil
-}
-
-func (t *TaskRunner) installRequirements() error {
-	if err := t.installCollectionsRequirements(); err != nil {
-		return err
-	}
-	if err := t.installRolesRequirements(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (t *TaskRunner) runGalaxy(args []string) error {
-	return lib.AnsiblePlaybook{
-		Logger:     t,
-		TemplateID: t.template.ID,
-		Repository: t.repository,
-	}.RunGalaxy(args)
-}
+//func (t *TaskRunner) installCollectionsRequirements() error {
+//	requirementsFilePath := fmt.Sprintf("%s/collections/requirements.yml", t.getRepoPath())
+//	requirementsHashFilePath := fmt.Sprintf("%s.md5", requirementsFilePath)
+//
+//	if _, err := os.Stat(requirementsFilePath); err != nil {
+//		t.Log("No collections/requirements.yml file found. Skip galaxy install process.\n")
+//		return nil
+//	}
+//
+//	if hasRequirementsChanges(requirementsFilePath, requirementsHashFilePath) {
+//		if err := t.runGalaxy([]string{
+//			"collection",
+//			"install",
+//			"-r",
+//			requirementsFilePath,
+//			"--force",
+//		}); err != nil {
+//			return err
+//		}
+//		if err := writeMD5Hash(requirementsFilePath, requirementsHashFilePath); err != nil {
+//			return err
+//		}
+//	} else {
+//		t.Log("collections/requirements.yml has no changes. Skip galaxy install process.\n")
+//	}
+//
+//	return nil
+//}
+//
+//func (t *TaskRunner) installRolesRequirements() error {
+//	requirementsFilePath := fmt.Sprintf("%s/roles/requirements.yml", t.getRepoPath())
+//	requirementsHashFilePath := fmt.Sprintf("%s.md5", requirementsFilePath)
+//
+//	if _, err := os.Stat(requirementsFilePath); err != nil {
+//		t.Log("No roles/requirements.yml file found. Skip galaxy install process.\n")
+//		return nil
+//	}
+//
+//	if hasRequirementsChanges(requirementsFilePath, requirementsHashFilePath) {
+//		if err := t.runGalaxy([]string{
+//			"role",
+//			"install",
+//			"-r",
+//			requirementsFilePath,
+//			"--force",
+//		}); err != nil {
+//			return err
+//		}
+//		if err := writeMD5Hash(requirementsFilePath, requirementsHashFilePath); err != nil {
+//			return err
+//		}
+//	} else {
+//		t.Log("roles/requirements.yml has no changes. Skip galaxy install process.\n")
+//	}
+//
+//	return nil
+//}
+//
+//func (t *TaskRunner) installRequirements() error {
+//	if err := t.installCollectionsRequirements(); err != nil {
+//		return err
+//	}
+//	if err := t.installRolesRequirements(); err != nil {
+//		return err
+//	}
+//	return nil
+//}
+//
+//func (t *TaskRunner) runGalaxy(args []string) error {
+//	return lib.AnsiblePlaybook{
+//		Logger:     t,
+//		TemplateID: t.template.ID,
+//		Repository: t.repository,
+//	}.RunGalaxy(args)
+//}
 
 func (t *TaskRunner) runTask() (err error) {
-	servers:=t.template.TargetServers
-	for _,server:=range servers {
-		sshClient,err := sshService.FillSSHClient(server.ManageIp,t.template.SysUser,"",server.SshPort)
+	servers := t.template.TargetServers
+	for _, server := range servers {
+		sshClient, err := sshService.FillSSHClient(server.ManageIp, t.template.SysUser, "", server.SshPort)
 		err = sshClient.GenerateClient()
 		if err != nil {
 			return
 		}
 		sshClient.RequestShell()
-		if err = sshClient.ConnectShell(t.template.Command,*t);err!=nil {
+		if err = sshClient.ConnectShell(t.template.Command, *t); err != nil {
 			return
 		}
 	}
 	return nil
 }
 
-func hasRequirementsChanges(requirementsFilePath string, requirementsHashFilePath string) bool {
-	oldFileMD5HashBytes, err := ioutil.ReadFile(requirementsHashFilePath)
-	if err != nil {
-		return true
-	}
+//func hasRequirementsChanges(requirementsFilePath string, requirementsHashFilePath string) bool {
+//	oldFileMD5HashBytes, err := ioutil.ReadFile(requirementsHashFilePath)
+//	if err != nil {
+//		return true
+//	}
+//
+//	newFileMD5Hash, err := getMD5Hash(requirementsFilePath)
+//	if err != nil {
+//		return true
+//	}
+//
+//	return string(oldFileMD5HashBytes) != newFileMD5Hash
+//}
 
-	newFileMD5Hash, err := getMD5Hash(requirementsFilePath)
-	if err != nil {
-		return true
-	}
-
-	return string(oldFileMD5HashBytes) != newFileMD5Hash
-}
-
-func writeMD5Hash(requirementsFile string, requirementsHashFile string) error {
-	newFileMD5Hash, err := getMD5Hash(requirementsFile)
-	if err != nil {
-		return err
-	}
-
-	return ioutil.WriteFile(requirementsHashFile, []byte(newFileMD5Hash), 0644)
-}
+//func writeMD5Hash(requirementsFile string, requirementsHashFile string) error {
+//	newFileMD5Hash, err := getMD5Hash(requirementsFile)
+//	if err != nil {
+//		return err
+//	}
+//
+//	return ioutil.WriteFile(requirementsHashFile, []byte(newFileMD5Hash), 0644)
+//}
 
 // checkTmpDir checks to see if the temporary directory exists
 // and if it does not attempts to create it
