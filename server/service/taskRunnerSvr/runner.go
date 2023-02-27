@@ -269,26 +269,26 @@ func (t *TaskRunner) run() {
 
 	t.setStatus(taskMdl.TaskSuccessStatus)
 
-	templates, err := t.pool.store.GetTemplates(t.task.ProjectID, taskMdl.TemplateFilter{
-		BuildTemplateID: &t.task.TemplateID,
-		AutorunOnly:     true,
-	}, taskMdl.RetrieveQueryParams{})
-	if err != nil {
-		t.Log("Running playbook failed: " + err.Error())
-		return
-	}
-
-	for _, tpl := range templates {
-		_, err = t.pool.AddTask(taskMdl.Task{
-			TemplateID:  tpl.ID,
-			ProjectID:   tpl.ProjectID,
-			BuildTaskID: &t.task.ID,
-		}, nil, tpl.ProjectID)
-		if err != nil {
-			t.Log("Running playbook failed: " + err.Error())
-			continue
-		}
-	}
+	//templates, err := t.pool.store.GetTemplates(t.task.ProjectID, taskMdl.TemplateFilter{
+	//	BuildTemplateID: &t.task.TemplateID,
+	//	AutorunOnly:     true,
+	//}, taskMdl.RetrieveQueryParams{})
+	//if err != nil {
+	//	t.Log("Running playbook failed: " + err.Error())
+	//	return
+	//}
+	//
+	//for _, tpl := range templates {
+	//	_, err = t.pool.AddTask(taskMdl.Task{
+	//		TemplateID:  tpl.ID,
+	//		ProjectID:   tpl.ProjectID,
+	//		BuildTaskID: &t.task.ID,
+	//	}, nil, tpl.ProjectID)
+	//	if err != nil {
+	//		t.Log("Running playbook failed: " + err.Error())
+	//		continue
+	//	}
+	//}
 }
 
 func (t *TaskRunner) prepareError(err error, errMsg string) error {
