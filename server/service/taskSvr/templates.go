@@ -15,7 +15,7 @@ type TaskTemplatesService struct {
 var TaskTemplatesServiceApp = new(TaskTemplatesService)
 
 func (templateService *TaskTemplatesService) CreateTaskTemplate(template taskMdl.TaskTemplate) (taskMdl.TaskTemplate, error) {
-	targetServersJson, err := json.Marshal(template.TargetServers)
+	targetServersJson, err := json.Marshal(template.TargetIds)
 	if err != nil {
 		return template, err
 	}
@@ -27,7 +27,7 @@ func (templateService *TaskTemplatesService) CreateTaskTemplate(template taskMdl
 
 func (templateService *TaskTemplatesService) UpdateTaskTemplate(template taskMdl.TaskTemplate) error {
 	var oldTaskTemplate taskMdl.TaskTemplate
-	_, targetServersJson := json.Marshal(template.TargetServers)
+	_, targetServersJson := json.Marshal(template.TargetIds)
 	upDateMap := make(map[string]interface{})
 	upDateMap["name"] = template.Name
 	upDateMap["description"] = template.Description

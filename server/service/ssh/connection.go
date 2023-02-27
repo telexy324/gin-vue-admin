@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/application"
+	"github.com/flipped-aurora/gin-vue-admin/server/service/taskRunnerSvr"
 	"log"
 	"net"
 	"os"
@@ -240,4 +241,34 @@ func (c *SSHClient) Connect(ws *websocket.Conn) {
 			log.Println(err)
 		}
 	}()
+}
+
+func (c *SSHClient) RequestShell() *SSHClient {
+	channel, inRequests, err := c.Client.OpenChannel("session", nil)
+	if err != nil {
+		return nil
+	}
+	c.channel = channel
+	go ssh.DiscardRequests(inRequests)
+	ok, err := channel.SendRequest("shell", true, nil)
+	if !ok || err != nil {
+		return nil
+	}
+	return c
+}
+
+func (c *SSHClient) ConnectShell(shell string, taskRunner taskRunnerSvr.TaskRunner) (err error) {
+	_, err = c.channel.Write([]byte(shell))
+	if err != nil {
+		return
+	}
+
+	taskRunner.LogSsh(&c.channel)
+
+	//defer func() {
+	//	if err := recover(); err != nil {
+	//		log.Println(err)
+	//	}
+	//}()
+	return
 }

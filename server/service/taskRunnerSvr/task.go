@@ -3,6 +3,7 @@ package taskRunnerSvr
 import (
 	"fmt"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
+	"golang.org/x/crypto/ssh"
 	"os"
 	"os/exec"
 	"strings"
@@ -53,4 +54,5 @@ func (p TaskWithLogger) RunGalaxy(args []string) error {
 type Logger interface {
 	Log(msg string)
 	LogCmd(cmd *exec.Cmd)
+	LogSsh(channel *ssh.Channel)
 }

@@ -7,3 +7,4 @@ type ServiceGroup struct {
 }
 
 var taskService = service.ServiceGroupApp.TaskServiceGroup
+var sshService = service.ServiceGroupApp.SshServiceGroup

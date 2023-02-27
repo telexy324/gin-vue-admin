@@ -6,6 +6,7 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/api/v1/taskApp"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"go.uber.org/zap"
+	"golang.org/x/crypto/ssh"
 	"os/exec"
 	"time"
 )
@@ -72,12 +73,8 @@ func (t *TaskRunner) LogCmd(cmd *exec.Cmd) {
 	go t.logPipe(bufio.NewReader(stdout))
 }
 
-func (t *TaskRunner) LogSsh(cmd *exec.Cmd) {
-	stderr, _ := cmd.StderrPipe()
-	stdout, _ := cmd.StdoutPipe()
-
-	go t.logPipe(bufio.NewReader(stderr))
-	go t.logPipe(bufio.NewReader(stdout))
+func (t *TaskRunner) LogSsh(channel *ssh.Channel) {
+	go t.logPipe(bufio.NewReader(*channel))
 }
 
 func (t *TaskRunner) panicOnError(err error, msg string) {

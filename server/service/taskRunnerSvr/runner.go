@@ -7,7 +7,9 @@ import (
 	"github.com/ansible-semaphore/semaphore/lib"
 	sockets "github.com/flipped-aurora/gin-vue-admin/server/api/v1/taskApp"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/common/response"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl"
+	ssh2 "github.com/flipped-aurora/gin-vue-admin/server/service/ssh"
 	"go.uber.org/zap"
 	"io"
 	"io/ioutil"
@@ -258,10 +260,9 @@ func (t *TaskRunner) run() {
 		return
 	}
 
-	err = t.runTask()
-	err = t.runPlaybook()
+	err := t.runTask()
 	if err != nil {
-		t.Log("Running playbook failed: " + err.Error())
+		t.Log("Running task failed: " + err.Error())
 		t.fail()
 		return
 	}
@@ -545,11 +546,19 @@ func (t *TaskRunner) runGalaxy(args []string) error {
 }
 
 func (t *TaskRunner) runTask() (err error) {
-	return lib.AnsiblePlaybook{
-		Logger:     t,
-		TemplateID: t.template.ID,
-		Repository: t.repository,
-	}.RunPlaybook(args, &environmentVariables, func(p *os.Process) { t.process = p })
+	servers:=t.template.TargetServers
+	for _,server:=range servers {
+		sshClient,err := sshService.FillSSHClient(server.ManageIp,t.template.SysUser,"",server.SshPort)
+		err = sshClient.GenerateClient()
+		if err != nil {
+			return
+		}
+		sshClient.RequestShell()
+		if err = sshClient.ConnectShell(t.template.Command,*t);err!=nil {
+			return
+		}
+	}
+	return nil
 }
 
 func hasRequirementsChanges(requirementsFilePath string, requirementsHashFilePath string) bool {
