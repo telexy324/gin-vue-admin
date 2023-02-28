@@ -1,6 +1,7 @@
 package taskApp
 
 import (
+	"github.com/flipped-aurora/gin-vue-admin/server/core"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/response"
@@ -50,7 +51,7 @@ func (a *TaskApi) AddTask(c *gin.Context) {
 		return
 	}
 	userID := int(utils.GetUserID(c))
-	if task, err := global.TaskPool.AddTask(taskReq, userID); err != nil {
+	if task, err := core.TaskPool.AddTask(taskReq, userID); err != nil {
 		global.GVA_LOG.Error("添加失败!", zap.Any("err", err))
 
 		response.FailWithMessage("添加失败", c)
@@ -80,7 +81,7 @@ func (a *TaskApi) DeleteTask(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	activeTask := global.TaskPool.GetTask(int(taskRequest.ID))
+	activeTask := core.TaskPool.GetTask(int(taskRequest.ID))
 	if activeTask != nil {
 		response.FailWithMessage("task正在执行", c)
 		return
@@ -264,7 +265,7 @@ func (a *TaskApi) StopTask(c *gin.Context) {
 		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 		response.FailWithMessage("获取失败", c)
 	}
-	err = global.TaskPool.StopTask(task)
+	err = core.TaskPool.StopTask(task)
 	if err != nil {
 		global.GVA_LOG.Error("停止失败!", zap.Any("err", err))
 		response.FailWithMessage("停止失败", c)

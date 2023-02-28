@@ -1,8 +1,6 @@
 package global
 
 import (
-	schedules "github.com/flipped-aurora/gin-vue-admin/server/service/scheduleRunnerSvr"
-	"github.com/flipped-aurora/gin-vue-admin/server/service/taskRunnerSvr"
 	"github.com/flipped-aurora/gin-vue-admin/server/utils/timer"
 	"github.com/songzhibin97/gkit/cache/local_cache"
 
@@ -28,6 +26,4 @@ var (
 	GVA_Concurrency_Control             = &singleflight.Group{}
 
 	BlackCache local_cache.Cache
-	TaskPool taskRunnerSvr.TaskPool
-	SchedulePool schedules.SchedulePool
 )

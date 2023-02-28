@@ -4,8 +4,6 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/core"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/initialize"
-	schedules "github.com/flipped-aurora/gin-vue-admin/server/service/scheduleRunnerSvr"
-	"github.com/flipped-aurora/gin-vue-admin/server/service/taskRunnerSvr"
 )
 
 //go:generate go env -w GO111MODULE=on
@@ -31,10 +29,5 @@ func main() {
 		db, _ := global.GVA_DB.DB()
 		defer db.Close()
 	}
-	taskPool := taskRunnerSvr.CreateTaskPool()
-	schedulePool := schedules.CreateSchedulePool(&taskPool)
-	go taskPool.Run()
-	go schedulePool.Run()
-	global.TaskPool, global.SchedulePool = taskPool, schedulePool
 	core.RunWindowsServer()
 }

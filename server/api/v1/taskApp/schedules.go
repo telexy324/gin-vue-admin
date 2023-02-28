@@ -1,6 +1,7 @@
 package taskApp
 
 import (
+	"github.com/flipped-aurora/gin-vue-admin/server/core"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/response"
@@ -17,7 +18,7 @@ type ScheduleApi struct {
 }
 
 func refreshSchedulePool() {
-	global.SchedulePool.Refresh()
+	core.SchedulePool.Refresh()
 }
 
 func validateCronFormat(cronFormat string) bool {
