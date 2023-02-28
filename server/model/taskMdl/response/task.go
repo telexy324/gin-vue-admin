@@ -1,7 +1,7 @@
 package response
 
 import (
-	"github.com/flipped-aurora/gin-vue-admin/server/model/task"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl"
 )
 
 type TasksResponse struct {
