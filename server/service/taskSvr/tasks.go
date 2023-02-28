@@ -72,8 +72,8 @@ func (taskService *TaskService) getTasks(projectID int, templateID *int, info re
 	return err, Tasks, total
 }
 
-func (taskService *TaskService) GetTask(projectID int, taskID int) (task taskMdl.Task, err error) {
-	err = global.GVA_DB.Preload("Template", "project_id=?", projectID).
+func (taskService *TaskService) GetTask(taskID int) (task taskMdl.Task, err error) {
+	err = global.GVA_DB.Preload("Template").
 		Where("id = ?", taskID).First(&task).Error
 	return
 }
@@ -86,9 +86,9 @@ func (taskService *TaskService) GetProjectTasks(projectID int, info request.Page
 	return taskService.getTasks(projectID, nil, info)
 }
 
-func (taskService *TaskService) DeleteTaskWithOutputs(projectID int, taskID int) (err error) {
+func (taskService *TaskService) DeleteTaskWithOutputs(taskID int) (err error) {
 	// check if task exists in the project
-	_, err = taskService.GetTask(projectID, taskID)
+	_, err = taskService.GetTask(taskID)
 	if err != nil {
 		return
 	}
@@ -108,9 +108,9 @@ func (taskService *TaskService) DeleteTaskWithOutputs(projectID int, taskID int)
 	return
 }
 
-func (taskService *TaskService) GetTaskOutputs(projectID int, taskID int) (output []taskMdl.TaskOutput, err error) {
+func (taskService *TaskService) GetTaskOutputs(taskID int) (output []taskMdl.TaskOutput, err error) {
 	// check if task exists in the project
-	_, err = taskService.GetTask(projectID, taskID)
+	_, err = taskService.GetTask(taskID)
 	if err != nil {
 		return
 	}

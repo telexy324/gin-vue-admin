@@ -76,13 +76,13 @@ func (templateService *TaskTemplatesService) GetTaskTemplate(templateID float64)
 	return
 }
 
-func (templateService *TaskTemplatesService) DeleteTaskTemplate(projectID float64, templateID float64) error {
-	err := global.GVA_DB.Where("id = ? and project_id = ?", templateID, projectID).First(&taskMdl.TaskTemplate{}).Error
+func (templateService *TaskTemplatesService) DeleteTaskTemplate(templateID float64) error {
+	err := global.GVA_DB.Where("id = ?", templateID).First(&taskMdl.TaskTemplate{}).Error
 	if err != nil {
 		return err
 	}
 	var template taskMdl.TaskTemplate
-	return global.GVA_DB.Where("id = ? and project_id = ?", templateID, projectID).First(&template).Delete(&template).Error
+	return global.GVA_DB.Where("id = ?", templateID).First(&template).Delete(&template).Error
 }
 
 //func (d *SqlDb) GetTaskTemplateRefs(projectID int, templateID int) (db.ObjectReferrers, error) {

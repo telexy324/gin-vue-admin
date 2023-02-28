@@ -2,21 +2,22 @@ package taskApp
 
 import (
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/ansible"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/ansible/request"
-	ansibleRes "github.com/flipped-aurora/gin-vue-admin/server/model/ansible/response"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/response"
-	"github.com/flipped-aurora/gin-vue-admin/server/services/schedules"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/scheduleMdl"
+	scheduleReq "github.com/flipped-aurora/gin-vue-admin/server/model/scheduleMdl/request"
+	scheduleRes "github.com/flipped-aurora/gin-vue-admin/server/model/scheduleMdl/response"
+	schedules "github.com/flipped-aurora/gin-vue-admin/server/service/scheduleRunnerSvr"
 	"github.com/flipped-aurora/gin-vue-admin/server/utils"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
 
-type SchedulesApi struct {
+type ScheduleApi struct {
 }
 
 func refreshSchedulePool() {
-	schedules.AnsibleSchedulePool.Refresh()
+	global.SchedulePool.Refresh()
 }
 
 func validateCronFormat(cronFormat string) bool {
@@ -35,8 +36,8 @@ func validateCronFormat(cronFormat string) bool {
 // @Param data body ansible.Schedule true "Schedule"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"添加成功"}"
 // @Router /ansible/schedule/validateScheduleFormat [post]
-func (a *SchedulesApi) ValidateScheduleCronFormat(c *gin.Context) {
-	var schedule ansible.Schedule
+func (a *ScheduleApi) ValidateScheduleCronFormat(c *gin.Context) {
+	var schedule scheduleMdl.Schedule
 	if err := c.ShouldBindJSON(&schedule); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
@@ -61,8 +62,8 @@ func (a *SchedulesApi) ValidateScheduleCronFormat(c *gin.Context) {
 // @Param data body ansible.Schedule true "Schedule"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"添加成功"}"
 // @Router /ansible/schedule/addSchedule [post]
-func (a *SchedulesApi) AddSchedule(c *gin.Context) {
-	var schedule ansible.Schedule
+func (a *ScheduleApi) AddSchedule(c *gin.Context) {
+	var schedule scheduleMdl.Schedule
 	if err := c.ShouldBindJSON(&schedule); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
@@ -94,8 +95,8 @@ func (a *SchedulesApi) AddSchedule(c *gin.Context) {
 // @Param data body request.GetByProjectId true "ScheduleId"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"删除成功"}"
 // @Router /ansible/schedule/deleteSchedule [post]
-func (a *SchedulesApi) DeleteSchedule(c *gin.Context) {
-	var schedule request.GetByProjectId
+func (a *ScheduleApi) DeleteSchedule(c *gin.Context) {
+	var schedule request.GetById
 	if err := c.ShouldBindJSON(&schedule); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
@@ -105,7 +106,7 @@ func (a *SchedulesApi) DeleteSchedule(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err := scheduleService.DeleteSchedule(schedule.ProjectId, schedule.ID); err != nil {
+	if err := scheduleService.DeleteSchedule(schedule.ID); err != nil {
 		global.GVA_LOG.Error("删除失败!", zap.Any("err", err))
 		response.FailWithMessage("删除失败", c)
 	} else {
@@ -122,8 +123,8 @@ func (a *SchedulesApi) DeleteSchedule(c *gin.Context) {
 // @Param data body ansible.Schedule true "主机名, 架构, 管理ip, 系统, 系统版本"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"更新成功"}"
 // @Router /ansible/schedule/updateSchedule [post]
-func (a *SchedulesApi) UpdateSchedule(c *gin.Context) {
-	var schedule ansible.Schedule
+func (a *ScheduleApi) UpdateSchedule(c *gin.Context) {
+	var schedule scheduleMdl.Schedule
 	if err := c.ShouldBindJSON(&schedule); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
@@ -154,8 +155,8 @@ func (a *SchedulesApi) UpdateSchedule(c *gin.Context) {
 // @Param data body request.GetByProjectId true "EnvironmentId"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
 // @Router /ansible/schedule/getScheduleById [post]
-func (a *SchedulesApi) GetScheduleById(c *gin.Context) {
-	var idInfo request.GetByProjectId
+func (a *ScheduleApi) GetScheduleById(c *gin.Context) {
+	var idInfo request.GetById
 	if err := c.ShouldBindJSON(&idInfo); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
@@ -165,11 +166,11 @@ func (a *SchedulesApi) GetScheduleById(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if schedule, err := scheduleService.GetSchedule(idInfo.ProjectId, idInfo.ID); err != nil {
+	if schedule, err := scheduleService.GetSchedule(idInfo.ID); err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 		response.FailWithMessage("获取失败", c)
 	} else {
-		response.OkWithDetailed(ansibleRes.ScheduleResponse{
+		response.OkWithDetailed(scheduleRes.ScheduleResponse{
 			Schedule: schedule,
 		}, "获取成功", c)
 	}
@@ -183,8 +184,8 @@ func (a *SchedulesApi) GetScheduleById(c *gin.Context) {
 // @Param data body request.GetScheduleByTemplateId true "页码, 每页大小"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
 // @Router /ansible/schedule/getTemplateScheduleList [post]
-func (a *SchedulesApi) GetTemplateScheduleList(c *gin.Context) {
-	var pageInfo request.GetScheduleByTemplateId
+func (a *ScheduleApi) GetTemplateScheduleList(c *gin.Context) {
+	var pageInfo scheduleReq.GetScheduleByTemplateId
 	if err := c.ShouldBindJSON(&pageInfo); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
@@ -194,7 +195,7 @@ func (a *SchedulesApi) GetTemplateScheduleList(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if list, err := scheduleService.GetTemplateSchedules(pageInfo.ProjectId, pageInfo.TemplateId); err != nil {
+	if list, err := scheduleService.GetTemplateSchedules(pageInfo.TemplateId); err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 		response.FailWithMessage("获取失败", c)
 	} else {

@@ -2,17 +2,17 @@ package taskApp
 
 import (
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/ansible"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/ansible/request"
-	ansibleRes "github.com/flipped-aurora/gin-vue-admin/server/model/ansible/response"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/response"
-	"github.com/flipped-aurora/gin-vue-admin/server/services/tasks"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl"
+	taskReq "github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl/request"
+	taskRes "github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl/response"
 	"github.com/flipped-aurora/gin-vue-admin/server/utils"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
 
-type TasksApi struct {
+type TaskApi struct {
 }
 
 //// GetAllTasks returns all tasks for the current project
@@ -38,24 +38,24 @@ type TasksApi struct {
 // @Param data body request.AddTaskByProjectId true "Task"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"添加成功"}"
 // @Router /ansible/task/addTask [post]
-func (a *TasksApi) AddTask(c *gin.Context) {
-	var taskRequest request.AddTaskByProjectId
-	if err := c.ShouldBindJSON(&taskRequest); err != nil {
+func (a *TaskApi) AddTask(c *gin.Context) {
+	var taskReq taskMdl.Task
+	if err := c.ShouldBindJSON(&taskReq); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err := utils.Verify(taskRequest.Task, utils.TaskVerify); err != nil {
+	if err := utils.Verify(taskReq, utils.TaskVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
 	userID := int(utils.GetUserID(c))
-	if task, err := tasks.AnsibleTaskPool.AddTask(taskRequest.Task, &userID, int(taskRequest.ProjectId)); err != nil {
+	if task, err := global.TaskPool.AddTask(taskReq, userID); err != nil {
 		global.GVA_LOG.Error("添加失败!", zap.Any("err", err))
 
 		response.FailWithMessage("添加失败", c)
 	} else {
-		response.OkWithDetailed(ansibleRes.TaskResponse{
+		response.OkWithDetailed(taskRes.TaskResponse{
 			Task: task,
 		}, "添加成功", c)
 	}
@@ -69,8 +69,8 @@ func (a *TasksApi) AddTask(c *gin.Context) {
 // @Param data body request.GetByProjectId true "TaskId"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"删除成功"}"
 // @Router /ansible/task/deleteTask [post]
-func (a *TasksApi) DeleteTask(c *gin.Context) {
-	var taskRequest request.GetByProjectId
+func (a *TaskApi) DeleteTask(c *gin.Context) {
+	var taskRequest request.GetById
 	if err := c.ShouldBindJSON(&taskRequest); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
@@ -80,20 +80,21 @@ func (a *TasksApi) DeleteTask(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	activeTask := tasks.AnsibleTaskPool.GetTask(int(taskRequest.ProjectId))
+	activeTask := global.TaskPool.GetTask(int(taskRequest.ID))
 	if activeTask != nil {
 		response.FailWithMessage("task正在执行", c)
 		return
 	}
-	userID := utils.GetUserID(c)
-	user, err := userService.GetProjectUser(taskRequest.ProjectId, float64(userID))
-	if err != nil {
-		global.GVA_LOG.Error("获取task管理员失败!", zap.Any("err", err))
-		response.FailWithMessage("删除失败", c)
-	} else if user.Admin != ansible.IsAdmin {
-		response.FailWithMessage("非管理员", c)
-	}
-	if err = taskService.DeleteTaskWithOutputs(int(taskRequest.ProjectId), int(taskRequest.ID)); err != nil {
+	//todo 非超级管理员不可删除
+	//userID := utils.GetUserID(c)
+	//user, err := userService.GetProjectUser(taskRequest.ProjectId, float64(userID))
+	//if err != nil {
+	//	global.GVA_LOG.Error("获取task管理员失败!", zap.Any("err", err))
+	//	response.FailWithMessage("删除失败", c)
+	//} else if user.Admin != ansible.IsAdmin {
+	//	response.FailWithMessage("非管理员", c)
+	//}
+	if err := taskService.DeleteTaskWithOutputs(int(taskRequest.ID)); err != nil {
 		global.GVA_LOG.Error("删除失败!", zap.Any("err", err))
 		response.FailWithMessage("删除失败", c)
 	} else {
@@ -109,8 +110,8 @@ func (a *TasksApi) DeleteTask(c *gin.Context) {
 // @Param data body ansible.Task true "主机名, 架构, 管理ip, 系统, 系统版本"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"更新成功"}"
 // @Router /ansible/task/updateTask [post]
-func (a *TasksApi) UpdateTask(c *gin.Context) {
-	var task ansible.Task
+func (a *TaskApi) UpdateTask(c *gin.Context) {
+	var task taskMdl.Task
 	if err := c.ShouldBindJSON(&task); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
@@ -136,8 +137,8 @@ func (a *TasksApi) UpdateTask(c *gin.Context) {
 // @Param data body request.GetByProjectId true "TaskId"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
 // @Router /ansible/task/getTaskById [post]
-func (a *TasksApi) GetTaskById(c *gin.Context) {
-	var idInfo request.GetByProjectId
+func (a *TaskApi) GetTaskById(c *gin.Context) {
+	var idInfo request.GetById
 	if err := c.ShouldBindJSON(&idInfo); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
@@ -147,11 +148,11 @@ func (a *TasksApi) GetTaskById(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if task, err := taskService.GetTask(int(idInfo.ProjectId), int(idInfo.ID)); err != nil {
+	if task, err := taskService.GetTask(int(idInfo.ID)); err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 		response.FailWithMessage("获取失败", c)
 	} else {
-		response.OkWithDetailed(ansibleRes.TaskResponse{
+		response.OkWithDetailed(taskRes.TaskResponse{
 			Task: task,
 		}, "获取成功", c)
 	}
@@ -165,8 +166,8 @@ func (a *TasksApi) GetTaskById(c *gin.Context) {
 // @Param data body request.GetTaskByTemplateId true "页码, 每页大小"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
 // @Router /ansible/task/getTaskList [post]
-func (a *TasksApi) GetTaskList(c *gin.Context) {
-	var pageInfo request.GetTaskByTemplateId
+func (a *TaskApi) GetTaskList(c *gin.Context) {
+	var pageInfo taskReq.GetTaskByTemplateId
 	if err := c.ShouldBindJSON(&pageInfo); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
@@ -211,8 +212,8 @@ func (a *TasksApi) GetTaskList(c *gin.Context) {
 // @Param data body request.GetByProjectId true "TaskId"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
 // @Router /ansible/task/getTaskOutputs [post]
-func (a *TasksApi) GetTaskOutputs(c *gin.Context) {
-	var idInfo request.GetByProjectId
+func (a *TaskApi) GetTaskOutputs(c *gin.Context) {
+	var idInfo request.GetById
 	if err := c.ShouldBindJSON(&idInfo); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
@@ -222,18 +223,18 @@ func (a *TasksApi) GetTaskOutputs(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	task, err := taskService.GetTask(int(idInfo.ProjectId), int(idInfo.ID))
-	if err != nil {
-		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
-		response.FailWithMessage("获取失败", c)
-		return
-	}
-	if taskOutput, err := taskService.GetTaskOutputs(int(idInfo.ProjectId), int(idInfo.ID), &task); err != nil {
+	//task, err := taskService.GetTask(int(idInfo.ID))
+	//if err != nil {
+	//	global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
+	//	response.FailWithMessage("获取失败", c)
+	//	return
+	//}
+	if taskOutput, err := taskService.GetTaskOutputs(int(idInfo.ID)); err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 		response.FailWithMessage("获取失败", c)
 		return
 	} else {
-		response.OkWithDetailed(ansibleRes.TaskOutputsResponse{
+		response.OkWithDetailed(taskRes.TaskOutputsResponse{
 			TaskOutputs: taskOutput,
 		}, "获取成功", c)
 	}
@@ -247,8 +248,8 @@ func (a *TasksApi) GetTaskOutputs(c *gin.Context) {
 // @Param data body request.GetByProjectId true "TaskId"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
 // @Router /ansible/task/stopTask [post]
-func (a *TasksApi) StopTask(c *gin.Context) {
-	var idInfo request.GetByProjectId
+func (a *TaskApi) StopTask(c *gin.Context) {
+	var idInfo request.GetById
 	if err := c.ShouldBindJSON(&idInfo); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
@@ -258,12 +259,12 @@ func (a *TasksApi) StopTask(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	task, err := taskService.GetTask(int(idInfo.ProjectId), int(idInfo.ID))
+	task, err := taskService.GetTask(int(idInfo.ID))
 	if err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 		response.FailWithMessage("获取失败", c)
 	}
-	err = tasks.AnsibleTaskPool.StopTask(task)
+	err = global.TaskPool.StopTask(task)
 	if err != nil {
 		global.GVA_LOG.Error("停止失败!", zap.Any("err", err))
 		response.FailWithMessage("停止失败", c)

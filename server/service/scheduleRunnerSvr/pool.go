@@ -8,6 +8,9 @@ import (
 	"sync"
 )
 
+type ScheduleRunnerService struct {
+}
+
 type ScheduleRunner struct {
 	scheduleID int
 	pool       *SchedulePool
