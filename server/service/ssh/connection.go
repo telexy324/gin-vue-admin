@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/application"
-	"github.com/flipped-aurora/gin-vue-admin/server/service/taskRunnerSvr"
+	"github.com/flipped-aurora/gin-vue-admin/server/plugin/taskPool"
 	"log"
 	"net"
 	"os"
@@ -257,7 +257,7 @@ func (c *SSHClient) RequestShell() *SSHClient {
 	return c
 }
 
-func (c *SSHClient) ConnectShell(shell string, taskRunner taskRunnerSvr.TaskRunner) (err error) {
+func (c *SSHClient) ConnectShell(shell string, taskRunner taskPool.TaskRunner) (err error) {
 	_, err = c.channel.Write([]byte(shell))
 	if err != nil {
 		return

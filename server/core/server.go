@@ -2,8 +2,8 @@ package core
 
 import (
 	"fmt"
-	schedules "github.com/flipped-aurora/gin-vue-admin/server/service/scheduleRunnerSvr"
-	"github.com/flipped-aurora/gin-vue-admin/server/service/taskRunnerSvr"
+	schedules "github.com/flipped-aurora/gin-vue-admin/server/plugin/schedulePool"
+	"github.com/flipped-aurora/gin-vue-admin/server/plugin/taskPool"
 	"time"
 
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
@@ -16,9 +16,6 @@ type server interface {
 	ListenAndServe() error
 }
 
-var TaskPool taskRunnerSvr.TaskPool
-var SchedulePool schedules.SchedulePool
-
 func RunWindowsServer() {
 	if global.GVA_CONFIG.System.UseMultipoint {
 		// 初始化redis服务
@@ -30,10 +27,8 @@ func RunWindowsServer() {
 		system.LoadAll()
 	}
 
-	TaskPool = taskRunnerSvr.CreateTaskPool()
-	SchedulePool = schedules.CreateSchedulePool(&TaskPool)
-	go TaskPool.Run()
-	go SchedulePool.Run()
+	tPool := taskPool.CreateTaskPool()
+	schedules.CreateSchedulePool(&tPool)
 
 	Router := initialize.Routers()
 

@@ -1,4 +1,4 @@
-package taskRunnerSvr
+package taskPool
 
 import (
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 )
+
+var TPool TaskPool
 
 type logRecord struct {
 	task   *TaskRunner
@@ -176,7 +178,7 @@ func (p *TaskPool) blocks(t *TaskRunner) bool {
 }
 
 func CreateTaskPool() TaskPool {
-	return TaskPool{
+	TPool = TaskPool{
 		queue:          make([]*TaskRunner, 0), // queue of waiting tasks
 		register:       make(chan *TaskRunner), // add TaskRunner to queue
 		activeTask:     make(map[int]*TaskRunner),
@@ -184,6 +186,8 @@ func CreateTaskPool() TaskPool {
 		logger:         make(chan logRecord, 10000), // store log records to database
 		resourceLocker: make(chan *resourceLock),
 	}
+	go TPool.Run()
+	return TPool
 }
 
 func (p *TaskPool) StopTask(targetTask taskMdl.Task) error {

@@ -1,15 +1,14 @@
-package schedules
+package schedulePool
 
 import (
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl"
-	"github.com/flipped-aurora/gin-vue-admin/server/service/taskRunnerSvr"
+	"github.com/flipped-aurora/gin-vue-admin/server/plugin/taskPool"
 	"github.com/robfig/cron/v3"
 	"sync"
 )
 
-type ScheduleRunnerService struct {
-}
+var SPool SchedulePool
 
 type ScheduleRunner struct {
 	scheduleID int
@@ -35,7 +34,7 @@ func (r ScheduleRunner) Run() {
 type SchedulePool struct {
 	cron     *cron.Cron
 	locker   sync.Locker
-	taskPool *taskRunnerSvr.TaskPool
+	taskPool *taskPool.TaskPool
 }
 
 func (p *SchedulePool) init() {
@@ -95,13 +94,13 @@ func (p *SchedulePool) Destroy() {
 	p.cron = nil
 }
 
-func CreateSchedulePool(taskPool *taskRunnerSvr.TaskPool) SchedulePool {
-	pool := SchedulePool{
+func CreateSchedulePool(taskPool *taskPool.TaskPool) {
+	SPool = SchedulePool{
 		taskPool: taskPool,
 	}
-	pool.init()
-	pool.Refresh()
-	return pool
+	SPool.init()
+	SPool.Refresh()
+	SPool.Run()
 }
 
 func ValidateCronFormat(cronFormat string) error {

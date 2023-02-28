@@ -1,4 +1,4 @@
-package taskRunnerSvr
+package taskPool
 
 import (
 	"crypto/md5"
@@ -16,9 +16,6 @@ import (
 	"strconv"
 	"time"
 )
-
-type TaskRunnerService struct {
-}
 
 type TaskRunner struct {
 	task     taskMdl.Task

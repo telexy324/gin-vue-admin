@@ -1,4 +1,4 @@
-package taskRunnerSvr
+package taskPool
 
 import (
 	"bufio"

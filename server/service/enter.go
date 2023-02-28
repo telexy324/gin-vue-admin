@@ -7,7 +7,6 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/service/scheduleSvr"
 	"github.com/flipped-aurora/gin-vue-admin/server/service/ssh"
 	"github.com/flipped-aurora/gin-vue-admin/server/service/system"
-	"github.com/flipped-aurora/gin-vue-admin/server/service/taskRunnerSvr"
 	"github.com/flipped-aurora/gin-vue-admin/server/service/taskSvr"
 )
 
@@ -18,7 +17,6 @@ type ServiceGroup struct {
 	ApplicationServiceGroup application.ServiceGroup
 	SshServiceGroup         ssh.ServiceGroup
 	TaskServiceGroup        taskSvr.ServiceGroup
-	TaskRunnerServiceGroup  taskRunnerSvr.ServiceGroup
 	ScheduleServiceGroup    scheduleSvr.ServiceGroup
 }
 
