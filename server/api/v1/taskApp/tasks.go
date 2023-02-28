@@ -14,6 +14,13 @@ import (
 )
 
 type TaskApi struct {
+	Ti ITaskPool
+}
+
+type ITaskPool interface {
+	AddTask(taskMdl.Task, int)
+	GetTask(int)
+	StopTask(taskMdl.Task)
 }
 
 //// GetAllTasks returns all tasks for the current project
