@@ -100,7 +100,7 @@ func CreateSchedulePool(taskPool *taskPool.TaskPool) {
 	}
 	SPool.init()
 	SPool.Refresh()
-	SPool.Run()
+	go SPool.Run()
 }
 
 func ValidateCronFormat(cronFormat string) error {
