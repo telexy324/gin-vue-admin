@@ -2,6 +2,7 @@ package core
 
 import (
 	"fmt"
+	sockets "github.com/flipped-aurora/gin-vue-admin/server/api/v1/socket"
 	schedules "github.com/flipped-aurora/gin-vue-admin/server/plugin/schedulePool"
 	"github.com/flipped-aurora/gin-vue-admin/server/plugin/taskPool"
 	"time"
@@ -29,6 +30,7 @@ func RunWindowsServer() {
 
 	tPool := taskPool.CreateTaskPool()
 	schedules.CreateSchedulePool(&tPool)
+	go sockets.StartWS()
 
 	Router := initialize.Routers()
 
