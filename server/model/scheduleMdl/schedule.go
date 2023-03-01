@@ -10,6 +10,6 @@ type Schedule struct {
 }
 
 func (m *Schedule) TableName() string {
-	return "ansible_task_schedules"
+	return "application_task_schedules"
 }
 

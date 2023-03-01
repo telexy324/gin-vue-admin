@@ -102,3 +102,60 @@ CREATE TABLE `application_system_relations`
     `relation`        varchar(100) NOT NULL DEFAULT '' COMMENT '调用关系',
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+create table `application_task_schedules`
+(
+    `id`               bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+    `created_at`       datetime(0) NULL DEFAULT NULL,
+    `updated_at`       datetime(0) NULL DEFAULT NULL,
+    `deleted_at`       datetime(0) NULL DEFAULT NULL,
+    `template_id`      bigint UNSIGNED NOT NULL DEFAULT '0',
+    `cron_format`      varchar(255) not null,
+    `last_commit_hash` varchar(40)  NOT NULL DEFAULT '',
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+create table `application_tasks`
+(
+    `id`          bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+    `created_at`  datetime(0) NULL DEFAULT NULL,
+    `updated_at`  datetime(0) NULL DEFAULT NULL,
+    `deleted_at`  datetime(0) NULL DEFAULT NULL,
+    `template_id` int          NOT NULL DEFAULT '0',
+    `status`      varchar(255) NOT NULL DEFAULT '',
+    `user_id`     bigint UNSIGNED NOT NULL DEFAULT '0',
+    `begin_time`  datetime null,
+    `end_time`    datetime null,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+create table `application_task_outputs`
+(
+    `id`          bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+    `created_at`  datetime(0) NULL DEFAULT NULL,
+    `updated_at`  datetime(0) NULL DEFAULT NULL,
+    `deleted_at`  datetime(0) NULL DEFAULT NULL,
+    `task_id`     int      NOT NULL DEFAULT '0',
+    `record_time` datetime not null,
+    `output`      text,
+    unique (`task_id`),
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+create table `application_task_templates`
+(
+    `id`              bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+    `created_at`      datetime(0) NULL DEFAULT NULL,
+    `updated_at`      datetime(0) NULL DEFAULT NULL,
+    `deleted_at`      datetime(0) NULL DEFAULT NULL,
+    `name`            varchar(100) not null,
+    `description`     text,
+    target_server_ids text,
+    `mode`            tinyint(2) NOT NULL DEFAULT '0' COMMENT '运行方式 0 未定义 1 命令 2 脚本',
+    `command`         text,
+    `script_path`     varchar(255) NOT NULL DEFAULT '',
+    `cron`            varchar(255) NOT NULL DEFAULT '',
+    `last_task_id`    int          NOT NULL DEFAULT '0',
+    `sys_user`        int          NOT NULL DEFAULT '0',
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
