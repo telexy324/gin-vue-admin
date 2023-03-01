@@ -4,7 +4,7 @@ import (
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
-	sockets "github.com/flipped-aurora/gin-vue-admin/server/api/v1/taskApp"
+	sockets "github.com/flipped-aurora/gin-vue-admin/server/api/v1/socket"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/system"
@@ -548,11 +548,11 @@ func (t *TaskRunner) runTask() (err error) {
 		sshClient, err := sshService.FillSSHClient(server.ManageIp, t.template.SysUser, "", server.SshPort)
 		err = sshClient.GenerateClient()
 		if err != nil {
-			return
+			return err
 		}
 		sshClient.RequestShell()
-		if err = sshClient.ConnectShell(t.template.Command, *t); err != nil {
-			return
+		if err = sshClient.ConnectShell(t.template.Command, t); err != nil {
+			return err
 		}
 	}
 	return nil

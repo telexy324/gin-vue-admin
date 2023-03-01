@@ -3,7 +3,7 @@ package taskPool
 import (
 	"bufio"
 	"encoding/json"
-	"github.com/flipped-aurora/gin-vue-admin/server/api/v1/taskApp"
+	"github.com/flipped-aurora/gin-vue-admin/server/api/v1/socket"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/ssh"
@@ -26,7 +26,7 @@ func (t *TaskRunner) Log(msg string) {
 			global.GVA_LOG.Fatal(err.Error())
 		}
 
-		taskApp.Message(user, b)
+		socket.Message(user, b)
 	}
 
 	t.pool.logger <- logRecord{

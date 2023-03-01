@@ -1,4 +1,4 @@
-package taskApp
+package socket
 
 // hub maintains the set of active connections and broadcasts messages to the
 // connections.

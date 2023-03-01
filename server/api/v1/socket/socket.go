@@ -1,4 +1,4 @@
-package taskApp
+package socket
 
 import (
 	"fmt"

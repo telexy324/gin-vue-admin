@@ -5,8 +5,8 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/flipped-aurora/gin-vue-admin/server/common"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/application"
-	"github.com/flipped-aurora/gin-vue-admin/server/plugin/taskPool"
 	"log"
 	"net"
 	"os"
@@ -257,13 +257,13 @@ func (c *SSHClient) RequestShell() *SSHClient {
 	return c
 }
 
-func (c *SSHClient) ConnectShell(shell string, taskRunner taskPool.TaskRunner) (err error) {
+func (c *SSHClient) ConnectShell(shell string, logger common.Logger) (err error) {
 	_, err = c.channel.Write([]byte(shell))
 	if err != nil {
 		return
 	}
 
-	taskRunner.LogSsh(&c.channel)
+	logger.LogSsh(&c.channel)
 
 	//defer func() {
 	//	if err := recover(); err != nil {
