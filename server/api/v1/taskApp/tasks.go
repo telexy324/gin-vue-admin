@@ -14,13 +14,6 @@ import (
 )
 
 type TaskApi struct {
-	Ti ITaskPool
-}
-
-type ITaskPool interface {
-	AddTask(taskMdl.Task, int)
-	GetTask(int)
-	StopTask(taskMdl.Task)
 }
 
 //// GetAllTasks returns all tasks for the current project
@@ -43,22 +36,22 @@ type ITaskPool interface {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body request.AddTaskByProjectId true "Task"
+// @Param data body taskMdl.Task true "Task"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"添加成功"}"
-// @Router /ansible/task/addTask [post]
+// @Router /task/addTask [post]
 func (a *TaskApi) AddTask(c *gin.Context) {
-	var taskReq taskMdl.Task
-	if err := c.ShouldBindJSON(&taskReq); err != nil {
+	var task taskMdl.Task
+	if err := c.ShouldBindJSON(&task); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err := utils.Verify(taskReq, utils.TaskVerify); err != nil {
+	if err := utils.Verify(task, utils.TaskVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
 	userID := int(utils.GetUserID(c))
-	if task, err := taskPool.TPool.AddTask(taskReq, userID); err != nil {
+	if task, err := taskPool.TPool.AddTask(task, userID); err != nil {
 		global.GVA_LOG.Error("添加失败!", zap.Any("err", err))
 
 		response.FailWithMessage("添加失败", c)
@@ -74,9 +67,9 @@ func (a *TaskApi) AddTask(c *gin.Context) {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body request.GetByProjectId true "TaskId"
+// @Param data body request.GetById true "TaskId"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"删除成功"}"
-// @Router /ansible/task/deleteTask [post]
+// @Router /task/deleteTask [post]
 func (a *TaskApi) DeleteTask(c *gin.Context) {
 	var taskRequest request.GetById
 	if err := c.ShouldBindJSON(&taskRequest); err != nil {
@@ -110,41 +103,41 @@ func (a *TaskApi) DeleteTask(c *gin.Context) {
 	}
 }
 
-// @Tags Task
-// @Summary 更新Task
-// @Security ApiKeyAuth
-// @accept application/json
-// @Produce application/json
-// @Param data body ansible.Task true "主机名, 架构, 管理ip, 系统, 系统版本"
-// @Success 200 {string} string "{"success":true,"data":{},"msg":"更新成功"}"
-// @Router /ansible/task/updateTask [post]
-func (a *TaskApi) UpdateTask(c *gin.Context) {
-	var task taskMdl.Task
-	if err := c.ShouldBindJSON(&task); err != nil {
-		global.GVA_LOG.Info("error", zap.Any("err", err))
-		response.FailWithMessage(err.Error(), c)
-		return
-	}
-	if err := utils.Verify(task, utils.TaskVerify); err != nil {
-		response.FailWithMessage(err.Error(), c)
-		return
-	}
-	if err := taskService.UpdateTask(task); err != nil {
-		global.GVA_LOG.Error("更新失败!", zap.Any("err", err))
-		response.FailWithMessage("更新失败", c)
-	} else {
-		response.OkWithMessage("更新成功", c)
-	}
-}
+//// @Tags Task
+//// @Summary 更新Task
+//// @Security ApiKeyAuth
+//// @accept application/json
+//// @Produce application/json
+//// @Param data body ansible.Task true "主机名, 架构, 管理ip, 系统, 系统版本"
+//// @Success 200 {string} string "{"success":true,"data":{},"msg":"更新成功"}"
+//// @Router /ansible/task/updateTask [post]
+//func (a *TaskApi) UpdateTask(c *gin.Context) {
+//	var task taskMdl.Task
+//	if err := c.ShouldBindJSON(&task); err != nil {
+//		global.GVA_LOG.Info("error", zap.Any("err", err))
+//		response.FailWithMessage(err.Error(), c)
+//		return
+//	}
+//	if err := utils.Verify(task, utils.TaskVerify); err != nil {
+//		response.FailWithMessage(err.Error(), c)
+//		return
+//	}
+//	if err := taskService.UpdateTask(task); err != nil {
+//		global.GVA_LOG.Error("更新失败!", zap.Any("err", err))
+//		response.FailWithMessage("更新失败", c)
+//	} else {
+//		response.OkWithMessage("更新成功", c)
+//	}
+//}
 
 // @Tags Task
 // @Summary 根据id获取Task
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body request.GetByProjectId true "TaskId"
+// @Param data body request.GetById true "TaskId"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /ansible/task/getTaskById [post]
+// @Router /task/getTaskById [post]
 func (a *TaskApi) GetTaskById(c *gin.Context) {
 	var idInfo request.GetById
 	if err := c.ShouldBindJSON(&idInfo); err != nil {
@@ -173,7 +166,7 @@ func (a *TaskApi) GetTaskById(c *gin.Context) {
 // @Produce application/json
 // @Param data body request.GetTaskByTemplateId true "页码, 每页大小"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /ansible/task/getTaskList [post]
+// @Router /task/getTaskList [post]
 func (a *TaskApi) GetTaskList(c *gin.Context) {
 	var pageInfo taskReq.GetTaskByTemplateId
 	if err := c.ShouldBindJSON(&pageInfo); err != nil {
@@ -186,7 +179,7 @@ func (a *TaskApi) GetTaskList(c *gin.Context) {
 		return
 	}
 	if pageInfo.TemplateId >= 0 {
-		if err, tasks, total := taskService.GetTemplateTasks(int(pageInfo.ProjectId), int(pageInfo.TemplateId), pageInfo.PageInfo); err != nil {
+		if err, tasks, total := taskService.GetTemplateTasks(int(pageInfo.TemplateId), pageInfo.PageInfo); err != nil {
 			global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 			response.FailWithMessage("获取失败", c)
 		} else {
@@ -198,7 +191,7 @@ func (a *TaskApi) GetTaskList(c *gin.Context) {
 			}, "获取成功", c)
 		}
 	} else {
-		if err, tasks, total := taskService.GetProjectTasks(int(pageInfo.ProjectId), pageInfo.PageInfo); err != nil {
+		if err, tasks, total := taskService.GetProjectTasks(pageInfo.PageInfo); err != nil {
 			global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 			response.FailWithMessage("获取失败", c)
 		} else {
@@ -219,7 +212,7 @@ func (a *TaskApi) GetTaskList(c *gin.Context) {
 // @Produce application/json
 // @Param data body request.GetByProjectId true "TaskId"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /ansible/task/getTaskOutputs [post]
+// @Router /task/getTaskOutputs [post]
 func (a *TaskApi) GetTaskOutputs(c *gin.Context) {
 	var idInfo request.GetById
 	if err := c.ShouldBindJSON(&idInfo); err != nil {

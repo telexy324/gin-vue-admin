@@ -53,7 +53,7 @@ definitions:
       apps:
         description: 安装应用列表
         items:
-          type: integer
+          $ref: '#/definitions/application.App'
         type: array
       architecture:
         description: 架构
@@ -76,6 +76,9 @@ definitions:
       osVersion:
         description: 系统版本
         type: string
+      sshPort:
+        description: ssh端口
+        type: integer
       systemId:
         description: 所属系统id
         type: integer
@@ -381,6 +384,8 @@ definitions:
         $ref: '#/definitions/config.Redis'
       system:
         $ref: '#/definitions/config.System'
+      task:
+        $ref: '#/definitions/config.Task'
       tencentCOS:
         $ref: '#/definitions/config.TencentCOS'
       timer:
@@ -409,6 +414,16 @@ definitions:
       useMultipoint:
         description: 多点登录拦截
         type: boolean
+    type: object
+  config.Task:
+    properties:
+      max_parallel_tasks:
+        description: |-
+          AccessKeyEncryption string `mapstructure:"access_key_encryption" json:"access_key_encryption" yaml:"access_key_encryption"`
+          task concurrency
+        type: integer
+      tmp_path:
+        type: string
     type: object
   config.TencentCOS:
     properties:
@@ -611,6 +626,72 @@ definitions:
       id:
         description: 主键ID
         type: number
+      page:
+        description: 页码
+        type: integer
+      pageSize:
+        description: 每页大小
+        type: integer
+      sortBy:
+        type: string
+      sortInverted:
+        type: boolean
+    type: object
+  request.GetByProjectId:
+    properties:
+      id:
+        description: 主键ID
+        type: number
+      page:
+        description: 页码
+        type: integer
+      pageSize:
+        description: 每页大小
+        type: integer
+      projectId:
+        type: number
+      sortBy:
+        type: string
+      sortInverted:
+        type: boolean
+    type: object
+  request.GetScheduleByTemplateId:
+    properties:
+      id:
+        description: 主键ID
+        type: number
+      page:
+        description: 页码
+        type: integer
+      pageSize:
+        description: 每页大小
+        type: integer
+      sortBy:
+        type: string
+      sortInverted:
+        type: boolean
+      templateId:
+        description: ProjectId  float64 `json:"projectId" form:"projectId"`
+        type: number
+    type: object
+  request.GetTaskByTemplateId:
+    properties:
+      id:
+        description: 主键ID
+        type: number
+      page:
+        description: 页码
+        type: integer
+      pageSize:
+        description: 每页大小
+        type: integer
+      sortBy:
+        type: string
+      sortInverted:
+        type: boolean
+      templateId:
+        description: ProjectId  float64 `json:"projectId" form:"projectId"`
+        type: number
     type: object
   request.IdsReq:
     properties:
@@ -760,6 +841,22 @@ definitions:
         $ref: '#/definitions/system.SysAuthority'
       oldAuthorityId:
         description: 旧角色ID
+        type: string
+    type: object
+  scheduleMdl.Schedule:
+    properties:
+      createdAt:
+        description: 创建时间
+        type: string
+      cronFormat:
+        type: string
+      id:
+        description: 主键ID
+        type: integer
+      templateId:
+        type: integer
+      updatedAt:
+        description: 更新时间
         type: string
     type: object
   system.AutoCodeStruct:
@@ -1111,12 +1208,132 @@ definitions:
       config:
         $ref: '#/definitions/config.Server'
     type: object
+  taskMdl.Task:
+    properties:
+      beginTime:
+        description: 开始时间
+        type: string
+      createdAt:
+        description: 创建时间
+        type: string
+      endTime:
+        description: 结束时间
+        type: string
+      id:
+        description: 主键ID
+        type: integer
+      status:
+        description: 状态
+        type: string
+      systemUserId:
+        description: 执行人
+        type: integer
+      templateId:
+        description: task id
+        type: integer
+      updatedAt:
+        description: 更新时间
+        type: string
+    type: object
+  taskMdl.TaskTemplate:
+    properties:
+      command:
+        description: 命令
+        type: string
+      createdAt:
+        description: 创建时间
+        type: string
+      cron:
+        description: 定时任务
+        type: string
+      description:
+        description: task描述
+        type: string
+      id:
+        description: 主键ID
+        type: integer
+      lastTaskId:
+        description: 最后一次task id
+        type: integer
+      mode:
+        description: 执行方式 1 命令 2 脚本
+        type: integer
+      name:
+        description: task名称
+        type: string
+      scriptPath:
+        description: 脚本位置
+        type: string
+      sysUser:
+        description: 执行用户
+        type: string
+      targetIds:
+        items:
+          type: integer
+        type: array
+      targetServerIds:
+        description: 关联服务器id
+        type: string
+      targetServers:
+        items:
+          $ref: '#/definitions/application.ApplicationServer'
+        type: array
+      updatedAt:
+        description: 更新时间
+        type: string
+    type: object
 info:
   contact: {}
   description: This is a sample Server pets
   title: Swagger Example API
   version: 0.0.1
 paths:
+  /ansible/task/stopTask:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: TaskId
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetByProjectId'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 停止Task
+      tags:
+      - Task
+  /ansible/template/getTemplateList:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 页码, 每页大小
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.PageInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 分页获取基础Template列表
+      tags:
+      - Template
   /api/createApi:
     post:
       consumes:
@@ -3717,6 +3934,351 @@ paths:
       summary: 设置配置文件内容
       tags:
       - System
+  /task/addTask:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Task
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/taskMdl.Task'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"添加成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 新增Task
+      tags:
+      - Task
+  /task/deleteTask:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: TaskId
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetById'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"删除成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 删除Task
+      tags:
+      - Task
+  /task/getTaskById:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: TaskId
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetById'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 根据id获取Task
+      tags:
+      - Task
+  /task/getTaskList:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 页码, 每页大小
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetTaskByTemplateId'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 分页获取基础Task列表
+      tags:
+      - Task
+  /task/getTaskOutputs:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: TaskId
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetByProjectId'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 根据id获取TaskOutputs
+      tags:
+      - Task
+  /task/schedule/addSchedule:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Schedule
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/scheduleMdl.Schedule'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"添加成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 新增Schedule
+      tags:
+      - Schedule
+  /task/schedule/deleteSchedule:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: ScheduleId
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetById'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"删除成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 删除Schedule
+      tags:
+      - Schedule
+  /task/schedule/getScheduleById:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: EnvironmentId
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetById'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 根据id获取Schedule
+      tags:
+      - Schedule
+  /task/schedule/getTemplateScheduleList:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 页码, 每页大小
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetScheduleByTemplateId'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 分页获取基础Schedule列表
+      tags:
+      - Schedule
+  /task/schedule/updateSchedule:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 主机名, 架构, 管理ip, 系统, 系统版本
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/scheduleMdl.Schedule'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"更新成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 更新Schedule
+      tags:
+      - Schedule
+  /task/schedule/validateScheduleFormat:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Schedule
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/scheduleMdl.Schedule'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"添加成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 确认Schedule
+      tags:
+      - Schedule
+  /task/template/addTemplate:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Template
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/taskMdl.TaskTemplate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"添加成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 新增Template
+      tags:
+      - Template
+  /task/template/deleteTemplate:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: TaskTemplateId
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetById'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"删除成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 删除Template
+      tags:
+      - Template
+  /task/template/getTemplateById:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: TemplateId
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetById'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 根据id获取Template
+      tags:
+      - Template
+  /task/template/updateTemplate:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 主机名, 架构, 管理ip, 系统, 系统版本
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/taskMdl.TaskTemplate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"更新成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 更新Template
+      tags:
+      - Template
   /user/changePassword:
     post:
       parameters:

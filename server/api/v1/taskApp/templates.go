@@ -30,9 +30,9 @@ type TemplateApi struct {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body ansible.Template true "Template"
+// @Param data body taskMdl.TaskTemplate true "Template"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"添加成功"}"
-// @Router /ansible/template/addTemplate [post]
+// @Router /task/template/addTemplate [post]
 func (a *TemplateApi) AddTemplate(c *gin.Context) {
 	var template taskMdl.TaskTemplate
 	if err := c.ShouldBindJSON(&template); err != nil {
@@ -58,9 +58,9 @@ func (a *TemplateApi) AddTemplate(c *gin.Context) {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body request.GetByProjectId true "TemplateId"
+// @Param data body request.GetById true "TaskTemplateId"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"删除成功"}"
-// @Router /ansible/template/deleteTemplate [post]
+// @Router /task/template/deleteTemplate [post]
 func (a *TemplateApi) DeleteTemplate(c *gin.Context) {
 	var template request.GetById
 	if err := c.ShouldBindJSON(&template); err != nil {
@@ -85,9 +85,9 @@ func (a *TemplateApi) DeleteTemplate(c *gin.Context) {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body ansible.Template true "主机名, 架构, 管理ip, 系统, 系统版本"
+// @Param data body taskMdl.TaskTemplate true "主机名, 架构, 管理ip, 系统, 系统版本"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"更新成功"}"
-// @Router /ansible/template/updateTemplate [post]
+// @Router /task/template/updateTemplate [post]
 func (a *TemplateApi) UpdateTemplate(c *gin.Context) {
 	var template taskMdl.TaskTemplate
 	if err := c.ShouldBindJSON(&template); err != nil {
@@ -112,9 +112,9 @@ func (a *TemplateApi) UpdateTemplate(c *gin.Context) {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body request.GetByProjectId true "TemplateId"
+// @Param data body request.GetById true "TemplateId"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /ansible/template/getTemplateById [post]
+// @Router /task/template/getTemplateById [post]
 func (a *TemplateApi) GetTemplateById(c *gin.Context) {
 	var idInfo request.GetById
 	if err := c.ShouldBindJSON(&idInfo); err != nil {
@@ -141,7 +141,7 @@ func (a *TemplateApi) GetTemplateById(c *gin.Context) {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body request.GetByProjectId true "页码, 每页大小"
+// @Param data body request.PageInfo true "页码, 每页大小"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
 // @Router /ansible/template/getTemplateList [post]
 func (a *TemplateApi) GetTemplateList(c *gin.Context) {

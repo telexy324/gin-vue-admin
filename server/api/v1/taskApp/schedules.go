@@ -33,9 +33,9 @@ func validateCronFormat(cronFormat string) bool {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body ansible.Schedule true "Schedule"
+// @Param data body scheduleMdl.Schedule true "Schedule"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"添加成功"}"
-// @Router /ansible/schedule/validateScheduleFormat [post]
+// @Router /task/schedule/validateScheduleFormat [post]
 func (a *ScheduleApi) ValidateScheduleCronFormat(c *gin.Context) {
 	var schedule scheduleMdl.Schedule
 	if err := c.ShouldBindJSON(&schedule); err != nil {
@@ -59,9 +59,9 @@ func (a *ScheduleApi) ValidateScheduleCronFormat(c *gin.Context) {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body ansible.Schedule true "Schedule"
+// @Param data body scheduleMdl.Schedule true "Schedule"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"添加成功"}"
-// @Router /ansible/schedule/addSchedule [post]
+// @Router /task/schedule/addSchedule [post]
 func (a *ScheduleApi) AddSchedule(c *gin.Context) {
 	var schedule scheduleMdl.Schedule
 	if err := c.ShouldBindJSON(&schedule); err != nil {
@@ -92,9 +92,9 @@ func (a *ScheduleApi) AddSchedule(c *gin.Context) {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body request.GetByProjectId true "ScheduleId"
+// @Param data body request.GetById true "ScheduleId"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"删除成功"}"
-// @Router /ansible/schedule/deleteSchedule [post]
+// @Router /task/schedule/deleteSchedule [post]
 func (a *ScheduleApi) DeleteSchedule(c *gin.Context) {
 	var schedule request.GetById
 	if err := c.ShouldBindJSON(&schedule); err != nil {
@@ -120,9 +120,9 @@ func (a *ScheduleApi) DeleteSchedule(c *gin.Context) {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body ansible.Schedule true "主机名, 架构, 管理ip, 系统, 系统版本"
+// @Param data body scheduleMdl.Schedule true "主机名, 架构, 管理ip, 系统, 系统版本"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"更新成功"}"
-// @Router /ansible/schedule/updateSchedule [post]
+// @Router /task/schedule/updateSchedule [post]
 func (a *ScheduleApi) UpdateSchedule(c *gin.Context) {
 	var schedule scheduleMdl.Schedule
 	if err := c.ShouldBindJSON(&schedule); err != nil {
@@ -152,9 +152,9 @@ func (a *ScheduleApi) UpdateSchedule(c *gin.Context) {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body request.GetByProjectId true "EnvironmentId"
+// @Param data body request.GetById true "EnvironmentId"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /ansible/schedule/getScheduleById [post]
+// @Router /task/schedule/getScheduleById [post]
 func (a *ScheduleApi) GetScheduleById(c *gin.Context) {
 	var idInfo request.GetById
 	if err := c.ShouldBindJSON(&idInfo); err != nil {
@@ -183,7 +183,7 @@ func (a *ScheduleApi) GetScheduleById(c *gin.Context) {
 // @Produce application/json
 // @Param data body request.GetScheduleByTemplateId true "页码, 每页大小"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /ansible/schedule/getTemplateScheduleList [post]
+// @Router /task/schedule/getTemplateScheduleList [post]
 func (a *ScheduleApi) GetTemplateScheduleList(c *gin.Context) {
 	var pageInfo scheduleReq.GetScheduleByTemplateId
 	if err := c.ShouldBindJSON(&pageInfo); err != nil {

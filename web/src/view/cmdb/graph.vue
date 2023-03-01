@@ -44,8 +44,8 @@ export default {
     this.screenHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight
   },
   mounted() {
-    const { cid } = this.$route.params
-    this.cid = cid
+    // const { cid } = this.$route.params
+    // this.cid = cid
     this.getData()
   },
   methods: {
