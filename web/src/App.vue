@@ -8,6 +8,28 @@
 export default {
   name: 'App'
 }
+
+EventBus.$on('i-show-task', async (e) => {
+  if (parseInt(this.$route.query.t || '', 10) !== e.taskId) {
+    const query = { ...this.$route.query, t: e.taskId }
+    await this.$router.replace({ query })
+  }
+
+  this.task = (await axios({
+    method: 'get',
+    url: `/api/project/${this.projectId}/tasks/${e.taskId}`,
+    responseType: 'json',
+  })).data
+
+  this.template = (await axios({
+    method: 'get',
+    url: `/api/project/${this.projectId}/templates/${this.task.template_id}`,
+    responseType: 'json',
+  })).data
+
+  this.taskLogDialog = true
+})
+
 </script>
 
 <style lang="scss">

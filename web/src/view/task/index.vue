@@ -6,12 +6,19 @@
           type="selection"
           width="55"
         />
-        <el-table-column align="left" label="id" min-width="60" prop="ID" sortable="custom"/>
-        <el-table-column align="left" label="模板id" min-width="150" prop="templateId" sortable="custom"/>
-        <el-table-column align="left" label="状态" min-width="150" prop="status" sortable="custom"/>
-        <el-table-column align="left" label="创建人" min-width="200" prop="userId" sortable="custom"/>
-        <el-table-column align="left" label="开始时间" min-width="150" prop="beginTime" sortable="custom"/>
-        <el-table-column align="left" label="结束时间" min-width="150" prop="endTime" sortable="custom"/>
+        <el-table-column align="left" label="id" min-width="60" sortable="custom" />
+        <template v-slot="scope">
+          <a @click="showTaskLog()">{{ scope.row.ID }}</a>
+        </template>
+        <el-table-column align="left" label="模板id" min-width="150" prop="templateId" sortable="custom" />
+        <el-table-column align="left" label="状态" min-width="150" sortable="custom">
+          <template v-slot="scope">
+            <TaskStatus :status="scope.row.status" />
+          </template>
+        </el-table-column>
+        <el-table-column align="left" label="创建人" min-width="200" prop="userId" sortable="custom" />
+        <el-table-column align="left" label="开始时间" min-width="150" prop="beginTime" sortable="custom" />
+        <el-table-column align="left" label="结束时间" min-width="150" prop="endTime" sortable="custom" />
       </el-table>
       <div class="gva-pagination">
         <el-pagination
@@ -93,17 +100,18 @@ import {
   addServer,
   updateServer,
   deleteServer,
-  getServerById
 } from '@/api/cmdb'
 import infoList from '@/mixins/infoList'
 import { toSQLLine } from '@/utils/stringFun'
 import warningBar from '@/components/warningBar/warningBar.vue'
-import { exportExcel, downloadTemplate } from '@/api/cmdb'
+import { emitter } from '@/utils/bus'
+import TaskStatus from '@/components/task/TaskStatus.vue'
 
 export default {
   name: 'Server',
   components: {
-    warningBar
+    warningBar,
+    TaskStatus
   },
   mixins: [infoList],
   data() {
@@ -203,21 +211,6 @@ export default {
       this.initForm()
       this.dialogFormVisible = false
     },
-    initSSHForm() {
-      this.$refs.sshForm.resetFields()
-      this.sshForm = {
-        server: {
-          manageIp: '',
-          sshPort: '',
-        },
-        username: '',
-        password: ''
-      }
-    },
-    closeSSHDialog() {
-      this.initSSHForm()
-      this.dialogSSHFormVisible = false
-    },
     openDialog(type) {
       switch (type) {
         case 'addServer':
@@ -231,46 +224,6 @@ export default {
       }
       this.type = type
       this.dialogFormVisible = true
-    },
-    async editServer(row) {
-      const res = await getServerById({id: row.ID})
-      this.form = res.data.server
-      this.openDialog('edit')
-    },
-    async deleteServer(row) {
-      this.$confirm('此操作将永久删除服务器?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      })
-          .then(async () => {
-            const res = await deleteServer(row)
-            if (res.code === 0) {
-              this.$message({
-                type: 'success',
-                message: '删除成功!'
-              })
-              if (this.tableData.length === 1 && this.page > 1) {
-                this.page--
-              }
-              this.getTableData()
-            }
-          })
-    },
-    async relation(row) {
-      const routeData = this.$router.resolve({
-        name: 'graph',
-        params: {cid: row.id}
-      })
-      window.open(routeData.href, '_blank')
-    },
-    async runSsh(row) {
-      const res = await getServerById({id: row.ID})
-      this.sshForm.server = res.data.server
-      this.openSSHDialog()
-    },
-    openSSHDialog() {
-      this.dialogSSHFormVisible = true
     },
     async enterDialog() {
       this.$refs.serverForm.validate(async valid => {
@@ -317,32 +270,10 @@ export default {
         }
       })
     },
-    async enterSSHDialog() {
-      this.$refs.sshForm.validate(async valid => {
-        if (valid) {
-          await this.$router.push({
-            name: 'ssh',
-            params: {
-              manageIp: this.sshForm.server.manageIp,
-              username: this.sshForm.username,
-              password: this.sshForm.password,
-              sshPort: this.sshForm.server.sshPort
-            }
-          })
-          console.log(this.sshForm.server.manageIp)
-          // window.open(routeData.href, '_self')
-          this.closeSSHDialog()
-        }
+    showTaskLog() {
+      emitter.$emit('i-show-task', {
+        taskId: this.taskId,
       })
-    },
-    handleExcelExport(fileName) {
-      if (!fileName || typeof fileName !== 'string') {
-        fileName = 'ExcelExport.xlsx'
-      }
-      exportExcel(this.tableData, fileName)
-    },
-    downloadExcelTemplate() {
-      downloadTemplate('ExcelTemplate.xlsx')
     },
   }
 }
