@@ -19,7 +19,7 @@ func (s *TaskRouter) InitTaskRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 	}
 	{
 		taskRouter.POST("getTaskById", authorityServerApi.GetTaskById)   // 获取Task
-		taskRouter.POST("getServerList", authorityServerApi.GetTaskList) // 分页获取Task
+		taskRouter.POST("getTaskList", authorityServerApi.GetTaskList) // 分页获取Task
 	}
 	{
 		taskRouter.POST("getTaskOutputs", authorityServerApi.GetTaskOutputs) // 停止Task
