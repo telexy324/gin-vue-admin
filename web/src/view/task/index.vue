@@ -31,62 +31,6 @@
           @size-change="handleSizeChange"
         />
       </div>
-
-    </div>
-
-    <el-dialog v-model="dialogFormVisible" :before-close="closeDialog" :title="dialogTitle">
-      <warning-bar title="新增服务器"/>
-      <el-form ref="serverForm" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="服务器名" prop="hostname">
-          <el-input v-model="form.hostname" autocomplete="off"/>
-        </el-form-item>
-        <el-form-item label="架构" prop="architecture">
-          <el-input v-model="form.architecture" autocomplete="off"/>
-        </el-form-item>
-        <el-form-item label="管理IP" prop="manageIp">
-          <el-input v-model="form.manageIp" autocomplete="off"/>
-        </el-form-item>
-        <el-form-item label="系统" prop="os">
-          <el-input v-model="form.os" autocomplete="off"/>
-        </el-form-item>
-        <el-form-item label="版本" prop="osVersion">
-          <el-input v-model="form.osVersion" autocomplete="off"/>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button size="small" @click="closeDialog">取 消</el-button>
-          <el-button size="small" type="primary" @click="enterDialog">确 定</el-button>
-        </div>
-      </template>
-    </el-dialog>
-
-    <el-dialog v-model="dialogSSHFormVisible" :before-close="closeDialog" :title="dialogSSHTitle">
-      <warning-bar title="连接信息"/>
-      <el-form ref="sshForm" :model="sshForm" :rules="rules" label-width="80px">
-        <el-form-item label="管理IP" prop="manageIp">
-          <el-input v-model="sshForm.server.manageIp" autocomplete="off"/>
-        </el-form-item>
-        <el-form-item label="SSH端口" prop="sshPort">
-          <el-input v-model="sshForm.server.sshPort" autocomplete="off"/>
-        </el-form-item>
-        <el-form-item label="用户名" prop="username">
-          <el-input v-model="sshForm.username" autocomplete="off"/>
-        </el-form-item>
-        <el-form-item label="密码" prop="password">
-          <el-input v-model="sshForm.password" autocomplete="off"/>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button size="small" @click="closeSSHDialog">取 消</el-button>
-          <el-button size="small" type="primary" @click="enterSSHDialog">连 接</el-button>
-        </div>
-      </template>
-    </el-dialog>
-
-    <div class="term1">
-      <div ref="terminalBox" style="height: 60vh;"></div>
     </div>
   </div>
 </template>
@@ -96,78 +40,35 @@ const path = import.meta.env.VITE_BASE_API
 // 获取列表内容封装在mixins内部  getTableData方法 初始化已封装完成 条件搜索时候 请把条件安好后台定制的结构体字段 放到 this.searchInfo 中即可实现条件搜索
 
 import {
-  getServerList,
-  addServer,
-  updateServer,
-  deleteServer,
-} from '@/api/cmdb'
+  getTaskList,
+  deleteTask,
+} from '@/api/task'
 import infoList from '@/mixins/infoList'
 import { toSQLLine } from '@/utils/stringFun'
-import warningBar from '@/components/warningBar/warningBar.vue'
 import { emitter } from '@/utils/bus'
 import TaskStatus from '@/components/task/TaskStatus.vue'
 
 export default {
-  name: 'Server',
+  name: 'Task',
   components: {
-    warningBar,
     TaskStatus
   },
   mixins: [infoList],
   data() {
     return {
-      deleteVisible: false,
-      listApi: getServerList,
-      dialogFormVisible: false,
-      dialogSSHFormVisible: false,
-      dialogTitle: '新增server',
-      dialogSSHTitle: '服务器信息',
-      servers: [],
-      form: {
-        hostname: '',
-        architecture: '',
-        manageIp: '',
-        os: '',
-        osVersion: ''
-      },
-      sshForm: {
-        server: {
-          manageIp: '',
-          sshPort: '',
-        },
-        username: '',
-        password: ''
-      },
+      listApi: getTaskList,
       type: '',
-      rules: {
-        hostname: [{required: true, message: '请输入机器名', trigger: 'blur'}],
-        architecture: [
-          {required: true, message: '请输入架构', trigger: 'blur'}
-        ],
-        manageIP: [
-          {required: true, message: '请输入管理IP', trigger: 'blur'}
-        ],
-        os: [
-          {required: true, message: '请输入系统名称', trigger: 'blur'}
-        ],
-        osVersion: [
-          {required: true, message: '请输入系统版本', trigger: 'blur'}
-        ]
-      },
       path: path,
+      tasks: [],
     }
   },
   created() {
     this.getTableData()
   },
   methods: {
-    //  选中api
-    handleSelectionChange(val) {
-      this.servers = val
-    },
     async onDelete() {
-      const ids = this.servers.map(item => item.ID)
-      const res = await deleteServer({ids})
+      const ids = this.tasks.map(item => item.ID)
+      const res = await deleteTask({ ids })
       if (res.code === 0) {
         this.$message({
           type: 'success',
@@ -177,98 +78,16 @@ export default {
           this.page--
         }
         this.deleteVisible = false
-        this.getTableData()
+        await this.getTableData()
       }
     },
     // 排序
-    sortChange({prop, order}) {
+    sortChange({ prop, order }) {
       if (prop) {
         this.searchInfo.orderKey = toSQLLine(prop)
         this.searchInfo.desc = order === 'descending'
       }
       this.getTableData()
-    },
-    onReset() {
-      this.searchInfo = {}
-    },
-    // 条件搜索前端看此方法
-    onSubmit() {
-      this.page = 1
-      this.pageSize = 10
-      this.getTableData()
-    },
-    initForm() {
-      this.$refs.serverForm.resetFields()
-      this.form = {
-        hostname: '',
-        architecture: '',
-        manageIp: '',
-        os: '',
-        osVersion: ''
-      }
-    },
-    closeDialog() {
-      this.initForm()
-      this.dialogFormVisible = false
-    },
-    openDialog(type) {
-      switch (type) {
-        case 'addServer':
-          this.dialogTitle = '新增Server'
-          break
-        case 'edit':
-          this.dialogTitle = '编辑Server'
-          break
-        default:
-          break
-      }
-      this.type = type
-      this.dialogFormVisible = true
-    },
-    async enterDialog() {
-      this.$refs.serverForm.validate(async valid => {
-        if (valid) {
-          switch (this.type) {
-            case 'addServer': {
-              const res = await addServer(this.form)
-              if (res.code === 0) {
-                this.$message({
-                  type: 'success',
-                  message: '添加成功',
-                  showClose: true
-                })
-              }
-              this.getTableData()
-              this.closeDialog()
-            }
-
-              break
-            case 'edit': {
-              const res = await updateServer(this.form)
-              if (res.code === 0) {
-                this.$message({
-                  type: 'success',
-                  message: '编辑成功',
-                  showClose: true
-                })
-              }
-              this.getTableData()
-              this.closeDialog()
-            }
-              break
-            default:
-              // eslint-disable-next-line no-lone-blocks
-            {
-              this.$message({
-                type: 'error',
-                message: '未知操作',
-                showClose: true
-              })
-            }
-              break
-          }
-        }
-      })
     },
     showTaskLog() {
       emitter.$emit('i-show-task', {

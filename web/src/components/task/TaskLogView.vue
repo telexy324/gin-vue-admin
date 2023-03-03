@@ -1,88 +1,45 @@
 <template>
   <div class="task-log-view" :class="{'task-log-view--with-message': item.message}">
     <el-dialog v-model="visible" :show-close="false">
-      <template #header="{ close, titleId, titleClass }">
-        <div class="my-header">
-          <h4 :id="titleId" :class="titleClass">This is a custom header!</h4>
-          <el-button type="danger" @click="close">
-            <el-icon class="el-icon--left"><CircleCloseFilled /></el-icon>
-            Close
-          </el-button>
+      <template #header>
+        <div class="el-dialog__header">
+          <el-row :gutter="10">
+            <el-col :span="6">
+              <TaskStatus :status="item.status" />
+            </el-col>
+            <el-col :span="3">Author:</el-col>
+            <el-col :span="3" v-text="user.name" />
+            <el-col :span="3">start:</el-col>
+            <el-col :span="3" v-text="item.start_time" />
+            <el-col :span="3">end:</el-col>
+            <el-col :span="3" v-text="item.end_time" />
+          </el-row>
         </div>
       </template>
-      This is dialog content.
-    </el-dialog>
-
-    <v-container class="pa-0 mb-2">
-      <v-row no-gutters>
-        <v-col>
-          <v-list two-line subheader class="pa-0">
-            <v-list-item class="pa-0">
-              <v-list-item-content>
-                <div>
-                  <TaskStatus :status="item.status"/>
-                </div>
-              </v-list-item-content>
-            </v-list-item>
-          </v-list>
-        </v-col>
-        <v-col>
-          <v-list two-line subheader class="pa-0">
-            <v-list-item class="pa-0">
-              <v-list-item-content>
-                <v-list-item-title>Author</v-list-item-title>
-                <v-list-item-subtitle>{{ user.name }}</v-list-item-subtitle>
-              </v-list-item-content>
-            </v-list-item>
-          </v-list>
-        </v-col>
-        <v-col>
-          <v-list two-line subheader class="pa-0">
-            <v-list-item class="pa-0">
-              <v-list-item-content>
-                <v-list-item-title>Started</v-list-item-title>
-                <v-list-item-subtitle>
-                  {{ item.start | formatDate }}
-                </v-list-item-subtitle>
-              </v-list-item-content>
-            </v-list-item>
-          </v-list>
-        </v-col>
-        <v-col>
-          <v-list-item class="pa-0">
-            <v-list-item-content>
-              <v-list-item-title>Duration</v-list-item-title>
-              <v-list-item-subtitle>
-                {{ [item.start, item.end] | formatMilliseconds }}
-              </v-list-item-subtitle>
-            </v-list-item-content>
-          </v-list-item>
-        </v-col>
-      </v-row>
-    </v-container>
-    <div class="task-log-records" ref="output">
-      <div class="task-log-records__record" v-for="record in output" :key="record.id">
-        <div class="task-log-records__time">
-          {{ record.time | formatTime }}
+      <div ref="output" class="task-log-records">
+        <div v-for="record in output" :key="record.id" class="task-log-records__record">
+          <div class="task-log-records__time">
+            {{ record.time }}
+          </div>
+          <div class="task-log-records__output">{{ record.output }}</div>
         </div>
-        <div class="task-log-records__output">{{ record.output }}</div>
       </div>
-    </div>
-
-    <v-btn
-        color="error"
-        style="position: absolute; bottom: 10px; right: 10px;"
+      <el-button
         v-if="item.status === 'running' || item.status === 'waiting'"
+        type="danger"
+        round
+        style="position: absolute; bottom: 10px; right: 10px;"
         @click="stopTask()"
-    >
-      Stop
-    </v-btn>
+      >
+        Stop
+      </el-button>
+    </el-dialog>
   </div>
 </template>
 
 <style lang="scss">
 
-@import '~vuetify/src/styles/settings/_variables';
+// @import '~vuetify/src/styles/settings/_variables';
 
 .task-log-view {
 }
@@ -116,19 +73,20 @@
   width: 100%;
 }
 
-@media #{map-get($display-breakpoints, 'sm-and-down')} {
-  .task-log-records {
-    height: calc(100vh - 340px);
-  }
-
-  .task-log-view--with-message .task-log-records {
-    height: calc(100vh - 370px);
-  }
-}
+//@media #{map-get($display-breakpoints, 'sm-and-down')} {
+//  .task-log-records {
+//    height: calc(100vh - 340px);
+//  }
+//
+//  .task-log-view--with-message .task-log-records {
+//    height: calc(100vh - 370px);
+//  }
+//}
 </style>
 <script>
-import axios from 'axios'
-import TaskStatus from '@/components/TaskStatus.vue'
+import { getTaskById, getTaskOutputs, stopTask } from '@/api/task'
+import { getUserInfo } from '@/api/user'
+import TaskStatus from '@/components/task/TaskStatus.vue'
 import socket from '@/socket'
 
 export default {
@@ -153,14 +111,12 @@ export default {
     socket.addListener((data) => this.onWebsocketDataReceived(data))
     await this.loadData()
   },
-
+  mounted() {
+    this.initSocket()
+  },
   methods: {
-    async stopTask() {
-      await axios({
-        method: 'post',
-        url: `/api/project/${this.projectId}/tasks/${this.itemId}/stop`,
-        responseType: 'json',
-      })
+    async stopTask(Id) {
+      await stopTask(Id)
     },
 
     reset() {
@@ -192,24 +148,61 @@ export default {
       }
     },
 
-    async loadData() {
-      this.item = (await axios({
-        method: 'get',
-        url: `/api/project/${this.projectId}/tasks/${this.itemId}`,
-        responseType: 'json',
-      })).data
+    async loadData(Id) {
+      this.item = (await getTaskById(Id)).data
 
-      this.output = (await axios({
-        method: 'get',
-        url: `/api/project/${this.projectId}/tasks/${this.itemId}/output`,
-        responseType: 'json',
-      })).data
+      this.output = (await getTaskOutputs(Id)).data
 
-      this.user = (await axios({
-        method: 'get',
-        url: `/api/users/${this.item.user_id}`,
-        responseType: 'json',
-      })).data
+      this.user = (await getUserInfo).data
+    },
+    initSocket() {
+      this.socket = new WebSocket('ws://' + location.hostname + ':8888/ssh/run')
+      this.socket.binaryType = 'arraybuffer'
+      this.socketOnClose()
+      this.socketOnOpen()
+      this.socketOnError()
+      this.socketOnMessage()
+    },
+    socketOnOpen() {
+      const _this = this
+      this.socket.onopen = () => {
+        // this.initTerm()
+        this.term.write('连接成功...\r\n')
+        // fitAddon.fit()
+        this.term.onData(function(data) {
+          // socket.send(JSON.stringify({ type: "stdin", data: data }))
+          // console.log(data)
+          _this.socket.send(data)
+          // console.log(data)
+        })
+        // ElMessage.success("会话成功连接！")
+        var jsonStr = `{"server":{"manageIp":"${this.manageIp}", "sshPort":${this.sshPort}}, "username":"${this.username}", "password":"${this.password}"}`
+        console.log(jsonStr)
+        var datMsg = window.btoa(jsonStr)
+        // socket.send(JSON.stringify({ ip: ip.value, name: name.value, password: password.value }))
+        this.socket.send(datMsg)
+      }
+    },
+    socketOnClose() {
+      this.socket.onclose = () => {
+        this.term.writeln('连接关闭')
+      }
+    },
+    socketOnError() {
+      this.socket.onerror = err => {
+        // console.log(err)
+        this.term.writeln('读取数据异常：', err)
+      }
+    },
+    socketOnMessage() {
+      // 接收数据
+      this.socket.onmessage = recv => {
+        try {
+          this.term.write(recv.data)
+        } catch (e) {
+          this.console.log('unsupport data', recv.data)
+        }
+      }
     },
   },
 }

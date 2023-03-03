@@ -43,6 +43,7 @@ func Routers() *gin.Engine {
 	applicationRouter := router.RouterGroupApp.Application
 	sshRouter := router.RouterGroupApp.Ssh
 	taskRouter := router.RouterGroupApp.Task
+	taskSocketRouter := router.RouterGroupApp.TaskSocket
 	PublicGroup := Router.Group("")
 	{
 		// 健康监测
@@ -57,6 +58,7 @@ func Routers() *gin.Engine {
 		applicationRouter.InitCmdbRouter(PublicGroup)
 		sshRouter.InitSshRouter(PublicGroup)
 		taskRouter.InitTaskRouter(PublicGroup)
+		taskSocketRouter.InitTaskSocketRouter(PublicGroup)
 		//systemRouter.InitMenuRouter(PublicGroup)                   // 注册menu路由
 	}
 	PrivateGroup := Router.Group("")

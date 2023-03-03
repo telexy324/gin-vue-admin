@@ -12,6 +12,9 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+type SocketApi struct {
+}
+
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
@@ -119,7 +122,7 @@ func (c *connection) writePump() {
 }
 
 // Handler is used by the router to handle the /ws endpoint
-func Handler(c *gin.Context) {
+func (a *SocketApi) Handler(c *gin.Context) {
 	userId := utils.GetUserID(c)
 	ws, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {

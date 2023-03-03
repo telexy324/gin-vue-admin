@@ -1,39 +1,35 @@
 <template>
   <div id="app">
-    <EditDialog
-        v-model="taskLogDialog"
-        save-button-text="Delete"
-        :max-width="1000"
-        :hide-buttons="true"
-        @close="onTaskLogDialogClosed()"
-    >
-      <template v-slot:title={}>
-        <div class="text-truncate" style="max-width: calc(100% - 36px);">
-          <span class="breadcrumbs__item">Task #{{ task ? task.id : null }}</span>
+    <el-dialog v-model="taskLogDialog" :before-close="onTaskLogDialogClosed">
+      <template #header="{ titleId, titleClass }">
+        <div class="my-header">
+          <h4 :id="titleId" :class="titleClass">Task #{{ task ? task.id : null }}</h4>
+          <el-button type="danger" @click="onTaskLogDialogClosed()">
+            <el-icon class="el-icon--left"><CircleCloseFilled /></el-icon>
+            Close
+          </el-button>
         </div>
-
-        <v-spacer></v-spacer>
-        <v-btn
-            icon
-            @click="taskLogDialog = false; onTaskLogDialogClosed()"
-        >
-          <v-icon>mdi-close</v-icon>
-        </v-btn>
       </template>
-      <template v-slot:form="{}">
-        <TaskLogView :project-id="projectId" :item-id="task ? task.id : null"/>
+      <template>
+        <TaskLogView :project-id="projectId" :item-id="task ? task.id : null" />
       </template>
-    </EditDialog>
+    </el-dialog>
     <router-view />
   </div>
 </template>
 
 <script>
-import { getTaskOutputs, getTask, getTaskTemplate } from '@/api/task'
+import { getTask, getTaskTemplate } from '@/api/task'
 import { emitter } from '@/utils/bus'
+// import { CircleCloseFilled } from '@element-plus/icons-vue'
+import TaskLogView from '@/components/task/TaskLogView.vue'
 
 export default {
   name: 'App',
+  components: {
+    // CircleCloseFilled,
+    TaskLogView
+  },
   data() {
     return {
       taskLogDialog: null,
@@ -43,24 +39,21 @@ export default {
   },
   mounted() {
     emitter.$on('i-show-task', async(e) => {
-      if (parseInt(this.$route.query.t || '', 10) !== e.taskId) {
-        const query = { ...this.$route.query, t: e.taskId }
+      if (parseInt(this.$route.query.t || '', 10) !== e.ID) {
+        const query = { ...this.$route.query, t: e.ID }
         await this.$router.replace({ query })
       }
 
-      this.task = await getTask({ id: row.ID })
+      this.task = await getTask({ id: e.ID }).data
 
-      this.template = (await axios({
-        method: 'get',
-        url: `/api/project/${this.projectId}/templates/${this.task.template_id}`,
-        responseType: 'json',
-      })).data
+      this.template = (await getTaskTemplate({ id: e.TemplateId })).data
 
       this.taskLogDialog = true
     })
   },
   methods: {
     async onTaskLogDialogClosed() {
+      this.taskLogDialog = false
       const query = { ...this.$route.query, t: undefined }
       await this.$router.replace({ query })
     },
