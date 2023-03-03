@@ -11,7 +11,7 @@
         </div>
       </template>
       <template>
-        <TaskLogView :project-id="projectId" :item-id="task ? task.id : null" />
+        <TaskLogView :item-id="task ? task.id : null" />
       </template>
     </el-dialog>
     <router-view />
@@ -19,7 +19,8 @@
 </template>
 
 <script>
-import { getTask, getTaskTemplate } from '@/api/task'
+import { getTaskById } from '@/api/task'
+import { getTemplateById } from '@/api/template'
 import { emitter } from '@/utils/bus'
 // import { CircleCloseFilled } from '@element-plus/icons-vue'
 import TaskLogView from '@/components/task/TaskLogView.vue'
@@ -38,16 +39,14 @@ export default {
     }
   },
   mounted() {
-    emitter.$on('i-show-task', async(e) => {
+    emitter.on('i-show-task', async(e) => {
       if (parseInt(this.$route.query.t || '', 10) !== e.ID) {
         const query = { ...this.$route.query, t: e.ID }
         await this.$router.replace({ query })
       }
 
-      this.task = await getTask({ id: e.ID }).data
-
-      this.template = (await getTaskTemplate({ id: e.TemplateId })).data
-
+      this.task = await getTaskById({ id: e.ID }).data
+      this.template = (await getTemplateById({ id: e.TemplateId })).data
       this.taskLogDialog = true
     })
   },

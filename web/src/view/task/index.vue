@@ -6,10 +6,11 @@
           type="selection"
           width="55"
         />
-        <el-table-column align="left" label="id" min-width="60" sortable="custom" />
-        <template v-slot="scope">
-          <a @click="showTaskLog()">{{ scope.row.ID }}</a>
-        </template>
+        <el-table-column align="left" label="id" min-width="60" sortable="custom">
+          <template v-slot="scope">
+            <a @click="showTaskLog()">{{ scope.row.ID }}</a>
+          </template>
+        </el-table-column>
         <el-table-column align="left" label="模板id" min-width="150" prop="templateId" sortable="custom" />
         <el-table-column align="left" label="状态" min-width="150" sortable="custom">
           <template v-slot="scope">
@@ -90,7 +91,7 @@ export default {
       this.getTableData()
     },
     showTaskLog() {
-      emitter.$emit('i-show-task', {
+      emitter.emit('i-show-task', {
         taskId: this.taskId,
       })
     },

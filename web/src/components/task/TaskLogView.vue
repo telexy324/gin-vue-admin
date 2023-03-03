@@ -111,9 +111,7 @@ export default {
     socket.addListener((data) => this.onWebsocketDataReceived(data))
     await this.loadData()
   },
-  mounted() {
-    this.initSocket()
-  },
+
   methods: {
     async stopTask(Id) {
       await stopTask(Id)
@@ -154,55 +152,6 @@ export default {
       this.output = (await getTaskOutputs(Id)).data
 
       this.user = (await getUserInfo).data
-    },
-    initSocket() {
-      this.socket = new WebSocket('ws://' + location.hostname + ':8888/ssh/run')
-      this.socket.binaryType = 'arraybuffer'
-      this.socketOnClose()
-      this.socketOnOpen()
-      this.socketOnError()
-      this.socketOnMessage()
-    },
-    socketOnOpen() {
-      const _this = this
-      this.socket.onopen = () => {
-        // this.initTerm()
-        this.term.write('连接成功...\r\n')
-        // fitAddon.fit()
-        this.term.onData(function(data) {
-          // socket.send(JSON.stringify({ type: "stdin", data: data }))
-          // console.log(data)
-          _this.socket.send(data)
-          // console.log(data)
-        })
-        // ElMessage.success("会话成功连接！")
-        var jsonStr = `{"server":{"manageIp":"${this.manageIp}", "sshPort":${this.sshPort}}, "username":"${this.username}", "password":"${this.password}"}`
-        console.log(jsonStr)
-        var datMsg = window.btoa(jsonStr)
-        // socket.send(JSON.stringify({ ip: ip.value, name: name.value, password: password.value }))
-        this.socket.send(datMsg)
-      }
-    },
-    socketOnClose() {
-      this.socket.onclose = () => {
-        this.term.writeln('连接关闭')
-      }
-    },
-    socketOnError() {
-      this.socket.onerror = err => {
-        // console.log(err)
-        this.term.writeln('读取数据异常：', err)
-      }
-    },
-    socketOnMessage() {
-      // 接收数据
-      this.socket.onmessage = recv => {
-        try {
-          this.term.write(recv.data)
-        } catch (e) {
-          this.console.log('unsupport data', recv.data)
-        }
-      }
     },
   },
 }
