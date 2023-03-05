@@ -43,6 +43,7 @@ func (m *TaskTemplate) AfterFind(tx *gorm.DB) (err error) {
 				return
 			}
 			m.TargetServers = append(m.TargetServers, server)
+			m.TargetIds = append(m.TargetIds, int(server.ID))
 		}
 	}
 	if m.LastTaskId > 0 {

@@ -233,7 +233,7 @@ export default {
     },
     async editTemplate(row) {
       const res = await getTemplateById({ id: row.ID })
-      this.form = res.data.template
+      this.form = res.data.taskTemplate
       this.openDialog('edit')
     },
     async deleteTemplate(row) {
@@ -305,6 +305,26 @@ export default {
     setOptions(data) {
       this.serverOptions = data
     },
+    // setServerOptions(ServerData, optionsData) {
+    //   ServerData &&
+    //   ServerData.forEach(item => {
+    //     if (item.children && item.children.length) {
+    //       const option = {
+    //         ID: item.ID,
+    //         name: item.name,
+    //         children: []
+    //       }
+    //       this.setServerOptions(item.children, option.children)
+    //       optionsData.push(option)
+    //     } else {
+    //       const option = {
+    //         ID: item.ID,
+    //         name: item.name,
+    //       }
+    //       optionsData.push(option)
+    //     }
+    //   })
+    // },
   }
 }
 </script>
