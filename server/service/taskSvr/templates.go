@@ -35,7 +35,6 @@ func (templateService *TaskTemplatesService) UpdateTaskTemplate(template taskMdl
 	upDateMap["mode"] = template.Mode
 	upDateMap["command"] = template.Command
 	upDateMap["script_path"] = template.ScriptPath
-	upDateMap["cron"] = template.Cron
 	upDateMap["last_task_id"] = template.LastTaskId
 
 	err := global.GVA_DB.Transaction(func(tx *gorm.DB) error {

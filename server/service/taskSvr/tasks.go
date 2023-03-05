@@ -44,13 +44,13 @@ func (taskService *TaskService) CreateTaskOutput(output taskMdl.TaskOutput) (tas
 func (taskService *TaskService) getTasks(templateID *int, info request.PageInfo) (err error, list interface{}, total int64) {
 	limit := info.PageSize
 	offset := info.PageSize * (info.Page - 1)
-	db := global.GVA_DB.Model(&taskMdl.Task{}).Preload("User")
-	if templateID == nil {
-		db = db.Preload("Template")
-	} else {
-		db = db.Preload("Template").Where("template_id=?", templateID)
-	}
-	db.Order("created desc, id desc")
+	db := global.GVA_DB.Model(&taskMdl.Task{}) //.Preload("User")
+	//if templateID == nil {
+	//	db = db.Preload("Template")
+	//} else {
+	//	db = db.Preload("Template").Where("template_id=?", templateID)
+	//}
+	//db.Order("created desc, id desc")
 	err = db.Count(&total).Error
 	if err != nil {
 		return

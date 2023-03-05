@@ -154,7 +154,6 @@ create table `application_task_templates`
     `mode`            tinyint(2) NOT NULL DEFAULT '0' COMMENT '运行方式 0 未定义 1 命令 2 脚本',
     `command`         text,
     `script_path`     varchar(255) NOT NULL DEFAULT '',
-    `cron`            varchar(255) NOT NULL DEFAULT '',
     `last_task_id`    int          NOT NULL DEFAULT '0',
     `sys_user`        int          NOT NULL DEFAULT '0',
     PRIMARY KEY (`id`)

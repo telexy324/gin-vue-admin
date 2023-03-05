@@ -68,6 +68,36 @@ export const getServerById = (data) => {
   })
 }
 
+// @Tags server
+// @Summary 根据系统id获取服务器
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body request.GetById true "系统id"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
+// @Router /cmdb/getSystemServers [post]
+export const getSystemServers = (data) => {
+  return service({
+    url: '/cmdb/getSystemServers',
+    method: 'post',
+    data
+  })
+}
+
+// @Tags server
+// @Summary 获取所有服务器
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
+// @Router /cmdb/getAllServers [get]
+export const getAllServers = () => {
+  return service({
+    url: '/cmdb/getAllServers',
+    method: 'get',
+  })
+}
+
 // @Tags Server
 // @Summary 导出Excel
 // @Security ApiKeyAuth

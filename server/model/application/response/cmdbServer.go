@@ -12,6 +12,17 @@ type ApplicationServerResponse struct {
 	Server application.ApplicationServer `json:"server"`
 }
 
+type AllServersResponse struct {
+	ID       uint       `json:"ID"`
+	Name     string     `json:"Name"`
+	Children []Children `json:"Children"`
+}
+
+type Children struct {
+	ID   uint   `json:"ID"`
+	Name string `json:"Name"`
+}
+
 type ServerRelationsResponse struct {
 	Path RelationPath `json:"path"`
 }

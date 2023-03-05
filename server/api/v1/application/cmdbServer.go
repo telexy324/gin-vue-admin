@@ -189,6 +189,47 @@ func (a *CmdbServerApi) GetSystemServers(c *gin.Context) {
 }
 
 // @Tags CmdbServer
+// @Summary 获取所有服务器
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
+// @Router /cmdb/getAllServers [get]
+func (a *CmdbServerApi) GetAllServerIds(c *gin.Context) {
+	err, systemList, _ := cmdbSystemService.GetSystemList(request2.SystemSearch{
+		PageInfo: request.PageInfo{
+			Page:     1,
+			PageSize: 99999,
+		},
+	})
+	if err != nil {
+		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
+		response.FailWithMessage("获取失败", c)
+	}
+	res := make([]applicationRes.AllServersResponse, 0)
+	for _, system := range systemList.([]application.ApplicationSystem) {
+		if err, serverList := cmdbServerService.GetSystemServers(float64(system.ID)); err != nil {
+			global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
+			response.FailWithMessage("获取失败", c)
+		} else {
+			resServers := make([]applicationRes.Children, 0)
+			for _, server := range serverList {
+				resServers = append(resServers, applicationRes.Children{
+					ID:   server.ID,
+					Name: server.ManageIp,
+				})
+			}
+			res = append(res, applicationRes.AllServersResponse{
+				ID:       system.ID,
+				Name:     system.Name,
+				Children: resServers,
+			})
+		}
+	}
+	response.OkWithDetailed(res, "获取成功", c)
+}
+
+// @Tags CmdbServer
 // @Summary 新增联系
 // @Security ApiKeyAuth
 // @accept application/json

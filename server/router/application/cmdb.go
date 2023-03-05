@@ -19,8 +19,10 @@ func (s *CmdbRouter) InitCmdbRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 		cmdbRouterWithoutRecord.POST("updateServer", authorityServerApi.UpdateServer) // 更新菜单
 	}
 	{
-		cmdbRouterWithoutRecord.POST("getServerById", authorityServerApi.GetServerById)     // 获取菜单树
-		cmdbRouterWithoutRecord.POST("getServerList", authorityServerApi.GetServerList) // 分页获取基础menu列表
+		cmdbRouterWithoutRecord.POST("getServerById", authorityServerApi.GetServerById)       // 获取菜单树
+		cmdbRouterWithoutRecord.POST("getServerList", authorityServerApi.GetServerList)       // 分页获取基础menu列表
+		cmdbRouterWithoutRecord.POST("getSystemServers", authorityServerApi.GetSystemServers) // 分页获取基础menu列表
+		cmdbRouterWithoutRecord.GET("getAllServerIds", authorityServerApi.GetAllServerIds)    // 分页获取基础menu列表
 	}
 	{
 		cmdbRouterWithoutRecord.POST("server/addRelation", authorityServerApi.AddRelation)   // 获取菜单树
@@ -37,7 +39,7 @@ func (s *CmdbRouter) InitCmdbRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 		cmdbRouterWithoutRecord.POST("updateApp", authorityServerApi.UpdateApp) // 更新应用
 	}
 	{
-		cmdbRouterWithoutRecord.POST("getAppById", authorityServerApi.GetAppById)     // 获取应用
+		cmdbRouterWithoutRecord.POST("getAppById", authorityServerApi.GetAppById) // 获取应用
 		cmdbRouterWithoutRecord.POST("getAppList", authorityServerApi.GetAppList) // 分页获取基础应用列表
 	}
 
@@ -48,7 +50,7 @@ func (s *CmdbRouter) InitCmdbRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 		cmdbRouterWithoutRecord.POST("updateSystem", authoritySystemApi.UpdateSystem) // 更新菜单
 	}
 	{
-		cmdbRouterWithoutRecord.POST("getSystemById", authoritySystemApi.GetSystemById)     // 获取菜单树
+		cmdbRouterWithoutRecord.POST("getSystemById", authoritySystemApi.GetSystemById) // 获取菜单树
 		cmdbRouterWithoutRecord.POST("getSystemList", authoritySystemApi.GetSystemList) // 分页获取基础menu列表
 	}
 	{
@@ -63,8 +65,8 @@ func (s *CmdbRouter) InitCmdbRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 		cmdbRouterWithoutRecord.POST("updateAdmin", authorityStaffApi.UpdateAdmin) // 更新管理员
 	}
 	{
-		cmdbRouterWithoutRecord.POST("getAdminById", authorityStaffApi.GetAdminById)     // 获取管理员
-		cmdbRouterWithoutRecord.POST("getAdminList", authorityStaffApi.GetAdminList) // 分页获取管理员列表
+		cmdbRouterWithoutRecord.POST("getAdminById", authorityStaffApi.GetAdminById)         // 获取管理员
+		cmdbRouterWithoutRecord.POST("getAdminList", authorityStaffApi.GetAdminList)         // 分页获取管理员列表
 		cmdbRouterWithoutRecord.POST("getDepartmentAll", authorityStaffApi.GetDepartmentAll) // 获取所有部门
 	}
 	return cmdbRouter
