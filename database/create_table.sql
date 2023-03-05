@@ -124,8 +124,8 @@ create table `application_tasks`
     `template_id`    int          NOT NULL DEFAULT '0',
     `status`         varchar(255) NOT NULL DEFAULT '',
     `system_user_id` bigint UNSIGNED NOT NULL DEFAULT '0',
-    `begin_time`     datetime null,
-    `end_time`       datetime null,
+    `begin_time`     datetime(0) NULL DEFAULT NULL,
+    `end_time`       datetime(0) NULL DEFAULT NULL,
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -138,7 +138,6 @@ create table `application_task_outputs`
     `task_id`     int      NOT NULL DEFAULT '0',
     `record_time` datetime not null,
     `output`      text,
-    unique (`task_id`),
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

@@ -1,6 +1,7 @@
 package taskMdl
 
 import (
+	"database/sql"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"time"
 )
@@ -18,11 +19,11 @@ const (
 
 type Task struct {
 	global.GVA_MODEL
-	TemplateId   int        `json:"templateId" gorm:"column:template_id"`      // task id
-	Status       TaskStatus `json:"status" gorm:"column:status"`               // 状态
-	SystemUserId int        `json:"systemUserId" gorm:"column:system_user_id"` // 执行人
-	BeginTime    time.Time  `json:"beginTime" gorm:"column:begin_time"`        // 开始时间
-	EndTime      time.Time  `json:"endTime" gorm:"column:end_time"`            // 结束时间
+	TemplateId   int          `json:"templateId" gorm:"column:template_id"`      // task id
+	Status       TaskStatus   `json:"status" gorm:"column:status"`               // 状态
+	SystemUserId int          `json:"systemUserId" gorm:"column:system_user_id"` // 执行人
+	BeginTime    sql.NullTime `json:"beginTime" gorm:"column:begin_time"`        // 开始时间
+	EndTime      sql.NullTime `json:"endTime" gorm:"column:end_time"`            // 结束时间
 }
 
 func (m *Task) TableName() string {
@@ -42,8 +43,8 @@ func (m *TaskOutput) TableName() string {
 
 // TaskWithTpl is the task data with additional fields
 type TaskWithTpl struct {
-	Task             Task         `gorm:"-" json:"task"`
-	TemplateAlias    string       `gorm:"-" json:"tplAlias"`
-	UserName         *string      `gorm:"-" json:"userName"`
-	BuildTask        *Task        `gorm:"-" json:"buildTask"`
+	Task          Task    `gorm:"-" json:"task"`
+	TemplateAlias string  `gorm:"-" json:"tplAlias"`
+	UserName      *string `gorm:"-" json:"userName"`
+	BuildTask     *Task   `gorm:"-" json:"buildTask"`
 }

@@ -2,6 +2,7 @@ package taskPool
 
 import (
 	"crypto/md5"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	sockets "github.com/flipped-aurora/gin-vue-admin/server/api/v1/socket"
@@ -214,7 +215,10 @@ func (t *TaskRunner) run() {
 		global.GVA_LOG.Info("Release resource locker with TaskRunner ", zap.Uint("task ID ", t.task.ID))
 		t.pool.resourceLocker <- &resourceLock{lock: false, holder: t}
 
-		t.task.EndTime = time.Now()
+		t.task.EndTime = sql.NullTime{
+			Time:  time.Now(),
+			Valid: true,
+		}
 		t.updateStatus()
 		//t.createTaskEvent()
 		//t.destroyKeys()
@@ -226,7 +230,10 @@ func (t *TaskRunner) run() {
 		return
 	}
 
-	t.task.BeginTime = time.Now()
+	t.task.BeginTime = sql.NullTime{
+		Time:  time.Now(),
+		Valid: true,
+	}
 	t.setStatus(taskMdl.TaskRunningStatus)
 
 	//objType := taskMdl.EventTask
@@ -545,7 +552,7 @@ func (t *TaskRunner) populateDetails() error {
 func (t *TaskRunner) runTask() (err error) {
 	servers := t.template.TargetServers
 	for _, server := range servers {
-		sshClient, err := sshService.FillSSHClient(server.ManageIp, t.template.SysUser, "", server.SshPort)
+		sshClient, err := sshService.FillSSHClient(server.ManageIp, t.template.SysUser, "613pygmy", server.SshPort)
 		err = sshClient.GenerateClient()
 		if err != nil {
 			return err
