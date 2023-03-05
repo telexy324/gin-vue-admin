@@ -155,6 +155,6 @@ create table `application_task_templates`
     `command`         text,
     `script_path`     varchar(255) NOT NULL DEFAULT '',
     `last_task_id`    int          NOT NULL DEFAULT '0',
-    `sys_user`        int          NOT NULL DEFAULT '0',
+    `sys_user`        varchar(30)  NOT NULL DEFAULT 'root',
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

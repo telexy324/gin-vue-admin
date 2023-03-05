@@ -626,16 +626,6 @@ definitions:
       id:
         description: 主键ID
         type: number
-      page:
-        description: 页码
-        type: integer
-      pageSize:
-        description: 每页大小
-        type: integer
-      sortBy:
-        type: string
-      sortInverted:
-        type: boolean
     type: object
   request.GetByProjectId:
     properties:
@@ -1243,15 +1233,14 @@ definitions:
       createdAt:
         description: 创建时间
         type: string
-      cron:
-        description: 定时任务
-        type: string
       description:
         description: task描述
         type: string
       id:
         description: 主键ID
         type: integer
+      lastTask:
+        $ref: '#/definitions/taskMdl.Task'
       lastTaskId:
         description: 最后一次task id
         type: integer
@@ -2301,6 +2290,22 @@ paths:
       summary: 分页获取基础admin列表
       tags:
       - Staff
+  /cmdb/getAllServerIds:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 获取所有服务器
+      tags:
+      - CmdbServer
   /cmdb/getAppById:
     post:
       consumes:

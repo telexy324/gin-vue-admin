@@ -13,7 +13,7 @@
     </div>
     <div class="gva-table-box">
       <div class="gva-btn-list">
-        <el-button size="mini" type="primary" icon="el-icon-plus" @click="openDialog('addServer')">新增</el-button>
+        <el-button size="mini" type="primary" icon="el-icon-plus" @click="openDialog('addTemplate')">新增</el-button>
         <el-popover v-model:visible="deleteVisible" placement="top" width="160">
           <p>确定要删除吗？</p>
           <div style="text-align: right; margin-top: 8px;">
@@ -21,7 +21,7 @@
             <el-button size="mini" type="primary" @click="onDelete">确定</el-button>
           </div>
           <template #reference>
-            <el-button icon="el-icon-delete" size="mini" :disabled="!servers.length" style="margin-left: 10px;">删除</el-button>
+            <el-button icon="el-icon-delete" size="mini" :disabled="!templates.length" style="margin-left: 10px;">删除</el-button>
           </template>
         </el-popover>
       </div>
@@ -85,9 +85,12 @@
         <el-form-item label="脚本位置" prop="scriptPath">
           <el-input v-model="form.scriptPath" autocomplete="off" />
         </el-form-item>
+        <el-form-item label="执行用户" prop="sysUser">
+          <el-input v-model="form.sysUser" autocomplete="off" />
+        </el-form-item>
         <el-form-item label="目标" prop="targetServerIds">
           <el-cascader
-            v-model="form.targetServerIds"
+            v-model="form.targetIds"
             style="width:100%"
             :options="serverOptions"
             :show-all-levels="false"
@@ -118,7 +121,7 @@ import {
   addTemplate,
   updateTemplate
 } from '@/api/template'
-import { getAllServers } from '@/api/cmdb'
+import { getAllServerIds } from '@/api/cmdb'
 import infoList from '@/mixins/infoList'
 import { toSQLLine } from '@/utils/stringFun'
 import warningBar from '@/components/warningBar/warningBar.vue'
@@ -138,11 +141,13 @@ export default {
       templates: [],
       serverOptions: [],
       form: {
-        hostname: '',
-        architecture: '',
-        manageIp: '',
-        os: '',
-        osVersion: ''
+        name: '',
+        description: '',
+        mode: '',
+        command: '',
+        scriptPath: '',
+        sysUser: '',
+        targetIds: ''
       },
       type: '',
       rules: {
@@ -156,7 +161,7 @@ export default {
   },
   async created() {
     await this.getTableData()
-    const res = await getAllServers()
+    const res = await getAllServerIds()
     this.setOptions(res.data)
   },
   methods: {
@@ -199,11 +204,13 @@ export default {
     initForm() {
       this.$refs.templateForm.resetFields()
       this.form = {
-        hostname: '',
-        architecture: '',
-        manageIp: '',
-        os: '',
-        osVersion: ''
+        name: '',
+        description: '',
+        mode: '',
+        command: '',
+        scriptPath: '',
+        sysUser: '',
+        targetIds: ''
       }
     },
     closeDialog() {
@@ -250,7 +257,7 @@ export default {
         })
     },
     async enterDialog() {
-      this.$refs.serverForm.validate(async valid => {
+      this.$refs.templateForm.validate(async valid => {
         if (valid) {
           switch (this.type) {
             case 'addTemplate':

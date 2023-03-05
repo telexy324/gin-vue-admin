@@ -1695,6 +1695,33 @@ var doc = `{
                 }
             }
         },
+        "/cmdb/getAllServerIds": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "CmdbServer"
+                ],
+                "summary": "获取所有服务器",
+                "responses": {
+                    "200": {
+                        "description": "{\"success\":true,\"data\":{},\"msg\":\"获取成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/cmdb/getAppById": {
             "post": {
                 "security": [
@@ -6101,20 +6128,6 @@ var doc = `{
                 "id": {
                     "description": "主键ID",
                     "type": "number"
-                },
-                "page": {
-                    "description": "页码",
-                    "type": "integer"
-                },
-                "pageSize": {
-                    "description": "每页大小",
-                    "type": "integer"
-                },
-                "sortBy": {
-                    "type": "string"
-                },
-                "sortInverted": {
-                    "type": "boolean"
                 }
             }
         },
@@ -6968,10 +6981,6 @@ var doc = `{
                     "description": "创建时间",
                     "type": "string"
                 },
-                "cron": {
-                    "description": "定时任务",
-                    "type": "string"
-                },
                 "description": {
                     "description": "task描述",
                     "type": "string"
@@ -6979,6 +6988,9 @@ var doc = `{
                 "id": {
                     "description": "主键ID",
                     "type": "integer"
+                },
+                "lastTask": {
+                    "$ref": "#/definitions/taskMdl.Task"
                 },
                 "lastTaskId": {
                     "description": "最后一次task id",

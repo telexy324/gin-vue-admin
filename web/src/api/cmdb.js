@@ -91,9 +91,9 @@ export const getSystemServers = (data) => {
 // @Produce application/json
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
 // @Router /cmdb/getAllServers [get]
-export const getAllServers = () => {
+export const getAllServerIds = () => {
   return service({
-    url: '/cmdb/getAllServers',
+    url: '/cmdb/getAllServerIds',
     method: 'get',
   })
 }

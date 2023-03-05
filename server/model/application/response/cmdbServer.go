@@ -14,13 +14,13 @@ type ApplicationServerResponse struct {
 
 type AllServersResponse struct {
 	ID       uint       `json:"ID"`
-	Name     string     `json:"Name"`
-	Children []Children `json:"Children"`
+	Name     string     `json:"name"`
+	Children []Children `json:"children"`
 }
 
 type Children struct {
 	ID   uint   `json:"ID"`
-	Name string `json:"Name"`
+	Name string `json:"name"`
 }
 
 type ServerRelationsResponse struct {

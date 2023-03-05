@@ -194,7 +194,7 @@ func (a *CmdbServerApi) GetSystemServers(c *gin.Context) {
 // @accept application/json
 // @Produce application/json
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /cmdb/getAllServers [get]
+// @Router /cmdb/getAllServerIds [get]
 func (a *CmdbServerApi) GetAllServerIds(c *gin.Context) {
 	err, systemList, _ := cmdbSystemService.GetSystemList(request2.SystemSearch{
 		PageInfo: request.PageInfo{
@@ -207,8 +207,8 @@ func (a *CmdbServerApi) GetAllServerIds(c *gin.Context) {
 		response.FailWithMessage("获取失败", c)
 	}
 	res := make([]applicationRes.AllServersResponse, 0)
-	for _, system := range systemList.([]application.ApplicationSystem) {
-		if err, serverList := cmdbServerService.GetSystemServers(float64(system.ID)); err != nil {
+	for _, system := range systemList.([]applicationRes.ApplicationSystemResponse) {
+		if err, serverList := cmdbServerService.GetSystemServers(float64(system.System.ID)); err != nil {
 			global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 			response.FailWithMessage("获取失败", c)
 		} else {
@@ -220,8 +220,8 @@ func (a *CmdbServerApi) GetAllServerIds(c *gin.Context) {
 				})
 			}
 			res = append(res, applicationRes.AllServersResponse{
-				ID:       system.ID,
-				Name:     system.Name,
+				ID:       system.System.ID,
+				Name:     system.System.Name,
 				Children: resServers,
 			})
 		}
