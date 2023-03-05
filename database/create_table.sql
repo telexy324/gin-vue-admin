@@ -117,15 +117,15 @@ create table `application_task_schedules`
 
 create table `application_tasks`
 (
-    `id`          bigint UNSIGNED NOT NULL AUTO_INCREMENT,
-    `created_at`  datetime(0) NULL DEFAULT NULL,
-    `updated_at`  datetime(0) NULL DEFAULT NULL,
-    `deleted_at`  datetime(0) NULL DEFAULT NULL,
-    `template_id` int          NOT NULL DEFAULT '0',
-    `status`      varchar(255) NOT NULL DEFAULT '',
-    `user_id`     bigint UNSIGNED NOT NULL DEFAULT '0',
-    `begin_time`  datetime null,
-    `end_time`    datetime null,
+    `id`             bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+    `created_at`     datetime(0) NULL DEFAULT NULL,
+    `updated_at`     datetime(0) NULL DEFAULT NULL,
+    `deleted_at`     datetime(0) NULL DEFAULT NULL,
+    `template_id`    int          NOT NULL DEFAULT '0',
+    `status`         varchar(255) NOT NULL DEFAULT '',
+    `system_user_id` bigint UNSIGNED NOT NULL DEFAULT '0',
+    `begin_time`     datetime null,
+    `end_time`       datetime null,
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

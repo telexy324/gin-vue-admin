@@ -47,6 +47,12 @@
               type="text"
               @click="deleteTemplate(scope.row)"
             >删除</el-button>
+            <el-button
+              icon="el-icon-caret-right"
+              size="small"
+              type="text"
+              @click="runTask(scope.row)"
+            >构建</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -111,6 +117,8 @@
 
 <script>
 
+import { emitter } from "@/utils/bus";
+
 const path = import.meta.env.VITE_BASE_API
 // 获取列表内容封装在mixins内部  getTableData方法 初始化已封装完成 条件搜索时候 请把条件安好后台定制的结构体字段 放到 this.searchInfo 中即可实现条件搜索
 
@@ -121,6 +129,7 @@ import {
   addTemplate,
   updateTemplate
 } from '@/api/template'
+import { addTask } from '@/api/task'
 import { getAllServerIds } from '@/api/cmdb'
 import infoList from '@/mixins/infoList'
 import { toSQLLine } from '@/utils/stringFun'
@@ -305,26 +314,15 @@ export default {
     setOptions(data) {
       this.serverOptions = data
     },
-    // setServerOptions(ServerData, optionsData) {
-    //   ServerData &&
-    //   ServerData.forEach(item => {
-    //     if (item.children && item.children.length) {
-    //       const option = {
-    //         ID: item.ID,
-    //         name: item.name,
-    //         children: []
-    //       }
-    //       this.setServerOptions(item.children, option.children)
-    //       optionsData.push(option)
-    //     } else {
-    //       const option = {
-    //         ID: item.ID,
-    //         name: item.name,
-    //       }
-    //       optionsData.push(option)
-    //     }
-    //   })
-    // },
+    async runTask(row) {
+      const task = await addTask(row)
+      this.showTaskLog(task.ID)
+    },
+    showTaskLog(taskId) {
+      emitter.emit('i-show-task', {
+        taskId: taskId,
+      })
+    },
   }
 }
 </script>
