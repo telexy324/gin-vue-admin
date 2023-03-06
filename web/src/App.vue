@@ -10,7 +10,7 @@
           </el-button>
         </div>
       </template>
-      <TaskLogView :item-id="task ? task.ID : null"/>
+      <TaskLogView :item-id="task ? task.ID : 4"/>
     </el-dialog>
     <router-view/>
   </div>
@@ -34,19 +34,18 @@ export default {
       taskLogDialog: null,
       task: null,
       template: null,
+      taskID: 0,
+      // isGetData: false,
     }
   },
   mounted() {
     emitter.on('i-show-task', async(e) => {
-      // console.log(e.ID)
-      // console.log(this.$route.query)
-      // console.log(parseInt(this.$route.query.t || '', 10))
       // if (parseInt(this.$route.query.t || '', 10) !== e.ID) {
       //   const query = { ...this.$route.query, t: e.ID }
       //   await this.$router.replace({ query })
       // }
-      this.task = (await getTaskById({ ID: e.ID })).data
-      this.template = (await getTemplateById({ ID: e.templateId })).data
+      this.task = (await getTaskById({ ID: e.ID })).data.task
+      this.template = (await getTemplateById({ ID: e.templateId })).data.template
       this.taskLogDialog = true
     })
   },

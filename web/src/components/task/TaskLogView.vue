@@ -112,13 +112,10 @@ export default {
   //   immediate: true,
   // },
   watch: {
-    itemId: {
-      immediate: true,
-      handler: function() {
-        this.reset()
-        this.loadData()
-      }
-    }
+    async itemId() {
+      this.reset()
+      await this.loadData()
+    },
   },
   async created() {
     socket.addListener((data) => this.onWebsocketDataReceived(data))
@@ -160,10 +157,9 @@ export default {
 
     async loadData() {
       console.log(this.itemId)
-      this.item = (await getTaskById({ ID: this.itemId })).data
+      this.item = (await getTaskById({ ID: this.itemId })).data.task
 
       this.output = (await getTaskOutputs({ taskId: this.itemId })).data.taskOutputs
-      console.log(this.output)
 
       this.user = (await getUserInfo).data
     },
