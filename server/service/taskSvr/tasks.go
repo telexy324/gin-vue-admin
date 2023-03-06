@@ -73,8 +73,7 @@ func (taskService *TaskService) getTasks(templateID *int, info request.PageInfo)
 }
 
 func (taskService *TaskService) GetTask(taskID int) (task taskMdl.Task, err error) {
-	err = global.GVA_DB.Preload("Template").
-		Where("id = ?", taskID).First(&task).Error
+	err = global.GVA_DB.Where("id = ?", taskID).First(&task).Error
 	return
 }
 
@@ -115,7 +114,7 @@ func (taskService *TaskService) GetTaskOutputs(taskID int) (output []taskMdl.Tas
 		return
 	}
 
-	err = global.GVA_DB.Where("task_id = ?", taskID).Order("time").Find(&output).Error
+	err = global.GVA_DB.Where("task_id = ?", taskID).Order("record_time").Find(&output).Error
 	return
 }
 

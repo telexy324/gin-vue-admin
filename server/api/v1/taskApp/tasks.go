@@ -214,23 +214,23 @@ func (a *TaskApi) GetTaskList(c *gin.Context) {
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
 // @Router /task/getTaskOutputs [post]
 func (a *TaskApi) GetTaskOutputs(c *gin.Context) {
-	var idInfo request.GetById
+	var idInfo taskReq.GetTaskOutputsByTaskId
 	if err := c.ShouldBindJSON(&idInfo); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err := utils.Verify(idInfo, utils.IdVerify); err != nil {
-		response.FailWithMessage(err.Error(), c)
-		return
-	}
+	//if err := utils.Verify(idInfo, utils.IdVerify); err != nil {
+	//	response.FailWithMessage(err.Error(), c)
+	//	return
+	//}
 	//task, err := taskService.GetTask(int(idInfo.ID))
 	//if err != nil {
 	//	global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 	//	response.FailWithMessage("获取失败", c)
 	//	return
 	//}
-	if taskOutput, err := taskService.GetTaskOutputs(int(idInfo.ID)); err != nil {
+	if taskOutput, err := taskService.GetTaskOutputs(int(idInfo.TaskId)); err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 		response.FailWithMessage("获取失败", c)
 		return

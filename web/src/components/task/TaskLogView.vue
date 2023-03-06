@@ -1,5 +1,5 @@
 <template>
-  <div class="task-log-view" :class="{'task-log-view--with-message': item.message}">
+  <div class="task-log-view">
     <el-dialog v-model="visible" :show-close="false">
       <template #header>
         <div class="el-dialog__header">
@@ -17,9 +17,9 @@
         </div>
       </template>
       <div ref="output" class="task-log-records">
-        <div v-for="record in output" :key="record.id" class="task-log-records__record">
+        <div v-for="record in output" :key="record.ID" class="task-log-records__record">
           <div class="task-log-records__time">
-            {{ record.time }}
+            {{ record.recordTime }}
           </div>
           <div class="task-log-records__output">{{ record.output }}</div>
         </div>
@@ -54,9 +54,9 @@
   padding: 5px 10px;
 }
 
-.task-log-view--with-message .task-log-records {
-  height: calc(100vh - 300px);
-}
+//.task-log-view--with-message .task-log-records {
+//  height: calc(100vh - 300px);
+//}
 
 .task-log-records__record {
   display: flex;
@@ -92,7 +92,10 @@ import socket from '@/socket'
 export default {
   components: { TaskStatus },
   props: {
-    itemId: Number,
+    itemId: {
+      type: Number,
+      default: 0
+    },
   },
   data() {
     return {
@@ -101,17 +104,26 @@ export default {
       user: {},
     }
   },
+  // watch: {
+  //   async itemId() {
+  //     this.reset()
+  //     await this.loadData()
+  //   },
+  //   immediate: true,
+  // },
   watch: {
-    async itemId() {
-      this.reset()
-      await this.loadData()
-    },
+    itemId: {
+      immediate: true,
+      handler: function() {
+        this.reset()
+        this.loadData()
+      }
+    }
   },
   async created() {
     socket.addListener((data) => this.onWebsocketDataReceived(data))
     await this.loadData()
   },
-
   methods: {
     async stopTask(Id) {
       await stopTask(Id)
@@ -136,7 +148,7 @@ export default {
           })
           break
         case 'log':
-          this.output.push(data)
+          this.output.push(data.taskOutputs)
           setTimeout(() => {
             this.$refs.output.scrollTop = this.$refs.output.scrollHeight
           }, 200)
@@ -146,10 +158,12 @@ export default {
       }
     },
 
-    async loadData(Id) {
-      this.item = (await getTaskById(Id)).data
+    async loadData() {
+      console.log(this.itemId)
+      this.item = (await getTaskById({ ID: this.itemId })).data
 
-      this.output = (await getTaskOutputs(Id)).data
+      this.output = (await getTaskOutputs({ taskId: this.itemId })).data.taskOutputs
+      console.log(this.output)
 
       this.user = (await getUserInfo).data
     },

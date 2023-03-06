@@ -8,7 +8,7 @@
         />
         <el-table-column align="left" label="id" min-width="60" sortable="custom">
           <template v-slot="scope">
-            <a @click="showTaskLog()">{{ scope.row.ID }}</a>
+            <a @click="showTaskLog(scope.row)">{{ scope.row.ID }}</a>
           </template>
         </el-table-column>
         <el-table-column align="left" label="模板id" min-width="150" prop="templateId" sortable="custom" />
@@ -18,8 +18,8 @@
           </template>
         </el-table-column>
         <el-table-column align="left" label="创建人" min-width="200" prop="userId" sortable="custom" />
-        <el-table-column align="left" label="开始时间" min-width="150" prop="beginTime" sortable="custom" />
-        <el-table-column align="left" label="结束时间" min-width="150" prop="endTime" sortable="custom" />
+        <el-table-column align="left" label="开始时间" min-width="150" prop="beginTime.Time" sortable="custom" />
+        <el-table-column align="left" label="结束时间" min-width="150" prop="endTime.Time" sortable="custom" />
       </el-table>
       <div class="gva-pagination">
         <el-pagination
@@ -90,10 +90,8 @@ export default {
       }
       this.getTableData()
     },
-    showTaskLog() {
-      emitter.emit('i-show-task', {
-        taskId: this.taskId,
-      })
+    showTaskLog(t) {
+      emitter.emit('i-show-task', t)
     },
   }
 }
