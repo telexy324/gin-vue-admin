@@ -301,3 +301,30 @@ func (b *BaseApi) GetUserInfo(c *gin.Context) {
 		response.OkWithDetailed(gin.H{"userInfo": ReqUser}, "获取成功", c)
 	}
 }
+
+// @Tags SysUser
+// @Summary 获取用户信息
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body request.GetById true "用户id"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
+// @Router /user/getUserById [post]
+func (b *BaseApi) GetUserById(c *gin.Context) {
+	var idInfo request.GetById
+	if err := c.ShouldBindJSON(&idInfo); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err := utils.Verify(idInfo, utils.IdVerify); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err, userReturn := userService.FindUserById(int(idInfo.ID)); err != nil {
+		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
+		response.FailWithMessage("获取失败", c)
+	} else {
+		response.OkWithDetailed(systemRes.SysUserResponse{User: *userReturn}, "获取成功", c)
+	}
+}

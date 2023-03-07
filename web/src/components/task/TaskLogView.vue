@@ -1,48 +1,44 @@
 <template>
-  <div class="task-log-view">
-    <el-dialog v-model="visible" :show-close="false">
-      <template #header>
-        <div class="el-dialog__header">
-          <el-row :gutter="10">
-            <el-col :span="6">
-              <TaskStatus :status="item.status" />
-            </el-col>
-            <el-col :span="3">Author:</el-col>
-            <el-col :span="3" v-text="user.name" />
-            <el-col :span="3">start:</el-col>
-            <el-col :span="3" v-text="item.start_time" />
-            <el-col :span="3">end:</el-col>
-            <el-col :span="3" v-text="item.end_time" />
-          </el-row>
-        </div>
-      </template>
-      <div ref="output" class="task-log-records">
-        <div v-for="record in output" :key="record.ID" class="task-log-records__record">
-          <div class="task-log-records__time">
-            {{ record.recordTime }}
-          </div>
-          <div class="task-log-records__output">{{ record.output }}</div>
-        </div>
+  <el-dialog v-model="visible" :show-close="false">
+    <template #title>
+      <div class="el-dialog__header">
+        <el-row :gutter="10">
+          <el-col :span="3">Task #{{ item.ID }}</el-col>
+          <el-col :span="3">
+            <TaskStatus :status="item.status" />
+          </el-col>
+          <el-col :span="3">Author:</el-col>
+          <el-col :span="3" v-text="user.userName" />
+          <el-col :span="3">start:</el-col>
+          <el-col :span="3">{{ formatDate(item.beginTime.Time) }}</el-col>
+          <el-col :span="3">end:</el-col>
+          <el-col :span="3">{{ formatDate(item.endTime.Time) }}</el-col>
+        </el-row>
       </div>
-      <el-button
-        v-if="item.status === 'running' || item.status === 'waiting'"
-        type="danger"
-        round
-        style="position: absolute; bottom: 10px; right: 10px;"
-        @click="stopTask()"
-      >
-        Stop
-      </el-button>
-    </el-dialog>
-  </div>
+    </template>
+    <div ref="output" class="task-log-records">
+      <div v-for="record in output" :key="record.ID" class="task-log-records__record">
+        <div class="task-log-records__time">
+          {{ formatDate(record.recordTime) }}
+        </div>
+        <div class="task-log-records__output">{{ record.output }}</div>
+      </div>
+    </div>
+    <el-button
+      v-if="item.status === 'running' || item.status === 'waiting'"
+      type="danger"
+      round
+      style="position: absolute; bottom: 10px; right: 10px;"
+      @click="stopTask()"
+    >
+      Stop
+    </el-button>
+  </el-dialog>
 </template>
 
 <style lang="scss">
 
 // @import '~vuetify/src/styles/settings/_variables';
-
-.task-log-view {
-}
 
 .task-log-records {
   background: black;
@@ -85,9 +81,10 @@
 </style>
 <script>
 import { getTaskById, getTaskOutputs, stopTask } from '@/api/task'
-import { getUserInfo } from '@/api/user'
+import { getUserById } from '@/api/user'
 import TaskStatus from '@/components/task/TaskStatus.vue'
 import socket from '@/socket'
+import { formatTimeToStr } from '@/utils/date'
 
 export default {
   components: { TaskStatus },
@@ -102,6 +99,7 @@ export default {
       item: {},
       output: [],
       user: {},
+      visible: false,
     }
   },
   // watch: {
@@ -156,12 +154,21 @@ export default {
     },
 
     async loadData() {
-      console.log(this.itemId)
       this.item = (await getTaskById({ ID: this.itemId })).data.task
 
       this.output = (await getTaskOutputs({ taskId: this.itemId })).data.taskOutputs
+      this.user = (await getUserById({ ID: this.item.systemUserId })).data.user
+      console.log(this.user)
+      this.visible = true
+    },
 
-      this.user = (await getUserInfo).data
+    formatDate: function(time) {
+      if (time !== null && time !== '') {
+        var date = new Date(time)
+        return formatTimeToStr(date, 'yyyy-MM-dd hh:mm:ss')
+      } else {
+        return ''
+      }
     },
   },
 }

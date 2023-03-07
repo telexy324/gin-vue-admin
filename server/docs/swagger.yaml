@@ -4328,6 +4328,29 @@ paths:
       summary: 删除用户
       tags:
       - SysUser
+  /user/getUserById:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 用户id
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetById'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 获取用户信息
+      tags:
+      - SysUser
   /user/getUserInfo:
     get:
       consumes:

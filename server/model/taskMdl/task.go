@@ -19,11 +19,11 @@ const (
 
 type Task struct {
 	global.GVA_MODEL
-	TemplateId   int          `json:"templateId" gorm:"column:template_id"`      // task id
-	Status       TaskStatus   `json:"status" gorm:"column:status"`               // 状态
-	SystemUserId int          `json:"systemUserId" gorm:"column:system_user_id"` // 执行人
-	BeginTime    sql.NullTime `json:"beginTime" gorm:"column:begin_time"`        // 开始时间
-	EndTime      sql.NullTime `json:"endTime" gorm:"column:end_time"`            // 结束时间
+	TemplateId   int          `json:"templateId" gorm:"column:template_id"`                    // task id
+	Status       TaskStatus   `json:"status" gorm:"column:status"`                             // 状态
+	SystemUserId int          `json:"systemUserId" gorm:"column:system_user_id" `              // 执行人
+	BeginTime    sql.NullTime `json:"beginTime" gorm:"column:begin_time" swaggertype:"string"` // 开始时间
+	EndTime      sql.NullTime `json:"endTime" gorm:"column:end_time" swaggertype:"string"`     // 结束时间
 }
 
 func (m *Task) TableName() string {

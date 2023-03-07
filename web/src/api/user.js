@@ -141,3 +141,19 @@ export const getUserInfo = () => {
     method: 'get'
   })
 }
+
+// @Tags User
+// @Summary 获取用户信息
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body api.GetById true "根据id获取用户"
+// @Success 200 {string} json "{"success":true,"data":{},"msg":"获取成功"}"
+// @Router /user/getUserById [post]
+export const getUserById = (data) => {
+  return service({
+    url: '/user/getUserById',
+    method: 'post',
+    data: data
+  })
+}

@@ -1,18 +1,18 @@
 <template>
   <div id="app">
-    <el-dialog v-model="taskLogDialog" :before-close="onTaskLogDialogClosed">
-      <template #header="{ titleId, titleClass }">
-        <div class="my-header">
-          <h4 :id="titleId" :class="titleClass">Task #{{ task ? task.ID : null }}</h4>
-          <el-button type="danger" @click="onTaskLogDialogClosed()">
-            <el-icon class="el-icon--left"></el-icon>
-            Close
-          </el-button>
-        </div>
-      </template>
-      <TaskLogView :item-id="task ? task.ID : 4"/>
-    </el-dialog>
-    <router-view/>
+<!--    <el-dialog v-model="taskLogDialog" :before-close="onTaskLogDialogClosed" :title="dialogTitle">-->
+<!--      <template #header="{ titleId, titleClass }">-->
+<!--        <div class="el-dialog__header">-->
+<!--          <h4 :id="titleId" :class="titleClass">Task #{{ task ? task.ID : null }}</h4>-->
+<!--          <el-button type="danger" @click="onTaskLogDialogClosed()">-->
+<!--            <el-icon class="el-icon&#45;&#45;left"></el-icon>-->
+<!--            Close-->
+<!--          </el-button>-->
+<!--        </div>-->
+<!--      </template>-->
+    <TaskLogView v-if="isGetData" :item-id="task ? task.ID : null" :visiable="!!task" />
+<!--    </el-dialog>-->
+    <router-view />
   </div>
 </template>
 
@@ -35,7 +35,8 @@ export default {
       task: null,
       template: null,
       taskID: 0,
-      // isGetData: false,
+      // dialogTitle: '',
+      isGetData: false,
     }
   },
   mounted() {
@@ -46,6 +47,8 @@ export default {
       // }
       this.task = (await getTaskById({ ID: e.ID })).data.task
       this.template = (await getTemplateById({ ID: e.templateId })).data.template
+      // this.dialogTitle = 'Task #' + this.task.ID
+      this.isGetData = true
       this.taskLogDialog = true
     })
   },
