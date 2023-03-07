@@ -18,8 +18,8 @@
           </template>
         </el-table-column>
         <el-table-column align="left" label="创建人" min-width="200" prop="userId" sortable="custom" />
-        <el-table-column align="left" label="开始时间" min-width="150" prop="beginTime.Time" sortable="custom" />
-        <el-table-column align="left" label="结束时间" min-width="150" prop="endTime.Time" sortable="custom" />
+        <el-table-column align="left" label="开始时间" min-width="150" prop="beginTime.Time" sortable="custom" :formatter="dateFormatter1" />
+        <el-table-column align="left" label="结束时间" min-width="150" prop="endTime.Time" sortable="custom" :formatter="dateFormatter2" />
       </el-table>
       <div class="gva-pagination">
         <el-pagination
@@ -37,6 +37,7 @@
 </template>
 
 <script>
+
 const path = import.meta.env.VITE_BASE_API
 // 获取列表内容封装在mixins内部  getTableData方法 初始化已封装完成 条件搜索时候 请把条件安好后台定制的结构体字段 放到 this.searchInfo 中即可实现条件搜索
 
@@ -48,6 +49,7 @@ import infoList from '@/mixins/infoList'
 import { toSQLLine } from '@/utils/stringFun'
 import { emitter } from '@/utils/bus'
 import TaskStatus from '@/components/task/TaskStatus.vue'
+import { formatTimeToStr } from '@/utils/date'
 
 export default {
   name: 'TaskList',
@@ -92,6 +94,22 @@ export default {
     },
     showTaskLog(t) {
       emitter.emit('i-show-task', t)
+    },
+    dateFormatter1(row) {
+      if (row.beginTime.Time !== null && row.beginTime.Time !== '') {
+        var date = new Date(row.beginTime.Time)
+        return formatTimeToStr(date, 'yyyy-MM-dd hh:mm:ss')
+      } else {
+        return ''
+      }
+    },
+    dateFormatter2(row) {
+      if (row.endTime.Time !== null && row.endTime.Time !== '') {
+        var date = new Date(row.endTime.Time)
+        return formatTimeToStr(date, 'yyyy-MM-dd hh:mm:ss')
+      } else {
+        return ''
+      }
     },
   }
 }

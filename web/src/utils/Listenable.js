@@ -7,6 +7,7 @@ export default class Listenable {
     // eslint-disable-next-line symbol-description
     const id = Symbol()
     this.listeners[id] = callback
+    console.log(id)
     return id
   }
 

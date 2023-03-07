@@ -314,15 +314,14 @@ export default {
       this.serverOptions = data
     },
     async runTask(row) {
-      const task = await addTask({
+      const task = (await addTask({
         templateId: row.ID
-      })
-      this.showTaskLog(task.ID)
+      })).data.task
+      console.log(task.ID)
+      this.showTaskLog(task)
     },
-    showTaskLog(taskId) {
-      emitter.emit('i-show-task', {
-        taskId: taskId,
-      })
+    showTaskLog(task) {
+      emitter.emit('i-show-task', task)
     },
   }
 }

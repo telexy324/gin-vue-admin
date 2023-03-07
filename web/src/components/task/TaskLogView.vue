@@ -117,6 +117,7 @@ export default {
   },
   async created() {
     socket.addListener((data) => this.onWebsocketDataReceived(data))
+    console.log(document.baseURI)
     await this.loadData()
   },
   methods: {
@@ -131,7 +132,7 @@ export default {
     },
 
     onWebsocketDataReceived(data) {
-      if (data.project_id !== this.projectId || data.task_id !== this.itemId) {
+      if (data.task_id !== this.itemId) {
         return
       }
 
@@ -143,7 +144,7 @@ export default {
           })
           break
         case 'log':
-          this.output.push(data.taskOutputs)
+          this.output.push(data.output)
           setTimeout(() => {
             this.$refs.output.scrollTop = this.$refs.output.scrollHeight
           }, 200)
