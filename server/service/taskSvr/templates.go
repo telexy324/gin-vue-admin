@@ -27,7 +27,7 @@ func (templateService *TaskTemplatesService) CreateTaskTemplate(template taskMdl
 
 func (templateService *TaskTemplatesService) UpdateTaskTemplate(template taskMdl.TaskTemplate) error {
 	var oldTaskTemplate taskMdl.TaskTemplate
-	_, targetServersJson := json.Marshal(template.TargetIds)
+	targetServersJson, _ := json.Marshal(template.TargetIds)
 	upDateMap := make(map[string]interface{})
 	upDateMap["name"] = template.Name
 	upDateMap["description"] = template.Description

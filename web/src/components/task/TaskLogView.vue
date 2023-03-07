@@ -50,9 +50,9 @@
   padding: 5px 10px;
 }
 
-//.task-log-view--with-message .task-log-records {
-//  height: calc(100vh - 300px);
-//}
+.task-log-view--with-message .task-log-records {
+  height: calc(100vh - 300px);
+}
 
 .task-log-records__record {
   display: flex;
@@ -61,8 +61,8 @@
 }
 
 .task-log-records__time {
-  width: 120px;
-  min-width: 120px;
+  width: 140px;
+  min-width: 140px;
 }
 
 .task-log-records__output {
