@@ -22,6 +22,7 @@ import { getTemplateById } from '@/api/template'
 import { emitter } from '@/utils/bus'
 // import { CircleCloseFilled } from '@element-plus/icons-vue'
 import TaskLogView from '@/components/task/TaskLogView.vue'
+import socket from '@/socket';
 
 export default {
   name: 'App',

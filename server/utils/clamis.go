@@ -9,6 +9,9 @@ import (
 
 func GetClaims(c *gin.Context) (*systemReq.CustomClaims,error) {
 	token := c.Request.Header.Get("x-token")
+	if len(token) <= 0 {
+		token = c.Query("x-token")
+	}
 	j := NewJWT()
 	claims, err := j.ParseToken(token)
 	if err != nil {

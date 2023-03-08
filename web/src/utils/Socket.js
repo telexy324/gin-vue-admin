@@ -3,12 +3,12 @@ import Listenable from '@/utils/Listenable'
 export default class Socket extends Listenable {
   constructor(websocketCreator) {
     super()
-    this.websocketCreator = websocketCreator;
+    this.websocketCreator = websocketCreator
   }
 
   start() {
     if (this.ws != null) {
-      throw new Error('Websocket already started. Please stop it before starting.');
+      throw new Error('Websocket already started. Please stop it before starting.')
     }
     this.ws = this.websocketCreator()
     this.ws.onclose = () => {

@@ -552,7 +552,7 @@ func (t *TaskRunner) populateDetails() error {
 func (t *TaskRunner) runTask() (err error) {
 	servers := t.template.TargetServers
 	for _, server := range servers {
-		sshClient, err := sshService.FillSSHClient(server.ManageIp, t.template.SysUser, "613pygmy", server.SshPort)
+		sshClient, err := sshService.FillSSHClient(server.ManageIp, t.template.SysUser, "123456", server.SshPort)
 		err = sshClient.GenerateClient()
 		if err != nil {
 			return err
