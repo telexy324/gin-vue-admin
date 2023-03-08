@@ -73,12 +73,13 @@ func (t *TaskRunner) setStatus(status taskMdl.TaskStatus) {
 func (t *TaskRunner) updateStatus() {
 	for _, user := range t.users {
 		b, err := json.Marshal(&map[string]interface{}{
-			"type":        "update",
-			"start":       t.task.BeginTime,
-			"end":         t.task.EndTime,
-			"status":      t.task.Status,
-			"task_id":     t.task.ID,
-			"template_id": t.task.TemplateId,
+			"type":       "update",
+			"beginTime":  t.task.BeginTime,
+			"endTime":    t.task.EndTime,
+			"status":     t.task.Status,
+			"ID":         t.task.ID,
+			"templateId": t.task.TemplateId,
+			"taskId":     t.task.ID,
 		})
 
 		if err != nil {

@@ -1,5 +1,5 @@
 import Socket from '@/utils/Socket'
-import { store } from '@/store/index'
+import { store } from '@/store'
 
 const socket = new Socket(() => {
   // const baseURI = `ws${document.baseURI.substr(4)}`

@@ -135,7 +135,7 @@ export default {
     },
 
     onWebsocketDataReceived(data) {
-      if (data.task_id !== this.itemId) {
+      if (data.taskId !== this.itemId) {
         return
       }
 
@@ -147,7 +147,7 @@ export default {
           })
           break
         case 'log':
-          this.output.push(data.output)
+          this.output.push(data)
           setTimeout(() => {
             this.$refs.output.scrollTop = this.$refs.output.scrollHeight
           }, 200)

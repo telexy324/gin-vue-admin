@@ -16,10 +16,11 @@ func (t *TaskRunner) Log(msg string) {
 
 	for _, user := range t.users {
 		b, err := json.Marshal(&map[string]interface{}{
-			"type":    "log",
-			"output":  msg,
-			"time":    now,
-			"task_id": t.task.ID,
+			"type":       "log",
+			"output":     msg,
+			"recordTime": now,
+			"taskId":     t.task.ID,
+			"ID":         time.Now().UnixNano(),
 		})
 
 		if err != nil {
