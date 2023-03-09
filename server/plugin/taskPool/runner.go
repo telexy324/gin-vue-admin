@@ -562,19 +562,33 @@ func (t *TaskRunner) runTask() (failedIPs []string) {
 		wg.Add(1)
 		go func(w *sync.WaitGroup, s application.ApplicationServer, f chan string) {
 			defer w.Done()
-			sshClient, err := sshService.FillSSHClient(s.ManageIp, t.template.SysUser, "123456", s.SshPort)
+			sshClient, err := sshService.FillSSHClient(s.ManageIp, t.template.SysUser, "613pygmy", s.SshPort)
 			err = sshClient.GenerateClient()
 			if err != nil {
 				global.GVA_LOG.Error("run task failed on create ssh client: ", zap.Uint("task ID: ", t.task.ID), zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
 				f <- s.ManageIp
 				return
 			}
-			sshClient.RequestShell()
-			if err = sshClient.ConnectShell(t.template.Command, t); err != nil {
-				global.GVA_LOG.Error("run task failed on run command: ", zap.Uint("task ID: ", t.task.ID), zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
+			ssConn, err := sshService.NewSshConn(sshClient.Client, 0, 0)
+			if err != nil {
+				global.GVA_LOG.Error("run task failed on create ssh session: ", zap.Uint("task ID: ", t.task.ID), zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
 				f <- s.ManageIp
 				return
 			}
+			quitChan := make(chan bool, 3)
+
+			// most messages are ssh output, not webSocket input
+			go ssConn.SendCommand(t.template.Command, t, quitChan)
+			go ssConn.SendCommandOutput(t, quitChan)
+			go ssConn.SessionWait(quitChan)
+
+			<-quitChan
+			//sshClient.RequestShell()
+			//if err = sshClient.ConnectShell(t.template.Command, t); err != nil {
+			//	global.GVA_LOG.Error("run task failed on run command: ", zap.Uint("task ID: ", t.task.ID), zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
+			//	f <- s.ManageIp
+			//	return
+			//}
 			return
 		}(wg, server, failedChan)
 	}
