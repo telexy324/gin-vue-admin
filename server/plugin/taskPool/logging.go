@@ -9,6 +9,7 @@ import (
 	"golang.org/x/crypto/ssh"
 	"os/exec"
 	"time"
+	"unicode/utf8"
 )
 
 func (t *TaskRunner) Log(msg string) {
@@ -39,22 +40,44 @@ func (t *TaskRunner) Log(msg string) {
 
 // Readln reads from the pipe
 func Readln(r *bufio.Reader) (string, error) {
+	//var (
+	//	isPrefix = true
+	//	err      error
+	//	line, ln []byte
+	//)
+	//for isPrefix && err == nil {
+	//	line, isPrefix, err = r.ReadLine()
+	//	ln = append(ln, line...)
+	//}
+	//return string(ln), err
+
 	var (
-		isPrefix = true
-		err      error
-		line, ln []byte
+		err  error
+		line []byte
 	)
-	for isPrefix && err == nil {
-		line, isPrefix, err = r.ReadLine()
-		ln = append(ln, line...)
+	for err == nil {
+		global.GVA_LOG.Info("starting read line")
+		x, size, e := r.ReadRune()
+		err = e
+		global.GVA_LOG.Info("start read line")
+		if size > 0 && e == nil {
+			if x != utf8.RuneError {
+				p := make([]byte, utf8.RuneLen(x))
+				utf8.EncodeRune(p, x)
+				line = append(line, p...)
+			} else {
+				line = append(line, []byte("@")...)
+			}
+		}
 	}
-	return string(ln), err
+	return string(line), err
 }
 
 func (t *TaskRunner) logPipe(reader *bufio.Reader) {
 
 	line, err := Readln(reader)
 	for err == nil {
+		global.GVA_LOG.Info("read output", zap.String(" ", line))
 		t.Log(line)
 		line, err = Readln(reader)
 	}
@@ -74,8 +97,8 @@ func (t *TaskRunner) LogCmd(cmd *exec.Cmd) {
 	go t.logPipe(bufio.NewReader(stdout))
 }
 
-func (t *TaskRunner) LogSsh(channel *ssh.Channel) {
-	go t.logPipe(bufio.NewReader(*channel))
+func (t *TaskRunner) LogSsh(channel ssh.Channel) {
+	go t.logPipe(bufio.NewReader(channel))
 }
 
 func (t *TaskRunner) panicOnError(err error, msg string) {

@@ -47,7 +47,7 @@ func (m *TaskTemplate) AfterFind(tx *gorm.DB) (err error) {
 		}
 	}
 	if m.LastTaskId > 0 {
-		if err = tx.Model(&Task{}).Where("id = ?", serverIds).Find(&m.LastTask).Error; err != nil {
+		if err = tx.Model(&Task{}).Where("id = ?", m.LastTaskId).Find(&m.LastTask).Error; err != nil {
 			global.GVA_LOG.Error("转换失败", zap.Any("err", err))
 			return
 		}

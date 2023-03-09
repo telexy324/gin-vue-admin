@@ -41,7 +41,7 @@ type SSHClient struct {
 	Server   *application.ApplicationServer `json:"server"`
 	//Session  *ssh.Session
 	Client  *ssh.Client
-	channel ssh.Channel
+	Channel ssh.Channel
 }
 
 func newSSHClient() SSHClient {
@@ -131,7 +131,7 @@ func (c *SSHClient) RequestTerminal(terminal Terminal) *SSHClient {
 	if err != nil {
 		return nil
 	}
-	c.channel = channel
+	c.Channel = channel
 	go ssh.DiscardRequests(inRequests)
 	//go func() {
 	//	for req := range inRequests {
@@ -180,7 +180,7 @@ func (c *SSHClient) Connect(ws *websocket.Conn) {
 			if err != nil {
 				return
 			}
-			_, err = c.channel.Write(p)
+			_, err = c.Channel.Write(p)
 			if err != nil {
 				return
 			}
@@ -188,7 +188,7 @@ func (c *SSHClient) Connect(ws *websocket.Conn) {
 	}()
 
 	go func() {
-		br := bufio.NewReader(c.channel)
+		br := bufio.NewReader(c.Channel)
 		buf := []byte{}
 		t := time.NewTimer(time.Microsecond * 100)
 		defer t.Stop()
@@ -248,7 +248,7 @@ func (c *SSHClient) RequestShell() *SSHClient {
 	if err != nil {
 		return nil
 	}
-	c.channel = channel
+	c.Channel = channel
 	go ssh.DiscardRequests(inRequests)
 	ok, err := channel.SendRequest("shell", true, nil)
 	if !ok || err != nil {
@@ -258,12 +258,11 @@ func (c *SSHClient) RequestShell() *SSHClient {
 }
 
 func (c *SSHClient) ConnectShell(shell string, logger common.Logger) (err error) {
-	_, err = c.channel.Write([]byte(shell))
+	logger.LogSsh(c.Channel)
+	_, err = c.Channel.Write([]byte(shell))
 	if err != nil {
 		return
 	}
-
-	logger.LogSsh(&c.channel)
 
 	//defer func() {
 	//	if err := recover(); err != nil {

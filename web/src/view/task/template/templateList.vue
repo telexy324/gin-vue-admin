@@ -31,7 +31,11 @@
           width="55"
         />
         <el-table-column align="left" label="name" min-width="60" prop="name" sortable="custom" />
-        <el-table-column align="left" label="lastStatus" min-width="150" prop="lastTask.status" sortable="custom" />
+        <el-table-column align="left" label="lastStatus" min-width="150" prop="lastTask.status" sortable="custom" >
+          <template v-slot="scope">
+            <TaskStatus :status="scope.row.lastTask.status" />
+          </template>
+        </el-table-column>
         <el-table-column align="left" label="task" min-width="150" prop="lastTask.ID" sortable="custom" />
         <el-table-column align="left" fixed="right" label="操作" width="200">
           <template #default="scope">
@@ -133,11 +137,13 @@ import infoList from '@/mixins/infoList'
 import { toSQLLine } from '@/utils/stringFun'
 import warningBar from '@/components/warningBar/warningBar.vue'
 import { emitter } from '@/utils/bus'
+import TaskStatus from '@/components/task/TaskStatus.vue'
 
 export default {
   name: 'TemplateList',
   components: {
-    warningBar
+    warningBar,
+    TaskStatus
   },
   mixins: [infoList],
   data() {

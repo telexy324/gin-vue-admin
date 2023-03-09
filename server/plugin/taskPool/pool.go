@@ -306,6 +306,15 @@ func (p *TaskPool) AddTask(taskObj taskMdl.Task, userID int) (newTask taskMdl.Ta
 	if err != nil {
 		return
 	}
+	template,err:=taskService.GetTaskTemplate(float64(taskObj.TemplateId))
+	if err != nil {
+		return
+	}
+	template.LastTaskId = int(newTask.ID)
+	err = taskService.UpdateTaskTemplate(template)
+	if err != nil {
+		return
+	}
 
 	taskRunner := TaskRunner{
 		task: newTask,
