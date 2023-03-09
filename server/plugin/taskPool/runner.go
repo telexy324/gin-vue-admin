@@ -7,6 +7,7 @@ import (
 	"fmt"
 	sockets "github.com/flipped-aurora/gin-vue-admin/server/api/v1/socket"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/application"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/system"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl"
@@ -15,6 +16,7 @@ import (
 	"io"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -262,9 +264,10 @@ func (t *TaskRunner) run() {
 		return
 	}
 
-	err := t.runTask()
-	if err != nil {
-		t.Log("Running task failed: " + err.Error())
+	failedIPs := t.runTask()
+	if len(failedIPs) > 0 {
+		failed, _ := json.Marshal(failedIPs)
+		t.Log("Running task failed: " + string(failed))
 		t.fail()
 		return
 	}
@@ -550,20 +553,37 @@ func (t *TaskRunner) populateDetails() error {
 //	}.RunGalaxy(args)
 //}
 
-func (t *TaskRunner) runTask() (err error) {
+func (t *TaskRunner) runTask() (failedIPs []string) {
 	servers := t.template.TargetServers
+	global.GVA_LOG.Info("run ", zap.Uint("task ID: ", t.task.ID))
+	wg := &sync.WaitGroup{}
+	failedChan := make(chan string, len(servers))
 	for _, server := range servers {
-		sshClient, err := sshService.FillSSHClient(server.ManageIp, t.template.SysUser, "123456", server.SshPort)
-		err = sshClient.GenerateClient()
-		if err != nil {
-			return err
-		}
-		sshClient.RequestShell()
-		if err = sshClient.ConnectShell(t.template.Command, t); err != nil {
-			return err
-		}
+		wg.Add(1)
+		go func(w *sync.WaitGroup, s application.ApplicationServer, f chan string) {
+			defer w.Done()
+			sshClient, err := sshService.FillSSHClient(s.ManageIp, t.template.SysUser, "123456", s.SshPort)
+			err = sshClient.GenerateClient()
+			if err != nil {
+				global.GVA_LOG.Error("run task failed on create ssh client: ", zap.Uint("task ID: ", t.task.ID), zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
+				f <- s.ManageIp
+				return
+			}
+			sshClient.RequestShell()
+			if err = sshClient.ConnectShell(t.template.Command, t); err != nil {
+				global.GVA_LOG.Error("run task failed on run command: ", zap.Uint("task ID: ", t.task.ID), zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
+				f <- s.ManageIp
+				return
+			}
+			return
+		}(wg, server, failedChan)
 	}
-	return nil
+	wg.Wait()
+	close(failedChan)
+	for ip := range failedChan {
+		failedIPs = append(failedIPs, ip)
+	}
+	return
 }
 
 //func hasRequirementsChanges(requirementsFilePath string, requirementsHashFilePath string) bool {

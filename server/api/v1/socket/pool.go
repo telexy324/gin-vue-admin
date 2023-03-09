@@ -1,10 +1,5 @@
 package socket
 
-import (
-	"github.com/flipped-aurora/gin-vue-admin/server/global"
-	"go.uber.org/zap"
-)
-
 // hub maintains the set of active connections and broadcasts messages to the
 // connections.
 type hub struct {
@@ -45,9 +40,7 @@ func (h *hub) run() {
 				close(c.send)
 			}
 		case m := <-h.broadcast:
-			global.GVA_LOG.Info(string(m.msg),zap.Any("user",m.userID))
 			for c := range h.connections {
-				global.GVA_LOG.Info("cuser",zap.Any("user",c.userID))
 				if m.userID > 0 && m.userID != c.userID {
 					continue
 				}

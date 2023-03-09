@@ -2,7 +2,7 @@
   <el-tag
     v-if="status"
     :key="status"
-    :color="getStatusColor(status)"
+    :type="getStatusColor(status)"
     class="mx-1"
     effect="dark"
     round
@@ -49,17 +49,17 @@ export default {
     getStatusColor(status) {
       switch (status) {
         case TaskStatus.WAITING:
-          return ''
+          return 'primary'
         case TaskStatus.RUNNING:
           return 'primary'
         case TaskStatus.SUCCESS:
           return 'success'
         case TaskStatus.ERROR:
-          return 'error'
+          return 'danger'
         case TaskStatus.STOPPING:
-          return ''
+          return 'warning'
         case TaskStatus.STOPPED:
-          return ''
+          return 'warning'
         default:
           throw new Error(`Unknown task status ${status}`)
       }

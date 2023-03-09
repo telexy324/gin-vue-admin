@@ -29,7 +29,7 @@
       type="danger"
       round
       style="position: absolute; bottom: 10px; right: 10px;"
-      @click="stopTask()"
+      @click="stopTask(item.ID)"
     >
       Stop
     </el-button>
@@ -125,7 +125,7 @@ export default {
   },
   methods: {
     async stopTask(Id) {
-      await stopTask(Id)
+      await stopTask({ ID: Id })
     },
 
     reset() {
