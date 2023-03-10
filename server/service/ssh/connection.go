@@ -167,6 +167,22 @@ func (c *SSHClient) GenerateClient() error {
 	return nil
 }
 
+func (c *SSHClient) Command(command string, logger common.Logger) (err error) {
+	logger.Log(command)
+	session, err := c.Client.NewSession()
+	if err != nil {
+		logger.Log("ssh open session failed")
+		return
+	}
+	output, err := session.CombinedOutput(command)
+	if err != nil {
+		logger.Log("ssh exec failed")
+		return
+	}
+	logger.Log(string(output))
+	return
+}
+
 //func (c *SSHClient) RequestTerminal(terminal Terminal) *SSHClient {
 //	//session, err := c.Client.NewSession()
 //	//if err != nil {
@@ -340,16 +356,14 @@ func (sshService *SshService) NewSshConn(sshClient *ssh.Client, cols, rows int) 
 	sshSession.Stdout = comboWriter
 	sshSession.Stderr = comboWriter
 
-	if cols > 0 && rows > 0 {
-		modes := ssh.TerminalModes{
-			ssh.ECHO:          1,     // disable echo
-			ssh.TTY_OP_ISPEED: 14400, // input speed = 14.4kbaud
-			ssh.TTY_OP_OSPEED: 14400, // output speed = 14.4kbaud
-		}
-		// Request pseudo terminal
-		if err = sshSession.RequestPty("xterm", rows, cols, modes); err != nil {
-			return nil, err
-		}
+	modes := ssh.TerminalModes{
+		ssh.ECHO:          1,     // disable echo
+		ssh.TTY_OP_ISPEED: 14400, // input speed = 14.4kbaud
+		ssh.TTY_OP_OSPEED: 14400, // output speed = 14.4kbaud
+	}
+	// Request pseudo terminal
+	if err = sshSession.RequestPty("xterm", rows, cols, modes); err != nil {
+		return nil, err
 	}
 	// Start remote shell
 	if err = sshSession.Shell(); err != nil {
@@ -450,40 +464,23 @@ func setQuit(ch chan bool) {
 	ch <- true
 }
 
-func (ssConn *SshConn) SendCommand(command string, logger common.Logger, exitCh chan bool) {
-	//tells other go routine quit
-	defer setQuit(exitCh)
-	for {
-		select {
-		case <-exitCh:
-			return
-		default:
-			if _, err := ssConn.StdinPipe.Write([]byte(command)); err != nil {
-				global.GVA_LOG.Error("command bytes write to ssh.stdin pipe failed", zap.Any("err ", err))
-			}
-			//write input cmd to log buffer
-			logger.Log(command)
-		}
-	}
-}
-
-func (ssConn *SshConn) SendCommandOutput(logger common.Logger, exitCh chan bool) {
-	//tells other go routine quit
-	defer setQuit(exitCh)
-
-	//every 120ms write combine output bytes into websocket response
-	tick := time.NewTicker(time.Millisecond * time.Duration(120))
-	//for range time.Tick(120 * time.Millisecond){}
-	defer tick.Stop()
-	for {
-		select {
-		case <-tick.C:
-			if ssConn.ComboOutput.buffer.Len() != 0 {
-				logger.Log(string(ssConn.ComboOutput.buffer.Bytes()))
-				ssConn.ComboOutput.buffer.Reset()
-			}
-		case <-exitCh:
-			return
-		}
-	}
-}
+//func (ssConn *SshConn) SendCommand(command string, logger common.Logger, exitCh chan bool) (err error) {
+//	logger.Log(command)
+//	_, err = ssConn.StdinPipe.Write([]byte(command))
+//	if err != nil {
+//		logger.Log("ssh run command failed")
+//		return
+//	}
+//	tick := time.NewTicker(time.Millisecond * time.Duration(120))
+//	//for range time.Tick(120 * time.Millisecond){}
+//	defer tick.Stop()
+//	for {
+//		select {
+//		case <-tick.C:
+//			logger.Log(string(ssConn.ComboOutput.buffer.Bytes()))
+//			ssConn.ComboOutput.buffer.Reset()
+//		case <-exitCh:
+//			return
+//		}
+//	}
+//}
