@@ -143,7 +143,7 @@ func (a *TemplateApi) GetTemplateById(c *gin.Context) {
 // @Produce application/json
 // @Param data body request.PageInfo true "页码, 每页大小"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /ansible/template/getTemplateList [post]
+// @Router /task/template/getTemplateList [post]
 func (a *TemplateApi) GetTemplateList(c *gin.Context) {
 	var pageInfo request.PageInfo
 	if err := c.ShouldBindJSON(&pageInfo); err != nil {
@@ -166,4 +166,28 @@ func (a *TemplateApi) GetTemplateList(c *gin.Context) {
 			PageSize: pageInfo.PageSize,
 		}, "获取成功", c)
 	}
+}
+
+// @Tags Template
+// @Summary 上传脚本
+// @Security ApiKeyAuth
+// @accept multipart/form-data
+// @Produce  application/json
+// @Param file formData file true "上传脚本"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"导入成功"}"
+// @Router /task/template/uploadScript [post]
+func (a *TemplateApi) UploadScript(c *gin.Context) {
+	file, header, err := c.Request.FormFile("file")
+	if err != nil {
+		global.GVA_LOG.Error("接收文件失败!", zap.Any("err", err))
+		response.FailWithMessage("接收文件失败", c)
+		return
+	}
+	err = templateService.UploadScript(file, header)
+	if err != nil {
+		global.GVA_LOG.Error("转换Excel失败!", zap.Any("err", err))
+		response.FailWithMessage("转换Excel失败", c)
+		return
+	}
+	response.OkWithMessage("导入成功", c)
 }
