@@ -77,26 +77,20 @@
     <el-dialog v-model="dialogFormVisible" :before-close="closeDialog" :title="dialogTitle">
       <warning-bar title="新增Template" />
       <el-form ref="templateForm" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="模版名" prop="name">
-          <el-input v-model="form.name" autocomplete="off" />
-        </el-form-item>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="模版名" prop="name">
+              <el-input v-model="form.name" autocomplete="off" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="执行用户" prop="sysUser">
+              <el-input v-model="form.sysUser" autocomplete="off" />
+            </el-form-item>
+          </el-col>
+        </el-row>
         <el-form-item label="描述" prop="description">
-          <el-input v-model="form.description" autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="执行方式" prop="mode">
-          <el-select v-model="form.mode" style="width:100%">
-            <el-option :value="1" label="命令" />
-            <el-option :value="2" label="脚本" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="命令" prop="command">
-          <el-input v-model="form.command" autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="脚本位置" prop="scriptPath">
-          <el-input v-model="form.scriptPath" autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="执行用户" prop="sysUser">
-          <el-input v-model="form.sysUser" autocomplete="off" />
+          <el-input v-model="form.description" autocomplete="off" type="textarea"/>
         </el-form-item>
         <el-form-item label="目标" prop="targetServerIds">
           <el-cascader
@@ -107,6 +101,37 @@
             :props="{ multiple:true,checkStrictly: true,label:'name',value:'ID',disabled:'disabled',emitPath:false}"
             :clearable="false"
           />
+        </el-form-item>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="执行方式" prop="mode">
+              <el-select v-model="form.mode" style="width:100%" @change="commandChange">
+                <el-option :value="1" label="命令" />
+                <el-option :value="2" label="脚本" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-form-item v-if="isCommand" label="命令" prop="command">
+          <el-input v-model="form.command" autocomplete="off" type="textarea" />
+        </el-form-item>
+        <el-form-item v-if="isScript" label="脚本位置" prop="scriptPath">
+          <el-input v-model="form.scriptPath" autocomplete="off" />
+        </el-form-item>
+        <el-form-item>
+          <el-upload
+            ref="upload"
+            action=""
+            class="upload-demo"
+            :http-request="httpRequest"
+            :on-preview="handlePreview"
+            :multiple="false"
+            :limit="1"
+            :auto-upload="false"
+            :file-list="data.file"
+          >
+            <el-button size="small" type="primary">选择头像</el-button>
+          </el-upload>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -171,6 +196,8 @@ export default {
         ]
       },
       path: path,
+      isCommand: true,
+      isScript: false
     }
   },
   async created() {
@@ -328,6 +355,18 @@ export default {
     },
     showTaskLog(task) {
       emitter.emit('i-show-task', task)
+    },
+    commandChange(selectValue) {
+      if (selectValue === 1) {
+        this.isCommand = true
+        this.isScript = false
+      } else {
+        this.isCommand = false
+        this.isScript = true
+      }
+    },
+    httpRequest(param) {
+      this.data.file = param.file
     },
   }
 }
