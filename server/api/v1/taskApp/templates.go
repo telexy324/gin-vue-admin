@@ -198,7 +198,7 @@ func (a *TemplateApi) GetTemplateList(c *gin.Context) {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body request.TaskScriptRequest true "主机名, 架构, 管理ip, 系统, 系统版本"
+// @Param data body templateReq.TemplateScriptRequest true "主机名, 架构, 管理ip, 系统, 系统版本"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"更新成功"}"
 // @Router /task/template/checkScript [post]
 func (a *TemplateApi) CheckScript(c *gin.Context) {
@@ -208,14 +208,10 @@ func (a *TemplateApi) CheckScript(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err := utils.Verify(info.ID, utils.IdVerify); err != nil {
-		response.FailWithMessage(err.Error(), c)
-		return
-	}
-	if err := utils.Verify(info.ServerId, utils.IdVerify); err != nil {
-		response.FailWithMessage(err.Error(), c)
-		return
-	}
+	//if err := utils.Verify(info.ID, utils.IdVerify); err != nil {
+	//	response.FailWithMessage(err.Error(), c)
+	//	return
+	//}
 	err, server := cmdbServerService.GetServerById(info.ServerId)
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)

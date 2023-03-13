@@ -61,44 +61,6 @@ var doc = `{
                 }
             }
         },
-        "/ansible/template/getTemplateList": {
-            "post": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Template"
-                ],
-                "summary": "分页获取基础Template列表",
-                "parameters": [
-                    {
-                        "description": "页码, 每页大小",
-                        "name": "data",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/request.PageInfo"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "{\"success\":true,\"data\":{},\"msg\":\"获取成功\"}",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
         "/api/createApi": {
             "post": {
                 "security": [
@@ -4842,6 +4804,44 @@ var doc = `{
                 }
             }
         },
+        "/task/template/checkScript": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Template"
+                ],
+                "summary": "检查script",
+                "parameters": [
+                    {
+                        "description": "主机名, 架构, 管理ip, 系统, 系统版本",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.TemplateScriptRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\":true,\"data\":{},\"msg\":\"更新成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/task/template/deleteTemplate": {
             "post": {
                 "security": [
@@ -4905,6 +4905,44 @@ var doc = `{
                         "required": true,
                         "schema": {
                             "$ref": "#/definitions/request.GetById"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\":true,\"data\":{},\"msg\":\"获取成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/task/template/getTemplateList": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Template"
+                ],
+                "summary": "分页获取基础Template列表",
+                "parameters": [
+                    {
+                        "description": "页码, 每页大小",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.PageInfo"
                         }
                     }
                 ],
@@ -6166,6 +6204,20 @@ var doc = `{
                 "id": {
                     "description": "主键ID",
                     "type": "number"
+                },
+                "page": {
+                    "description": "页码",
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "description": "每页大小",
+                    "type": "integer"
+                },
+                "sortBy": {
+                    "type": "string"
+                },
+                "sortInverted": {
+                    "type": "boolean"
                 }
             }
         },
@@ -6432,6 +6484,21 @@ var doc = `{
                 "pageSize": {
                     "description": "每页大小",
                     "type": "integer"
+                }
+            }
+        },
+        "request.TemplateScriptRequest": {
+            "type": "object",
+            "properties": {
+                "detail": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "description": "主键ID",
+                    "type": "number"
+                },
+                "serverId": {
+                    "type": "number"
                 }
             }
         },

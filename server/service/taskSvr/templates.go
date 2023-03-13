@@ -10,6 +10,7 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/service/ssh"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
+	"strings"
 )
 
 type TaskTemplatesService struct {
@@ -149,7 +150,8 @@ func (templateService *TaskTemplatesService) CheckScript(ID float64, s applicati
 	var command string
 	command = `[ -f ` + template.ScriptPath + ` ] && echo yes || echo no`
 	output, err = sshClient.CommandSingle(command)
-	if err != nil || output == "no" {
+	global.GVA_LOG.Info(strings.Trim(output," "))
+	if err != nil || strings.Trim(output," ") == "no" {
 		global.GVA_LOG.Error("judge script exist: ", zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
 		return
 	}

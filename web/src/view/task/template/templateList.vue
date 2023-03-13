@@ -199,6 +199,7 @@ export default {
       templates: [],
       serverOptions: [],
       form: {
+        ID: '',
         name: '',
         description: '',
         mode: '',
@@ -266,6 +267,7 @@ export default {
     initForm() {
       this.$refs.templateForm.resetFields()
       this.form = {
+        ID: '',
         name: '',
         description: '',
         mode: '',
@@ -392,10 +394,10 @@ export default {
     // httpRequest(param) {
     //   this.data.file = param.file
     // },
-    async checkScript(row) {
+    async checkScript() {
       const res = (await checkScript({
-        ID: row.ID,
-        serverId: row.serverId,
+        ID: this.form.ID,
+        serverId: this.form.targetIds[0],
         detail: this.form.detail
       }))
       if (res.code !== 0) {
@@ -410,6 +412,13 @@ export default {
           showClose: true,
           message: '脚本不存在',
           type: 'error'
+        })
+      }
+      if (!this.form.detail) {
+        ElMessage({
+          showClose: true,
+          message: '检查成功',
+          type: 'info'
         })
       }
       if (this.form.detail) {
