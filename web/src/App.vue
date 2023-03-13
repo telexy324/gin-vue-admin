@@ -11,6 +11,7 @@
 <!--        </div>-->
 <!--      </template>-->
     <TaskLogView v-if="isGetData" :item-id="task ? task.ID : null" :visiable="!!task" />
+    <ScriptView :script="script" :visiable="scriptDialog" />
 <!--    </el-dialog>-->
     <router-view />
   </div>
@@ -22,13 +23,15 @@ import { getTemplateById } from '@/api/template'
 import { emitter } from '@/utils/bus'
 // import { CircleCloseFilled } from '@element-plus/icons-vue'
 import TaskLogView from '@/components/task/TaskLogView.vue'
-import socket from '@/socket';
+import ScriptView from '@/components/task/ScriptView.vue'
+// import socket from '@/socket';
 
 export default {
   name: 'App',
   components: {
     // CircleCloseFilled,
-    TaskLogView
+    TaskLogView,
+    ScriptView
   },
   data() {
     return {
@@ -38,6 +41,8 @@ export default {
       taskID: 0,
       // dialogTitle: '',
       isGetData: false,
+      script: '',
+      scriptDialog: null,
     }
   },
   mounted() {
@@ -51,6 +56,10 @@ export default {
       // this.dialogTitle = 'Task #' + this.task.ID
       this.isGetData = true
       this.taskLogDialog = true
+    })
+    emitter.on('i-show-script', async(e) => {
+      this.script = e
+      this.scriptDialog = true
     })
   },
   methods: {

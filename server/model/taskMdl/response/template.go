@@ -11,3 +11,8 @@ type TaskTemplatesResponse struct {
 type TaskTemplateResponse struct {
 	Template taskMdl.TaskTemplate `json:"taskTemplate"`
 }
+
+type TemplateScriptResponse struct {
+	Exist  bool   `json:"exist"`
+	Script string `json:"script"`
+}

@@ -183,6 +183,18 @@ func (c *SSHClient) Command(command string, logger common.Logger) (err error) {
 	return
 }
 
+func (c *SSHClient) CommandSingle(command string) (output string, err error) {
+	session, err := c.Client.NewSession()
+	if err != nil {
+		return
+	}
+	outputBytes, err := session.CombinedOutput(command)
+	if err != nil {
+		return
+	}
+	return string(outputBytes), nil
+}
+
 //func (c *SSHClient) RequestTerminal(terminal Terminal) *SSHClient {
 //	//session, err := c.Client.NewSession()
 //	//if err != nil {

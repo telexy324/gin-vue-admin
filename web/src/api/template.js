@@ -62,3 +62,15 @@ export const getTemplateById = (data) => {
     data
   })
 }
+
+// @Summary 检查脚本
+// @Produce  application/json
+// @Param checkScript Object
+// @Router /task/template/checkScript [post]
+export const checkScript = (data) => {
+  return service({
+    url: '/task/template/checkScript',
+    method: 'post',
+    data
+  })
+}

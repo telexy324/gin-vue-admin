@@ -118,21 +118,38 @@
         <el-form-item v-if="isScript" label="脚本位置" prop="scriptPath">
           <el-input v-model="form.scriptPath" autocomplete="off" />
         </el-form-item>
-        <el-form-item>
-          <el-upload
-            ref="upload"
-            action=""
-            class="upload-demo"
-            :http-request="httpRequest"
-            :on-preview="handlePreview"
-            :multiple="false"
-            :limit="1"
-            :auto-upload="false"
-            :file-list="data.file"
-          >
-            <el-button size="small" type="primary">选择头像</el-button>
-          </el-upload>
-        </el-form-item>
+<!--        <el-form-item>-->
+<!--          <el-upload-->
+<!--            ref="upload"-->
+<!--            action=""-->
+<!--            class="upload-demo"-->
+<!--            :http-request="httpRequest"-->
+<!--            :on-preview="handlePreview"-->
+<!--            :multiple="false"-->
+<!--            :limit="1"-->
+<!--            :auto-upload="false"-->
+<!--            :file-list="data.file"-->
+<!--          >-->
+<!--            <el-button size="small" type="primary">选择头像</el-button>-->
+<!--          </el-upload>-->
+<!--        </el-form-item>-->
+        <el-row>
+          <el-col :span="6">
+            <el-form-item v-if="isScript">
+              <el-button type="primary" @click="checkScript">检查脚本</el-button>
+            </el-form-item>
+          </el-col>
+          <el-col :span="6">
+            <el-form-item label="脚本内容" v-if="isScript">
+              <el-switch v-model="form.detail" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="6">
+            <el-form-item v-if="isScript">
+              <el-button type="primary" @click="checkScript">上传脚本</el-button>
+            </el-form-item>
+          </el-col>
+        </el-row>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
@@ -154,7 +171,8 @@ import {
   deleteTemplate,
   getTemplateById,
   addTemplate,
-  updateTemplate
+  updateTemplate,
+  checkScript
 } from '@/api/template'
 import { addTask } from '@/api/task'
 import { getAllServerIds } from '@/api/cmdb'
@@ -163,6 +181,7 @@ import { toSQLLine } from '@/utils/stringFun'
 import warningBar from '@/components/warningBar/warningBar.vue'
 import { emitter } from '@/utils/bus'
 import TaskStatus from '@/components/task/TaskStatus.vue'
+import { ElMessage } from 'element-plus'
 
 export default {
   name: 'TemplateList',
@@ -186,7 +205,8 @@ export default {
         command: '',
         scriptPath: '',
         sysUser: '',
-        targetIds: ''
+        targetIds: '',
+        detail: false
       },
       type: '',
       rules: {
@@ -197,7 +217,8 @@ export default {
       },
       path: path,
       isCommand: true,
-      isScript: false
+      isScript: false,
+      canCheck: false,
     }
   },
   async created() {
@@ -251,7 +272,8 @@ export default {
         command: '',
         scriptPath: '',
         sysUser: '',
-        targetIds: ''
+        targetIds: '',
+        detail: false
       }
     },
     closeDialog() {
@@ -262,9 +284,11 @@ export default {
       switch (type) {
         case 'addTemplate':
           this.dialogTitle = '新增Template'
+          this.canCheck = false
           break
         case 'edit':
           this.dialogTitle = '编辑Template'
+          this.canCheck = true
           break
         default:
           break
@@ -365,8 +389,35 @@ export default {
         this.isScript = true
       }
     },
-    httpRequest(param) {
-      this.data.file = param.file
+    // httpRequest(param) {
+    //   this.data.file = param.file
+    // },
+    async checkScript(row) {
+      const res = (await checkScript({
+        ID: row.ID,
+        serverId: row.serverId,
+        detail: this.form.detail
+      }))
+      if (res.code !== 0) {
+        ElMessage({
+          showClose: true,
+          message: '检查脚本失败',
+          type: 'error'
+        })
+      }
+      if (!res.data.exist) {
+        ElMessage({
+          showClose: true,
+          message: '脚本不存在',
+          type: 'error'
+        })
+      }
+      if (this.form.detail) {
+        this.showScript(res.data.script)
+      }
+    },
+    showScript(s) {
+      emitter.emit('i-show-script', s)
     },
   }
 }

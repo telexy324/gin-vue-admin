@@ -5,6 +5,7 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/response"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl"
+	templateReq "github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl/request"
 	templateRes "github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl/response"
 	"github.com/flipped-aurora/gin-vue-admin/server/utils"
 	"github.com/gin-gonic/gin"
@@ -191,3 +192,53 @@ func (a *TemplateApi) GetTemplateList(c *gin.Context) {
 //	}
 //	response.OkWithMessage("导入成功", c)
 //}
+
+// @Tags Template
+// @Summary 检查script
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body request.TaskScriptRequest true "主机名, 架构, 管理ip, 系统, 系统版本"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"更新成功"}"
+// @Router /task/template/checkScript [post]
+func (a *TemplateApi) CheckScript(c *gin.Context) {
+	var info templateReq.TemplateScriptRequest
+	if err := c.ShouldBindJSON(&info); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err := utils.Verify(info.ID, utils.IdVerify); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err := utils.Verify(info.ServerId, utils.IdVerify); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	err, server := cmdbServerService.GetServerById(info.ServerId)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	template, err := templateService.GetTaskTemplate(info.ID)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	sshClient, err := sshService.FillSSHClient(server.ManageIp, template.SysUser, "123456", server.SshPort)
+	err = sshClient.GenerateClient()
+	if err != nil {
+		global.GVA_LOG.Error("create ssh client failed: ", zap.String("server IP: ", server.ManageIp), zap.Any("err", err))
+		return
+	}
+	exist, output, err := templateService.CheckScript(info.ID, server, info.Detail, &sshClient, template)
+	if err != nil {
+		global.GVA_LOG.Error("check script failed", zap.Any("err", err))
+		response.FailWithMessage("check script failed", c)
+	}
+	response.OkWithDetailed(templateRes.TemplateScriptResponse{
+		Exist:  exist,
+		Script: output,
+	}, "获取成功", c)
+}

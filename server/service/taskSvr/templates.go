@@ -4,8 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/application"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl"
+	"github.com/flipped-aurora/gin-vue-admin/server/service/ssh"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -141,3 +144,22 @@ func (templateService *TaskTemplatesService) Validate(tpl taskMdl.TaskTemplate) 
 //
 //	return
 //}
+
+func (templateService *TaskTemplatesService) CheckScript(ID float64, s application.ApplicationServer, needDetail bool, sshClient *ssh.SSHClient, template taskMdl.TaskTemplate) (exist bool, output string, err error) {
+	var command string
+	command = `[ -f ` + template.ScriptPath + ` ] && echo yes || echo no`
+	output, err = sshClient.CommandSingle(command)
+	if err != nil || output == "no" {
+		global.GVA_LOG.Error("judge script exist: ", zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
+		return
+	}
+	exist = true
+	if needDetail {
+		command = `cat ` + template.ScriptPath
+		output, err = sshClient.CommandSingle(command)
+		if err != nil {
+			global.GVA_LOG.Error("judge script exist: ", zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
+		}
+	}
+	return
+}
