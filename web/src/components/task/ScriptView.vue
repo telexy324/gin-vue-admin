@@ -60,7 +60,11 @@ export default {
   },
   data() {
     return {
+      visible: false,
     }
+  },
+  mounted() {
+    this.visible = true
   },
 }
 </script>

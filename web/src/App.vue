@@ -11,7 +11,7 @@
 <!--        </div>-->
 <!--      </template>-->
     <TaskLogView v-if="isGetData" :item-id="task ? task.ID : null" :visiable="!!task" />
-    <ScriptView :script="script" :visiable="scriptDialog" />
+    <ScriptView v-if="scriptDialog" :script="script" />
 <!--    </el-dialog>-->
     <router-view />
   </div>
@@ -57,8 +57,9 @@ export default {
       this.isGetData = true
       this.taskLogDialog = true
     })
-    emitter.on('i-show-script', async(e) => {
+    emitter.on('i-show-script', (e) => {
       this.script = e
+      console.log(e)
       this.scriptDialog = true
     })
   },

@@ -222,7 +222,7 @@ func (a *TemplateApi) CheckScript(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	sshClient, err := sshService.FillSSHClient(server.ManageIp, template.SysUser, "123456", server.SshPort)
+	sshClient, err := sshService.FillSSHClient(server.ManageIp, template.SysUser, "613pygmy", server.SshPort)
 	err = sshClient.GenerateClient()
 	if err != nil {
 		global.GVA_LOG.Error("create ssh client failed: ", zap.String("server IP: ", server.ManageIp), zap.Any("err", err))

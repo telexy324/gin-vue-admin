@@ -140,7 +140,7 @@
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="脚本内容" v-if="isScript">
+            <el-form-item v-if="isScript" label="脚本内容">
               <el-switch v-model="form.detail" />
             </el-form-item>
           </el-col>
@@ -422,6 +422,7 @@ export default {
         })
       }
       if (this.form.detail) {
+        this.closeDialog()
         this.showScript(res.data.script)
       }
     },
