@@ -513,8 +513,8 @@ export default {
       const res = await service({
         url: '/task/template/uploadScript',
         method: 'post',
-        headers: { 'Content-Type': 'multipart/form-data', 'x-token': this.token, 'x-user-id': this.user.ID },
-        fd
+        // headers: { 'Content-Type': 'multipart/form-data', 'x-token': this.token, 'x-user-id': this.user.ID },
+        data: fd
       })
       console.log(res.code)
       if (res.code === 0) {
