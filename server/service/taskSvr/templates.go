@@ -146,7 +146,7 @@ func (templateService *TaskTemplatesService) Validate(tpl taskMdl.TaskTemplate) 
 //	return
 //}
 
-func (templateService *TaskTemplatesService) CheckScript(ID float64, s application.ApplicationServer, needDetail bool, sshClient *ssh.SSHClient, template taskMdl.TaskTemplate) (exist bool, output string, err error) {
+func (templateService *TaskTemplatesService) CheckScript(s application.ApplicationServer, needDetail bool, sshClient *ssh.SSHClient, template taskMdl.TaskTemplate) (exist bool, output string, err error) {
 	var command string
 	command = `[ -f ` + template.ScriptPath + ` ] && echo yes || echo no`
 	output, err = sshClient.CommandSingle(command)

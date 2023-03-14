@@ -222,13 +222,13 @@ func (a *TemplateApi) CheckScript(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	sshClient, err := sshService.FillSSHClient(server.ManageIp, template.SysUser, "613pygmy", server.SshPort)
+	sshClient, err := sshService.FillSSHClient(server.ManageIp, template.SysUser, "123456", server.SshPort)
 	err = sshClient.GenerateClient()
 	if err != nil {
 		global.GVA_LOG.Error("create ssh client failed: ", zap.String("server IP: ", server.ManageIp), zap.Any("err", err))
 		return
 	}
-	exist, output, err := templateService.CheckScript(info.ID, server, info.Detail, &sshClient, template)
+	exist, output, err := templateService.CheckScript(server, info.Detail, &sshClient, template)
 	if err != nil {
 		global.GVA_LOG.Error("check script failed", zap.Any("err", err))
 		response.FailWithMessage("check script failed", c)
@@ -237,4 +237,51 @@ func (a *TemplateApi) CheckScript(c *gin.Context) {
 		Exist:  exist,
 		Script: output,
 	}, "获取成功", c)
+}
+
+// @Tags Template
+// @Summary 检查script
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body templateReq.TemplateScriptRequest true "主机名, 架构, 管理ip, 系统, 系统版本"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"下载成功"}"
+// @Router /task/template/downloadTemplate [get]
+func (a *TemplateApi) DownloadTemplate(c *gin.Context) {
+	var info templateReq.TemplateScriptRequest
+	if err := c.ShouldBindJSON(&info); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	err, server := cmdbServerService.GetServerById(info.ServerId)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	template, err := templateService.GetTaskTemplate(info.ID)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	sshClient, err := sshService.FillSSHClient(server.ManageIp, template.SysUser, "123456", server.SshPort)
+	err = sshClient.GenerateClient()
+	if err != nil {
+		global.GVA_LOG.Error("create ssh client failed: ", zap.String("server IP: ", server.ManageIp), zap.Any("err", err))
+		return
+	}
+	file, err := sshClient.Download(template.ScriptPath)
+	if err != nil {
+		global.GVA_LOG.Error("下载模板失败!", zap.Any("err", err))
+		response.FailWithMessage("下载模板失败", c)
+		return
+	}
+	//c.Writer.Header().Add("success", "true")
+	c.Header("Content-Type", "application/octet-stream")
+	c.Header("Content-Disposition", "attachment; filename="+"serverTemplate.xlsx")
+	c.Header("Content-Transfer-Encoding", "binary")
+	c.Header("success", "true")
+	if _, err = file.WriteTo(c.Writer); err != nil {
+		global.GVA_LOG.Error("下载脚本失败!", zap.Any("err", err))
+	}
 }

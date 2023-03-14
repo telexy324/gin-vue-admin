@@ -9,9 +9,11 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/application"
 	"github.com/gorilla/websocket"
+	"github.com/pkg/sftp"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/ssh"
 	"io"
+	"mime/multipart"
 	"os"
 	"path"
 	"sync"
@@ -194,6 +196,57 @@ func (c *SSHClient) CommandSingle(command string) (output string, err error) {
 	}
 	return string(outputBytes), nil
 }
+
+func (c *SSHClient) NewSftp(opts ...sftp.ClientOption) (*sftp.Client, error) {
+	return sftp.NewClient(c.Client, opts...)
+}
+
+func (c *SSHClient) Upload(file multipart.File, remotePath string) (err error) {
+	ftp, err := c.NewSftp()
+	if err != nil {
+		return
+	}
+	defer ftp.Close()
+
+	remote, err := ftp.Create(remotePath)
+	if err != nil {
+		return
+	}
+	defer remote.Close()
+
+	_, err = io.Copy(remote, file)
+	return
+}
+
+// Download file from remote server!
+func (c *SSHClient) Download(remotePath string) (file *sftp.File, err error) {
+	//
+	//local, err := os.Create(localPath)
+	//if err != nil {
+	//	return
+	//}
+	//defer local.Close()
+
+	ftp, err := c.NewSftp()
+	if err != nil {
+		return
+	}
+	defer ftp.Close()
+
+	remote, err := ftp.Open(remotePath)
+	if err != nil {
+		return
+	}
+	defer remote.Close()
+
+	//if _, err = io.Copy(local, remote); err != nil {
+	//	return
+	//}
+	//
+	//return local.Sync()
+	return remote,nil
+}
+
 
 //func (c *SSHClient) RequestTerminal(terminal Terminal) *SSHClient {
 //	//session, err := c.Client.NewSession()

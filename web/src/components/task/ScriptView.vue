@@ -1,5 +1,5 @@
 <template>
-  <el-dialog v-model="visible" :show-close="false" title="script">
+  <el-dialog v-model="visible" :show-close="true" title="script">
     <div ref="output" class="task-log-records">
       {{ script }}
     </div>
@@ -63,7 +63,7 @@ export default {
       visible: false,
     }
   },
-  mounted() {
+  created() {
     this.visible = true
   },
 }

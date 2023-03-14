@@ -118,25 +118,10 @@
         <el-form-item v-if="isScript" label="脚本位置" prop="scriptPath">
           <el-input v-model="form.scriptPath" autocomplete="off" />
         </el-form-item>
-<!--        <el-form-item>-->
-<!--          <el-upload-->
-<!--            ref="upload"-->
-<!--            action=""-->
-<!--            class="upload-demo"-->
-<!--            :http-request="httpRequest"-->
-<!--            :on-preview="handlePreview"-->
-<!--            :multiple="false"-->
-<!--            :limit="1"-->
-<!--            :auto-upload="false"-->
-<!--            :file-list="data.file"-->
-<!--          >-->
-<!--            <el-button size="small" type="primary">选择头像</el-button>-->
-<!--          </el-upload>-->
-<!--        </el-form-item>-->
         <el-row>
           <el-col :span="6">
             <el-form-item v-if="isScript">
-              <el-button type="primary" @click="checkScript">检查脚本</el-button>
+              <el-button size="small" type="primary" @click="checkScript">检查脚本</el-button>
             </el-form-item>
           </el-col>
           <el-col :span="6">
@@ -144,12 +129,21 @@
               <el-switch v-model="form.detail" />
             </el-form-item>
           </el-col>
-          <el-col :span="6">
-            <el-form-item v-if="isScript">
-              <el-button type="primary" @click="checkScript">上传脚本</el-button>
-            </el-form-item>
-          </el-col>
         </el-row>
+        <el-form-item v-if="isScript">
+          <el-upload
+            ref="upload"
+            action=""
+            class="upload-demo"
+            :http-request="httpRequest"
+            :multiple="false"
+            :limit="1"
+            :auto-upload="false"
+            :file-list="form.file"
+          >
+            <el-button size="small" type="primary">选择脚本</el-button>
+          </el-upload>
+        </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
@@ -202,12 +196,13 @@ export default {
         ID: '',
         name: '',
         description: '',
-        mode: '',
+        mode: 1,
         command: '',
         scriptPath: '',
         sysUser: '',
         targetIds: '',
-        detail: false
+        detail: false,
+        file: ''
       },
       type: '',
       rules: {
@@ -329,6 +324,7 @@ export default {
           switch (this.type) {
             case 'addTemplate':
               {
+                this.$refs.upload.submit()
                 const res = await addTemplate(this.form)
                 if (res.code === 0) {
                   this.$message({
@@ -343,6 +339,7 @@ export default {
               break
             case 'edit':
               {
+                this.$refs.upload.submit()
                 const res = await updateTemplate(this.form)
                 if (res.code === 0) {
                   this.$message({
@@ -391,9 +388,9 @@ export default {
         this.isScript = true
       }
     },
-    // httpRequest(param) {
-    //   this.data.file = param.file
-    // },
+    httpRequest(param) {
+      this.form.file = param.file
+    },
     async checkScript() {
       const res = (await checkScript({
         ID: this.form.ID,
