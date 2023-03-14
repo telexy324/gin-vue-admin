@@ -3,7 +3,6 @@ module github.com/flipped-aurora/gin-vue-admin/server
 go 1.16
 
 require (
-	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751 // indirect
 	github.com/aliyun/aliyun-oss-go-sdk v2.1.6+incompatible
 	github.com/casbin/casbin/v2 v2.11.0
 	github.com/casbin/gorm-adapter/v3 v3.0.2
@@ -21,7 +20,7 @@ require (
 	github.com/jordan-wright/email v0.0.0-20200824153738-3f5bafa1cd84
 	github.com/mojocn/base64Captcha v1.3.1
 	github.com/natefinch/lumberjack v2.0.0+incompatible
-	github.com/pkg/sftp v1.13.5 // indirect
+	github.com/pkg/sftp v1.13.5
 	github.com/qiniu/api.v7/v7 v7.4.1
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/satori/go.uuid v1.2.0

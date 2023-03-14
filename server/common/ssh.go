@@ -1,13 +1,11 @@
-package ssh
+package common
 
 import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/flipped-aurora/gin-vue-admin/server/common"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/application"
 	"github.com/gorilla/websocket"
 	"github.com/pkg/sftp"
 	"go.uber.org/zap"
@@ -38,9 +36,10 @@ type Terminal struct {
 }
 
 type SSHClient struct {
-	Username string                         `json:"username"`
-	Password string                         `json:"password"`
-	Server   *application.ApplicationServer `json:"server"`
+	Username string `json:"username"`
+	Password string `json:"password"`
+	ManageIp string `json:"manageIp"`
+	SshPort  int    `json:"sshPort"`
 	//Session  *ssh.Session
 	Client *ssh.Client
 	//Channel ssh.Channel
@@ -96,7 +95,7 @@ func flushComboOutput(w *wsBufferWriter, wsConn *websocket.Conn) error {
 	return nil
 }
 
-func (sshService *SshService) DecodeMsgToSSHClient(msg string) (SSHClient, error) {
+func DecodeMsgToSSHClient(msg string) (SSHClient, error) {
 	client := newSSHClient()
 	decoded, err := base64.StdEncoding.DecodeString(msg)
 	if err != nil {
@@ -109,12 +108,9 @@ func (sshService *SshService) DecodeMsgToSSHClient(msg string) (SSHClient, error
 	return client, nil
 }
 
-func (sshService *SshService) FillSSHClient(ip, username, password string, port int) (SSHClient, error) {
+func FillSSHClient(ip, username, password string, port int) (SSHClient, error) {
 	client := newSSHClient()
-	client.Server = &application.ApplicationServer{
-		ManageIp: ip,
-		SshPort:  port,
-	}
+	client.ManageIp, client.SshPort = ip, port
 	client.Username, client.Password = username, password
 	return client, nil
 }
@@ -161,7 +157,7 @@ func (c *SSHClient) GenerateClient() error {
 		//},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
-	addr = fmt.Sprintf("%s:%d", c.Server.ManageIp, c.Server.SshPort)
+	addr = fmt.Sprintf("%s:%d", c.ManageIp, c.SshPort)
 	if client, err = ssh.Dial("tcp", addr, clientConfig); err != nil {
 		return err
 	}
@@ -169,7 +165,7 @@ func (c *SSHClient) GenerateClient() error {
 	return nil
 }
 
-func (c *SSHClient) Command(command string, logger common.Logger) (err error) {
+func (c *SSHClient) Command(command string, logger Logger) (err error) {
 	logger.Log(command)
 	session, err := c.Client.NewSession()
 	if err != nil {
@@ -244,9 +240,8 @@ func (c *SSHClient) Download(remotePath string) (file *sftp.File, err error) {
 	//}
 	//
 	//return local.Sync()
-	return remote,nil
+	return remote, nil
 }
-
 
 //func (c *SSHClient) RequestTerminal(terminal Terminal) *SSHClient {
 //	//session, err := c.Client.NewSession()
@@ -402,7 +397,7 @@ func (c *SSHClient) Download(remotePath string) (file *sftp.File, err error) {
 // setup ssh shell session
 // set Session and StdinPipe here,
 // and the Session.Stdout and Session.Sdterr are also set.
-func (sshService *SshService) NewSshConn(sshClient *ssh.Client, cols, rows int) (*SshConn, error) {
+func NewSshConn(sshClient *ssh.Client, cols, rows int) (*SshConn, error) {
 	sshSession, err := sshClient.NewSession()
 	if err != nil {
 		return nil, err

@@ -3,14 +3,17 @@ package taskSvr
 import (
 	"encoding/json"
 	"errors"
+	"github.com/flipped-aurora/gin-vue-admin/server/common"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/application"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl"
-	"github.com/flipped-aurora/gin-vue-admin/server/service/ssh"
+	"github.com/pkg/sftp"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
+	"mime/multipart"
 	"strings"
+	"sync"
 )
 
 type TaskTemplatesService struct {
@@ -146,12 +149,12 @@ func (templateService *TaskTemplatesService) Validate(tpl taskMdl.TaskTemplate) 
 //	return
 //}
 
-func (templateService *TaskTemplatesService) CheckScript(s application.ApplicationServer, needDetail bool, sshClient *ssh.SSHClient, template taskMdl.TaskTemplate) (exist bool, output string, err error) {
+func (templateService *TaskTemplatesService) CheckScript(s application.ApplicationServer, needDetail bool, sshClient *common.SSHClient, template taskMdl.TaskTemplate) (exist bool, output string, err error) {
 	var command string
 	command = `[ -f ` + template.ScriptPath + ` ] && echo yes || echo no`
 	output, err = sshClient.CommandSingle(command)
-	global.GVA_LOG.Info(strings.Trim(output," "))
-	if err != nil || strings.Trim(output," ") == "no" {
+	global.GVA_LOG.Info(strings.Trim(output, " "))
+	if err != nil || strings.Trim(output, " ") == "no" {
 		global.GVA_LOG.Error("judge script exist: ", zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
 		return
 	}
@@ -162,6 +165,56 @@ func (templateService *TaskTemplatesService) CheckScript(s application.Applicati
 		if err != nil {
 			global.GVA_LOG.Error("judge script exist: ", zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
 		}
+	}
+	return
+}
+
+func (templateService *TaskTemplatesService) DownloadScript(ID float64, server application.ApplicationServer) (file *sftp.File, err error) {
+	template, err := templateService.GetTaskTemplate(ID)
+	if err != nil {
+		return
+	}
+	sshClient, err := common.FillSSHClient(server.ManageIp, template.SysUser, "123456", server.SshPort)
+	err = sshClient.GenerateClient()
+	if err != nil {
+		global.GVA_LOG.Error("create ssh client failed: ", zap.String("server IP: ", server.ManageIp), zap.Any("err", err))
+		return
+	}
+	return sshClient.Download(template.ScriptPath)
+}
+
+func (templateService *TaskTemplatesService) UploadScript(ID int, file multipart.File) (failedIPs []string, err error) {
+	template, err := templateService.GetTaskTemplate(float64(ID))
+	if err != nil {
+		return
+	}
+	wg := &sync.WaitGroup{}
+	failedChan := make(chan string, len(template.TargetServers))
+	for _, server := range template.TargetServers {
+		wg.Add(1)
+		go func(w *sync.WaitGroup, s application.ApplicationServer, f chan string) {
+			defer w.Done()
+			sshClient, err := common.FillSSHClient(s.ManageIp, template.SysUser, "123456", s.SshPort)
+			err = sshClient.GenerateClient()
+			if err != nil {
+				global.GVA_LOG.Error("upload script failed on create ssh client: ", zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
+				f <- s.ManageIp
+				return
+			}
+
+			err = sshClient.Upload(file, template.ScriptPath)
+			if err != nil {
+				global.GVA_LOG.Error("upload script failed on upload: ", zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
+				f <- s.ManageIp
+				return
+			}
+			return
+		}(wg, server, failedChan)
+	}
+	wg.Wait()
+	close(failedChan)
+	for ip := range failedChan {
+		failedIPs = append(failedIPs, ip)
 	}
 	return
 }

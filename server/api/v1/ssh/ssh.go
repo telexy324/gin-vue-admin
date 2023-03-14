@@ -3,6 +3,7 @@ package ssh
 import (
 	"bytes"
 	"fmt"
+	"github.com/flipped-aurora/gin-vue-admin/server/common"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/response"
 	"github.com/gin-gonic/gin"
@@ -42,7 +43,7 @@ func (a *SshApi) ShellWeb(c *gin.Context) {
 	}
 	fmt.Printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ readContent: %v\n", string(readContent))
 
-	sshClient, err := sshService.DecodeMsgToSSHClient(string(readContent))
+	sshClient, err := common.DecodeMsgToSSHClient(string(readContent))
 	if err != nil {
 		global.GVA_LOG.Error(err.Error())
 		response.FailWithMessage(err.Error(), c)
@@ -74,7 +75,7 @@ func (a *SshApi) ShellWeb(c *gin.Context) {
 	//sshClient.RequestTerminal(terminal)
 	//sshClient.Connect(conn)
 
-	ssConn, err := sshService.NewSshConn(sshClient.Client, 150, 35)
+	ssConn, err := common.NewSshConn(sshClient.Client, 150, 35)
 
 	if err != nil {
 		conn.WriteMessage(websocket.CloseMessage, []byte(err.Error()))

@@ -73,7 +73,7 @@ export default {
           // console.log(data)
         })
         // ElMessage.success("会话成功连接！")
-        var jsonStr = `{"server":{"manageIp":"${this.manageIp}", "sshPort":${this.sshPort}}, "username":"${this.username}", "password":"${this.password}"}`
+        var jsonStr = `{"manageIp":"${this.manageIp}", "sshPort":${this.sshPort}, "username":"${this.username}", "password":"${this.password}"}`
         console.log(jsonStr)
         var datMsg = window.btoa(jsonStr)
         // socket.send(JSON.stringify({ ip: ip.value, name: name.value, password: password.value }))

@@ -16,3 +16,7 @@ type TemplateScriptResponse struct {
 	Exist  bool   `json:"exist"`
 	Script string `json:"script"`
 }
+
+type UploadScriptResponse struct {
+	FailedIps []string `json:"failedIps"`
+}

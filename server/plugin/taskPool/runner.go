@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	sockets "github.com/flipped-aurora/gin-vue-admin/server/api/v1/socket"
+	"github.com/flipped-aurora/gin-vue-admin/server/common"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/application"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
@@ -562,7 +563,7 @@ func (t *TaskRunner) runTask() (failedIPs []string) {
 		wg.Add(1)
 		go func(w *sync.WaitGroup, s application.ApplicationServer, f chan string) {
 			defer w.Done()
-			sshClient, err := sshService.FillSSHClient(s.ManageIp, t.template.SysUser, "123456", s.SshPort)
+			sshClient, err := common.FillSSHClient(s.ManageIp, t.template.SysUser, "123456", s.SshPort)
 			err = sshClient.GenerateClient()
 			if err != nil {
 				global.GVA_LOG.Error("run task failed on create ssh client: ", zap.Uint("task ID: ", t.task.ID), zap.String("server IP: ", s.ManageIp), zap.Any("err", err))

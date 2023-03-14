@@ -1,6 +1,7 @@
 package taskApp
 
 import (
+	"github.com/flipped-aurora/gin-vue-admin/server/common"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/response"
@@ -10,6 +11,7 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/utils"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
+	"strconv"
 )
 
 type TemplateApi struct {
@@ -222,7 +224,7 @@ func (a *TemplateApi) CheckScript(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	sshClient, err := sshService.FillSSHClient(server.ManageIp, template.SysUser, "123456", server.SshPort)
+	sshClient, err := common.FillSSHClient(server.ManageIp, template.SysUser, "123456", server.SshPort)
 	err = sshClient.GenerateClient()
 	if err != nil {
 		global.GVA_LOG.Error("create ssh client failed: ", zap.String("server IP: ", server.ManageIp), zap.Any("err", err))
@@ -240,14 +242,14 @@ func (a *TemplateApi) CheckScript(c *gin.Context) {
 }
 
 // @Tags Template
-// @Summary 检查script
+// @Summary 下载script
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body templateReq.TemplateScriptRequest true "主机名, 架构, 管理ip, 系统, 系统版本"
+// @Param data body templateReq.DownloadScriptRequest true "主机名, 架构, 管理ip, 系统, 系统版本"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"下载成功"}"
-// @Router /task/template/downloadTemplate [get]
-func (a *TemplateApi) DownloadTemplate(c *gin.Context) {
+// @Router /task/template/downloadScript [get]
+func (a *TemplateApi) DownloadScript(c *gin.Context) {
 	var info templateReq.TemplateScriptRequest
 	if err := c.ShouldBindJSON(&info); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
@@ -259,23 +261,8 @@ func (a *TemplateApi) DownloadTemplate(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	template, err := templateService.GetTaskTemplate(info.ID)
-	if err != nil {
-		response.FailWithMessage(err.Error(), c)
-		return
-	}
-	sshClient, err := sshService.FillSSHClient(server.ManageIp, template.SysUser, "123456", server.SshPort)
-	err = sshClient.GenerateClient()
-	if err != nil {
-		global.GVA_LOG.Error("create ssh client failed: ", zap.String("server IP: ", server.ManageIp), zap.Any("err", err))
-		return
-	}
-	file, err := sshClient.Download(template.ScriptPath)
-	if err != nil {
-		global.GVA_LOG.Error("下载模板失败!", zap.Any("err", err))
-		response.FailWithMessage("下载模板失败", c)
-		return
-	}
+	file, err := templateService.DownloadScript(info.ID, server)
+
 	//c.Writer.Header().Add("success", "true")
 	c.Header("Content-Type", "application/octet-stream")
 	c.Header("Content-Disposition", "attachment; filename="+"serverTemplate.xlsx")
@@ -284,4 +271,38 @@ func (a *TemplateApi) DownloadTemplate(c *gin.Context) {
 	if _, err = file.WriteTo(c.Writer); err != nil {
 		global.GVA_LOG.Error("下载脚本失败!", zap.Any("err", err))
 	}
+}
+
+// @Tags Template
+// @Summary 导入脚本
+// @Security ApiKeyAuth
+// @accept multipart/form-data
+// @Produce  application/json
+// @Param file formData file true
+// @Param ID formData ID true
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"导入成功"}"
+// @Router /task/template/uploadScript [post]
+func (a *TemplateApi) UploadScript(c *gin.Context) {
+	file, _, err := c.Request.FormFile("file")
+	if err != nil {
+		global.GVA_LOG.Error("接收文件失败!", zap.Any("err", err))
+		response.FailWithMessage("接收文件失败", c)
+		return
+	}
+	idStr := c.Request.FormValue("ID")
+	ID, err := strconv.Atoi(idStr)
+	if err != nil {
+		global.GVA_LOG.Error("接收文件失败!", zap.Any("err", err))
+		response.FailWithMessage("接收文件失败", c)
+		return
+	}
+	failedIps, err := templateService.UploadScript(ID, file)
+	if err != nil {
+		global.GVA_LOG.Error("上传脚本失败!", zap.Any("err", err))
+		response.FailWithMessage("上传脚本失败", c)
+		return
+	}
+	response.OkWithDetailed(templateRes.UploadScriptResponse{
+		FailedIps: failedIps,
+	}, "获取成功", c)
 }
