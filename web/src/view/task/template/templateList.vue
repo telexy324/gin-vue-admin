@@ -36,8 +36,8 @@
             <TaskStatus :status="scope.row.lastTask.status" />
           </template>
         </el-table-column>
-        <el-table-column align="left" label="task" min-width="150" prop="lastTask.ID" sortable="custom" />
-        <el-table-column align="left" fixed="right" label="操作" width="200">
+        <el-table-column align="left" label="task" min-width="200" prop="lastTask.ID" sortable="custom" />
+        <el-table-column align="left" fixed="right" label="操作" width="250">
           <template #default="scope">
             <el-button
               icon="el-icon-edit"
@@ -57,6 +57,12 @@
               type="text"
               @click="runTask(scope.row)"
             >构建</el-button>
+            <el-button
+              icon="el-icon-edit"
+              size="small"
+              type="text"
+              @click="uploadScript(scope.row)"
+            >上传脚本</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -130,7 +136,35 @@
             </el-form-item>
           </el-col>
         </el-row>
-        <el-form-item v-if="isScript">
+<!--        <el-form-item v-if="isScript">-->
+<!--          <el-upload-->
+<!--            ref="upload"-->
+<!--            action=""-->
+<!--            class="upload-demo"-->
+<!--            :http-request="httpRequest"-->
+<!--            :multiple="false"-->
+<!--            :limit="1"-->
+<!--            :auto-upload="false"-->
+<!--            :file-list="form.file"-->
+<!--          >-->
+<!--            <el-button size="small" type="primary">选择脚本</el-button>-->
+<!--          </el-upload>-->
+<!--        </el-form-item>-->
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button size="small" @click="closeDialog">取 消</el-button>
+          <el-button size="small" type="primary" @click="enterDialog">确 定</el-button>
+        </div>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="dialogFormVisibleScript" :before-close="closeScriptDialog" title='上传模板'>
+      <el-form ref="scriptForm" :model="form" :rules="rules" label-width="80px">
+        <el-form-item label="脚本位置" prop="scriptPath">
+          <el-input v-model="form.scriptPath" autocomplete="off" />
+        </el-form-item>
+        <el-form-item>
           <el-upload
             ref="upload"
             action=""
@@ -139,7 +173,7 @@
             :multiple="false"
             :limit="1"
             :auto-upload="false"
-            :file-list="form.file"
+            :file-list="fileList"
           >
             <el-button size="small" type="primary">选择脚本</el-button>
           </el-upload>
@@ -147,8 +181,8 @@
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button size="small" @click="closeDialog">取 消</el-button>
-          <el-button size="small" type="primary" @click="enterDialog">确 定</el-button>
+          <el-button size="small" @click="closeScriptDialog">取 消</el-button>
+          <el-button size="small" type="primary" @click="submitUpload">确 定</el-button>
         </div>
       </template>
     </el-dialog>
@@ -176,6 +210,8 @@ import warningBar from '@/components/warningBar/warningBar.vue'
 import { emitter } from '@/utils/bus'
 import TaskStatus from '@/components/task/TaskStatus.vue'
 import { ElMessage } from 'element-plus'
+import { mapGetters } from 'vuex'
+import service from '@/utils/request'
 
 export default {
   name: 'TemplateList',
@@ -202,7 +238,6 @@ export default {
         sysUser: '',
         targetIds: '',
         detail: false,
-        file: ''
       },
       type: '',
       rules: {
@@ -215,7 +250,18 @@ export default {
       isCommand: true,
       isScript: false,
       canCheck: false,
+      dialogFormVisibleScript: false,
+      scriptForm: {
+        ID: '',
+        scriptPath: '',
+        file: ''
+      },
+      hasFile: false,
+      fileList: []
     }
+  },
+  computed: {
+    ...mapGetters('user', ['userInfo', 'token'])
   },
   async created() {
     await this.getTableData()
@@ -324,7 +370,6 @@ export default {
           switch (this.type) {
             case 'addTemplate':
               {
-                this.$refs.upload.submit()
                 const res = await addTemplate(this.form)
                 if (res.code === 0) {
                   this.$message({
@@ -339,7 +384,6 @@ export default {
               break
             case 'edit':
               {
-                this.$refs.upload.submit()
                 const res = await updateTemplate(this.form)
                 if (res.code === 0) {
                   this.$message({
@@ -388,9 +432,6 @@ export default {
         this.isScript = true
       }
     },
-    httpRequest(param) {
-      this.form.file = param.file
-    },
     async checkScript() {
       const res = (await checkScript({
         ID: this.form.ID,
@@ -426,6 +467,70 @@ export default {
     showScript(s) {
       emitter.emit('i-show-script', s)
     },
+    async uploadScript(row) {
+      const res = await getTemplateById({ id: row.ID })
+      this.form = res.data.taskTemplate
+      this.dialogFormVisibleScript = true
+    },
+    initScriptForm() {
+      this.$refs.scriptForm.resetFields()
+      this.scriptForm = {
+        ID: '',
+        scriptPath: '',
+        file: ''
+      }
+    },
+    closeScriptDialog() {
+      this.initScriptForm()
+      this.dialogFormVisibleScript = false
+    },
+    handleRemove(file, fileList) {
+      if (!fileList.length) {
+        this.hasFile = false
+      }
+      this.scriptForm.file = null
+    },
+    handleChange(file, fileList) {
+      if (fileList.length >= 2) {
+        return
+      }
+      if (fileList.length === 1) {
+        this.hasFile = true
+      }
+      this.scriptForm.file = file
+    },
+    submitUpload() {
+      this.$refs.scriptForm.validate(valid => {
+        if (valid) {
+          this.$refs.upload.submit()
+        }
+      })
+    },
+    async httpRequest(param) {
+      const fd = new FormData()
+      fd.append('file', param.file)
+      fd.append('scriptPath', this.scriptForm.scriptPath)
+      const res = await service({
+        url: '/task/template/uploadScript',
+        method: 'post',
+        headers: { 'Content-Type': 'multipart/form-data', 'x-token': this.token, 'x-user-id': this.user.ID },
+        fd
+      })
+      console.log(res.code)
+      if (res.code === 0) {
+        this.$message({
+          type: 'success',
+          message: res.msg
+        })
+      }
+      console.log('hahaha')
+      // axios.post('/task/template/uploadScript', fd, {
+      //   headers: { 'Content-Type': 'multipart/form-data', 'x-token': this.token, 'x-user-id': this.user.ID },
+      //   timeout: 99999,
+      // }).then(response => {
+      //   console.log(response)
+      // }).catch(err =>{})
+    }
   }
 }
 </script>

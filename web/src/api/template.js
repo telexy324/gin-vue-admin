@@ -74,3 +74,27 @@ export const checkScript = (data) => {
     data
   })
 }
+
+// @Summary 下载脚本
+// @Produce  application/json
+// @Param checkScript Object
+// @Router /task/template/downloadScript [post]
+export const downloadScript = (data) => {
+  return service({
+    url: '/task/template/downloadScript',
+    method: 'post',
+    data
+  })
+}
+
+// @Summary 上传脚本
+// @Produce  application/json
+// @Param checkScript Object
+// @Router /task/template/downloadScript [post]
+export const uploadScript = (data) => {
+  return service({
+    url: '/task/template/uploadScript',
+    method: 'post',
+    data
+  })
+}
