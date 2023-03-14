@@ -122,7 +122,7 @@
           <el-input v-model="form.command" autocomplete="off" type="textarea" />
         </el-form-item>
         <el-form-item v-if="isScript" label="脚本位置" prop="scriptPath">
-          <el-input v-model="form.scriptPath" autocomplete="off" />
+          <el-input v-model="form.scriptPath" autocomplete="off" :disabled="true" />
         </el-form-item>
         <el-row>
           <el-col :span="6">
