@@ -211,7 +211,8 @@ import { emitter } from '@/utils/bus'
 import TaskStatus from '@/components/task/TaskStatus.vue'
 import { ElMessage } from 'element-plus'
 import { mapGetters } from 'vuex'
-import service from '@/utils/request'
+// import service from '@/utils/request'
+import axios from 'axios'
 
 export default {
   name: 'TemplateList',
@@ -510,26 +511,30 @@ export default {
       const fd = new FormData()
       fd.append('file', param.file)
       fd.append('scriptPath', this.scriptForm.scriptPath)
-      const res = await service({
-        url: '/task/template/uploadScript',
-        method: 'post',
-        // headers: { 'Content-Type': 'multipart/form-data', 'x-token': this.token, 'x-user-id': this.user.ID },
-        data: fd
+      console.log(this.token)
+      console.log(this.userInfo)
+      // const res = await service({
+      //   url: '/task/template/uploadScript',
+      //   method: 'post',
+      //   // headers: { 'Content-Type': 'multipart/form-data', 'x-token': this.token, 'x-user-id': this.user.ID },
+      //   formData: fd
+      // })
+      // console.log(res.code)
+      // if (res.code === 0) {
+      //   this.$message({
+      //     type: 'success',
+      //     message: res.msg
+      //   })
+      // }
+      // console.log('hahaha')
+      axios.post('/task/template/uploadScript', fd, {
+        headers: { 'Content-Type': 'multipart/form-data', 'x-token': this.token, 'x-user-id': this.user.ID },
+        timeout: 99999,
+      }).then(response => {
+        console.log(response)
+      }).catch(err => {
+        console.log(err)
       })
-      console.log(res.code)
-      if (res.code === 0) {
-        this.$message({
-          type: 'success',
-          message: res.msg
-        })
-      }
-      console.log('hahaha')
-      // axios.post('/task/template/uploadScript', fd, {
-      //   headers: { 'Content-Type': 'multipart/form-data', 'x-token': this.token, 'x-user-id': this.user.ID },
-      //   timeout: 99999,
-      // }).then(response => {
-      //   console.log(response)
-      // }).catch(err =>{})
     }
   }
 }
