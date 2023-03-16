@@ -246,7 +246,7 @@ func (a *TemplateApi) CheckScript(c *gin.Context) {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body templateReq.DownloadScriptRequest true "主机名, 架构, 管理ip, 系统, 系统版本"
+// @Param data body templateReq.TemplateScriptRequest true "主机名, 架构, 管理ip, 系统, 系统版本"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"下载成功"}"
 // @Router /task/template/downloadScript [get]
 func (a *TemplateApi) DownloadScript(c *gin.Context) {
@@ -278,8 +278,8 @@ func (a *TemplateApi) DownloadScript(c *gin.Context) {
 // @Security ApiKeyAuth
 // @accept multipart/form-data
 // @Produce  application/json
-// @Param file formData file true
-// @Param ID formData ID true
+// @Param file formData file true "导入Script文件"
+// @Param int query int false "int valid"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"导入成功"}"
 // @Router /task/template/uploadScript [post]
 func (a *TemplateApi) UploadScript(c *gin.Context) {
@@ -296,7 +296,13 @@ func (a *TemplateApi) UploadScript(c *gin.Context) {
 		response.FailWithMessage("接收文件失败", c)
 		return
 	}
-	failedIps, err := templateService.UploadScript(ID, file)
+	scriptPath := c.Request.FormValue("scriptPath")
+	if err != nil {
+		global.GVA_LOG.Error("接收文件失败!", zap.Any("err", err))
+		response.FailWithMessage("接收文件失败", c)
+		return
+	}
+	failedIps, err := templateService.UploadScript(ID, file, scriptPath)
 	if err != nil {
 		global.GVA_LOG.Error("上传脚本失败!", zap.Any("err", err))
 		response.FailWithMessage("上传脚本失败", c)

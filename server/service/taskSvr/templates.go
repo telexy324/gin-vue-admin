@@ -183,10 +183,16 @@ func (templateService *TaskTemplatesService) DownloadScript(ID float64, server a
 	return sshClient.Download(template.ScriptPath)
 }
 
-func (templateService *TaskTemplatesService) UploadScript(ID int, file multipart.File) (failedIPs []string, err error) {
+func (templateService *TaskTemplatesService) UploadScript(ID int, file multipart.File, scriptPath string) (failedIPs []string, err error) {
 	template, err := templateService.GetTaskTemplate(float64(ID))
 	if err != nil {
 		return
+	}
+	if scriptPath != template.ScriptPath {
+		template.ScriptPath = scriptPath
+		if err = templateService.UpdateTaskTemplate(template); err != nil {
+			return
+		}
 	}
 	wg := &sync.WaitGroup{}
 	failedChan := make(chan string, len(template.TargetServers))
@@ -202,7 +208,7 @@ func (templateService *TaskTemplatesService) UploadScript(ID int, file multipart
 				return
 			}
 
-			err = sshClient.Upload(file, template.ScriptPath)
+			err = sshClient.Upload(file, scriptPath)
 			if err != nil {
 				global.GVA_LOG.Error("upload script failed on upload: ", zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
 				f <- s.ManageIp

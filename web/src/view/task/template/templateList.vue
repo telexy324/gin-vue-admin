@@ -160,9 +160,9 @@
     </el-dialog>
 
     <el-dialog v-model="dialogFormVisibleScript" :before-close="closeScriptDialog" title='上传模板'>
-      <el-form ref="scriptForm" :model="form" :rules="rules" label-width="80px">
+      <el-form ref="scriptForm" :model="scriptForm" :rules="rules" label-width="80px">
         <el-form-item label="脚本位置" prop="scriptPath">
-          <el-input v-model="form.scriptPath" autocomplete="off" />
+          <el-input v-model="scriptForm.scriptPath" autocomplete="off" />
         </el-form-item>
         <el-form-item>
           <el-upload
@@ -212,7 +212,7 @@ import TaskStatus from '@/components/task/TaskStatus.vue'
 import { ElMessage } from 'element-plus'
 import { mapGetters } from 'vuex'
 // import service from '@/utils/request'
-import axios from 'axios'
+import Axios from 'axios'
 
 export default {
   name: 'TemplateList',
@@ -470,7 +470,7 @@ export default {
     },
     async uploadScript(row) {
       const res = await getTemplateById({ id: row.ID })
-      this.form = res.data.taskTemplate
+      this.scriptForm = res.data.taskTemplate
       this.dialogFormVisibleScript = true
     },
     initScriptForm() {
@@ -511,8 +511,9 @@ export default {
       const fd = new FormData()
       fd.append('file', param.file)
       fd.append('scriptPath', this.scriptForm.scriptPath)
-      console.log(this.token)
-      console.log(this.userInfo)
+      fd.append('ID', this.scriptForm.ID)
+      // console.log(this.token)
+      // console.log(this.userInfo)
       // const res = await service({
       //   url: '/task/template/uploadScript',
       //   method: 'post',
@@ -527,13 +528,43 @@ export default {
       //   })
       // }
       // console.log('hahaha')
-      axios.post('/task/template/uploadScript', fd, {
-        headers: { 'Content-Type': 'multipart/form-data', 'x-token': this.token, 'x-user-id': this.user.ID },
+      // const config = {
+      //   headers: {
+      //     'Content-Type': 'multipart/form-data',
+      //     'x-token': this.token,
+      //     'x-user-id': this.user.ID,
+      //   },
+      //   timeout: 99999,
+      // }
+      Axios.post(import.meta.env.VITE_BASE_API + '/task/template/uploadScript', fd, {
+        headers: {
+          // 'Content-Type': 'multipart/form-data',
+          'x-token': this.token,
+          // 'x-user-id': this.user.ID,
+        },
+        // headers: { 'Content-Type': 'multipart/form-data', 'x-token': this.token, 'x-user-id': this.user.ID },
         timeout: 99999,
       }).then(response => {
-        console.log(response)
+        if (response.data.code === 0 || response.headers.success === 'true') {
+          ElMessage({
+            showClose: true,
+            message: '上传成功',
+            type: 'success'
+          })
+          this.closeScriptDialog()
+        } else {
+          ElMessage({
+            showClose: true,
+            message: response.data.msg,
+            type: 'error'
+          })
+        }
       }).catch(err => {
-        console.log(err)
+        ElMessage({
+          showClose: true,
+          message: err,
+          type: 'error'
+        })
       })
     }
   }

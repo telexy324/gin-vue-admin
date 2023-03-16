@@ -4258,6 +4258,29 @@ paths:
       summary: 删除Template
       tags:
       - Template
+  /task/template/downloadScript:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: 主机名, 架构, 管理ip, 系统, 系统版本
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.TemplateScriptRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"下载成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 下载script
+      tags:
+      - Template
   /task/template/getTemplateById:
     post:
       consumes:
@@ -4325,6 +4348,32 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: 更新Template
+      tags:
+      - Template
+  /task/template/uploadScript:
+    post:
+      consumes:
+      - multipart/form-data
+      parameters:
+      - description: 导入Script文件
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: int valid
+        in: query
+        name: int
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"导入成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 导入脚本
       tags:
       - Template
   /user/changePassword:

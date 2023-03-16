@@ -40,13 +40,24 @@ func OperationRecord() gin.HandlerFunc {
 			}
 			userId = id
 		}
-		record := system.SysOperationRecord{
-			Ip:     c.ClientIP(),
-			Method: c.Request.Method,
-			Path:   c.Request.URL.Path,
-			Agent:  c.Request.UserAgent(),
-			Body:   string(body),
-			UserID: userId,
+		var record system.SysOperationRecord
+		if c.Request.MultipartForm !=nil {
+			record = system.SysOperationRecord{
+				Ip:     c.ClientIP(),
+				Method: c.Request.Method,
+				Path:   c.Request.URL.Path,
+				Agent:  c.Request.UserAgent(),
+				UserID: userId,
+			}
+		} else {
+			record = system.SysOperationRecord{
+				Ip:     c.ClientIP(),
+				Method: c.Request.Method,
+				Path:   c.Request.URL.Path,
+				Agent:  c.Request.UserAgent(),
+				Body:   string(body),
+				UserID: userId,
+			}
 		}
 		// 存在某些未知错误 TODO
 		//values := c.Request.Header.Values("content-type")
