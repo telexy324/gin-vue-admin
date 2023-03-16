@@ -7,6 +7,7 @@ import (
 	"fmt"
 	sockets "github.com/flipped-aurora/gin-vue-admin/server/api/v1/socket"
 	"github.com/flipped-aurora/gin-vue-admin/server/common"
+	"github.com/flipped-aurora/gin-vue-admin/server/consts"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/application"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
@@ -578,7 +579,13 @@ func (t *TaskRunner) runTask() (failedIPs []string) {
 			//}
 			//defer ssConn.Close()
 
-			err = sshClient.Command(t.template.Command, t)
+			var command string
+			if t.template.Mode == consts.Command {
+				command = t.template.Command
+			} else {
+				command = "sh "+t.template.ScriptPath
+			}
+			err = sshClient.Command(command, t)
 			if err != nil {
 				global.GVA_LOG.Error("run task failed on exec command: ", zap.Uint("task ID: ", t.task.ID), zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
 				f <- s.ManageIp
