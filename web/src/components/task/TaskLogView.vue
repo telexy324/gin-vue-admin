@@ -1,7 +1,7 @@
 <template>
   <el-dialog v-model="visible" :show-close="false" custom-class="customClass">
     <template #title>
-      <el-row :gutter="10">
+      <el-row :gutter="10" type="flex" justify="center" align="middle">
         <el-col :span="3">Task #{{ item.ID }}</el-col>
         <el-col :span="3">
           <TaskStatus :status="item.status" />
