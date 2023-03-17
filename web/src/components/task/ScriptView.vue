@@ -1,5 +1,5 @@
 <template>
-  <el-dialog v-model="visible" :show-close="true" title="script">
+  <el-dialog v-model="visible" :show-close="true" title="script" custom-class="customClass">
     <div ref="output" class="task-log-records">
       {{ script }}
     </div>
@@ -7,6 +7,12 @@
 </template>
 
 <style lang="scss">
+.customClass {
+  width: 60%;
+}
+</style>
+
+<style scoped lang="scss">
 
 // @import '~vuetify/src/styles/settings/_variables';
 
@@ -16,7 +22,7 @@
   height: calc(100vh - 250px);
   overflow: auto;
   font-family: monospace;
-  margin: 0 -24px;
+  margin: 0 -18px;
   padding: 5px 10px;
 }
 

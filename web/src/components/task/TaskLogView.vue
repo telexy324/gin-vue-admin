@@ -1,20 +1,18 @@
 <template>
-  <el-dialog v-model="visible" :show-close="false">
+  <el-dialog v-model="visible" :show-close="false" custom-class="customClass">
     <template #title>
-      <div class="el-dialog__header">
-        <el-row :gutter="10">
-          <el-col :span="3">Task #{{ item.ID }}</el-col>
-          <el-col :span="3">
-            <TaskStatus :status="item.status" />
-          </el-col>
-          <el-col :span="3">Author:</el-col>
-          <el-col :span="3" v-text="user.userName" />
-          <el-col :span="3">start:</el-col>
-          <el-col :span="3">{{ formatDate(item.beginTime.Time) }}</el-col>
-          <el-col :span="3">end:</el-col>
-          <el-col :span="3">{{ formatDate(item.endTime.Time) }}</el-col>
-        </el-row>
-      </div>
+      <el-row :gutter="10">
+        <el-col :span="3">Task #{{ item.ID }}</el-col>
+        <el-col :span="3">
+          <TaskStatus :status="item.status" />
+        </el-col>
+        <el-col :span="3">Author:</el-col>
+        <el-col :span="3" v-text="user.userName" />
+        <el-col :span="3">start:</el-col>
+        <el-col :span="3">{{ formatDate(item.beginTime.Time) }}</el-col>
+        <el-col :span="3">end:</el-col>
+        <el-col :span="3">{{ formatDate(item.endTime.Time) }}</el-col>
+      </el-row>
     </template>
     <div ref="output" class="task-log-records">
       <div v-for="record in output" :key="record.ID" class="task-log-records__record">
@@ -36,49 +34,6 @@
   </el-dialog>
 </template>
 
-<style lang="scss">
-
-// @import '~vuetify/src/styles/settings/_variables';
-
-.task-log-records {
-  background: black;
-  color: white;
-  height: calc(100vh - 250px);
-  overflow: auto;
-  font-family: monospace;
-  margin: 0 -24px;
-  padding: 5px 10px;
-}
-
-.task-log-view--with-message .task-log-records {
-  height: calc(100vh - 300px);
-}
-
-.task-log-records__record {
-  display: flex;
-  flex-direction: row;
-  justify-content: left;
-}
-
-.task-log-records__time {
-  width: 140px;
-  min-width: 140px;
-}
-
-.task-log-records__output {
-  width: 100%;
-}
-
-//@media #{map-get($display-breakpoints, 'sm-and-down')} {
-//  .task-log-records {
-//    height: calc(100vh - 340px);
-//  }
-//
-//  .task-log-view--with-message .task-log-records {
-//    height: calc(100vh - 370px);
-//  }
-//}
-</style>
 <script>
 import { getTaskById, getTaskOutputs, stopTask } from '@/api/task'
 import { getUserById } from '@/api/user'
@@ -177,3 +132,53 @@ export default {
   },
 }
 </script>
+
+<style lang="scss">
+.customClass {
+  width: 60%;
+}
+</style>
+
+<style scoped lang="scss">
+
+// @import '~vuetify/src/styles/settings/_variables';
+
+.task-log-records {
+  background: black;
+  color: white;
+  height: calc(100vh - 250px);
+  overflow: auto;
+  font-family: monospace;
+  margin: 0 -18px;
+  padding: 5px 10px;
+}
+
+.task-log-view--with-message .task-log-records {
+  height: calc(100vh - 300px);
+}
+
+.task-log-records__record {
+  display: flex;
+  flex-direction: row;
+  justify-content: left;
+}
+
+.task-log-records__time {
+  width: 140px;
+  min-width: 140px;
+}
+
+.task-log-records__output {
+  width: 100%;
+}
+
+//@media #{map-get($display-breakpoints, 'sm-and-down')} {
+//  .task-log-records {
+//    height: calc(100vh - 340px);
+//  }
+//
+//  .task-log-view--with-message .task-log-records {
+//    height: calc(100vh - 370px);
+//  }
+//}
+</style>
