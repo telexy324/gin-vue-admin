@@ -177,6 +177,7 @@
           >
             <el-button size="small" type="primary">选择脚本</el-button>
           </el-upload>
+          <el-progress style="width: 200px;margin-top: 8px" :percentage="progressPercent" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -258,7 +259,8 @@ export default {
         file: ''
       },
       hasFile: false,
-      fileList: []
+      fileList: [],
+      progressPercent: 0
     }
   },
   computed: {
@@ -508,6 +510,7 @@ export default {
       })
     },
     async httpRequest(param) {
+      this.progressPercent = 0
       const fd = new FormData()
       fd.append('file', param.file)
       fd.append('scriptPath', this.scriptForm.scriptPath)
@@ -544,6 +547,11 @@ export default {
         },
         // headers: { 'Content-Type': 'multipart/form-data', 'x-token': this.token, 'x-user-id': this.user.ID },
         timeout: 99999,
+        onUploadProgress: (progressEvent) => {
+          this.progressPercent = Math.floor((progressEvent.loaded * 100) / progressEvent.total)
+          console.log(progressEvent.loaded)
+          console.log(progressEvent.total)
+        },
       }).then(response => {
         if (response.data.code === 0 || response.headers.success === 'true') {
           ElMessage({
@@ -551,8 +559,10 @@ export default {
             message: '上传成功',
             type: 'success'
           })
+          this.progressPercent = 0
           this.closeScriptDialog()
         } else {
+          this.progressPercent = 0
           ElMessage({
             showClose: true,
             message: response.data.msg,
@@ -560,6 +570,7 @@ export default {
           })
         }
       }).catch(err => {
+        this.progressPercent = 0
         ElMessage({
           showClose: true,
           message: err,
