@@ -24,7 +24,7 @@ import { emitter } from '@/utils/bus'
 // import { CircleCloseFilled } from '@element-plus/icons-vue'
 import TaskLogView from '@/components/task/TaskLogView.vue'
 import ScriptView from '@/components/task/ScriptView.vue'
-// import socket from '@/socket';
+import socket from '@/socket'
 
 export default {
   name: 'App',
@@ -43,6 +43,11 @@ export default {
       isGetData: false,
       script: '',
       scriptDialog: null,
+    }
+  },
+  created() {
+    if (!socket.isRunning()) {
+      socket.start()
     }
   },
   mounted() {

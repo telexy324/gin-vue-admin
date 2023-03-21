@@ -296,13 +296,14 @@ func (a *TemplateApi) UploadScript(c *gin.Context) {
 		response.FailWithMessage("接收文件失败", c)
 		return
 	}
+	userID := utils.GetUserID(c)
 	scriptPath := c.Request.FormValue("scriptPath")
 	if err != nil {
 		global.GVA_LOG.Error("接收文件失败!", zap.Any("err", err))
 		response.FailWithMessage("接收文件失败", c)
 		return
 	}
-	failedIps, err := templateService.UploadScript(ID, file, scriptPath)
+	failedIps, err := templateService.UploadScript(ID, file, scriptPath, userID)
 	if err != nil {
 		global.GVA_LOG.Error("上传脚本失败!", zap.Any("err", err))
 		response.FailWithMessage("上传脚本失败", c)

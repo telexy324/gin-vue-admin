@@ -3,6 +3,7 @@ package taskSvr
 import (
 	"encoding/json"
 	"errors"
+	sockets "github.com/flipped-aurora/gin-vue-admin/server/api/v1/socket"
 	"github.com/flipped-aurora/gin-vue-admin/server/common"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/application"
@@ -183,7 +184,7 @@ func (templateService *TaskTemplatesService) DownloadScript(ID float64, server a
 	return sshClient.Download(template.ScriptPath)
 }
 
-func (templateService *TaskTemplatesService) UploadScript(ID int, file multipart.File, scriptPath string) (failedIPs []string, err error) {
+func (templateService *TaskTemplatesService) UploadScript(ID int, file multipart.File, scriptPath string, userID uint) (failedIPs []string, err error) {
 	template, err := templateService.GetTaskTemplate(float64(ID))
 	if err != nil {
 		return
@@ -199,18 +200,37 @@ func (templateService *TaskTemplatesService) UploadScript(ID int, file multipart
 	for _, server := range template.TargetServers {
 		wg.Add(1)
 		go func(w *sync.WaitGroup, s application.ApplicationServer, f chan string) {
+			var er error
 			defer w.Done()
-			sshClient, err := common.FillSSHClient(s.ManageIp, template.SysUser, "123456", s.SshPort)
-			err = sshClient.GenerateClient()
-			if err != nil {
-				global.GVA_LOG.Error("upload script failed on create ssh client: ", zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
+			defer func() {
+				var status string
+				if er == nil {
+					status = "success"
+				}
+				b, e := json.Marshal(&map[string]interface{}{
+					"type":       "uploadScript",
+					"manageIp":   s.ManageIp,
+					"ID":         s.ID,
+					"status":     status,
+					"templateID": ID,
+				})
+				if e != nil {
+					global.GVA_LOG.Error(err.Error())
+					return
+				}
+				sockets.Message(int(userID), b)
+			}()
+			sshClient, er := common.FillSSHClient(s.ManageIp, template.SysUser, "123456", s.SshPort)
+			er = sshClient.GenerateClient()
+			if er != nil {
+				global.GVA_LOG.Error("upload script failed on create ssh client: ", zap.String("server IP: ", s.ManageIp), zap.Any("err", er))
 				f <- s.ManageIp
 				return
 			}
 
-			err = sshClient.Upload(file, scriptPath)
-			if err != nil {
-				global.GVA_LOG.Error("upload script failed on upload: ", zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
+			er = sshClient.Upload(file, scriptPath)
+			if er != nil {
+				global.GVA_LOG.Error("upload script failed on upload: ", zap.String("server IP: ", s.ManageIp), zap.Any("err", er))
 				f <- s.ManageIp
 				return
 			}
@@ -219,6 +239,7 @@ func (templateService *TaskTemplatesService) UploadScript(ID int, file multipart
 	}
 	wg.Wait()
 	close(failedChan)
+	failedIPs = make([]string, 0)
 	for ip := range failedChan {
 		failedIPs = append(failedIPs, ip)
 	}

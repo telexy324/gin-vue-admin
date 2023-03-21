@@ -71,11 +71,10 @@ export default {
     },
   },
   async created() {
-    if (!socket.isRunning()) {
-      socket.start()
-    }
+    // if (!socket.isRunning()) {
+    //   socket.start()
+    // }
     socket.addListener((data) => this.onWebsocketDataReceived(data))
-    console.log(document.baseURI)
     await this.loadData()
   },
   methods: {

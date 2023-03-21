@@ -177,7 +177,11 @@
           >
             <el-button size="small" type="primary">选择脚本</el-button>
           </el-upload>
-          <el-progress style="width: 200px;margin-top: 8px" :percentage="progressPercent" />
+          <el-progress v-if="uploading" class="progress" :percentage="progressPercent" />
+          <div v-for="(item, index) in scriptForm.items" :key="index">
+            {{ item.manageIp }}
+            <el-progress class="progress-server" :percentage="100" :status="item.status" :indeterminate="item.indeterminate" :duration="2" />
+          </div>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -214,6 +218,7 @@ import { ElMessage } from 'element-plus'
 import { mapGetters } from 'vuex'
 // import service from '@/utils/request'
 import Axios from 'axios'
+import socket from '@/socket'
 
 export default {
   name: 'TemplateList',
@@ -256,17 +261,20 @@ export default {
       scriptForm: {
         ID: '',
         scriptPath: '',
-        file: ''
+        file: '',
+        items: []
       },
       hasFile: false,
       fileList: [],
-      progressPercent: 0
+      progressPercent: 0,
+      uploading: false,
     }
   },
   computed: {
     ...mapGetters('user', ['userInfo', 'token'])
   },
   async created() {
+    socket.addListener((data) => this.onWebsocketDataReceived(data))
     await this.getTableData()
     const res = await getAllServerIds()
     this.setOptions(res.data)
@@ -473,6 +481,11 @@ export default {
     async uploadScript(row) {
       const res = await getTemplateById({ id: row.ID })
       this.scriptForm = res.data.taskTemplate
+      this.scriptForm.items = []
+      for (let i = 0; i < res.data.taskTemplate.targetServers.length; i++) {
+        const item = { ID: res.data.taskTemplate.targetServers[i].ID, manageIp: res.data.taskTemplate.targetServers[i].manageIp, status: 'warning', indeterminate: '' }
+        this.scriptForm.items.push(item)
+      }
       this.dialogFormVisibleScript = true
     },
     initScriptForm() {
@@ -480,10 +493,13 @@ export default {
       this.scriptForm = {
         ID: '',
         scriptPath: '',
-        file: ''
+        file: '',
+        items: [],
       }
     },
     closeScriptDialog() {
+      this.progressPercent = 0
+      this.uploading = false
       this.initScriptForm()
       this.dialogFormVisibleScript = false
     },
@@ -506,6 +522,7 @@ export default {
       this.$refs.scriptForm.validate(valid => {
         if (valid) {
           this.$refs.upload.submit()
+          this.uploading = true
         }
       })
     },
@@ -549,17 +566,18 @@ export default {
         timeout: 99999,
         onUploadProgress: (progressEvent) => {
           this.progressPercent = Math.floor((progressEvent.loaded * 100) / progressEvent.total)
-          console.log(progressEvent.loaded)
-          console.log(progressEvent.total)
         },
       }).then(response => {
         if (response.data.code === 0 || response.headers.success === 'true') {
+          let message = '上传成功'
+          if (response.data.failedIps.length > 0) {
+            message = '上传部分成功, 失败的服务器: ' + response.data.failedIps.toString()
+          }
           ElMessage({
             showClose: true,
-            message: '上传成功',
+            message: message,
             type: 'success'
           })
-          this.progressPercent = 0
           this.closeScriptDialog()
         } else {
           this.progressPercent = 0
@@ -577,7 +595,28 @@ export default {
           type: 'error'
         })
       })
-    }
+    },
+    onWebsocketDataReceived(data) {
+      if (data.templateID !== this.scriptForm.ID) {
+        return
+      }
+      if (data.type !== 'uploadScript') {
+        return
+      }
+      console.log(this.scriptForm.items)
+      for (let i = 0; i < this.scriptForm.items.length; i++) {
+        if (this.scriptForm.items[i].ID === data.ID) {
+          switch (data.status) {
+            case 'success':
+              this.scriptForm.items[i].status = 'success'
+              this.scriptForm.items[i].indeterminate = ''
+              break
+            default:
+              break
+          }
+        }
+      }
+    },
   }
 }
 </script>
@@ -594,5 +633,12 @@ export default {
 }
 .excel-btn+.excel-btn{
   margin-left: 10px;
+}
+.progress{
+  width: 300px;
+  margin-top: 8px
+}
+.progress-server{
+  width: 300px
 }
 </style>

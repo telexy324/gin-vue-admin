@@ -41,7 +41,7 @@ func OperationRecord() gin.HandlerFunc {
 			userId = id
 		}
 		var record system.SysOperationRecord
-		if c.Request.MultipartForm !=nil {
+		if c.Request.RequestURI == "/task/template/uploadScript" {
 			record = system.SysOperationRecord{
 				Ip:     c.ClientIP(),
 				Method: c.Request.Method,
