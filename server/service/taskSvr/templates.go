@@ -206,6 +206,8 @@ func (templateService *TaskTemplatesService) UploadScript(ID int, file multipart
 				var status string
 				if er == nil {
 					status = "success"
+				} else {
+					status = "exception"
 				}
 				b, e := json.Marshal(&map[string]interface{}{
 					"type":       "uploadScript",

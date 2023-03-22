@@ -180,7 +180,7 @@
           <el-progress v-if="uploading" class="progress" :percentage="progressPercent" />
           <div v-for="(item, index) in scriptForm.items" :key="index">
             {{ item.manageIp }}
-            <el-progress class="progress-server" :percentage="100" :status="item.status" :indeterminate="item.indeterminate" :duration="2" />
+            <el-progress v-if="uploadingServer" class="progress-server" :percentage="100" :status="item.status" :indeterminate="item.indeterminate" :duration="2" />
           </div>
         </el-form-item>
       </el-form>
@@ -268,6 +268,8 @@ export default {
       fileList: [],
       progressPercent: 0,
       uploading: false,
+      uploadingServer: false,
+      uploadingStatus: false,
     }
   },
   computed: {
@@ -483,7 +485,7 @@ export default {
       this.scriptForm = res.data.taskTemplate
       this.scriptForm.items = []
       for (let i = 0; i < res.data.taskTemplate.targetServers.length; i++) {
-        const item = { ID: res.data.taskTemplate.targetServers[i].ID, manageIp: res.data.taskTemplate.targetServers[i].manageIp, status: 'warning', indeterminate: '' }
+        const item = { ID: res.data.taskTemplate.targetServers[i].ID, manageIp: res.data.taskTemplate.targetServers[i].manageIp, status: 'warning', indeterminate: 'true' }
         this.scriptForm.items.push(item)
       }
       this.dialogFormVisibleScript = true
@@ -500,6 +502,7 @@ export default {
     closeScriptDialog() {
       this.progressPercent = 0
       this.uploading = false
+      this.uploadingServer = false
       this.initScriptForm()
       this.dialogFormVisibleScript = false
     },
@@ -566,13 +569,17 @@ export default {
         timeout: 99999,
         onUploadProgress: (progressEvent) => {
           this.progressPercent = Math.floor((progressEvent.loaded * 100) / progressEvent.total)
+          if (this.progressPercent >= 100) {
+            this.uploadingServer = true
+          }
         },
       }).then(response => {
         if (response.data.code === 0 || response.headers.success === 'true') {
           let message = '上传成功'
-          if (response.data.failedIps.length > 0) {
-            message = '上传部分成功, 失败的服务器: ' + response.data.failedIps.toString()
+          if (response.data.data.failedIps.length > 0) {
+            message = '上传部分成功, 失败的服务器: ' + response.data.data.failedIps.toString()
           }
+          console.log('hehe')
           ElMessage({
             showClose: true,
             message: message,
@@ -580,7 +587,6 @@ export default {
           })
           this.closeScriptDialog()
         } else {
-          this.progressPercent = 0
           ElMessage({
             showClose: true,
             message: response.data.msg,
@@ -588,7 +594,6 @@ export default {
           })
         }
       }).catch(err => {
-        this.progressPercent = 0
         ElMessage({
           showClose: true,
           message: err,
@@ -609,7 +614,11 @@ export default {
           switch (data.status) {
             case 'success':
               this.scriptForm.items[i].status = 'success'
-              this.scriptForm.items[i].indeterminate = ''
+              this.scriptForm.items[i].indeterminate = this.uploadingStatus
+              break
+            case 'exception':
+              this.scriptForm.items[i].status = 'exception'
+              this.scriptForm.items[i].indeterminate = this.uploadingStatus
               break
             default:
               break
