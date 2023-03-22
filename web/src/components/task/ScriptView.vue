@@ -1,5 +1,13 @@
 <template>
-  <el-dialog v-model="visible" :show-close="true" title="script" custom-class="customClass">
+  <el-dialog
+    v-model="visible"
+    :show-close="true"
+    title="script"
+    custom-class="customClass"
+    :close-on-click-modal="false"
+    :close-on-press-escape="false"
+    :before-close="closeDialog"
+  >
     <div ref="output" class="task-log-records">
       {{ script }}
     </div>
@@ -72,5 +80,11 @@ export default {
   created() {
     this.visible = true
   },
+  methods: {
+    closeDialog() {
+      this.visible = false
+      this.$emit('close')
+    },
+  }
 }
 </script>

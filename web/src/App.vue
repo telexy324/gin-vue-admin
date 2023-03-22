@@ -10,8 +10,17 @@
 <!--          </el-button>-->
 <!--        </div>-->
 <!--      </template>-->
-    <TaskLogView v-if="isGetData" :item-id="task ? task.ID : null" :visiable="!!task" />
-    <ScriptView v-if="scriptDialog" :script="script" />
+    <TaskLogView
+      v-if="isGetData"
+      :item-id="task ? task.ID : null"
+      :visiable="!!task"
+      @close="onTaskLogDialogClosed"
+    />
+    <ScriptView
+      v-if="scriptDialog"
+      :script="script"
+      @close="onScriptLogDialogClosed"
+    />
 <!--    </el-dialog>-->
     <router-view />
   </div>
@@ -71,8 +80,15 @@ export default {
   methods: {
     async onTaskLogDialogClosed() {
       this.taskLogDialog = false
-      const query = { ...this.$route.query, t: undefined }
-      await this.$router.replace({ query })
+      // const query = { ...this.$route.query, t: undefined }
+      // await this.$router.replace({ query })
+      await this.$router.push({ name: this.$route.name })
+    },
+    async onScriptLogDialogClosed() {
+      this.scriptDialog = false
+      // const query = { ...this.$route.query, t: undefined }
+      // await this.$router.replace({ query })
+      await this.$router.push({ name: this.$route.name })
     },
   }
 }

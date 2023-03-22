@@ -1,5 +1,12 @@
 <template>
-  <el-dialog v-model="visible" :show-close="true" custom-class="customClass">
+  <el-dialog
+    v-model="visible"
+    :show-close="true"
+    custom-class="customClass"
+    :close-on-click-modal="false"
+    :close-on-press-escape="false"
+    :before-close="closeDialog"
+  >
     <template #title>
       <el-row :gutter="10" type="flex" justify="center" align="middle">
         <el-col :span="3">Task #{{ item.ID }}</el-col>
@@ -84,18 +91,15 @@ export default {
     async stopTask(Id) {
       await stopTask({ ID: Id })
     },
-
     reset() {
       this.item = {}
       this.output = []
       this.user = {}
     },
-
     onWebsocketDataReceived(data) {
       if (data.taskId !== this.itemId) {
         return
       }
-
       switch (data.type) {
         case 'update':
           Object.assign(this.item, {
@@ -113,16 +117,13 @@ export default {
           break
       }
     },
-
     async loadData() {
       this.item = (await getTaskById({ ID: this.itemId })).data.task
-
       this.output = (await getTaskOutputs({ taskId: this.itemId })).data.taskOutputs
       this.user = (await getUserById({ ID: this.item.systemUserId })).data.user
       console.log(this.user)
       this.visible = true
     },
-
     formatDate: function(time) {
       if (time !== null && time !== '') {
         var date = new Date(time)
@@ -130,6 +131,10 @@ export default {
       } else {
         return ''
       }
+    },
+    closeDialog() {
+      this.visible = false
+      this.$emit('close')
     },
   },
 }
