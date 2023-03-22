@@ -13,9 +13,10 @@ import (
 var TPool TaskPool
 
 type logRecord struct {
-	task   *TaskRunner
-	output string
-	time   time.Time
+	task     *TaskRunner
+	output   string
+	time     time.Time
+	manageIp string
 }
 
 type resourceLock struct {
@@ -106,6 +107,7 @@ func (p *TaskPool) Run() {
 				TaskId:     int(record.task.task.ID),
 				Output:     record.output,
 				RecordTime: record.time,
+				ManageIp:   record.manageIp,
 			})
 
 			if err != nil {
@@ -306,7 +308,7 @@ func (p *TaskPool) AddTask(taskObj taskMdl.Task, userID int) (newTask taskMdl.Ta
 	if err != nil {
 		return
 	}
-	template,err:=taskService.GetTaskTemplate(float64(taskObj.TemplateId))
+	template, err := taskService.GetTaskTemplate(float64(taskObj.TemplateId))
 	if err != nil {
 		return
 	}

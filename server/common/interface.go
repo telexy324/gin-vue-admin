@@ -6,7 +6,7 @@ import (
 )
 
 type Logger interface {
-	Log(msg string)
+	Log(msg string, manageIP ...string)
 	LogCmd(cmd *exec.Cmd)
 	LogSsh(channel ssh.Channel)
 }

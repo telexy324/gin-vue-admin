@@ -1,5 +1,5 @@
 <template>
-  <el-dialog v-model="visible" :show-close="false" custom-class="customClass">
+  <el-dialog v-model="visible" :show-close="true" custom-class="customClass">
     <template #title>
       <el-row :gutter="10" type="flex" justify="center" align="middle">
         <el-col :span="3">Task #{{ item.ID }}</el-col>
@@ -18,6 +18,9 @@
       <div v-for="record in output" :key="record.ID" class="task-log-records__record">
         <div class="task-log-records__time">
           {{ formatDate(record.recordTime) }}
+        </div>
+        <div class="task-log-records__ip">
+          {{ record.manageIp }}
         </div>
         <div class="task-log-records__output">{{ record.output }}</div>
       </div>
@@ -134,7 +137,7 @@ export default {
 
 <style lang="scss">
 .customClass {
-  width: 60%;
+  width: 80%;
 }
 </style>
 
@@ -165,6 +168,11 @@ export default {
 .task-log-records__time {
   width: 140px;
   min-width: 140px;
+}
+
+.task-log-records__ip {
+  width: 110px;
+  min-width: 110px;
 }
 
 .task-log-records__output {

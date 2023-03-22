@@ -165,8 +165,8 @@ func (c *SSHClient) GenerateClient() error {
 	return nil
 }
 
-func (c *SSHClient) Command(command string, logger Logger) (err error) {
-	logger.Log(command)
+func (c *SSHClient) Command(command string, logger Logger, manageIP string) (err error) {
+	logger.Log(command, manageIP)
 	session, err := c.Client.NewSession()
 	if err != nil {
 		logger.Log("ssh open session failed")
@@ -177,7 +177,7 @@ func (c *SSHClient) Command(command string, logger Logger) (err error) {
 		logger.Log("ssh exec failed")
 		return
 	}
-	logger.Log(string(output))
+	logger.Log(string(output), manageIP)
 	return
 }
 

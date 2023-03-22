@@ -11,30 +11,51 @@ import (
 	"time"
 )
 
-func (t *TaskRunner) Log(msg string) {
+func (t *TaskRunner) Log(msg string, manageIP ...string) {
 	now := time.Now()
 
 	for _, user := range t.users {
-		b, err := json.Marshal(&map[string]interface{}{
-			"type":       "log",
-			"output":     msg,
-			"recordTime": now,
-			"taskId":     t.task.ID,
-			"ID":         time.Now().UnixNano(),
-		})
+		if len(manageIP) > 0 {
+			b, err := json.Marshal(&map[string]interface{}{
+				"type":       "log",
+				"output":     msg,
+				"recordTime": now,
+				"taskId":     t.task.ID,
+				"ID":         now.UnixNano(),
+				"manageIp":   manageIP[0],
+			})
 
-		if err != nil {
-			global.GVA_LOG.Fatal(err.Error())
+			if err != nil {
+				global.GVA_LOG.Fatal(err.Error())
+			}
+
+			socket.Message(user, b)
+		} else {
+			b, err := json.Marshal(&map[string]interface{}{
+				"type":       "log",
+				"output":     msg,
+				"recordTime": now,
+				"taskId":     t.task.ID,
+				"ID":         now.UnixNano(),
+			})
+
+			if err != nil {
+				global.GVA_LOG.Fatal(err.Error())
+			}
+
+			socket.Message(user, b)
 		}
-
-		socket.Message(user, b)
 	}
 
-	t.pool.logger <- logRecord{
+	l := logRecord{
 		task:   t,
 		output: msg,
 		time:   now,
 	}
+	if len(manageIP) > 0 {
+		l.manageIp = manageIP[0]
+	}
+	t.pool.logger <- l
 }
 
 // Readln reads from the pipe

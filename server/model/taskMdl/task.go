@@ -35,6 +35,7 @@ type TaskOutput struct {
 	TaskId     int       `json:"taskId" gorm:"column:task_id"`         // task id
 	RecordTime time.Time `json:"recordTime" gorm:"column:record_time"` // 记录时间
 	Output     string    `json:"output" gorm:"column:output"`          // 输出
+	ManageIp   string    `json:"manageIp" gorm:"column:manage_ip"`     // 输出
 }
 
 func (m *TaskOutput) TableName() string {

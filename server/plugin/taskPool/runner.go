@@ -18,6 +18,7 @@ import (
 	"io"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
@@ -579,17 +580,41 @@ func (t *TaskRunner) runTask() (failedIPs []string) {
 			//}
 			//defer ssConn.Close()
 
-			var command string
+			//var command string
+			//if t.template.Mode == consts.Command {
+			//	command = t.template.Command
+			//} else {
+			//	command = "sh "+t.template.ScriptPath
+			//}
+			//
+			//err = sshClient.Command(command, t)
+			//if err != nil {
+			//	global.GVA_LOG.Error("run task failed on exec command: ", zap.Uint("task ID: ", t.task.ID), zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
+			//	f <- s.ManageIp
+			//	return
+			//}
 			if t.template.Mode == consts.Command {
-				command = t.template.Command
+				commands := strings.Split(t.template.Command, "\n")
+				failed := false
+				for _, command := range commands {
+					err = sshClient.Command(command, t, s.ManageIp)
+					if err != nil {
+						global.GVA_LOG.Error("run task failed on exec command: ", zap.Uint("task ID: ", t.task.ID), zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
+					} else {
+						failed = true
+					}
+				}
+				if !failed {
+					f <- s.ManageIp
+				}
 			} else {
-				command = "sh "+t.template.ScriptPath
-			}
-			err = sshClient.Command(command, t)
-			if err != nil {
-				global.GVA_LOG.Error("run task failed on exec command: ", zap.Uint("task ID: ", t.task.ID), zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
-				f <- s.ManageIp
-				return
+				command := "sh " + t.template.ScriptPath
+				err = sshClient.Command(command, t, s.ManageIp)
+				if err != nil {
+					global.GVA_LOG.Error("run task failed on exec command: ", zap.Uint("task ID: ", t.task.ID), zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
+					f <- s.ManageIp
+					return
+				}
 			}
 			//sshClient.RequestShell()
 			//if err = sshClient.ConnectShell(t.template.Command, t); err != nil {

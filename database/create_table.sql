@@ -135,9 +135,10 @@ create table `application_task_outputs`
     `created_at`  datetime(0) NULL DEFAULT NULL,
     `updated_at`  datetime(0) NULL DEFAULT NULL,
     `deleted_at`  datetime(0) NULL DEFAULT NULL,
-    `task_id`     int      NOT NULL DEFAULT '0',
-    `record_time` datetime not null,
+    `task_id`     int         NOT NULL DEFAULT '0',
+    `record_time` datetime    not null,
     `output`      text,
+    `manage_ip`   varchar(15) NOT NULL DEFAULT '' COMMENT '管理ip',
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

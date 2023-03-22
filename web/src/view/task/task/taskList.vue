@@ -8,7 +8,12 @@
         />
         <el-table-column align="left" label="id" min-width="60" sortable="custom">
           <template v-slot="scope">
-            <a @click="showTaskLog(scope.row)">{{ scope.row.ID }}</a>
+            <el-button
+              type="text"
+              link
+              @click="showTaskLog(scope.row)"
+            >{{ scope.row.ID }}</el-button>
+<!--            <a @click="showTaskLog(scope.row)">{{ scope.row.ID }}</a>-->
           </template>
         </el-table-column>
         <el-table-column align="left" label="模板id" min-width="150" prop="templateId" sortable="custom" />
