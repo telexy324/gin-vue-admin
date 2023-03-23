@@ -1,6 +1,7 @@
 package taskPool
 
 import (
+	"database/sql"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl"
 	"go.uber.org/zap"
@@ -279,6 +280,14 @@ func getNextBuildVersion(startVersion string, currentVersion string) string {
 func (p *TaskPool) AddTask(taskObj taskMdl.Task, userID int) (newTask taskMdl.Task, err error) {
 	taskObj.Status = taskMdl.TaskWaitingStatus
 	taskObj.SystemUserId = userID
+	taskObj.BeginTime = sql.NullTime{
+		Time:  time.Unix(0,0),
+		Valid: true,
+	}
+	taskObj.EndTime = sql.NullTime{
+		Time:  time.Unix(0,0),
+		Valid: true,
+	}
 
 	//tpl, err := taskService.GetTaskTemplate(float64(taskObj.TemplateId))
 	//if err != nil {

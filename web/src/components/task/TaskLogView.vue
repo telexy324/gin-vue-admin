@@ -1,47 +1,50 @@
 <template>
-  <el-dialog
-    v-model="visible"
-    :show-close="true"
-    custom-class="customClass"
-    :close-on-click-modal="false"
-    :close-on-press-escape="false"
-    :before-close="closeDialog"
-  >
-    <template #title>
-      <el-row :gutter="10" type="flex" justify="center" align="middle">
-        <el-col :span="3">Task #{{ item.ID }}</el-col>
-        <el-col :span="3">
-          <TaskStatus :status="item.status" />
-        </el-col>
-        <el-col :span="3">Author:</el-col>
-        <el-col :span="3" v-text="user.userName" />
-        <el-col :span="3">start:</el-col>
-        <el-col :span="3">{{ formatDate(item.beginTime.Time) }}</el-col>
-        <el-col :span="3">end:</el-col>
-        <el-col :span="3">{{ formatDate(item.endTime.Time) }}</el-col>
-      </el-row>
-    </template>
-    <div ref="output" class="task-log-records">
-      <div v-for="record in output" :key="record.ID" class="task-log-records__record">
-        <div class="task-log-records__time">
-          {{ formatDate(record.recordTime) }}
-        </div>
-        <div class="task-log-records__ip">
-          {{ record.manageIp }}
-        </div>
-        <div class="task-log-records__output">{{ record.output }}</div>
-      </div>
-    </div>
-    <el-button
-      v-if="item.status === 'running' || item.status === 'waiting'"
-      type="danger"
-      round
-      style="position: absolute; bottom: 10px; right: 10px;"
-      @click="stopTask(item.ID)"
+  <div v-if="showCard">
+    <el-dialog
+      v-model="visible"
+      :show-close="true"
+      custom-class="customClass"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+      :before-close="closeDialog"
+      destroy-on-close
     >
-      Stop
-    </el-button>
-  </el-dialog>
+      <template #title>
+        <el-row :gutter="10" type="flex" justify="center" align="middle">
+          <el-col :span="3">Task #{{ item.ID }}</el-col>
+          <el-col :span="3">
+            <TaskStatus :status="item.status" />
+          </el-col>
+          <el-col :span="3">Author:</el-col>
+          <el-col :span="3" v-text="user.userName" />
+          <el-col :span="3">start:</el-col>
+          <el-col :span="3">{{ formatDate(item ? item.beginTime.Time : null) }}</el-col>
+          <el-col :span="3">end:</el-col>
+          <el-col :span="3">{{ formatDate(item ? item.endTime.Time : null) }}</el-col>
+        </el-row>
+      </template>
+      <div ref="output" class="task-log-records">
+        <div v-for="record in output" :key="record.ID" class="task-log-records__record">
+          <div class="task-log-records__time">
+            {{ formatDate(record.recordTime) }}
+          </div>
+          <div class="task-log-records__ip">
+            {{ record.manageIp }}
+          </div>
+          <div class="task-log-records__output">{{ record.output }}</div>
+        </div>
+      </div>
+      <el-button
+        v-if="item.status === 'running' || item.status === 'waiting'"
+        type="danger"
+        round
+        style="position: absolute; bottom: 10px; right: 10px;"
+        @click="stopTask(item.ID)"
+      >
+        Stop
+      </el-button>
+    </el-dialog>
+  </div>
 </template>
 
 <script>
@@ -65,6 +68,7 @@ export default {
       output: [],
       user: {},
       visible: false,
+      showCard: false
     }
   },
   // watch: {
@@ -92,9 +96,7 @@ export default {
       await stopTask({ ID: Id })
     },
     reset() {
-      this.item = {}
       this.output = []
-      this.user = {}
     },
     onWebsocketDataReceived(data) {
       if (data.taskId !== this.itemId) {
@@ -122,6 +124,7 @@ export default {
       this.output = (await getTaskOutputs({ taskId: this.itemId })).data.taskOutputs
       this.user = (await getUserById({ ID: this.item.systemUserId })).data.user
       console.log(this.user)
+      this.showCard = true
       this.visible = true
     },
     formatDate: function(time) {
@@ -133,7 +136,9 @@ export default {
       }
     },
     closeDialog() {
+      this.showCard = false
       this.visible = false
+      this.reset()
       this.$emit('close')
     },
   },
