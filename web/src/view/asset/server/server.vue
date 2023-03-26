@@ -162,7 +162,7 @@ import { toSQLLine } from '@/utils/stringFun'
 import warningBar from '@/components/warningBar/warningBar.vue'
 import { exportExcel, downloadTemplate } from '@/api/cmdb'
 import { mapGetters } from 'vuex'
-import Systems from '@/view/cmdb/components/systems.vue'
+import Systems from '@/view/asset/server/components/systems.vue'
 
 export default {
   name: 'Server',
