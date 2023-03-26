@@ -37,6 +37,7 @@
         </el-upload>
         <el-button class="excel-btn" size="mini" type="primary" icon="el-icon-download" @click="handleExcelExport('ExcelExport.xlsx')">导出</el-button>
         <el-button class="excel-btn" size="mini" type="success" icon="el-icon-download" @click="downloadExcelTemplate()">下载模板</el-button>
+        <el-button class="excel-btn" size="mini" type="success" icon="el-icon-download" @click="openDrawer()">选择系统</el-button>
       </div>
       <el-table :data="tableData" @sort-change="sortChange" @selection-change="handleSelectionChange">
         <el-table-column
@@ -136,10 +137,12 @@
         </div>
       </template>
     </el-dialog>
-
     <div class="term1">
       <div ref="terminalBox" style="height: 60vh;"></div>
     </div>
+    <el-drawer v-if="drawer" v-model="drawer" :with-header="false" size="40%" title="请选择系统">
+      <Systems ref="systems" @checked="getCheckedServers" />
+    </el-drawer>
   </div>
 </template>
 
@@ -159,11 +162,13 @@ import { toSQLLine } from '@/utils/stringFun'
 import warningBar from '@/components/warningBar/warningBar.vue'
 import { exportExcel, downloadTemplate } from '@/api/cmdb'
 import { mapGetters } from 'vuex'
+import Systems from '@/view/cmdb/components/systems.vue'
 
 export default {
   name: 'Server',
   components: {
-    warningBar
+    warningBar,
+    Systems
   },
   mixins: [infoList],
   data() {
@@ -207,6 +212,7 @@ export default {
         ]
       },
       path: path,
+      drawer: false,
     }
   },
   computed: {
@@ -408,6 +414,18 @@ export default {
     },
     downloadExcelTemplate() {
       downloadTemplate('ExcelTemplate.xlsx')
+    },
+    openDrawer() {
+      this.drawer = true
+    },
+    getCheckedServers(checkArr) {
+      const systemIDs = []
+      checkArr.forEach(item => {
+        systemIDs.push(Number(item.ID))
+      })
+      this.searchInfo.systemIDs = systemIDs
+      this.getTableData()
+      this.drawer = false
     },
   }
 }

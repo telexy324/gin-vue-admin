@@ -1657,6 +1657,44 @@ var doc = `{
                 }
             }
         },
+        "/cmdb/getAdminSystems": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "CmdbSystem"
+                ],
+                "summary": "获取管理员所有系统",
+                "parameters": [
+                    {
+                        "description": "空",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.Empty"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\":true,\"data\":{},\"msg\":\"获取成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/cmdb/getAllServerIds": {
             "get": {
                 "security": [
@@ -5526,7 +5564,7 @@ var doc = `{
                     "type": "integer"
                 },
                 "name": {
-                    "description": "主机名",
+                    "description": "系统名",
                     "type": "string"
                 },
                 "position": {
@@ -6177,6 +6215,12 @@ var doc = `{
         "request.AddSystem": {
             "type": "object",
             "properties": {
+                "adminIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
                 "authorityId": {
                     "description": "角色ID",
                     "type": "string"

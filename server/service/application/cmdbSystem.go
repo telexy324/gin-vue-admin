@@ -6,6 +6,7 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/model/application"
 	request2 "github.com/flipped-aurora/gin-vue-admin/server/model/application/request"
 	applicationRes "github.com/flipped-aurora/gin-vue-admin/server/model/application/response"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/system"
 	"github.com/flipped-aurora/gin-vue-admin/server/utils"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -41,7 +42,24 @@ func (cmdbSystemService *CmdbSystemService) AddSystem(addSystemRequest request2.
 		if addSystemRequest.SystemAdmin != nil && len(addSystemRequest.SystemAdmin) > 0 {
 			for _, admin := range addSystemRequest.SystemAdmin {
 				admin.SystemId = int(addSystemRequest.System.ID)
-				if err := global.GVA_DB.Create(&admin).Error; err != nil {
+				if err = global.GVA_DB.Create(&admin).Error; err != nil {
+					global.GVA_LOG.Error("添加管理员失败", zap.Any("err", err))
+				}
+			}
+		}
+		if addSystemRequest.AdminIds != nil && len(addSystemRequest.AdminIds) > 0 {
+			for _, id := range addSystemRequest.AdminIds {
+				user := &system.SysUser{}
+				user.ID = uint(id)
+				if err = global.GVA_DB.Find(user).Error; err != nil {
+					global.GVA_LOG.Error("管理员不存在", zap.Any("err", err))
+					continue
+				}
+				admin := &application.ApplicationSystemSysAdmin{
+					SystemId: int(addSystemRequest.System.ID),
+					AdminId:  id,
+				}
+				if err = global.GVA_DB.Create(&admin).Error; err != nil {
 					global.GVA_LOG.Error("添加管理员失败", zap.Any("err", err))
 				}
 			}
@@ -68,6 +86,11 @@ func (cmdbSystemService *CmdbSystemService) DeleteSystem(id float64) (err error)
 	}
 	var systemAdmins []application.ApplicationSystemAdmin
 	err = global.GVA_DB.Where("system_id = ?", id).Find(&systemAdmins).Delete(&systemAdmins).Error
+	if err != nil {
+		return err
+	}
+	var Admins []application.ApplicationSystemSysAdmin
+	err = global.GVA_DB.Where("system_id = ?", id).Find(&Admins).Delete(&Admins).Error
 	if err != nil {
 		return err
 	}
@@ -143,6 +166,48 @@ func (cmdbSystemService *CmdbSystemService) UpdateSystem(addSystemRequest reques
 				}
 			}
 		}
+		if addSystemRequest.AdminIds != nil && len(addSystemRequest.AdminIds) > 0 {
+			existAdmins := make([]application.ApplicationSystemSysAdmin, 0)
+			existIds := make([]int, 0, len(existAdmins))
+			if txErr = tx.Where("system_id = ?", addSystemRequest.System.ID).Find(&existAdmins).Error; txErr != nil {
+				return txErr
+			}
+			for _, admin := range existAdmins {
+				existIds = append(existIds, admin.AdminId)
+			}
+			requestIds := make([]int, 0, len(addSystemRequest.AdminIds))
+			for _, id := range addSystemRequest.AdminIds {
+				requestIds = append(requestIds, id)
+			}
+			toAdd := utils.SubInt(requestIds, existIds)
+			toDel := utils.SubInt(existIds, requestIds)
+			for _, id := range toAdd {
+				if txErr = tx.Where("id = ?", id).First(&system.SysUser{}).Error; txErr != nil {
+					return txErr
+				}
+				var sysAdmin application.ApplicationSystemSysAdmin
+				if txErr = tx.Where("admin_id = ? and system_id = ?", id, addSystemRequest.System.ID).Find(&sysAdmin).Error; errors.Is(txErr, gorm.ErrRecordNotFound) {
+					if txErr = tx.Create(&application.ApplicationSystemSysAdmin{
+						SystemId: int(addSystemRequest.System.ID),
+						AdminId:  id,
+					}).Error; txErr != nil {
+						return txErr
+					}
+				} else if txErr == nil {
+					if txErr = tx.Unscoped().Where("admin_id = ? and system_id = ?", id, addSystemRequest.System.ID).Find(&sysAdmin).Update("deleted_at", nil).Error; txErr != nil {
+						return txErr
+					}
+				} else {
+					return txErr
+				}
+			}
+			for _, id := range toDel {
+				admin := application.ApplicationSystemSysAdmin{}
+				if txErr = tx.Where("admin_id = ? and system_id = ?", id, addSystemRequest.System.ID).Find(&admin).Delete(&admin).Error; txErr != nil {
+					return txErr
+				}
+			}
+		}
 		return nil
 	})
 	return err
@@ -213,6 +278,25 @@ func (cmdbSystemService *CmdbSystemService) GetSystemList(info request2.SystemSe
 		})
 	}
 	return err, systemInfoList, total
+}
+
+// @author: [telexy324](https://github.com/telexy324)
+// @function: GetSystemServers
+// @description: 获取系统内全部服务器
+// @return: err error, systemList []application.ApplicationSystem
+func (cmdbSystemService *CmdbSystemService) GetAdminSystems(adminID uint) (err error, systemList []application.ApplicationSystem) {
+	sysAdmins := make([]application.ApplicationSystemSysAdmin, 0)
+	if err = global.GVA_DB.Where("admin_id = ?", adminID).Find(&sysAdmins).Error; err != nil {
+		return
+	}
+	for _, admin := range sysAdmins {
+		system := application.ApplicationSystem{}
+		if err = global.GVA_DB.Model(&application.ApplicationSystem{}).Where("id = ?", admin.SystemId).Find(&system).Error; err != nil {
+			return
+		}
+		systemList = append(systemList, system)
+	}
+	return
 }
 
 //@author: [telexy324](https://github.com/telexy324)

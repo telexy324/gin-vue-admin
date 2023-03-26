@@ -95,7 +95,7 @@ definitions:
         description: 主键ID
         type: integer
       name:
-        description: 主机名
+        description: 系统名
         type: string
       position:
         description: 系统位置
@@ -553,6 +553,10 @@ definitions:
     type: object
   request.AddSystem:
     properties:
+      adminIds:
+        items:
+          type: integer
+        type: array
       authorityId:
         description: 角色ID
         type: string
@@ -2287,6 +2291,29 @@ paths:
       summary: 分页获取基础admin列表
       tags:
       - Staff
+  /cmdb/getAdminSystems:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 空
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.Empty'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 获取管理员所有系统
+      tags:
+      - CmdbSystem
   /cmdb/getAllServerIds:
     get:
       consumes:

@@ -146,3 +146,86 @@ export const downloadTemplate = (fileName) => {
     download(res, fileName)
   })
 }
+
+// @Summary 获取system列表
+// @Produce  application/json
+// @Param {
+//  page     int
+//	pageSize int
+// }
+// @Router /cmdb/getSystemList [post]
+export const getSystemList = (data) => {
+  return service({
+    url: '/cmdb/getSystemList',
+    method: 'post',
+    data
+  })
+}
+
+// @Summary 新增system
+// @Produce  application/json
+// @Param menu Object
+// @Router /cmdb/addSystem [post]
+export const addSystem = (data) => {
+  return service({
+    url: '/cmdb/addSystem',
+    method: 'post',
+    data
+  })
+}
+
+// @Summary 删除system
+// @Produce  application/json
+// @Param ID float64
+// @Router /cmdb/deleteSystem [post]
+export const deleteSystem = (data) => {
+  return service({
+    url: '/cmdb/deleteSystem',
+    method: 'post',
+    data
+  })
+}
+
+// @Summary 修改system
+// @Produce  application/json
+// @Param system Object
+// @Router /cmdb/updateSystem [post]
+export const updateSystem = (data) => {
+  return service({
+    url: '/cmdb/updateSystem',
+    method: 'post',
+    data
+  })
+}
+
+// @Tags system
+// @Summary 根据id获取服务器
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body api.GetById true "根据id获取服务器"
+// @Success 200 {string} json "{"success":true,"data":{},"msg":"获取成功"}"
+// @Router /cmdb/getSystemById [post]
+export const getSystemById = (data) => {
+  return service({
+    url: '/cmdb/getSystemById',
+    method: 'post',
+    data
+  })
+}
+
+// @Tags system
+// @Summary 获取管理员服务器
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body request.Empty true
+// @Success 200 {string} json "{"success":true,"data":{},"msg":"获取成功"}"
+// @Router /cmdb/getAdminSystems [post]
+export const getAdminSystems = (data) => {
+  return service({
+    url: '/cmdb/getAdminSystems',
+    method: 'post',
+    data
+  })
+}

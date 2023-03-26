@@ -158,3 +158,15 @@ create table `application_task_templates`
     `sys_user`        varchar(30)  NOT NULL DEFAULT 'root',
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE `application_system_sys_admins`
+(
+    `id`         bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+    `created_at` datetime(0) NULL DEFAULT NULL,
+    `updated_at` datetime(0) NULL DEFAULT NULL,
+    `deleted_at` datetime(0) NULL DEFAULT NULL,
+    `system_id`  bigint UNSIGNED NOT NULL COMMENT '系统id',
+    `admin_id`   bigint UNSIGNED NOT NULL COMMENT '管理员id',
+    PRIMARY KEY (`id`),
+    UNIQUE (`system_id`, `admin_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

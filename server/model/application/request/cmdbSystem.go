@@ -9,6 +9,7 @@ type AddSystem struct {
 	System      application.ApplicationSystem        `json:"system"`
 	SystemAdmin []application.ApplicationSystemAdmin `json:"systemAdmin"`
 	AuthorityId string                               `json:"authorityId"` // 角色ID
+	AdminIds    []int                                `json:"adminIds"`
 }
 
 type SystemSearch struct {

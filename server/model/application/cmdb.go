@@ -72,7 +72,7 @@ func (m *SystemRelation) TableName() string {
 
 type ApplicationSystem struct {
 	global.GVA_MODEL
-	Name     string `json:"name" gorm:"column:name"`         // 主机名
+	Name     string `json:"name" gorm:"column:name"`         // 系统名
 	Position int    `json:"position" gorm:"column:position"` // 系统位置
 }
 
@@ -92,4 +92,10 @@ type App struct {
 
 func (m *App) TableName() string {
 	return "application_apps"
+}
+
+type ApplicationSystemSysAdmin struct {
+	global.GVA_MODEL
+	SystemId int `json:"systemId" gorm:"column:system_id"` // 系统id
+	AdminId  int `json:"adminId" gorm:"column:admin_id"`   // 管理员id
 }

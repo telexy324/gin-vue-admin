@@ -20,6 +20,7 @@ type UpdateServer struct {
 type ServerSearch struct {
 	application.ApplicationServer
 	request.PageInfo
+	SystemIDs []int
 }
 
 type ExcelInfo struct {

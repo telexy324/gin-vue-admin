@@ -170,6 +170,26 @@ func (a *CmdbSystemApi) GetSystemList(c *gin.Context) {
 }
 
 // @Tags CmdbSystem
+// @Summary 获取管理员所有系统
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body request.Empty true "空"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
+// @Router /cmdb/getAdminSystems [post]
+func (a *CmdbSystemApi) GetAdminSystems(c *gin.Context) {
+	adminID := utils.GetUserID(c)
+	if err, systemList := cmdbSystemService.GetAdminSystems(adminID); err != nil {
+		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
+		response.FailWithMessage("获取失败", c)
+	} else {
+		response.OkWithDetailed(applicationRes.ApplicationSystemsResponse{
+			Systems: systemList,
+		}, "获取成功", c)
+	}
+}
+
+// @Tags CmdbSystem
 // @Summary 新增联系
 // @Security ApiKeyAuth
 // @accept application/json
