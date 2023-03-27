@@ -66,8 +66,8 @@
     <el-dialog v-model="dialogFormVisible" :before-close="closeDialog" :title="dialogTitle">
       <warning-bar title="新增系统" />
       <el-form ref="systemForm" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="系统名" prop="name">
-          <el-input v-model="form.name" autocomplete="off" />
+        <el-form-item label="系统名" prop="system.name">
+          <el-input v-model="form.system.name" autocomplete="off" />
         </el-form-item>
         <el-form-item label="管理员" prop="adminIds">
           <el-select
@@ -123,7 +123,7 @@ export default {
       dialogTitle: '新增system',
       systems: [],
       form: {
-        name: '',
+        system: '',
         adminIds: ''
       },
       type: '',
@@ -185,7 +185,7 @@ export default {
     initForm() {
       this.$refs.systemForm.resetFields()
       this.form = {
-        name: '',
+        system: '',
         adminIds: ''
       }
     },
@@ -209,7 +209,7 @@ export default {
     },
     async editSystem(row) {
       const res = await getSystemById({ id: row.system.ID })
-      this.form = res.data.system
+      this.form = res.data
       this.form.adminIds = res.data.adminIds
       this.openDialog('edit')
     },
