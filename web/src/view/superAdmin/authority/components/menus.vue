@@ -54,7 +54,7 @@ export default {
       menuTreeData: [],
       menuTreeIds: [],
       needConfirm: false,
-      ymenuDefaultProps: {
+      menuDefaultProps: {
         children: 'children',
         label: function(data) {
           return data.meta.title
