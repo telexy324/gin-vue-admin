@@ -65,7 +65,7 @@
 
     <el-dialog v-model="dialogFormVisible" :before-close="closeDialog" :title="dialogTitle">
       <warning-bar title="新增系统" />
-      <el-form ref="serverForm" :model="form" :rules="rules" label-width="80px">
+      <el-form ref="systemForm" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="系统名" prop="name">
           <el-input v-model="form.name" autocomplete="off" />
         </el-form-item>
@@ -183,7 +183,7 @@ export default {
       this.getTableData()
     },
     initForm() {
-      this.$refs.serverForm.resetFields()
+      this.$refs.systemForm.resetFields()
       this.form = {
         name: '',
         adminIds: ''
@@ -195,7 +195,7 @@ export default {
     },
     openDialog(type) {
       switch (type) {
-        case 'addServer':
+        case 'addSystem':
           this.dialogTitle = '新增System'
           break
         case 'edit':
@@ -210,6 +210,7 @@ export default {
     async editSystem(row) {
       const res = await getSystemById({ id: row.system.ID })
       this.form = res.data.system
+      this.form.adminIds = res.data.adminIds
       this.openDialog('edit')
     },
     async deleteSystem(row) {
@@ -233,7 +234,7 @@ export default {
         })
     },
     async enterDialog() {
-      this.$refs.serverForm.validate(async valid => {
+      this.$refs.systemForm.validate(async valid => {
         if (valid) {
           switch (this.type) {
             case 'addSystem':

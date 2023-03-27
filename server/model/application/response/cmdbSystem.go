@@ -9,8 +9,9 @@ type ApplicationSystemsResponse struct {
 }
 
 type ApplicationSystemResponse struct {
-	System application.ApplicationSystem `json:"system"`
-	Admins []application.Admin           `json:"admins"`
+	System   application.ApplicationSystem `json:"system"`
+	Admins   []application.Admin           `json:"admins"`
+	AdminIds []int                         `json:"adminIds"`
 }
 
 type SystemRelationsResponse struct {

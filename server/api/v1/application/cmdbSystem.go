@@ -117,7 +117,7 @@ func (a *CmdbSystemApi) GetSystemById(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	err, system, admins := cmdbSystemService.GetSystemById(idInfo.ID)
+	err, system, admins, adminIds := cmdbSystemService.GetSystemById(idInfo.ID)
 	if err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 		response.FailWithMessage("获取失败", c)
@@ -132,8 +132,9 @@ func (a *CmdbSystemApi) GetSystemById(c *gin.Context) {
 		}
 	}
 	response.OkWithDetailed(applicationRes.ApplicationSystemResponse{
-		System: system,
-		Admins: adminInfos,
+		System:   system,
+		Admins:   adminInfos,
+		AdminIds: adminIds,
 	}, "获取成功", c)
 }
 

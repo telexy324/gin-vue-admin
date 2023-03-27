@@ -112,7 +112,7 @@ func (cmdbSystemService *CmdbSystemService) UpdateSystem(addSystemRequest reques
 	err = global.GVA_DB.Transaction(func(tx *gorm.DB) error {
 		db := tx.Where("id = ?", addSystemRequest.System.ID).Find(&oldSystem)
 		if oldSystem.Name != addSystemRequest.System.Name {
-			if !errors.Is(tx.Where("id <> ? AND name = ?", addSystemRequest.System.ID, addSystemRequest.System.Name).First(&application.ApplicationSystem{}).Error, gorm.ErrRecordNotFound) {
+			if err = tx.Where("id <> ? AND name = ?", addSystemRequest.System.ID, addSystemRequest.System.Name).First(&application.ApplicationSystem{}).Error; err != nil {
 				global.GVA_LOG.Debug("存在相同name修改失败")
 				return errors.New("存在相同name修改失败")
 			}
@@ -144,19 +144,20 @@ func (cmdbSystemService *CmdbSystemService) UpdateSystem(addSystemRequest reques
 					return txErr
 				}
 				var sysAdmin application.ApplicationSystemAdmin
-				if txErr = tx.Where("admin_id = ? and system_id = ?", id, addSystemRequest.System.ID).Find(&sysAdmin).Error; errors.Is(txErr, gorm.ErrRecordNotFound) {
+				if txErr = tx.Where("admin_id = ? and system_id = ?", id, addSystemRequest.System.ID).Find(&sysAdmin).Error; txErr != nil {
+					return txErr
+				}
+				if sysAdmin.ID > 0 {
+					if txErr = tx.Unscoped().Where("admin_id = ? and system_id = ?", id, addSystemRequest.System.ID).Find(&sysAdmin).Update("deleted_at", nil).Error; txErr != nil {
+						return txErr
+					}
+				} else {
 					if txErr = tx.Create(&application.ApplicationSystemAdmin{
 						SystemId: int(addSystemRequest.System.ID),
 						AdminId:  id,
 					}).Error; txErr != nil {
 						return txErr
 					}
-				} else if txErr == nil {
-					if txErr = tx.Unscoped().Where("admin_id = ? and system_id = ?", id, addSystemRequest.System.ID).Find(&sysAdmin).Update("deleted_at", nil).Error; txErr != nil {
-						return txErr
-					}
-				} else {
-					return txErr
 				}
 			}
 			for _, id := range toDel {
@@ -186,19 +187,20 @@ func (cmdbSystemService *CmdbSystemService) UpdateSystem(addSystemRequest reques
 					return txErr
 				}
 				var sysAdmin application.ApplicationSystemSysAdmin
-				if txErr = tx.Where("admin_id = ? and system_id = ?", id, addSystemRequest.System.ID).Find(&sysAdmin).Error; errors.Is(txErr, gorm.ErrRecordNotFound) {
+				if txErr = tx.Where("admin_id = ? and system_id = ?", id, addSystemRequest.System.ID).Find(&sysAdmin).Error; txErr != nil {
+					return txErr
+				}
+				if sysAdmin.ID > 0 {
+					if txErr = tx.Unscoped().Where("admin_id = ? and system_id = ?", id, addSystemRequest.System.ID).Find(&sysAdmin).Update("deleted_at", nil).Error; txErr != nil {
+						return txErr
+					}
+				} else {
 					if txErr = tx.Create(&application.ApplicationSystemSysAdmin{
 						SystemId: int(addSystemRequest.System.ID),
 						AdminId:  id,
 					}).Error; txErr != nil {
 						return txErr
 					}
-				} else if txErr == nil {
-					if txErr = tx.Unscoped().Where("admin_id = ? and system_id = ?", id, addSystemRequest.System.ID).Find(&sysAdmin).Update("deleted_at", nil).Error; txErr != nil {
-						return txErr
-					}
-				} else {
-					return txErr
 				}
 			}
 			for _, id := range toDel {
@@ -219,7 +221,7 @@ func (cmdbSystemService *CmdbSystemService) UpdateSystem(addSystemRequest reques
 //@param: id float64
 //@return: err error, system model.ApplicationSystem
 
-func (cmdbSystemService *CmdbSystemService) GetSystemById(id float64) (err error, system application.ApplicationSystem, admins []application.Admin) {
+func (cmdbSystemService *CmdbSystemService) GetSystemById(id float64) (err error, system application.ApplicationSystem, admins []application.Admin, adminIds []int) {
 	if err = global.GVA_DB.Where("id = ?", id).First(&system).Error; err != nil {
 		return
 	}
@@ -227,12 +229,20 @@ func (cmdbSystemService *CmdbSystemService) GetSystemById(id float64) (err error
 	if err = global.GVA_DB.Where("system_id = ?", id).Find(&systemAdmins).Error; err != nil {
 		return
 	}
-	adminIds := make([]int, 0, len(systemAdmins))
+	sysAdminIds := make([]int, 0, len(systemAdmins))
 	for _, sysAdmin := range systemAdmins {
-		adminIds = append(adminIds, sysAdmin.AdminId)
+		sysAdminIds = append(sysAdminIds, sysAdmin.AdminId)
 	}
-	if err = global.GVA_DB.Where("id in ?", adminIds).Find(&admins).Error; err != nil {
+	if err = global.GVA_DB.Where("id in ?", sysAdminIds).Find(&admins).Error; err != nil {
 		return
+	}
+	ads := make([]application.ApplicationSystemSysAdmin, 0)
+	adminIds = make([]int, 0)
+	if err = global.GVA_DB.Where("system_id = ?", system.ID).Find(&ads).Error; err != nil {
+		return
+	}
+	for _, admin := range ads {
+		adminIds = append(adminIds, admin.AdminId)
 	}
 	return
 }
@@ -261,6 +271,8 @@ func (cmdbSystemService *CmdbSystemService) GetSystemList(info request2.SystemSe
 	for _, system := range systemList {
 		sysAdmins := make([]application.ApplicationSystemAdmin, 0)
 		adminInfos := make([]application.Admin, 0)
+		admins := make([]application.ApplicationSystemSysAdmin, 0)
+		adminIds := make([]int, 0)
 		if err = global.GVA_DB.Where("system_id = ?", system.ID).Find(&sysAdmins).Error; err != nil {
 			return
 		}
@@ -272,9 +284,16 @@ func (cmdbSystemService *CmdbSystemService) GetSystemList(info request2.SystemSe
 				adminInfos = append(adminInfos, adminInfo)
 			}
 		}
+		if err = global.GVA_DB.Where("system_id = ?", system.ID).Find(&admins).Error; err != nil {
+			return
+		}
+		for _, admin := range admins {
+			adminIds = append(adminIds, int(admin.ID))
+		}
 		systemInfoList = append(systemInfoList, applicationRes.ApplicationSystemResponse{
-			System: system,
-			Admins: adminInfos,
+			System:   system,
+			Admins:   adminInfos,
+			AdminIds: adminIds,
 		})
 	}
 	return err, systemInfoList, total
