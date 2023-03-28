@@ -2,6 +2,7 @@ package scheduleSvr
 
 import (
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/scheduleMdl"
 	"gorm.io/gorm"
 )
@@ -69,4 +70,20 @@ func (scheduleService *ScheduleService) GetTemplateSchedules(templateID float64)
 
 func (scheduleService *ScheduleService) SetScheduleCommitHash(scheduleID int, hash string) error {
 	return scheduleService.SetScheduleLastCommitHash(scheduleID, hash)
+}
+
+func (scheduleService *ScheduleService) GetScheduleList(templateID int, info request.PageInfo) (err error, list interface{}, total int64) {
+	limit := info.PageSize
+	offset := info.PageSize * (info.Page - 1)
+	db := global.GVA_DB.Model(&scheduleMdl.Schedule{})
+	err = db.Count(&total).Error
+	if err != nil {
+		return
+	}
+	var Schedules []scheduleMdl.Schedule
+	if templateID > 0 {
+		db = db.Find("where template_id = ?", templateID)
+	}
+	err = db.Limit(limit).Offset(offset).Find(&Schedules).Error
+	return err, Schedules, total
 }

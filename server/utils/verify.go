@@ -23,5 +23,5 @@ var (
 	AppVerify              = Rules{"Name": {NotEmpty()}}
 	TaskTemplateVerify     = Rules{"Name": {NotEmpty()}}
 	TaskVerify             = Rules{"Name": {NotEmpty()}}
-	ScheduleVerify         = Rules{"Name": {NotEmpty()}}
+	ScheduleVerify         = Rules{"TemplateId": {NotEmpty()}, "CronFormat": {NotEmpty()}}
 )

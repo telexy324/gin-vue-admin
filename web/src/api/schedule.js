@@ -67,9 +67,9 @@ export const getScheduleById = (data) => {
 // @Produce  application/json
 // @Param schedule Object
 // @Router /task/schedule/validateScheduleFormat [post]
-export const validateScheduleFormat = (data) => {
+export const validateScheduleCronFormat = (data) => {
   return service({
-    url: '/task/schedule/validateScheduleFormat',
+    url: '/task/schedule/validateScheduleCronFormat',
     method: 'post',
     data
   })

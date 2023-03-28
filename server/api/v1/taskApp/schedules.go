@@ -48,7 +48,7 @@ func (a *ScheduleApi) ValidateScheduleCronFormat(c *gin.Context) {
 		return
 	}
 	if !validateCronFormat(schedule.CronFormat) {
-		response.FailWithMessage("验证失败", c)
+		response.FailWithMessage("验证失败, 请检查schedule格式", c)
 	} else {
 		response.OkWithMessage("验证成功", c)
 	}
@@ -195,7 +195,7 @@ func (a *ScheduleApi) GetTemplateScheduleList(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if list, err := scheduleService.GetTemplateSchedules(pageInfo.TemplateId); err != nil {
+	if err, list, _ := scheduleService.GetScheduleList(int(pageInfo.TemplateId), pageInfo.PageInfo); err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 		response.FailWithMessage("获取失败", c)
 	} else {

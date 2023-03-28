@@ -41,7 +41,7 @@ func (taskService *TaskService) CreateTaskOutput(output taskMdl.TaskOutput) (tas
 	return output, err
 }
 
-func (taskService *TaskService) getTasks(templateID *int, info request.PageInfo) (err error, list interface{}, total int64) {
+func (taskService *TaskService) getTasks(templateID int, info request.PageInfo) (err error, list interface{}, total int64) {
 	limit := info.PageSize
 	offset := info.PageSize * (info.Page - 1)
 	db := global.GVA_DB.Model(&taskMdl.Task{}) //.Preload("User")
@@ -57,6 +57,9 @@ func (taskService *TaskService) getTasks(templateID *int, info request.PageInfo)
 	}
 	var Tasks []taskMdl.Task
 	//var TaskWithTpls []task.TaskWithTpl
+	if templateID > 0 {
+		db = db.Find("where template_id = ?", templateID)
+	}
 	err = db.Limit(limit).Offset(offset).Find(&Tasks).Error
 
 	//for _, t := range Tasks {
@@ -78,11 +81,11 @@ func (taskService *TaskService) GetTask(taskID int) (task taskMdl.Task, err erro
 }
 
 func (taskService *TaskService) GetTemplateTasks(templateID int, info request.PageInfo) (err error, list interface{}, total int64) {
-	return taskService.getTasks(&templateID, info)
+	return taskService.getTasks(templateID, info)
 }
 
 func (taskService *TaskService) GetProjectTasks(info request.PageInfo) (err error, list interface{}, total int64) {
-	return taskService.getTasks(nil, info)
+	return taskService.getTasks(0, info)
 }
 
 func (taskService *TaskService) DeleteTaskWithOutputs(taskID int) (err error) {
