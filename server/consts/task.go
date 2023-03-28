@@ -4,3 +4,7 @@ const (
 	Command = iota + 1
 	Script
 )
+
+const (
+	ScheduleValid = iota + 1
+)

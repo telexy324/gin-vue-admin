@@ -32,6 +32,16 @@
         />
         <el-table-column align="left" label="id" min-width="60" prop="ID" sortable="custom" />
         <el-table-column align="left" label="templateId" min-width="150" prop="templateId" sortable="custom" />
+        <el-table-column align="left" label="启用" min-width="150" prop="valid" sortable="custom">
+          <template #default="scope">
+            <el-switch
+              v-model="scope.row.valid"
+              :active-value="1"
+              :inactive-value="0"
+              @change="changeValid"
+            />
+          </template>
+        </el-table-column>
         <el-table-column align="left" label="cronFormat" min-width="150" prop="cronFormat" sortable="custom" />
         <el-table-column align="left" fixed="right" label="操作" width="200">
           <template #default="scope">
@@ -91,6 +101,17 @@
             </el-form-item>
           </el-col>
         </el-row>
+        <el-row>
+          <el-col :span="6">
+            <el-form-item label="启用">
+              <el-switch
+                v-model="form.valid"
+                :active-value="1"
+                :inactive-value="0"
+              />
+            </el-form-item>
+          </el-col>
+        </el-row>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
@@ -132,6 +153,7 @@ export default {
       form: {
         templateId: '',
         cronFormat: '',
+        valid: 0,
       },
       type: '',
       rules: {
@@ -192,6 +214,7 @@ export default {
       this.form = {
         templateId: '',
         cronFormat: '',
+        valid: 0,
       }
     },
     closeDialog() {
@@ -214,7 +237,7 @@ export default {
     },
     async editSchedule(row) {
       const res = await getScheduleById({ id: row.ID })
-      this.form = res.data
+      this.form = res.data.schedule
       this.openDialog('edit')
     },
     async deleteSchedule(row) {
@@ -252,7 +275,7 @@ export default {
                     showClose: true
                   })
                 }
-                await this.getTableData()
+                this.getTableData()
                 this.closeDialog()
               }
 
@@ -267,7 +290,7 @@ export default {
                     showClose: true
                   })
                 }
-                await this.getTableData()
+                this.getTableData()
                 this.closeDialog()
               }
               break
@@ -297,6 +320,10 @@ export default {
           showClose: true
         })
       }
+    },
+    async changeValid(row) {
+      await updateSchedule(row)
+      this.getTableData()
     },
   }
 }

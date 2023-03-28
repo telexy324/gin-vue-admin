@@ -1,6 +1,7 @@
 package schedulePool
 
 import (
+	"github.com/flipped-aurora/gin-vue-admin/server/consts"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl"
 	"github.com/flipped-aurora/gin-vue-admin/server/plugin/taskPool"
@@ -55,7 +56,10 @@ func (p *SchedulePool) Refresh() {
 	p.locker.Lock()
 	p.clear()
 	for _, schedule := range schedules {
-		_, err := p.addRunner(ScheduleRunner{
+		if schedule.Valid != consts.ScheduleValid {
+			continue
+		}
+		_, err = p.addRunner(ScheduleRunner{
 			scheduleID: int(schedule.ID),
 			pool:       p,
 		}, schedule.CronFormat)

@@ -30,7 +30,9 @@ func (scheduleService *ScheduleService) SetScheduleLastCommitHash(scheduleID int
 func (scheduleService *ScheduleService) UpdateSchedule(schedule scheduleMdl.Schedule) error {
 	var oldSchedule scheduleMdl.Schedule
 	upDateMap := make(map[string]interface{})
+	upDateMap["template_id"] = schedule.TemplateID
 	upDateMap["cron_format"] = schedule.CronFormat
+	upDateMap["valid"] = schedule.Valid
 
 	err := global.GVA_DB.Transaction(func(tx *gorm.DB) error {
 		db := tx.Where("id = ?", schedule.ID).Find(&oldSchedule)
