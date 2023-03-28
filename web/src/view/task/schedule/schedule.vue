@@ -38,7 +38,7 @@
               v-model="scope.row.valid"
               :active-value="1"
               :inactive-value="0"
-              @change="changeValid"
+              @change="changeValid(scope.row)"
             />
           </template>
         </el-table-column>
@@ -77,7 +77,7 @@
     <el-dialog v-model="dialogFormVisible" :before-close="closeDialog" :title="dialogTitle">
       <warning-bar title="新增Schedule" />
       <el-form ref="scheduleForm" :model="form" :rules="rules" label-width="120px">
-        <el-form-item label="templateId" prop="templateId">
+        <el-form-item label="模版名" prop="templateId">
           <el-select
             v-model="form.templateId"
             placeholder="Select"
@@ -322,6 +322,7 @@ export default {
       }
     },
     async changeValid(row) {
+      console.log(row)
       await updateSchedule(row)
       this.getTableData()
     },
