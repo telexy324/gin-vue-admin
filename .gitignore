@@ -1,6 +1,7 @@
 .idea/
 /web/node_modules
 /web/dist
+/web/dist.zip
 
 .DS_Store
 
@@ -27,5 +28,6 @@ yarn-error.log*
 /server/latest_log
 /server/go_build_gin_vue_admin_main_go.exe
 /server/go_build_main_go.exe
+/server/server
 
 *.iml

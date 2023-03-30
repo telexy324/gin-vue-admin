@@ -175,7 +175,7 @@ func (templateService *TaskTemplatesService) DownloadScript(ID float64, server a
 	if err != nil {
 		return
 	}
-	sshClient, err := common.FillSSHClient(server.ManageIp, template.SysUser, "123456", server.SshPort)
+	sshClient, err := common.FillSSHClient(server.ManageIp, template.SysUser, "", server.SshPort)
 	err = sshClient.GenerateClient()
 	if err != nil {
 		global.GVA_LOG.Error("create ssh client failed: ", zap.String("server IP: ", server.ManageIp), zap.Any("err", err))
@@ -222,7 +222,7 @@ func (templateService *TaskTemplatesService) UploadScript(ID int, file multipart
 				}
 				sockets.Message(int(userID), b)
 			}()
-			sshClient, er := common.FillSSHClient(s.ManageIp, template.SysUser, "123456", s.SshPort)
+			sshClient, er := common.FillSSHClient(s.ManageIp, template.SysUser, "", s.SshPort)
 			er = sshClient.GenerateClient()
 			if er != nil {
 				global.GVA_LOG.Error("upload script failed on create ssh client: ", zap.String("server IP: ", s.ManageIp), zap.Any("err", er))
