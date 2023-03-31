@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"github.com/flipped-aurora/gin-vue-admin/server/api/v1/socket"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
-	"github.com/flipped-aurora/gin-vue-admin/server/utils"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/ssh"
 	"os/exec"
@@ -14,12 +13,11 @@ import (
 
 func (t *TaskRunner) Log(msg string, manageIP ...string) {
 	now := time.Now()
-	formedMsg := utils.FormOutput(msg)
 	for _, user := range t.users {
 		if len(manageIP) > 0 {
 			b, err := json.Marshal(&map[string]interface{}{
 				"type":       "log",
-				"output":     formedMsg,
+				"output":     msg,
 				"recordTime": now,
 				"taskId":     t.task.ID,
 				"ID":         now.UnixNano(),
@@ -34,7 +32,7 @@ func (t *TaskRunner) Log(msg string, manageIP ...string) {
 		} else {
 			b, err := json.Marshal(&map[string]interface{}{
 				"type":       "log",
-				"output":     formedMsg,
+				"output":     msg,
 				"recordTime": now,
 				"taskId":     t.task.ID,
 				"ID":         now.UnixNano(),

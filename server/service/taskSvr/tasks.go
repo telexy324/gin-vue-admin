@@ -4,7 +4,6 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl"
-	"github.com/flipped-aurora/gin-vue-admin/server/utils"
 	"gorm.io/gorm"
 )
 
@@ -117,11 +116,7 @@ func (taskService *TaskService) GetTaskOutputs(taskID int) (output []taskMdl.Tas
 	if err != nil {
 		return
 	}
-
-	err = global.GVA_DB.Where("task_id = ?", taskID).Order("record_time").Find(&output).Error
-	for _, o := range output {
-		o.Output = utils.FormOutput(o.Output)
-	}
+	err = global.GVA_DB.Where("task_id = ?", taskID).Order("manage_ip").Order("record_time").Find(&output).Error
 	return
 }
 
