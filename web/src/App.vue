@@ -100,6 +100,7 @@ export default {
 @import '@/style/main.scss';
 @import '@/style/base.scss';
 @import '@/style/mobile.scss';
+@import '@/style/antv.scss';
 
 #app {
   background: #eee;
