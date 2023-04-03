@@ -271,3 +271,124 @@ func (a *CmdbSystemApi) SystemRelations(c *gin.Context) {
 		}, "获取成功", c)
 	}
 }
+
+// @Tags CmdbSystem
+// @Summary 新增编辑器关系图
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body application.SystemEditRelation true " "
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"添加成功"}"
+// @Router /cmdb/system/addEditRelation [post]
+func (a *CmdbSystemApi) AddEditRelation(c *gin.Context) {
+	var relation application.ApplicationSystemEditRelation
+	if err := c.ShouldBindJSON(&relation); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err := utils.Verify(relation, utils.SystemEditRelationVerify ); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err := cmdbSystemService.AddEditRelations(relation); err != nil {
+		global.GVA_LOG.Error("添加失败!", zap.Any("err", err))
+
+		response.FailWithMessage("添加失败", c)
+	} else {
+		response.OkWithMessage("添加成功", c)
+	}
+}
+
+// @Tags CmdbSystem
+// @Summary 删除编辑器关系图
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body request.GetById true "系统id"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"删除成功"}"
+// @Router /cmdb/system/deleteEditRelation [post]
+func (a *CmdbSystemApi) DeleteEditRelation(c *gin.Context) {
+	var idInfo request.GetById
+	if err := c.ShouldBindJSON(&idInfo); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err := utils.Verify(idInfo, utils.IdVerify); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err := cmdbSystemService.DeleteEditRelations(idInfo.ID); err != nil {
+		global.GVA_LOG.Error("删除失败!", zap.Any("err", err))
+		response.FailWithMessage("删除失败", c)
+	} else {
+		response.OkWithMessage("删除成功", c)
+	}
+}
+
+// @Tags CmdbSystem
+// @Summary 更新编辑器关系图
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body application.SystemEditRelation true " "
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"添加成功"}"
+// @Router /cmdb/system/updateEditRelation [post]
+func (a *CmdbSystemApi) UpdateEditRelation(c *gin.Context) {
+	var relation application.ApplicationSystemEditRelation
+	if err := c.ShouldBindJSON(&relation); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err := utils.Verify(relation, utils.SystemEditRelationVerify); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if relation.ID > 0 {
+		if err := cmdbSystemService.UpdateEditRelations(relation); err != nil {
+			global.GVA_LOG.Error("更新失败!", zap.Any("err", err))
+
+			response.FailWithMessage("更新失败", c)
+		} else {
+			response.OkWithMessage("更新成功", c)
+		}
+	} else {
+		if err := cmdbSystemService.AddEditRelations(relation); err != nil {
+			global.GVA_LOG.Error("添加失败!", zap.Any("err", err))
+
+			response.FailWithMessage("添加失败", c)
+		} else {
+			response.OkWithMessage("添加成功", c)
+		}
+	}
+}
+
+// @Tags CmdbSystem
+// @Summary 获取编辑器关系图
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body request.GetById true "系统id"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
+// @Router /cmdb/system/getSystemEditRelations [post]
+func (a *CmdbSystemApi) GetSystemEditRelations(c *gin.Context) {
+	var idInfo request.GetById
+	if err := c.ShouldBindJSON(&idInfo); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err := utils.Verify(idInfo, utils.IdVerify); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err, relations := cmdbSystemService.GetSystemEditRelations(idInfo.ID); err != nil {
+		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
+		response.FailWithMessage("获取失败", c)
+	} else {
+		response.OkWithDetailed(relations, "获取成功", c)
+	}
+}
+

@@ -63,6 +63,10 @@ export default {
             })
           }
         },
+        panning: {
+          enabled: true,
+          modifiers: 'shift',
+        },
       })
       // 返现方法
       const portsGroups = configNodePorts().groups

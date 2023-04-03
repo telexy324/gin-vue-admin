@@ -77,7 +77,11 @@ export const configSetting = (Shape) => {
     },
     snapline: true,
     keyboard: true,
-    clipboard: true
+    clipboard: true,
+    panning: {
+      enabled: true,
+      modifiers: 'shift',
+    },
   }
 }
 

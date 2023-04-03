@@ -171,3 +171,14 @@ CREATE TABLE `application_system_sys_admins`
     PRIMARY KEY (`id`),
     UNIQUE (`system_id`, `admin_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE `application_system_edit_relations`
+(
+    `id`         bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+    `created_at` datetime(0) NULL DEFAULT NULL,
+    `updated_at` datetime(0) NULL DEFAULT NULL,
+    `deleted_at` datetime(0) NULL DEFAULT NULL,
+    `system_id`  bigint UNSIGNED NOT NULL COMMENT '系统id',
+    `relation`   text,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

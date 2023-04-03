@@ -229,3 +229,55 @@ export const getAdminSystems = (data) => {
     data
   })
 }
+
+// @Summary 新增编辑器关系图
+// @Produce  application/json
+// @Param menu Object
+// @Router /cmdb/system/addEditRelation [post]
+export const addEditRelation = (data) => {
+  return service({
+    url: '/cmdb/system/addEditRelation',
+    method: 'post',
+    data
+  })
+}
+
+// @Summary 删除编辑器关系图
+// @Produce  application/json
+// @Param ID float64
+// @Router /cmdb/system/deleteEditRelation [post]
+export const deleteEditRelation = (data) => {
+  return service({
+    url: '/cmdb/system/deleteEditRelation',
+    method: 'post',
+    data
+  })
+}
+
+// @Summary 修改编辑器关系图
+// @Produce  application/json
+// @Param server Object
+// @Router /cmdb/system/updateEditRelation [post]
+export const updateEditRelation = (data) => {
+  return service({
+    url: '/cmdb/system/updateEditRelation',
+    method: 'post',
+    data
+  })
+}
+
+// @Tags System
+// @Summary 根据id获取编辑器关系图
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body api.GetById true "根据id获取编辑器关系图"
+// @Success 200 {string} json "{"success":true,"data":{},"msg":"获取成功"}"
+// @Router /cmdb/system/getSystemEditRelation [post]
+export const getSystemEditRelation = (data) => {
+  return service({
+    url: '/cmdb/system/getSystemEditRelation',
+    method: 'post',
+    data
+  })
+}

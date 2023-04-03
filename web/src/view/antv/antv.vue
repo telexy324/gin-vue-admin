@@ -4,113 +4,131 @@
       <div class="antv-menu">
         <h3> 基础图形列表 </h3>
         <ul class="menu-list">
-          <li draggable="true" @drag="menuDrag('defaultOval')"> <i class="icon-oval"></i> <strong>椭圆形</strong></li>
-          <li draggable="true" @drag="menuDrag('defaultSquare')"><i class="icon-square"></i><strong>矩形</strong></li>
-          <li draggable="true" @drag="menuDrag('defaultYSquare')"><i class="icon-ysquare"></i><strong>圆角矩形</strong></li>
-          <li draggable="true" @drag="menuDrag('defaultRhombus')"><i class="icon-rhombus"></i><strong>菱形</strong></li>
-          <li draggable="true" @drag="menuDrag('defaultRhomboid')"><i class="icon-rhomboid"></i><strong>平行四边形</strong></li>
-          <li draggable="true" @drag="menuDrag('defaultCircle')"><i class="icon-circle"></i><strong>圆形</strong></li>
-          <li draggable="true" @drag="menuDrag('otherImage')"><i class="el-icon-picture"></i><strong>图片</strong></li>
+          <li draggable="true" @drag="menuDrag('defaultOval')"><i class="icon-oval" /> <strong>数据库</strong></li>
+          <li draggable="true" @drag="menuDrag('defaultSquare')"><i class="icon-square" /><strong>中间件</strong></li>
+          <li draggable="true" @drag="menuDrag('defaultYSquare')"><i class="icon-ySquare" /><strong>消息队列</strong></li>
+          <li draggable="true" @drag="menuDrag('defaultRhombus')"><i class="icon-rhombus" /><strong>代理</strong></li>
+<!--          <li draggable="true" @drag="menuDrag('defaultRhomboid')"><i class="icon-rhomboid" /><strong>平行四边形</strong></li>-->
+          <li draggable="true" @drag="menuDrag('defaultCircle')"><i class="icon-circle" /><strong>缓存</strong></li>
+          <li draggable="true" @drag="menuDrag('otherImage')"><i class="el-icon-picture" /><strong>自定义图片</strong></li>
         </ul>
-        <div class="wrapper-btn" v-if="isChange">
+        <div v-if="isChange" class="wrapper-btn">
           <el-button type="success" @click="handlerSend">保存当前方案</el-button>
         </div>
       </div>
       <div class="antv-wrapper">
-        <div class="wrapper-canvas" :style="{height: height}" id="wrapper" @drop="drop($event)" @dragover.prevent></div>
-        <div class="wrapper-tips">
-          <div class="wrapper-tips-item">
-            <el-switch v-model="isPortsShow" @change="changePortsShow"></el-switch>
-            <span>链接桩常显</span>
+        <div id="wrapper" class="wrapper-canvas" :style="{height: height}" @drop="drop($event)" @dragover.prevent>
+          <div class="wrapper-tips">
+            <div class="wrapper-tips-item">
+              <el-switch v-model="isPortsShow" @change="changePortsShow" />
+              <span>链接桩常显</span>
+            </div>
           </div>
         </div>
       </div>
       <div v-if="editDrawer" class="edit-main">
         <div class="edit-main-title">
-          <h3>{{editTitle}} </h3>
+          <h3>{{ editTitle }} </h3>
           <i class="el-icon-close" @click="closeEditForm"></i>
         </div>
         <div v-if="editTitle === '编辑节点'" class="form-main">
           <el-form ref="nodeForm" :model="form" label-width="80px">
             <el-form-item label="节点文本">
-              <el-input v-model="form.labelText" size="small" @input="changeNode('labelText', form.labelText)"></el-input>
+              <el-input v-model="form.labelText" size="small" @input="changeNode('labelText', form.labelText)" />
             </el-form-item>
             <el-form-item label="字体大小">
-              <el-input v-model="form.fontSize" size="small" @input="changeNode('fontSize', form.fontSize)"></el-input>
+              <el-input v-model="form.fontSize" size="small" @input="changeNode('fontSize', form.fontSize)" />
             </el-form-item>
             <el-form-item label="字体颜色">
-              <el-color-picker v-model="form.fontFill" @change="changeNode('fontFill', form.fontFill)"></el-color-picker>
+              <el-color-picker v-model="form.fontFill" @change="changeNode('fontFill', form.fontFill)" />
             </el-form-item>
             <el-form-item label="节点背景">
-              <el-color-picker v-model="form.fill" @change="changeNode('fill', form.fill)"></el-color-picker>
+              <el-color-picker v-model="form.fill" @change="changeNode('fill', form.fill)" />
             </el-form-item>
             <el-form-item label="边框颜色">
-              <el-color-picker v-model="form.stroke" @change="changeNode('stroke', form.stroke)"></el-color-picker>
+              <el-color-picker v-model="form.stroke" @change="changeNode('stroke', form.stroke)" />
             </el-form-item>
-             <div class="see-box">
-                <h5>预览</h5>
-                <div class="see-item" :style="{ 'background': form.fill, 'color': form.fontFill, 'border-color': form.stroke, 'font-size': form.fontSize + 'px' }">{{form.labelText}}</div>
-              </div>
+            <div class="see-box">
+              <h5>预览</h5>
+              <div class="see-item" :style="{ 'background': form.fill, 'color': form.fontFill, 'border-color': form.stroke, 'font-size': form.fontSize + 'px' }">{{form.labelText}}</div>
+            </div>
           </el-form>
         </div>
         <div v-if="editTitle === '编辑图片节点'" class="form-main">
           <el-form ref="imageForm" :model="form" label-width="80px">
             <el-form-item label="节点文本">
-              <el-input v-model="form.labelText" size="small" @input="changeImageNode('labelText', form.labelText)"></el-input>
+              <el-input v-model="form.labelText" size="small" @input="changeImageNode('labelText', form.labelText)" />
             </el-form-item>
             <el-form-item label="字体颜色">
-              <el-color-picker v-model="form.labelFill" @change="changeImageNode('labelFill', form.labelFill)"></el-color-picker>
+              <el-color-picker v-model="form.labelFill" @change="changeImageNode('labelFill', form.labelFill)" />
             </el-form-item>
             <el-form-item label="节点背景">
-              <el-color-picker v-model="form.fill" @change="changeImageNode('fill', form.fill)"></el-color-picker>
+              <el-color-picker v-model="form.fill" @change="changeImageNode('fill', form.fill)" />
             </el-form-item>
             <el-form-item label="图片地址">
-              <el-input v-model="form.xlinkHref" size="small" placeholder="图片地址" @input="changeImageNode('xlinkHref', form.xlinkHref)"></el-input>
-              <el-image :src="form.xlinkHref" style="width: 80px; height: 80px; background: #f2f2f2" fit="fill"></el-image>
+              <el-input v-model="form.xlinkHref" size="small" placeholder="图片地址" @input="changeImageNode('xlinkHref', form.xlinkHref)" />
+              <el-image :src="form.xlinkHref" style="width: 80px; height: 80px; background: #f2f2f2" fit="fill" />
             </el-form-item>
             <el-form-item label="图片尺寸">
-              <span style="font-size: 14px; padding-right: 5px; color: #888;">宽</span><el-input-number v-model="form.width" :min="0" label="宽" size="mini" @change="changeImageNode('width', form.width)"></el-input-number>
-              <span style="font-size: 14px; padding-right: 5px; color: #888;">高</span><el-input-number v-model="form.height" :min="0" label="高" size="mini" @change="changeImageNode('height', form.height)"></el-input-number>
+              <span style="font-size: 14px; padding-right: 5px; color: #888;">宽</span><el-input-number v-model="form.width" :min="0" label="宽" size="mini" @change="changeImageNode('width', form.width)" />
+              <span style="font-size: 14px; padding-right: 5px; color: #888;">高</span><el-input-number v-model="form.height" :min="0" label="高" size="mini" @change="changeImageNode('height', form.height)" />
             </el-form-item>
           </el-form>
         </div>
         <div v-if="editTitle === '编辑连线'" class="form-main">
           <el-form ref="edgeForm" :model="form" label-width="80px">
             <el-form-item label="标签内容">
-              <el-input v-model="form.label" size="small" placeholder="标签文字，空则没有" @input="changeEdgeLabel(form.label, labelForm.fontColor, labelForm.fill, labelForm.stroke)"></el-input>
+              <el-input
+                v-model="form.label"
+                size="small"
+                placeholder="标签文字，空则没有"
+                @input="changeEdgeLabel(form.label, labelForm.fontColor, labelForm.fill, labelForm.stroke)"
+              />
               <div v-if="form.label" class="label-style">
-                <p>字体颜色：<el-color-picker v-model="labelForm.fontColor" size="mini" @change="changeEdgeLabel(form.label, labelForm.fontColor, labelForm.fill, labelForm.stroke)"></el-color-picker></p>
-                <p>背景颜色：<el-color-picker v-model="labelForm.fill" size="mini" @change="changeEdgeLabel(form.label, labelForm.fontColor, labelForm.fill, labelForm.stroke)"></el-color-picker></p>
-                <p>描边颜色：<el-color-picker v-model="labelForm.stroke" size="mini" @change="changeEdgeLabel(form.label, labelForm.fontColor, labelForm.fill, labelForm.stroke)"></el-color-picker></p>
+                <p>字体颜色：<el-color-picker v-model="labelForm.fontColor" size="mini" @change="changeEdgeLabel(form.label, labelForm.fontColor, labelForm.fill, labelForm.stroke)" /></p>
+                <p>背景颜色：<el-color-picker v-model="labelForm.fill" size="mini" @change="changeEdgeLabel(form.label, labelForm.fontColor, labelForm.fill, labelForm.stroke)" /></p>
+                <p>描边颜色：<el-color-picker v-model="labelForm.stroke" size="mini" @change="changeEdgeLabel(form.label, labelForm.fontColor, labelForm.fill, labelForm.stroke)" /></p>
               </div>
             </el-form-item>
             <el-form-item label="线条颜色">
-              <el-color-picker v-model="form.stroke" size="small" @change="changeEdgeStroke"></el-color-picker>
+              <el-color-picker v-model="form.stroke" size="small" @change="changeEdgeStroke" />
             </el-form-item>
             <el-form-item label="线条样式">
               <el-select v-model="form.connector" size="small" placeholder="请选择" @change="changeEdgeConnector">
-                <el-option label="直角" value="normal"></el-option>
-                <el-option label="圆角" value="rounded"></el-option>
-                <el-option label="平滑" value="smooth"></el-option>
-                <el-option label="跳线(两线交叉)" value="jumpover"></el-option>
+                <el-option label="直角" value="normal" />
+                <el-option label="圆角" value="rounded" />
+                <el-option label="平滑" value="smooth" />
+                <el-option label="跳线(两线交叉)" value="jumpover" />
               </el-select>
             </el-form-item>
             <el-form-item label="线条宽度">
-              <el-input-number v-model="form.strokeWidth" size="small" @change="changeEdgeStrokeWidth" :min="2" :step="2" :max="6" label="线条宽度"></el-input-number>
+              <el-input-number
+                v-model="form.strokeWidth"
+                size="small"
+                :min="2"
+                :step="2"
+                :max="6"
+                label="线条宽度"
+                @change="changeEdgeStrokeWidth"
+              />
             </el-form-item>
             <el-form-item label="双向箭头">
-              <el-switch v-model="form.isArrows" @change="changeEdgeArrows"></el-switch>
+              <el-switch v-model="form.isArrows" @change="changeEdgeArrows" />
             </el-form-item>
             <el-form-item label="流动线条">
-              <el-switch v-model="form.isAnit" @change="changeEdgeAnit"></el-switch>
+              <el-switch v-model="form.isAnit" @change="changeEdgeAnit" />
             </el-form-item>
             <el-form-item label="调整线条">
-              <el-switch v-model="form.isTools" @change="changeEdgeTools"></el-switch>
+              <el-switch v-model="form.isTools" @change="changeEdgeTools" />
             </el-form-item>
           </el-form>
         </div>
         <div class="edit-btn">
-          <el-button type="danger" @click="handlerDel" style="width:100%">删除此{{editTitle === '编辑节点' ? '节点' : '连线'}}</el-button>
+          <el-button
+            type="danger"
+            style="width:100%"
+            @click="handlerDel"
+          >删除此{{ editTitle === '编辑节点' ? '节点' : '连线' }}</el-button>
         </div>
       </div>
     </div>
@@ -119,6 +137,10 @@
 <script>
 import { Graph, Shape } from '@antv/x6'
 import { configSetting, configNodeShape, configNodePorts, configEdgeLabel, graphBindKey } from '@/utils/antvSetting'
+import {
+  updateEditRelation,
+  getSystemEditRelation,
+} from '@/api/cmdb'
 export default {
   name: 'AntV6X',
   /**
@@ -150,7 +172,10 @@ export default {
         fontColor: '#333',
         fill: '#FFF',
         stroke: '#555'
-      }
+      },
+      systemId: 0,
+      defaultId: 0,
+      defaultValue: null,
     }
   },
   watch: {
@@ -163,7 +188,7 @@ export default {
           this.selectCell = ''
           this.editDrawer = false
           this.graph.dispose()
-          this.initGraph()
+          this.initGraph('watch')
         }
       },
       deep: true,
@@ -172,8 +197,14 @@ export default {
   },
   created() {
   },
-  mounted() {
-    this.initGraph()
+  async mounted() {
+    this.systemId = this.$route.params.systemId
+    const res = (await getSystemEditRelation({
+      'ID': Number(this.systemId)
+    })).data
+    this.defaultId = res.ID
+    this.defaultValue = res.relation
+    this.initGraph('default')
   },
   beforeDestroy() {
     this.graph.dispose()
@@ -188,10 +219,10 @@ export default {
       }
     },
     // 初始化渲染画布
-    initGraph() {
+    initGraph(f) {
       const graph = new Graph({
         container: document.getElementById('wrapper'),
-        ...configSetting(Shape)
+        ...configSetting(Shape),
       })
       // 画布事件
       graph.on('node:mouseenter', () => {
@@ -214,8 +245,19 @@ export default {
       // 赋值
       this.graph = graph
       // 返现方法
-      if (this.value && JSON.parse(this.value).length) {
+      if (f === 'watch' && this.value && JSON.parse(this.value).length) {
         const resArr = JSON.parse(this.value)
+        // 导出的时候删除了链接桩设置加回来
+        const portsGroups = configNodePorts().groups
+        if (resArr.length) {
+          const jsonTemp = resArr.map(item => {
+            if (item.ports) item.ports.groups = portsGroups
+            return item
+          })
+          graph.fromJSON(jsonTemp)
+        }
+      } else if (f === 'default' && this.defaultValue && JSON.parse(this.defaultValue).length) {
+        const resArr = JSON.parse(this.defaultValue)
         // 导出的时候删除了链接桩设置加回来
         const portsGroups = configNodePorts().groups
         if (resArr.length) {
@@ -240,6 +282,28 @@ export default {
     },
     menuDrag(type) {
       this.menuItem = configNodeShape(type)
+      switch (type) {
+        case 'defaultOval':
+          this.menuItem.customAttr = '数据库'
+          break
+        case 'defaultSquare':
+          this.menuItem.customAttr = '中间件'
+          break
+        case 'defaultYSquare':
+          this.menuItem.customAttr = '消息队列'
+          break
+        case 'defaultRhombus':
+          this.menuItem.customAttr = '代理'
+          break
+        case 'defaultCircle':
+          this.menuItem.customAttr = '缓存'
+          break
+        case 'otherImage':
+          this.menuItem.customAttr = '自定义图片'
+          break
+        default:
+          this.menuItem.customAttr = ''
+      }
     },
     drop(event) {
       const nodeItem = {
@@ -249,7 +313,8 @@ export default {
         ports: configNodePorts()
       }
       // 创建节点
-      this.graph.addNode(nodeItem)
+      const node = this.graph.addNode(nodeItem)
+      node.attr('label/text', nodeItem.customAttr)
       this.isChangeValue()
     },
     editForm(cell) {
@@ -308,7 +373,6 @@ export default {
           this.labelForm = { fontColor: '#333', fill: '#FFF', stroke: '#555' }
         }
         this.editDrawer = true
-        return
       }
     },
     closeEditForm() {
@@ -485,7 +549,7 @@ export default {
       }).catch(() => {})
     },
     // 导出
-    handlerSend() {
+    async handlerSend() {
       // 我在这里删除了链接桩的设置，和工具（为了减少数据），反显的时候要把删除的链接桩加回来
       const { cells: jsonArr } = this.graph.toJSON()
       const tempGroupJson = jsonArr.map(item => {
@@ -498,7 +562,19 @@ export default {
         this.selectCell = ''
       }
       this.$emit('finish', JSON.stringify(tempGroupJson))
-      console.log(JSON.stringify(tempGroupJson))
+      // console.log(JSON.stringify(tempGroupJson))
+      const res = await updateEditRelation({
+        ID: Number(this.defaultId),
+        systemId: Number(this.systemId),
+        relation: JSON.stringify(tempGroupJson)
+      })
+      if (res.code === 0) {
+        this.$message({
+          type: 'success',
+          message: '保存成功',
+          showClose: true
+        })
+      }
     },
   }
 }
@@ -587,7 +663,7 @@ i.icon-square{
     height: 10px;
     border: 2px solid #555;
 }
-i.icon-ysquare{
+i.icon-ySquare{
    display: inline-block;
     width: 16px;
     height: 10px;

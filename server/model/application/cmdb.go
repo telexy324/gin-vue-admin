@@ -99,3 +99,9 @@ type ApplicationSystemSysAdmin struct {
 	SystemId int `json:"systemId" gorm:"column:system_id"` // 系统id
 	AdminId  int `json:"adminId" gorm:"column:admin_id"`   // 管理员id
 }
+
+type ApplicationSystemEditRelation struct {
+	global.GVA_MODEL
+	SystemId int    `json:"systemId" gorm:"column:system_id"` // 系统id
+	Relation string `json:"relation" gorm:"column:relation"`  // 调用关系',
+}

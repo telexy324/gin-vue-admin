@@ -446,3 +446,63 @@ func (cmdbSystemService *CmdbSystemService) SystemRelations(id float64) (err err
 	}
 	return
 }
+
+//@author: [telexy324](https://github.com/telexy324)
+//@function: AddEditRelations
+//@description: 添加编辑器关系图
+//@param: relation model.ApplicationSystemEditRelation
+//@return: error
+
+func (cmdbSystemService *CmdbSystemService) AddEditRelations(relation application.ApplicationSystemEditRelation) error {
+	return global.GVA_DB.Create(&relation).Error
+}
+
+//@author: [telexy324](https://github.com/telexy324)
+//@function: DeleteEditRelations
+//@description: 删除编辑器关系图
+//@param: id float64
+//@return: err error
+
+func (cmdbSystemService *CmdbSystemService) DeleteEditRelations(id float64) (err error) {
+	err = global.GVA_DB.Where("id = ?", id).First(&application.ApplicationSystemEditRelation{}).Error
+	if err != nil {
+		return
+	}
+	var relation application.ApplicationSystemEditRelation
+	return global.GVA_DB.Where("id = ?", id).First(&relation).Delete(&relation).Error
+}
+
+//@author: [telexy324](https://github.com/telexy324)
+//@function: UpdateEditRelations
+//@description: 更新编辑器关系图
+//@param: relation model.ApplicationSystemEditRelation
+//@return: err error
+
+func (cmdbSystemService *CmdbSystemService) UpdateEditRelations(relation application.ApplicationSystemEditRelation) (err error) {
+	upDateMap := make(map[string]interface{})
+	upDateMap["system_id"] = relation.SystemId
+	upDateMap["relation"] = relation.Relation
+	err = global.GVA_DB.Model(&relation).Transaction(func(tx *gorm.DB) error {
+		txErr := tx.Updates(upDateMap).Error
+		if txErr != nil {
+			global.GVA_LOG.Debug(txErr.Error())
+			return txErr
+		}
+		return nil
+	})
+	return
+}
+
+//@author: [telexy324](https://github.com/telexy324)
+//@function: GetEditRelations
+//@description: 返回编辑器关系图
+//@param: id float64
+//@return: err error, server model.ApplicationSystemEditRelation
+
+func (cmdbSystemService *CmdbSystemService) GetSystemEditRelations(id float64) (err error, relation application.ApplicationSystemEditRelation) {
+	err = global.GVA_DB.Where("system_id = ?", id).First(&relation).Error
+	if err != nil && err == gorm.ErrRecordNotFound {
+		err = nil
+	}
+	return
+}

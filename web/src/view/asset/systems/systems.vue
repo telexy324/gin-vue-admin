@@ -46,6 +46,12 @@
               type="text"
               @click="deleteSystem(scope.row)"
             >删除</el-button>
+            <el-button
+              icon="el-icon-orange"
+              size="small"
+              type="text"
+              @click="showRelation(scope.row)"
+            >关系图</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -282,6 +288,14 @@ export default {
     },
     setOptions(data) {
       this.userOptions = data
+    },
+    showRelation(row) {
+      this.$router.push({
+        name: 'antv',
+        params: {
+          systemId: row.system.ID,
+        }
+      })
     },
   }
 }

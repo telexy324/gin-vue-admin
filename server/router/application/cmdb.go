@@ -58,6 +58,12 @@ func (s *CmdbRouter) InitCmdbRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 		cmdbRouterWithoutRecord.POST("system/addRelation", authoritySystemApi.AddRelation)   // 获取菜单树
 		cmdbRouterWithoutRecord.POST("system/relations", authoritySystemApi.SystemRelations) // 分页获取基础menu列表
 	}
+	{
+		cmdbRouterWithoutRecord.POST("system/addEditRelation", authoritySystemApi.AddEditRelation)              // 获取菜单树
+		cmdbRouterWithoutRecord.POST("system/deleteEditRelation", authoritySystemApi.DeleteEditRelation)        // 分页获取基础menu列表
+		cmdbRouterWithoutRecord.POST("system/updateEditRelation", authoritySystemApi.UpdateEditRelation)        // 获取菜单树
+		cmdbRouterWithoutRecord.POST("system/getSystemEditRelation", authoritySystemApi.GetSystemEditRelations) // 分页获取基础menu列表
+	}
 
 	var authorityStaffApi = v1.ApiGroupApp.ApplicationApiGroup.StaffApi
 	{

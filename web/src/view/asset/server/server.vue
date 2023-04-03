@@ -400,7 +400,7 @@ export default {
               sshPort: this.sshForm.server.sshPort
             }
           })
-          console.log(this.sshForm.server.manageIp)
+          // console.log(this.sshForm.server.manageIp)
           // window.open(routeData.href, '_self')
           this.closeSSHDialog()
         }
