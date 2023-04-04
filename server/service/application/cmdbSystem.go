@@ -112,7 +112,7 @@ func (cmdbSystemService *CmdbSystemService) UpdateSystem(addSystemRequest reques
 	err = global.GVA_DB.Transaction(func(tx *gorm.DB) error {
 		db := tx.Where("id = ?", addSystemRequest.System.ID).Find(&oldSystem)
 		if oldSystem.Name != addSystemRequest.System.Name {
-			if err = tx.Where("id <> ? AND name = ?", addSystemRequest.System.ID, addSystemRequest.System.Name).First(&application.ApplicationSystem{}).Error; err != nil {
+			if err = tx.Where("id <> ? AND name = ?", addSystemRequest.System.ID, addSystemRequest.System.Name).First(&application.ApplicationSystem{}).Error; err != nil && err != gorm.ErrRecordNotFound {
 				global.GVA_LOG.Debug("存在相同name修改失败")
 				return errors.New("存在相同name修改失败")
 			}

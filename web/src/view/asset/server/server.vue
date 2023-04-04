@@ -44,12 +44,25 @@
           type="selection"
           width="55"
         />
-        <el-table-column align="left" label="id" min-width="60" prop="ID" sortable="custom" />
+<!--        <el-table-column align="left" label="id" min-width="60" prop="ID" sortable="custom" />-->
         <el-table-column align="left" label="服务器名" min-width="150" prop="hostname" sortable="custom" />
-        <el-table-column align="left" label="架构" min-width="150" prop="architecture" sortable="custom" />
+        <el-table-column align="left" label="架构" min-width="150" prop="architecture" sortable="custom">
+          <template #default="scope">
+            <div>{{ filterDict(scope.row.architecture, 'architecture') }}</div>
+          </template>
+        </el-table-column>
         <el-table-column align="left" label="管理IP" min-width="200" prop="manageIp" sortable="custom" />
-        <el-table-column align="left" label="系统" min-width="150" prop="os" sortable="custom" />
-        <el-table-column align="left" label="系统版本" min-width="150" prop="osVersion" sortable="custom" />
+        <el-table-column align="left" label="操作系统" min-width="150" prop="os" sortable="custom">
+          <template #default="scope">
+            <div>{{ filterDict(scope.row.os, 'osVersion') }}</div>
+          </template>
+        </el-table-column>
+        <el-table-column align="left" label="版本" min-width="100" prop="osVersion" sortable="custom" />
+        <el-table-column align="left" label="所属系统" min-width="150" prop="systemId" sortable="custom">
+          <template #default="scope">
+            <div>{{ filterSystemName(scope.row.systemId) }}</div>
+          </template>
+        </el-table-column>
         <el-table-column align="left" fixed="right" label="操作" width="200">
           <template #default="scope">
             <el-button
@@ -94,16 +107,26 @@
           <el-input v-model="form.hostname" autocomplete="off" />
         </el-form-item>
         <el-form-item label="架构" prop="architecture">
-          <el-input v-model="form.architecture" autocomplete="off" />
+<!--          <el-input v-model="form.architecture" autocomplete="off" />-->
+          <el-select v-model="form.architecture">
+            <el-option v-for="val in archs" :key="val.value" :value="val.value" :label="val.label" />
+          </el-select>
         </el-form-item>
         <el-form-item label="管理IP" prop="manageIp">
           <el-input v-model="form.manageIp" autocomplete="off" />
         </el-form-item>
-        <el-form-item label="系统" prop="os">
-          <el-input v-model="form.os" autocomplete="off" />
+        <el-form-item label="操作系统" prop="os">
+          <el-select v-model="form.os">
+            <el-option v-for="val in oss" :key="val.value" :value="val.value" :label="val.label" />
+          </el-select>
         </el-form-item>
         <el-form-item label="版本" prop="osVersion">
           <el-input v-model="form.osVersion" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="所属系统" prop="systemId">
+          <el-select v-model="form.systemId">
+            <el-option v-for="val in systemOptions" :key="val.ID" :value="val.ID" :label="val.name" />
+          </el-select>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -155,7 +178,8 @@ import {
   addServer,
   updateServer,
   deleteServer,
-  getServerById
+  getServerById,
+  getAllServerIds
 } from '@/api/cmdb'
 import infoList from '@/mixins/infoList'
 import { toSQLLine } from '@/utils/stringFun'
@@ -185,7 +209,8 @@ export default {
         architecture: '',
         manageIp: '',
         os: '',
-        osVersion: ''
+        osVersion: '',
+        systemId: '',
       },
       sshForm: {
         server: {
@@ -213,13 +238,21 @@ export default {
       },
       path: path,
       drawer: false,
+      systemOptions: [],
+      archs: [],
+      oss: []
     }
   },
   computed: {
     ...mapGetters('user', ['userInfo', 'token'])
   },
-  created() {
-    this.getTableData()
+  async created() {
+    this.archs = await this.getDict('architecture')
+    this.oss = await this.getDict('osVersion')
+    // console.log(this['architecture' + 'Options'])
+    // console.log(this['osVersion' + 'Options'])
+    this.systemOptions = (await getAllServerIds()).data
+    await this.getTableData()
   },
   methods: {
     //  选中api
@@ -238,7 +271,7 @@ export default {
           this.page--
         }
         this.deleteVisible = false
-        this.getTableData()
+        await this.getTableData()
       }
     },
     // 排序
@@ -265,7 +298,8 @@ export default {
         architecture: '',
         manageIp: '',
         os: '',
-        osVersion: ''
+        osVersion: '',
+        systemId: '',
       }
     },
     closeDialog() {
@@ -426,6 +460,10 @@ export default {
       this.searchInfo.systemIDs = systemIDs
       this.getTableData()
       this.drawer = false
+    },
+    filterSystemName(value) {
+      const rowLabel = this.systemOptions.filter(item => item.ID === value)
+      return rowLabel && rowLabel[0] && rowLabel[0].name
     },
   }
 }
