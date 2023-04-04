@@ -345,6 +345,7 @@ export default {
         case 'edit':
           this.dialogTitle = '编辑Template'
           this.canCheck = true
+          this.commandChange(this.form.mode)
           break
         default:
           break
