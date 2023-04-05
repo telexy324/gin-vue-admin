@@ -12,8 +12,13 @@
           <li draggable="true" @drag="menuDrag('defaultCircle')"><i class="icon-circle" /><strong>缓存</strong></li>
           <li draggable="true" @drag="menuDrag('otherImage')"><i class="el-icon-picture" /><strong>自定义图片</strong></li>
         </ul>
-        <div v-if="isChange" class="wrapper-btn">
-          <el-button type="success" @click="handlerSend">保存当前方案</el-button>
+        <div class="wrapper-btn">
+          <div v-if="isChange">
+            <el-button type="success" @click="handlerSend">保存当前方案</el-button>
+          </div>
+          <div>
+            <el-button type="primary" @click="savePNG">保存png</el-button>
+          </div>
         </div>
       </div>
       <div class="antv-wrapper">
@@ -135,7 +140,7 @@
   </div>
 </template>
 <script>
-import { Graph, Shape } from '@antv/x6'
+import { Graph, Shape, DataUri } from '@antv/x6'
 import { configSetting, configNodeShape, configNodePorts, configEdgeLabel, graphBindKey } from '@/utils/antvSetting'
 import {
   updateEditRelation,
@@ -576,6 +581,21 @@ export default {
         })
       }
     },
+    savePNG() {
+      this.graph.toPNG((dataUri) => {
+        // 下载
+        DataUri.downloadDataUri(dataUri, 'system.png')
+      }, {
+        backgroundColor: 'white',
+        padding: {
+          top: 20,
+          right: 30,
+          bottom: 40,
+          left: 50,
+        },
+        quality: 1
+      })
+    }
   }
 }
 </script>
@@ -747,9 +767,9 @@ i.icon-circle{
 }
 .wrapper-btn{
   text-align: center;
-  padding: 20px;
+  padding: 20px 0 0 0;
   button{
-    width: 100%;
+    width: 80%;
   }
 }
 </style>

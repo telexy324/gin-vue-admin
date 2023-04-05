@@ -249,8 +249,6 @@ export default {
   async created() {
     this.archs = await this.getDict('architecture')
     this.oss = await this.getDict('osVersion')
-    // console.log(this['architecture' + 'Options'])
-    // console.log(this['osVersion' + 'Options'])
     this.systemOptions = (await getAllServerIds()).data
     await this.getTableData()
   },
