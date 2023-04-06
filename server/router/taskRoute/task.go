@@ -12,18 +12,19 @@ type TaskRouter struct {
 func (s *TaskRouter) InitTaskRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 	taskRouter := Router.Group("task").Use(middleware.OperationRecord())
 	// taskRouterWithoutRecord := Router.Group("task")
-	var authorityServerApi = v1.ApiGroupApp.TaskApiGroup.TaskApi
+	var authorityTaskApi = v1.ApiGroupApp.TaskApiGroup.TaskApi
 	{
-		taskRouter.POST("addTask", authorityServerApi.AddTask)       // 新增Task
-		taskRouter.POST("deleteTask", authorityServerApi.DeleteTask) // 删除Task
+		taskRouter.POST("addTask", authorityTaskApi.AddTask)       // 新增Task
+		taskRouter.POST("deleteTask", authorityTaskApi.DeleteTask) // 删除Task
 	}
 	{
-		taskRouter.POST("getTaskById", authorityServerApi.GetTaskById) // 获取Task
-		taskRouter.POST("getTaskList", authorityServerApi.GetTaskList) // 分页获取Task
+		taskRouter.POST("getTaskById", authorityTaskApi.GetTaskById) // 获取Task
+		taskRouter.POST("getTaskList", authorityTaskApi.GetTaskList) // 分页获取Task
 	}
 	{
-		taskRouter.POST("getTaskOutputs", authorityServerApi.GetTaskOutputs) // 停止Task
-		taskRouter.POST("stopTask", authorityServerApi.StopTask)             // 停止Task
+		taskRouter.POST("getTaskOutputs", authorityTaskApi.GetTaskOutputs)             // 获取Task输出
+		taskRouter.POST("stopTask", authorityTaskApi.StopTask)                         // 停止Task
+		taskRouter.POST("getTaskDashboardInfo", authorityTaskApi.GetTaskDashboardInfo) // 获取Task面板信息
 	}
 
 	var authorityTemplateApi = v1.ApiGroupApp.TaskApiGroup.TemplateApi

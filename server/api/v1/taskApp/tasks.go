@@ -273,3 +273,17 @@ func (a *TaskApi) StopTask(c *gin.Context) {
 		response.OkWithMessage("停止成功", c)
 	}
 }
+
+// @Tags Task
+// @Summary 获取Task统计信息
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body request.Empty true "空"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
+// @Router /task/getTaskDashboardInfo [post]
+func (a *TaskApi) GetTaskDashboardInfo(c *gin.Context) {
+	response.OkWithDetailed(taskRes.TaskDashboardResponse{
+		TaskDashboardInfos: taskService.GetTaskDashboardInfo(),
+	}, "获取成功", c)
+}

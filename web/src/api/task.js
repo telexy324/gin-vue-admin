@@ -86,3 +86,15 @@ export const stopTask = (data) => {
     data
   })
 }
+
+// @Summary 获取task面板信息
+// @Produce  application/json
+// @Param empty
+// @Router /task/getTaskDashboardInfo [post]
+export const getTaskDashboardInfo = (data) => {
+  return service({
+    url: '/task/getTaskDashboardInfo',
+    method: 'post',
+    data
+  })
+}

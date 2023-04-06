@@ -277,7 +277,7 @@ func (a *CmdbSystemApi) SystemRelations(c *gin.Context) {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body application.SystemEditRelation true " "
+// @Param data body application.ApplicationSystemEditRelation true " "
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"添加成功"}"
 // @Router /cmdb/system/addEditRelation [post]
 func (a *CmdbSystemApi) AddEditRelation(c *gin.Context) {
@@ -332,7 +332,7 @@ func (a *CmdbSystemApi) DeleteEditRelation(c *gin.Context) {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body application.SystemEditRelation true " "
+// @Param data body application.ApplicationSystemEditRelation true " "
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"添加成功"}"
 // @Router /cmdb/system/updateEditRelation [post]
 func (a *CmdbSystemApi) UpdateEditRelation(c *gin.Context) {

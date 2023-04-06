@@ -15,3 +15,12 @@ type TaskResponse struct {
 type TaskOutputsResponse struct {
 	TaskOutputs []taskMdl.TaskOutput `json:"taskOutputs"`
 }
+
+type TaskDashboardInfo struct {
+	Date   string `json:"date"`
+	Number int64  `json:"number"`
+}
+
+type TaskDashboardResponse struct {
+	TaskDashboardInfos []TaskDashboardInfo `json:"taskDashboardInfos"`
+}

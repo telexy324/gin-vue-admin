@@ -122,6 +122,24 @@ definitions:
         description: 更新时间
         type: string
     type: object
+  application.ApplicationSystemEditRelation:
+    properties:
+      createdAt:
+        description: 创建时间
+        type: string
+      id:
+        description: 主键ID
+        type: integer
+      relation:
+        description: 调用关系',
+        type: string
+      systemId:
+        description: 系统id
+        type: integer
+      updatedAt:
+        description: 更新时间
+        type: string
+    type: object
   application.SystemRelation:
     properties:
       createdAt:
@@ -872,6 +890,9 @@ definitions:
       updatedAt:
         description: 更新时间
         type: string
+      valid:
+        description: LastCommitHash *string `gorm:"column:last_commit_hash" json:"-"`
+        type: integer
     type: object
   system.AutoCodeStruct:
     properties:
@@ -2575,6 +2596,29 @@ paths:
       summary: 获取关系图
       tags:
       - CmdbServer
+  /cmdb/system/addEditRelation:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: ' '
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/application.ApplicationSystemEditRelation'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"添加成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 新增编辑器关系图
+      tags:
+      - CmdbSystem
   /cmdb/system/addRelation:
     post:
       consumes:
@@ -2598,6 +2642,52 @@ paths:
       summary: 新增联系
       tags:
       - CmdbSystem
+  /cmdb/system/deleteEditRelation:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 系统id
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetById'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"删除成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 删除编辑器关系图
+      tags:
+      - CmdbSystem
+  /cmdb/system/getSystemEditRelations:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 系统id
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetById'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 获取编辑器关系图
+      tags:
+      - CmdbSystem
   /cmdb/system/relations:
     post:
       consumes:
@@ -2619,6 +2709,29 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: 获取关系图
+      tags:
+      - CmdbSystem
+  /cmdb/system/updateEditRelation:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: ' '
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/application.ApplicationSystemEditRelation'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"添加成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 更新编辑器关系图
       tags:
       - CmdbSystem
   /cmdb/updateAdmin:
@@ -4030,6 +4143,29 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: 根据id获取Task
+      tags:
+      - Task
+  /task/getTaskDashboardInfo:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 空
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.Empty'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 获取Task统计信息
       tags:
       - Task
   /task/getTaskList:
