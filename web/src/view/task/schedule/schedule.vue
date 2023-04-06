@@ -30,8 +30,12 @@
           type="selection"
           width="55"
         />
-        <el-table-column align="left" label="id" min-width="60" prop="ID" sortable="custom" />
-        <el-table-column align="left" label="templateId" min-width="150" prop="templateId" sortable="custom" />
+<!--        <el-table-column align="left" label="id" min-width="60" prop="ID" sortable="custom" />-->
+        <el-table-column align="left" label="模版名" min-width="150" prop="templateId" sortable="custom">
+          <template #default="scope">
+            <div>{{ filterTemplateName(scope.row.templateId) }}</div>
+          </template>
+        </el-table-column>
         <el-table-column align="left" label="启用" min-width="150" prop="valid" sortable="custom">
           <template #default="scope">
             <el-switch
@@ -325,6 +329,10 @@ export default {
       console.log(row)
       await updateSchedule(row)
       this.getTableData()
+    },
+    filterTemplateName(value) {
+      const rowLabel = this.templateOptions.filter(item => item.ID === value)
+      return rowLabel && rowLabel[0] && rowLabel[0].name
     },
   }
 }

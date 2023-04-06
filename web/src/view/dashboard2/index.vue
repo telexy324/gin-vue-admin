@@ -105,44 +105,44 @@ export default {
     return {
       toolCards: [
         {
-          label: '用户管理',
+          label: '服务器管理',
           icon: 'el-icon el-icon-monitor',
-          name: 'user',
+          name: 'server',
           color: '#ff9c6e',
           bg: 'rgba(255, 156, 110,.3)'
         },
         {
-          label: '角色管理',
+          label: '生产系统管理',
           icon: 'el-icon el-icon-setting',
-          name: 'authority',
+          name: 'systems',
           color: '#69c0ff',
           bg: 'rgba(105, 192, 255,.3)'
         },
         {
-          label: '菜单管理',
+          label: '模版管理',
           icon: 'el-icon el-icon-menu',
-          name: 'menu',
+          name: 'template',
           color: '#b37feb',
           bg: 'rgba(179, 127, 235,.3)'
         },
         {
-          label: '代码生成器',
+          label: '任务列表',
           icon: ' el-icon-cpu',
-          name: 'autoCode',
+          name: 'taskList',
           color: '#ffd666',
           bg: 'rgba(255, 214, 102,.3)'
         },
         {
-          label: '表单生成器',
+          label: '定时任务管理',
           icon: 'el-icon-document-checked',
-          name: 'formCreate',
+          name: 'schedule',
           color: '#ff85c0',
           bg: 'rgba(255, 133, 192,.3)'
         },
         {
-          label: '关于我们',
+          label: '系统配置',
           icon: ' el-icon-user',
-          name: 'about',
+          name: 'state',
           color: '#5cdbd3',
           bg: 'rgba(92, 219, 211,.3)'
         }
