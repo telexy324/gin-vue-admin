@@ -2,6 +2,7 @@ package request
 
 import (
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl"
 )
 
 //// Find by id and project_id structure
@@ -26,4 +27,21 @@ type GetTaskOutputsByTaskId struct {
 	TaskId       float64 `json:"taskId" form:"taskId"`
 	SortInverted bool
 	SortBy       string
+}
+
+type TaskTemplateSearch struct {
+	taskMdl.TaskTemplate
+	request.PageInfo
+}
+
+type AddTaskTemplate struct {
+	TaskTemplate *taskMdl.TaskTemplate `json:"taskTemplate"`
+	ServerIds    []int                     `json:"serverIds"`
+	AuthorityId  string                    `json:"authorityId"` // 角色ID
+}
+
+type UpdateTaskTemplate struct {
+	TaskTemplate *taskMdl.TaskTemplate `json:"taskTemplate"`
+	ServerIds    []int                     `json:"serverIds"`
+	AuthorityId  string                    `json:"authorityId"` // 角色ID
 }

@@ -74,3 +74,20 @@ export const validateScheduleCronFormat = (data) => {
     data
   })
 }
+
+// @Tags Schedule
+// @Summary 删除选中Schedule
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body request.IdsReq true "ID"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"删除成功"}"
+// @Router /task/schedule/deleteScheduleByIds [post]
+export const deleteScheduleByIds = (data) => {
+  return service({
+    url: '/task/schedule/deleteScheduleByIds',
+    method: 'post',
+    data
+  })
+}
+

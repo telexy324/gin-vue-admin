@@ -281,3 +281,35 @@ export const getSystemEditRelation = (data) => {
     data
   })
 }
+
+// @Tags Server
+// @Summary 删除选中Server
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body request.IdsReq true "ID"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"删除成功"}"
+// @Router /cmdb/server/deleteServerByIds [post]
+export const deleteServerByIds = (data) => {
+  return service({
+    url: '/cmdb/server/deleteServerByIds',
+    method: 'post',
+    data
+  })
+}
+
+// @Tags System
+// @Summary 删除选中System
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body request.IdsReq true "ID"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"删除成功"}"
+// @Router /cmdb/system/deleteSystemByIds [post]
+export const deleteSystemByIds = (data) => {
+  return service({
+    url: '/cmdb/system/deleteSystemByIds',
+    method: 'post',
+    data
+  })
+}

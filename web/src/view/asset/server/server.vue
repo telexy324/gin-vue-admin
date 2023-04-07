@@ -179,7 +179,8 @@ import {
   updateServer,
   deleteServer,
   getServerById,
-  getAllServerIds
+  getAllServerIds,
+  deleteServerByIds
 } from '@/api/cmdb'
 import infoList from '@/mixins/infoList'
 import { toSQLLine } from '@/utils/stringFun'
@@ -259,7 +260,7 @@ export default {
     },
     async onDelete() {
       const ids = this.servers.map(item => item.ID)
-      const res = await deleteServer({ ids })
+      const res = await deleteServerByIds({ ids })
       if (res.code === 0) {
         this.$message({
           type: 'success',

@@ -60,6 +60,10 @@ func (scheduleService *ScheduleService) DeleteSchedule(scheduleID float64) error
 	return global.GVA_DB.Where("id = ?", scheduleID).First(&schedule).Delete(&schedule).Error
 }
 
+func (scheduleService *ScheduleService) DeleteScheduleByIds(ids request.IdsReq) error {
+	return global.GVA_DB.Delete(&[]scheduleMdl.Schedule{}, "id in ?", ids.Ids).Error
+}
+
 func (scheduleService *ScheduleService) GetSchedules() (schedules []scheduleMdl.Schedule, err error) {
 	err = global.GVA_DB.Where("cron_format != ''").Find(&schedules).Error
 	return

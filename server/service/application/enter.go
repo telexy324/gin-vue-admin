@@ -4,5 +4,4 @@ type ServiceGroup struct {
 	CmdbServerService
 	CmdbSystemService
 	StaffService
-	TaskService
 }

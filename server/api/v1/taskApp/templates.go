@@ -84,6 +84,25 @@ func (a *TemplateApi) DeleteTemplate(c *gin.Context) {
 }
 
 // @Tags Template
+// @Summary 批量删除Template
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body request.IdsReq true "ID"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"删除成功"}"
+// @Router /task/template/deleteTemplateByIds [post]
+func (a *TemplateApi) DeleteTemplateByIds(c *gin.Context) {
+	var ids request.IdsReq
+	_ = c.ShouldBindJSON(&ids)
+	if err := templateService.DeleteTaskTemplateByIds(ids); err != nil {
+		global.GVA_LOG.Error("删除失败!", zap.Any("err", err))
+		response.FailWithMessage("删除失败", c)
+	} else {
+		response.OkWithMessage("删除成功", c)
+	}
+}
+
+// @Tags Template
 // @Summary 更新Template
 // @Security ApiKeyAuth
 // @accept application/json
@@ -148,7 +167,7 @@ func (a *TemplateApi) GetTemplateById(c *gin.Context) {
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
 // @Router /task/template/getTemplateList [post]
 func (a *TemplateApi) GetTemplateList(c *gin.Context) {
-	var pageInfo request.PageInfo
+	var pageInfo templateReq.TaskTemplateSearch
 	if err := c.ShouldBindJSON(&pageInfo); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)

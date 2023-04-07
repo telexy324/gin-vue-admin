@@ -205,7 +205,8 @@ import {
   getTemplateById,
   addTemplate,
   updateTemplate,
-  checkScript
+  checkScript,
+  deleteTemplateByIds
 } from '@/api/template'
 import { addTask } from '@/api/task'
 import { getAllServerIds } from '@/api/cmdb'
@@ -288,7 +289,7 @@ export default {
     },
     async onDelete() {
       const ids = this.templates.map(item => item.ID)
-      const res = await deleteTemplate({ ids })
+      const res = await deleteTemplateByIds({ ids })
       if (res.code === 0) {
         this.$message({
           type: 'success',

@@ -2,7 +2,6 @@ package taskSvr
 
 import (
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/application"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl/response"
@@ -178,7 +177,7 @@ func (taskService *TaskService) GetTaskDashboardInfo() (output []response.TaskDa
 		var count int64
 		timeEnd := time.Date(now.Year(), now.Month(), now.Day()+1, 0, 0, 0, 0, now.Location())
 		timeStart := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
-		if err := global.GVA_DB.Model(&application.Task{}).Where("created_at >= ? and created_at < ?", timeStart, timeEnd).Count(&count).Error; err != nil {
+		if err := global.GVA_DB.Model(&taskMdl.Task{}).Where("created_at >= ? and created_at < ?", timeStart, timeEnd).Count(&count).Error; err != nil {
 			global.GVA_LOG.Error("get task dashboard info failed ", zap.String("date ", day), zap.Any("error ", err))
 		}
 		output = append(output, response.TaskDashboardInfo{

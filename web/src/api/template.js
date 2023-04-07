@@ -98,3 +98,19 @@ export const uploadScript = (data) => {
     data
   })
 }
+
+// @Tags Template
+// @Summary 删除选中Template
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body request.IdsReq true "ID"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"删除成功"}"
+// @Router /task/template/deleteTemplateByIds [post]
+export const deleteTemplateByIds = (data) => {
+  return service({
+    url: '/task/template/deleteTemplateByIds',
+    method: 'post',
+    data
+  })
+}

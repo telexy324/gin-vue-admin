@@ -1,11 +1,11 @@
 <template>
   <div>
     <div class="gva-table-box">
-      <el-table :data="tableData" @sort-change="sortChange" @selection-change="handleSelectionChange">
-        <el-table-column
-          type="selection"
-          width="55"
-        />
+      <el-table :data="tableData" @sort-change="sortChange">
+<!--        <el-table-column-->
+<!--          type="selection"-->
+<!--          width="55"-->
+<!--        />-->
         <el-table-column align="left" label="id" min-width="60" sortable="custom">
           <template v-slot="scope">
             <el-button
@@ -16,13 +16,21 @@
 <!--            <a @click="showTaskLog(scope.row)">{{ scope.row.ID }}</a>-->
           </template>
         </el-table-column>
-        <el-table-column align="left" label="模板id" min-width="150" prop="templateId" sortable="custom" />
+        <el-table-column align="left" label="模板名" min-width="150" prop="templateId" sortable="custom">
+          <template #default="scope">
+            <div>{{ filterTemplateName(scope.row.templateId) }}</div>
+          </template>
+        </el-table-column>
         <el-table-column align="left" label="状态" min-width="150" sortable="custom">
           <template v-slot="scope">
             <TaskStatus :status="scope.row.status" />
           </template>
         </el-table-column>
-        <el-table-column align="left" label="创建人" min-width="200" prop="userId" sortable="custom" />
+        <el-table-column align="left" label="创建人" min-width="200" prop="systemUserId" sortable="custom">
+          <template #default="scope">
+            <div>{{ filterUserName(scope.row.systemUserId) }}</div>
+          </template>
+        </el-table-column>
         <el-table-column align="left" label="开始时间" min-width="150" prop="beginTime.Time" sortable="custom" :formatter="dateFormatter1" />
         <el-table-column align="left" label="结束时间" min-width="150" prop="endTime.Time" sortable="custom" :formatter="dateFormatter2" />
       </el-table>
@@ -50,6 +58,12 @@ import {
   getTaskList,
   deleteTask,
 } from '@/api/task'
+import {
+  getTemplateList
+} from '@/api/template'
+import {
+  getUserList
+} from '@/api/user'
 import infoList from '@/mixins/infoList'
 import { toSQLLine } from '@/utils/stringFun'
 import { emitter } from '@/utils/bus'
@@ -68,10 +82,22 @@ export default {
       type: '',
       path: path,
       tasks: [],
+      templateOptions: [],
+      userOptions: []
     }
   },
-  created() {
-    this.getTableData()
+  async created() {
+    await this.getTableData()
+    const res = await getTemplateList({
+      page: 1,
+      pageSize: 99999
+    })
+    this.setOptions(res.data.list)
+    const resUser = await getUserList({
+      page: 1,
+      pageSize: 99999
+    })
+    this.setUserOptions(resUser.data.list)
   },
   methods: {
     async onDelete() {
@@ -115,6 +141,23 @@ export default {
       } else {
         return ''
       }
+    },
+    setOptions(data) {
+      this.templateOptions = data
+    },
+    filterTemplateName(value) {
+      const rowLabel = this.templateOptions.filter(item => item.ID === value)
+      return rowLabel && rowLabel[0] && rowLabel[0].name
+    },
+    setUserOptions(data) {
+      this.userOptions = data
+    },
+    filterUserName(value) {
+      if (value === 999999) {
+        return '定时任务'
+      }
+      const rowLabel = this.userOptions.filter(item => item.ID === value)
+      return rowLabel && rowLabel[0] && rowLabel[0].userName
     },
   }
 }

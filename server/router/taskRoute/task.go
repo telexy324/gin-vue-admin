@@ -29,9 +29,10 @@ func (s *TaskRouter) InitTaskRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 
 	var authorityTemplateApi = v1.ApiGroupApp.TaskApiGroup.TemplateApi
 	{
-		taskRouter.POST("template/addTemplate", authorityTemplateApi.AddTemplate)       // 新增管理员
-		taskRouter.POST("template/deleteTemplate", authorityTemplateApi.DeleteTemplate) // 删除管理员
-		taskRouter.POST("template/updateTemplate", authorityTemplateApi.UpdateTemplate) // 更新管理员
+		taskRouter.POST("template/addTemplate", authorityTemplateApi.AddTemplate)                 // 新增管理员
+		taskRouter.POST("template/deleteTemplate", authorityTemplateApi.DeleteTemplate)           // 删除管理员
+		taskRouter.POST("template/deleteTemplateByIds", authorityTemplateApi.DeleteTemplateByIds) // 删除管理员
+		taskRouter.POST("template/updateTemplate", authorityTemplateApi.UpdateTemplate)           // 更新管理员
 	}
 	{
 		taskRouter.POST("template/getTemplateById", authorityTemplateApi.GetTemplateById) // 获取管理员
@@ -43,9 +44,10 @@ func (s *TaskRouter) InitTaskRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 
 	var authorityScheduleApi = v1.ApiGroupApp.TaskApiGroup.ScheduleApi
 	{
-		taskRouter.POST("schedule/addSchedule", authorityScheduleApi.AddSchedule)       // 新增管理员
-		taskRouter.POST("schedule/deleteSchedule", authorityScheduleApi.DeleteSchedule) // 删除管理员
-		taskRouter.POST("schedule/updateSchedule", authorityScheduleApi.UpdateSchedule) // 更新管理员
+		taskRouter.POST("schedule/addSchedule", authorityScheduleApi.AddSchedule)                 // 新增管理员
+		taskRouter.POST("schedule/deleteSchedule", authorityScheduleApi.DeleteSchedule)           // 删除管理员
+		taskRouter.POST("schedule/deleteScheduleByIds", authorityScheduleApi.DeleteScheduleByIds) // 删除管理员
+		taskRouter.POST("schedule/updateSchedule", authorityScheduleApi.UpdateSchedule)           // 更新管理员
 	}
 	{
 		taskRouter.POST("schedule/getScheduleById", authorityScheduleApi.GetScheduleById)                       // 获取管理员

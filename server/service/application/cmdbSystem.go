@@ -6,6 +6,7 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/model/application"
 	request2 "github.com/flipped-aurora/gin-vue-admin/server/model/application/request"
 	applicationRes "github.com/flipped-aurora/gin-vue-admin/server/model/application/response"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/system"
 	"github.com/flipped-aurora/gin-vue-admin/server/utils"
 	"go.uber.org/zap"
@@ -95,6 +96,24 @@ func (cmdbSystemService *CmdbSystemService) DeleteSystem(id float64) (err error)
 		return err
 	}
 	return err
+}
+
+//@author: [telexy324](https://github.com/telexy324)
+//@function: DeleteSystemByIds
+//@description: 批量删除系统
+//@param: applicationSystems []model.applicationSystems
+//@return: err error
+
+func (cmdbSystemService *CmdbSystemService) DeleteSystemByIds(ids request.IdsReq) (err error) {
+	if ids.Ids == nil || len(ids.Ids) <= 0 {
+		return
+	}
+	for _, id := range ids.Ids {
+		if err = cmdbSystemService.DeleteSystem(float64(id)); err != nil {
+			return
+		}
+	}
+	return
 }
 
 //@author: [telexy324](https://github.com/telexy324)

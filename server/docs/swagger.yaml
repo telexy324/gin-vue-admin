@@ -2208,6 +2208,29 @@ paths:
       summary: 删除服务器
       tags:
       - CmdbServer
+  /cmdb/deleteServerByIds:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.IdsReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"删除成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 批量删除服务器
+      tags:
+      - CmdbServer
   /cmdb/deleteSystem:
     post:
       consumes:
@@ -2229,6 +2252,29 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: 删除系统
+      tags:
+      - CmdbSystem
+  /cmdb/deleteSystemByIds:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.IdsReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"删除成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 批量删除系统
       tags:
       - CmdbSystem
   /cmdb/downloadTemplate:
@@ -4260,6 +4306,29 @@ paths:
       summary: 删除Schedule
       tags:
       - Schedule
+  /task/schedule/deleteScheduleByIds:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.IdsReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"删除成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 批量删除Schedule
+      tags:
+      - Schedule
   /task/schedule/getScheduleById:
     post:
       consumes:
@@ -4419,6 +4488,29 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: 删除Template
+      tags:
+      - Template
+  /task/template/deleteTemplateByIds:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.IdsReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"删除成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 批量删除Template
       tags:
       - Template
   /task/template/downloadScript:

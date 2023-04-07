@@ -1,16 +1,16 @@
 <template>
   <div>
-    <div class="gva-search-box">
-      <el-form ref="searchForm" :inline="true" :model="searchInfo">
-        <el-form-item label="templateId">
-          <el-input v-model="searchInfo.templateId" placeholder="模板ID" />
-        </el-form-item>
-        <el-form-item>
-          <el-button size="mini" type="primary" icon="el-icon-search" @click="onSubmit">查询</el-button>
-          <el-button size="mini" icon="el-icon-refresh" @click="onReset">重置</el-button>
-        </el-form-item>
-      </el-form>
-    </div>
+<!--    <div class="gva-search-box">-->
+<!--      <el-form ref="searchForm" :inline="true" :model="searchInfo">-->
+<!--        <el-form-item label="templateId">-->
+<!--          <el-input v-model="searchInfo.templateId" placeholder="模板ID" />-->
+<!--        </el-form-item>-->
+<!--        <el-form-item>-->
+<!--          <el-button size="mini" type="primary" icon="el-icon-search" @click="onSubmit">查询</el-button>-->
+<!--          <el-button size="mini" icon="el-icon-refresh" @click="onReset">重置</el-button>-->
+<!--        </el-form-item>-->
+<!--      </el-form>-->
+<!--    </div>-->
     <div class="gva-table-box">
       <div class="gva-btn-list">
         <el-button size="mini" type="primary" icon="el-icon-plus" @click="openDialog('addSchedule')">新增</el-button>
@@ -128,11 +128,18 @@
 </template>
 
 <script>
+
 const path = import.meta.env.VITE_BASE_API
 // 获取列表内容封装在mixins内部  getTableData方法 初始化已封装完成 条件搜索时候 请把条件安好后台定制的结构体字段 放到 this.searchInfo 中即可实现条件搜索
 
 import {
-  getTemplateScheduleList, addSchedule, updateSchedule, deleteSchedule, getScheduleById, validateScheduleCronFormat
+  getTemplateScheduleList,
+  addSchedule,
+  updateSchedule,
+  deleteSchedule,
+  getScheduleById,
+  validateScheduleCronFormat,
+  deleteScheduleByIds
 } from '@/api/schedule'
 import {
   getTemplateList
@@ -183,7 +190,7 @@ export default {
     },
     async onDelete() {
       const ids = this.schedules.map(item => item.ID)
-      const res = await deleteSchedule({ ids })
+      const res = await deleteScheduleByIds({ ids })
       if (res.code === 0) {
         this.$message({
           type: 'success',
@@ -316,7 +323,9 @@ export default {
       this.templateOptions = data
     },
     async checkCronFormat() {
-      const res = await validateScheduleCronFormat(this.form)
+      const _form = Object.assign({}, this.form)
+      _form.templateId = _form.templateId ? _form.templateId : 0
+      const res = await validateScheduleCronFormat(_form)
       if (res.code === 0) {
         this.$message({
           type: 'success',
@@ -326,9 +335,8 @@ export default {
       }
     },
     async changeValid(row) {
-      console.log(row)
       await updateSchedule(row)
-      this.getTableData()
+      await this.getTableData()
     },
     filterTemplateName(value) {
       const rowLabel = this.templateOptions.filter(item => item.ID === value)

@@ -122,8 +122,11 @@ export default {
     async loadData() {
       this.item = (await getTaskById({ ID: this.itemId })).data.task
       this.output = (await getTaskOutputs({ taskId: this.itemId })).data.taskOutputs
-      this.user = (await getUserById({ ID: this.item.systemUserId })).data.user
-      console.log(this.user)
+      if (this.item.systemUserId === 999999) {
+        this.user.userName = '定时任务'
+      } else {
+        this.user = (await getUserById({ ID: this.item.systemUserId })).data.user
+      }
       this.showCard = true
       this.visible = true
     },

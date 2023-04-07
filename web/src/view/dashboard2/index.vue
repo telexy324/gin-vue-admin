@@ -106,42 +106,42 @@ export default {
       toolCards: [
         {
           label: '服务器管理',
-          icon: 'el-icon el-icon-monitor',
+          icon: 'el-icon el-icon-dish',
           name: 'server',
           color: '#ff9c6e',
           bg: 'rgba(255, 156, 110,.3)'
         },
         {
           label: '生产系统管理',
-          icon: 'el-icon el-icon-setting',
+          icon: 'el-icon el-icon-burger',
           name: 'systems',
           color: '#69c0ff',
           bg: 'rgba(105, 192, 255,.3)'
         },
         {
           label: '模版管理',
-          icon: 'el-icon el-icon-menu',
+          icon: 'el-icon el-icon-tickets',
           name: 'template',
           color: '#b37feb',
           bg: 'rgba(179, 127, 235,.3)'
         },
         {
           label: '任务列表',
-          icon: ' el-icon-cpu',
+          icon: ' el-icon-bottom-left',
           name: 'taskList',
           color: '#ffd666',
           bg: 'rgba(255, 214, 102,.3)'
         },
         {
           label: '定时任务管理',
-          icon: 'el-icon-document-checked',
+          icon: 'el-icon-time',
           name: 'schedule',
           color: '#ff85c0',
           bg: 'rgba(255, 133, 192,.3)'
         },
         {
-          label: '系统配置',
-          icon: ' el-icon-user',
+          label: '本机状态',
+          icon: ' el-icon-cloudy',
           name: 'state',
           color: '#5cdbd3',
           bg: 'rgba(92, 219, 211,.3)'

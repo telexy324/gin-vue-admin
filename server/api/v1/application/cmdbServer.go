@@ -72,6 +72,25 @@ func (a *CmdbServerApi) DeleteServer(c *gin.Context) {
 }
 
 // @Tags CmdbServer
+// @Summary 批量删除服务器
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body request.IdsReq true "ID"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"删除成功"}"
+// @Router /cmdb/deleteServerByIds [post]
+func (a *CmdbServerApi) DeleteServerByIds(c *gin.Context) {
+	var ids request.IdsReq
+	_ = c.ShouldBindJSON(&ids)
+	if err := cmdbServerService.DeleteServerByIds(ids); err != nil {
+		global.GVA_LOG.Error("删除失败!", zap.Any("err", err))
+		response.FailWithMessage("删除失败", c)
+	} else {
+		response.OkWithMessage("删除成功", c)
+	}
+}
+
+// @Tags CmdbServer
 // @Summary 更新服务器
 // @Security ApiKeyAuth
 // @accept application/json

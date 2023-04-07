@@ -30,7 +30,7 @@
           type="selection"
           width="55"
         />
-        <el-table-column align="left" label="id" min-width="60" prop="system.ID" sortable="custom" />
+<!--        <el-table-column align="left" label="id" min-width="60" prop="system.ID" sortable="custom" />-->
         <el-table-column align="left" label="系统名" min-width="150" prop="system.name" sortable="custom" />
         <el-table-column align="left" fixed="right" label="操作" width="200">
           <template #default="scope">
@@ -106,7 +106,7 @@ const path = import.meta.env.VITE_BASE_API
 // 获取列表内容封装在mixins内部  getTableData方法 初始化已封装完成 条件搜索时候 请把条件安好后台定制的结构体字段 放到 this.searchInfo 中即可实现条件搜索
 
 import {
-  getSystemList, addSystem, updateSystem, deleteSystem, getSystemById
+  getSystemList, addSystem, updateSystem, deleteSystem, getSystemById, deleteSystemByIds
 } from '@/api/cmdb'
 import {
   getUserList
@@ -158,7 +158,7 @@ export default {
     },
     async onDelete() {
       const ids = this.systems.map(item => item.ID)
-      const res = await deleteSystem({ ids })
+      const res = await deleteSystemByIds({ ids })
       if (res.code === 0) {
         this.$message({
           type: 'success',

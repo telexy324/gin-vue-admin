@@ -8,6 +8,7 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/application"
 	request2 "github.com/flipped-aurora/gin-vue-admin/server/model/application/request"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
 	"github.com/xuri/excelize/v2"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -68,6 +69,17 @@ func (cmdbServerService *CmdbServerService) DeleteServer(id float64) (err error)
 	}
 	var server application.ApplicationServer
 	return global.GVA_DB.Where("id = ?", id).First(&server).Delete(&server).Error
+}
+
+//@author: [telexy324](https://github.com/telexy324)
+//@function: DeleteServerByIds
+//@description: 批量删除服务器
+//@param: applicationServers []model.applicationServers
+//@return: err error
+
+func (cmdbServerService *CmdbServerService) DeleteServerByIds(ids request.IdsReq) (err error) {
+	err = global.GVA_DB.Delete(&[]application.ApplicationServer{}, "id in ?", ids.Ids).Error
+	return err
 }
 
 //@author: [telexy324](https://github.com/telexy324)

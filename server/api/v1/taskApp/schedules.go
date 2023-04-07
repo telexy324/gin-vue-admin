@@ -116,6 +116,26 @@ func (a *ScheduleApi) DeleteSchedule(c *gin.Context) {
 }
 
 // @Tags Schedule
+// @Summary 批量删除Schedule
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body request.IdsReq true "ID"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"删除成功"}"
+// @Router /task/schedule/deleteScheduleByIds [post]
+func (a *ScheduleApi) DeleteScheduleByIds(c *gin.Context) {
+	var ids request.IdsReq
+	_ = c.ShouldBindJSON(&ids)
+	if err := scheduleService.DeleteScheduleByIds(ids); err != nil {
+		global.GVA_LOG.Error("删除失败!", zap.Any("err", err))
+		response.FailWithMessage("删除失败", c)
+	} else {
+		refreshSchedulePool()
+		response.OkWithMessage("删除成功", c)
+	}
+}
+
+// @Tags Schedule
 // @Summary 更新Schedule
 // @Security ApiKeyAuth
 // @accept application/json

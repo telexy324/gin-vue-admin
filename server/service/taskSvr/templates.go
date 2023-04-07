@@ -9,6 +9,7 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/model/application"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl"
+	request2 "github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl/request"
 	"github.com/pkg/sftp"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -58,11 +59,15 @@ func (templateService *TaskTemplatesService) UpdateTaskTemplate(template taskMdl
 	return err
 }
 
-func (templateService *TaskTemplatesService) GetTaskTemplates(info request.PageInfo) (err error, list interface{}, total int64) {
+func (templateService *TaskTemplatesService) GetTaskTemplates(info request2.TaskTemplateSearch) (err error, list interface{}, total int64) {
 	limit := info.PageSize
 	offset := info.PageSize * (info.Page - 1)
 	var templates []taskMdl.TaskTemplate
 	db := global.GVA_DB.Model(&taskMdl.TaskTemplate{})
+	if info.Name != "" {
+		name := strings.Trim(info.Name, " ")
+		db = db.Where("`name` LIKE ?", "%"+name+"%")
+	}
 	err = db.Count(&total).Error
 	if err != nil {
 		return
@@ -91,6 +96,10 @@ func (templateService *TaskTemplatesService) DeleteTaskTemplate(templateID float
 	}
 	var template taskMdl.TaskTemplate
 	return global.GVA_DB.Where("id = ?", templateID).First(&template).Delete(&template).Error
+}
+
+func (templateService *TaskTemplatesService) DeleteTaskTemplateByIds(ids request.IdsReq) error {
+	return global.GVA_DB.Delete(&[]taskMdl.TaskTemplate{}, "id in ?", ids.Ids).Error
 }
 
 //func (d *SqlDb) GetTaskTemplateRefs(projectID int, templateID int) (db.ObjectReferrers, error) {
