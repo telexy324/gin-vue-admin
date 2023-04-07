@@ -81,8 +81,8 @@ func (cmdbSystemService *CmdbSystemService) DeleteSystem(id float64) (err error)
 	if err != nil {
 		return
 	}
-	var system application.ApplicationSystem
-	if err = global.GVA_DB.Where("id = ?", id).First(&system).Delete(&system).Error; err != nil {
+	var existSystem application.ApplicationSystem
+	if err = global.GVA_DB.Where("id = ?", id).First(&existSystem).Delete(&existSystem).Error; err != nil {
 		return err
 	}
 	var systemAdmins []application.ApplicationSystemAdmin
@@ -90,8 +90,13 @@ func (cmdbSystemService *CmdbSystemService) DeleteSystem(id float64) (err error)
 	if err != nil {
 		return err
 	}
-	var Admins []application.ApplicationSystemSysAdmin
-	err = global.GVA_DB.Where("system_id = ?", id).Find(&Admins).Delete(&Admins).Error
+	var admins []application.ApplicationSystemSysAdmin
+	err = global.GVA_DB.Where("system_id = ?", id).Find(&admins).Delete(&admins).Error
+	if err != nil {
+		return err
+	}
+	var editRelation application.ApplicationSystemEditRelation
+	err = global.GVA_DB.Where("system_id = ?", id).First(&editRelation).Delete(&editRelation).Error
 	if err != nil {
 		return err
 	}

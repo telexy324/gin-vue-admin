@@ -141,10 +141,10 @@
       <warning-bar title="连接信息" />
       <el-form ref="sshForm" :model="sshForm" :rules="rules" label-width="80px">
         <el-form-item label="管理IP" prop="manageIp">
-          <el-input v-model="sshForm.server.manageIp" autocomplete="off" />
+          <el-input v-model="sshForm.server.manageIp" autocomplete="off" :disabled="true" />
         </el-form-item>
         <el-form-item label="SSH端口" prop="sshPort">
-          <el-input v-model="sshForm.server.sshPort" autocomplete="off" />
+          <el-input v-model="sshForm.server.sshPort" autocomplete="off" :disabled="true" />
         </el-form-item>
         <el-form-item label="用户名" prop="username">
           <el-input v-model="sshForm.username" autocomplete="off" />

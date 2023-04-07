@@ -289,10 +289,10 @@ export const getSystemEditRelation = (data) => {
 // @Produce application/json
 // @Param data body request.IdsReq true "ID"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"删除成功"}"
-// @Router /cmdb/server/deleteServerByIds [post]
+// @Router /cmdb/deleteServerByIds [post]
 export const deleteServerByIds = (data) => {
   return service({
-    url: '/cmdb/server/deleteServerByIds',
+    url: '/cmdb/deleteServerByIds',
     method: 'post',
     data
   })
@@ -305,10 +305,10 @@ export const deleteServerByIds = (data) => {
 // @Produce application/json
 // @Param data body request.IdsReq true "ID"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"删除成功"}"
-// @Router /cmdb/system/deleteSystemByIds [post]
+// @Router /cmdb/deleteSystemByIds [post]
 export const deleteSystemByIds = (data) => {
   return service({
-    url: '/cmdb/system/deleteSystemByIds',
+    url: '/cmdb/deleteSystemByIds',
     method: 'post',
     data
   })

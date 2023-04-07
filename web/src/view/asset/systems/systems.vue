@@ -129,7 +129,7 @@ export default {
       dialogTitle: '新增system',
       systems: [],
       form: {
-        system: '',
+        system: {},
         adminIds: ''
       },
       type: '',
@@ -191,7 +191,7 @@ export default {
     initForm() {
       this.$refs.systemForm.resetFields()
       this.form = {
-        system: '',
+        system: {},
         adminIds: ''
       }
     },
@@ -226,7 +226,7 @@ export default {
         type: 'warning'
       })
         .then(async() => {
-          const res = await deleteSystem(row)
+          const res = await deleteSystem(row.system)
           if (res.code === 0) {
             this.$message({
               type: 'success',
