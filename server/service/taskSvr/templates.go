@@ -166,7 +166,7 @@ func (templateService *TaskTemplatesService) CheckScript(s application.Applicati
 	command = `[ -f ` + template.ScriptPath + ` ] && echo yes || echo no`
 	output, err = sshClient.CommandSingle(command)
 	global.GVA_LOG.Info(strings.Trim(output, " "))
-	if err != nil || strings.Trim(output, " ") == "no" {
+	if err != nil || strings.Trim(output, " ") == "no" || strings.Trim(output, "\n") == "no" {
 		global.GVA_LOG.Error("judge script exist: ", zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
 		return
 	}
