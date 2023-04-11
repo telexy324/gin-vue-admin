@@ -69,7 +69,7 @@ export default {
       this.template = (await getTemplateById({ ID: e.templateId })).data.template
       // this.dialogTitle = 'Task #' + this.task.ID
       this.isGetData = true
-      this.taskLogDialog = true
+      // this.taskLogDialog = true
     })
     emitter.on('i-show-script', (e) => {
       this.script = e
@@ -79,10 +79,11 @@ export default {
   },
   methods: {
     async onTaskLogDialogClosed() {
-      this.taskLogDialog = false
+      // this.taskLogDialog = false
       // const query = { ...this.$route.query, t: undefined }
       // await this.$router.replace({ query })
-      await this.$router.push({ name: this.$route.name })
+      // await this.$router.push({ name: this.$route.name })
+      this.isGetData = false
     },
     async onScriptLogDialogClosed() {
       this.scriptDialog = false
