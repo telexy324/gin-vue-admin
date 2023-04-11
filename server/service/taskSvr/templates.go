@@ -1,6 +1,7 @@
 package taskSvr
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	sockets "github.com/flipped-aurora/gin-vue-admin/server/api/v1/socket"
@@ -13,6 +14,7 @@ import (
 	"github.com/pkg/sftp"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
+	"io/ioutil"
 	"mime/multipart"
 	"strings"
 	"sync"
@@ -206,6 +208,7 @@ func (templateService *TaskTemplatesService) UploadScript(ID int, file multipart
 	}
 	wg := &sync.WaitGroup{}
 	failedChan := make(chan string, len(template.TargetServers))
+	fileByte, _ := ioutil.ReadAll(file)
 	for _, server := range template.TargetServers {
 		wg.Add(1)
 		go func(w *sync.WaitGroup, s application.ApplicationServer, f chan string) {
@@ -238,8 +241,8 @@ func (templateService *TaskTemplatesService) UploadScript(ID int, file multipart
 				f <- s.ManageIp
 				return
 			}
-
-			er = sshClient.Upload(file, scriptPath)
+			copied := bytes.NewBuffer(fileByte)
+			er = sshClient.Upload(copied, scriptPath)
 			if er != nil {
 				global.GVA_LOG.Error("upload script failed on upload: ", zap.String("server IP: ", s.ManageIp), zap.Any("err", er))
 				f <- s.ManageIp

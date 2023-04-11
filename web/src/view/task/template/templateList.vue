@@ -531,7 +531,7 @@ export default {
         }
       })
     },
-    async httpRequest(param) {
+    httpRequest(param) {
       this.progressPercent = 0
       const fd = new FormData()
       fd.append('file', param.file)
@@ -581,7 +581,6 @@ export default {
           if (response.data.data.failedIps.length > 0) {
             message = '上传部分成功, 失败的服务器: ' + response.data.data.failedIps.toString()
           }
-          console.log('hehe')
           ElMessage({
             showClose: true,
             message: message,

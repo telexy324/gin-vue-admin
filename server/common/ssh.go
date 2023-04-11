@@ -11,7 +11,6 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/crypto/ssh"
 	"io"
-	"mime/multipart"
 	"os"
 	"path"
 	"sync"
@@ -197,7 +196,7 @@ func (c *SSHClient) NewSftp(opts ...sftp.ClientOption) (*sftp.Client, error) {
 	return sftp.NewClient(c.Client, opts...)
 }
 
-func (c *SSHClient) Upload(file multipart.File, remotePath string) (err error) {
+func (c *SSHClient) Upload(file io.Reader, remotePath string) (err error) {
 	ftp, err := c.NewSftp()
 	if err != nil {
 		return
