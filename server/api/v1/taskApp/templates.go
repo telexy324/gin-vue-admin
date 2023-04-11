@@ -253,11 +253,12 @@ func (a *TemplateApi) CheckScript(c *gin.Context) {
 	if err != nil {
 		global.GVA_LOG.Error("check script failed", zap.Any("err", err))
 		response.FailWithMessage("check script failed", c)
+	} else {
+		response.OkWithDetailed(templateRes.TemplateScriptResponse{
+			Exist:  exist,
+			Script: output,
+		}, "获取成功", c)
 	}
-	response.OkWithDetailed(templateRes.TemplateScriptResponse{
-		Exist:  exist,
-		Script: output,
-	}, "获取成功", c)
 }
 
 // @Tags Template

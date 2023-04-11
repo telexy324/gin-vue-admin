@@ -473,10 +473,10 @@ export default {
           message: '检查成功',
           type: 'info'
         })
-      }
-      if (this.form.detail) {
-        this.closeDialog()
-        this.showScript(res.data.script)
+        if (this.form.detail) {
+          this.closeDialog()
+          this.showScript(res.data.script)
+        }
       }
     },
     showScript(s) {
