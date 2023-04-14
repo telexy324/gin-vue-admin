@@ -25,4 +25,5 @@ var (
 	TaskVerify               = Rules{"Name": {NotEmpty()}}
 	ScheduleVerify           = Rules{"TemplateId": {NotEmpty()}, "CronFormat": {NotEmpty()}}
 	SystemEditRelationVerify = Rules{"SystemId": {NotEmpty()}}
+	TaskTemplateSetVerify    = Rules{"Name": {NotEmpty()}}
 )

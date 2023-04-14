@@ -32,16 +32,22 @@ type GetTaskOutputsByTaskId struct {
 type TaskTemplateSearch struct {
 	taskMdl.TaskTemplate
 	request.PageInfo
+	SystemIDs []int
 }
 
 type AddTaskTemplate struct {
 	TaskTemplate *taskMdl.TaskTemplate `json:"taskTemplate"`
-	ServerIds    []int                     `json:"serverIds"`
-	AuthorityId  string                    `json:"authorityId"` // 角色ID
+	ServerIds    []int                 `json:"serverIds"`
+	AuthorityId  string                `json:"authorityId"` // 角色ID
 }
 
 type UpdateTaskTemplate struct {
 	TaskTemplate *taskMdl.TaskTemplate `json:"taskTemplate"`
-	ServerIds    []int                     `json:"serverIds"`
-	AuthorityId  string                    `json:"authorityId"` // 角色ID
+	ServerIds    []int                 `json:"serverIds"`
+	AuthorityId  string                `json:"authorityId"` // 角色ID
+}
+
+type TaskTemplateSetSearch struct {
+	taskMdl.TaskTemplateSet
+	request.PageInfo
 }

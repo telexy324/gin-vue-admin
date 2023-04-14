@@ -333,3 +333,166 @@ func (a *TemplateApi) UploadScript(c *gin.Context) {
 		FailedIps: failedIps,
 	}, "获取成功", c)
 }
+
+// @Tags Template
+// @Summary 新增模板集
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body request2.AddSet true "系统名, 位置, 管理员id, 主管"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"添加成功"}"
+// @Router /task/template/addSet [post]
+func (a *TemplateApi) AddSet(c *gin.Context) {
+	var addSetRequest templateReq.AddSet
+	if err := c.ShouldBindJSON(&addSetRequest); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err := utils.Verify(addSetRequest.Set, utils.TaskTemplateSetVerify); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err := templateService.AddSet(addSetRequest); err != nil {
+		global.GVA_LOG.Error("添加失败!", zap.Any("err", err))
+
+		response.FailWithMessage("添加失败", c)
+	} else {
+		response.OkWithMessage("添加成功", c)
+	}
+}
+
+// @Tags Template
+// @Summary 删除模板集
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body request.GetById true "系统id"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"删除成功"}"
+// @Router /task/template/deleteSet [post]
+func (a *TemplateApi) DeleteSet(c *gin.Context) {
+	var system request.GetById
+	if err := c.ShouldBindJSON(&system); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err := utils.Verify(system, utils.IdVerify); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err := templateService.DeleteSet(system.ID); err != nil {
+		global.GVA_LOG.Error("删除失败!", zap.Any("err", err))
+		response.FailWithMessage("删除失败", c)
+	} else {
+		response.OkWithMessage("删除成功", c)
+	}
+}
+
+// @Tags Template
+// @Summary 批量删除模板集
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body request.IdsReq true "ID"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"删除成功"}"
+// @Router /task/template/deleteSetByIds [post]
+func (a *TemplateApi) DeleteSetByIds(c *gin.Context) {
+	var ids request.IdsReq
+	_ = c.ShouldBindJSON(&ids)
+	if err := templateService.DeleteSetByIds(ids); err != nil {
+		global.GVA_LOG.Error("删除失败!", zap.Any("err", err))
+		response.FailWithMessage("删除失败", c)
+	} else {
+		response.OkWithMessage("删除成功", c)
+	}
+}
+
+// @Tags Template
+// @Summary 更新模板集
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body request2.AddSet true "系统名, 位置, 管理员id, 主管"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"更新成功"}"
+// @Router /task/template/updateSet [post]
+func (a *TemplateApi) UpdateSet(c *gin.Context) {
+	var addSetRequest templateReq.AddSet
+	if err := c.ShouldBindJSON(&addSetRequest); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err := utils.Verify(addSetRequest.Set, utils.TaskTemplateSetVerify); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err := templateService.UpdateSet(addSetRequest); err != nil {
+		global.GVA_LOG.Error("更新失败!", zap.Any("err", err))
+		response.FailWithMessage("更新失败", c)
+	} else {
+		response.OkWithMessage("更新成功", c)
+	}
+}
+
+// @Tags Template
+// @Summary 根据id获取模板集
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body request.GetById true "服务器id"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
+// @Router /task/template/getSetById [post]
+func (a *TemplateApi) GetSetById(c *gin.Context) {
+	var idInfo request.GetById
+	if err := c.ShouldBindJSON(&idInfo); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err := utils.Verify(idInfo, utils.IdVerify); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	err, set, templates := templateService.GetSetById(idInfo.ID)
+	if err != nil {
+		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
+		response.FailWithMessage("获取失败", c)
+	}
+	response.OkWithDetailed(templateRes.TaskTemplateSetResponse{
+		Set:       set,
+		Templates: templates,
+	}, "获取成功", c)
+}
+
+// @Tags Template
+// @Summary 分页获取基础模板集列表
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body request.PageInfo true "页码, 每页大小"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
+// @Router /task/template/getSetList [post]
+func (a *TemplateApi) GetSetList(c *gin.Context) {
+	var pageInfo templateReq.TaskTemplateSetSearch
+	if err := c.ShouldBindJSON(&pageInfo); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err := utils.Verify(pageInfo.PageInfo, utils.PageInfoVerify); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err, systemList, total := templateService.GetSetList(pageInfo); err != nil {
+		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
+		response.FailWithMessage("获取失败", c)
+	} else {
+		response.OkWithDetailed(response.PageResult{
+			List:     systemList,
+			Total:    total,
+			Page:     pageInfo.Page,
+			PageSize: pageInfo.PageSize,
+		}, "获取成功", c)
+	}
+}

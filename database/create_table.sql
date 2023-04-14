@@ -157,6 +157,7 @@ create table `application_task_templates`
     `script_path`     varchar(255) NOT NULL DEFAULT '',
     `last_task_id`    int          NOT NULL DEFAULT '0',
     `sys_user`        varchar(30)  NOT NULL DEFAULT 'root',
+    `system_id`       bigint UNSIGNED NOT NULL DEFAULT '0',
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -180,5 +181,28 @@ CREATE TABLE `application_system_edit_relations`
     `deleted_at` datetime(0) NULL DEFAULT NULL,
     `system_id`  bigint UNSIGNED NOT NULL COMMENT '系统id',
     `relation`   text,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE `application_task_template_sets`
+(
+    `id`         bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+    `created_at` datetime(0) NULL DEFAULT NULL,
+    `updated_at` datetime(0) NULL DEFAULT NULL,
+    `deleted_at` datetime(0) NULL DEFAULT NULL,
+    `system_id`  bigint UNSIGNED NOT NULL COMMENT '系统id',
+    `name`       varchar(100) not null,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE `application_task_template_set_templates`
+(
+    `id`          bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+    `created_at`  datetime(0) NULL DEFAULT NULL,
+    `updated_at`  datetime(0) NULL DEFAULT NULL,
+    `deleted_at`  datetime(0) NULL DEFAULT NULL,
+    `set_id`      bigint UNSIGNED NOT NULL COMMENT '模板集id',
+    `template_id` bigint UNSIGNED NOT NULL COMMENT '模板id',
+    `seq`         int(4) NOT NULL COMMENT '执行顺序',
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

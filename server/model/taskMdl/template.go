@@ -18,6 +18,7 @@ type TaskTemplate struct {
 	ScriptPath      string                          `json:"scriptPath" gorm:"column:script_path"`            // 脚本位置
 	LastTaskId      int                             `json:"lastTaskId" gorm:"column:last_task_id"`           // 最后一次task id
 	SysUser         string                          `json:"sysUser" gorm:"column:sys_user"`                  // 执行用户
+	SystemId        int                             `json:"systemId" gorm:"column:system_id"`                // 所属系统
 	TargetIds       []int                           `json:"targetIds" gorm:"-"`
 	TargetServers   []application.ApplicationServer `json:"targetServers" gorm:"-"`
 	LastTask        Task                            `json:"lastTask" gorm:"-"`
@@ -53,4 +54,17 @@ func (m *TaskTemplate) AfterFind(tx *gorm.DB) (err error) {
 		}
 	}
 	return nil
+}
+
+type TaskTemplateSet struct {
+	global.GVA_MODEL
+	SystemId int    `json:"systemId" gorm:"column:system_id" ` // 系统名称
+	Name     string `json:"name" gorm:"column:name"`           // 模板集名称
+}
+
+type TaskTemplateSetTemplate struct {
+	global.GVA_MODEL
+	TemplateId int `json:"templateId" gorm:"column:template_id"` // task id
+	SetId      int `json:"setId" gorm:"column:set_id"`           // task id
+	Seq        int `json:"seq" gorm:"column:seq"`                // 排序
 }

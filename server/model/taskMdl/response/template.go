@@ -20,3 +20,8 @@ type TemplateScriptResponse struct {
 type UploadScriptResponse struct {
 	FailedIps []string `json:"failedIps"`
 }
+
+type TaskTemplateSetResponse struct {
+	Set       taskMdl.TaskTemplateSet           `json:"set"`
+	Templates []taskMdl.TaskTemplateSetTemplate `json:"templates"`
+}

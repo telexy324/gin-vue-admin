@@ -11,6 +11,7 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl"
 	request2 "github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl/request"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl/response"
 	"github.com/pkg/sftp"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -69,6 +70,9 @@ func (templateService *TaskTemplatesService) GetTaskTemplates(info request2.Task
 	if info.Name != "" {
 		name := strings.Trim(info.Name, " ")
 		db = db.Where("`name` LIKE ?", "%"+name+"%")
+	}
+	if len(info.SystemIDs) > 0 {
+		db = db.Where("`system_id` IN ?", info.SystemIDs)
 	}
 	err = db.Count(&total).Error
 	if err != nil {
@@ -258,4 +262,179 @@ func (templateService *TaskTemplatesService) UploadScript(ID int, file multipart
 		failedIPs = append(failedIPs, ip)
 	}
 	return
+}
+
+//@author: [telexy324](https://github.com/telexy324)
+//@function: AddSet
+//@description: 添加模板集
+//@param: set taskMdl.TaskTemplateSet
+//@return: error
+
+func (templateService *TaskTemplatesService) AddSet(addSetRequest request2.AddSet) (err error) {
+	if !errors.Is(global.GVA_DB.Where("name = ?", addSetRequest.Set.Name).First(&taskMdl.TaskTemplateSet{}).Error, gorm.ErrRecordNotFound) {
+		return errors.New("存在重复name，请修改name")
+	}
+	err = global.GVA_DB.Transaction(func(tx *gorm.DB) error {
+		if txErr := tx.Create(&addSetRequest.Set).Error; txErr != nil {
+			global.GVA_LOG.Error("添加系统失败", zap.Any("err", err))
+			return txErr
+		}
+		if addSetRequest.Templates != nil && len(addSetRequest.Templates) > 0 {
+			for _, t := range addSetRequest.Templates {
+				template := &taskMdl.TaskTemplate{}
+				template.ID = uint(t.TemplateId)
+				if err = global.GVA_DB.Find(template).Error; err != nil {
+					global.GVA_LOG.Error("模板不存在", zap.Any("err", err))
+					continue
+				}
+				setTemplate := &taskMdl.TaskTemplateSetTemplate{
+					TemplateId: t.TemplateId,
+					SetId:      int(addSetRequest.Set.ID),
+					Seq:        t.Seq,
+				}
+				if err = global.GVA_DB.Create(&setTemplate).Error; err != nil {
+					global.GVA_LOG.Error("添加模板集模板失败", zap.Any("err", err))
+				}
+			}
+		}
+		return nil
+	})
+	return
+}
+
+//@author: [telexy324](https://github.com/telexy324)
+//@function: DeleteSet
+//@description: 删除模板集
+//@param: id float64
+//@return: err error
+
+func (templateService *TaskTemplatesService) DeleteSet(id float64) (err error) {
+	err = global.GVA_DB.Where("id = ?", id).First(&taskMdl.TaskTemplateSet{}).Error
+	if err != nil {
+		return
+	}
+	var existSet taskMdl.TaskTemplateSet
+	if err = global.GVA_DB.Where("id = ?", id).First(&existSet).Delete(&existSet).Error; err != nil {
+		return err
+	}
+	var setTemplates []taskMdl.TaskTemplateSetTemplate
+	err = global.GVA_DB.Where("template_id = ?", id).Find(&setTemplates).Delete(&setTemplates).Error
+	if err != nil {
+		return err
+	}
+	return err
+}
+
+//@author: [telexy324](https://github.com/telexy324)
+//@function: DeleteSetByIds
+//@description: 批量删除模板集
+//@param: taskMdl.TaskTemplateSet []taskMdl.TaskTemplateSet
+//@return: err error
+
+func (templateService *TaskTemplatesService) DeleteSetByIds(ids request.IdsReq) (err error) {
+	if ids.Ids == nil || len(ids.Ids) <= 0 {
+		return
+	}
+	for _, id := range ids.Ids {
+		if err = templateService.DeleteSet(float64(id)); err != nil {
+			return
+		}
+	}
+	return
+}
+
+//@author: [telexy324](https://github.com/telexy324)
+//@function: UpdateSet
+//@description: 更新模板集
+//@param: system taskMdl.TaskTemplateSet
+//@return: err error
+
+func (templateService *TaskTemplatesService) UpdateSet(addSetRequest request2.AddSet) (err error) {
+	var oldSet taskMdl.TaskTemplateSet
+	upDateMap := make(map[string]interface{})
+	upDateMap["name"] = addSetRequest.Set.Name
+	upDateMap["system_id"] = addSetRequest.Set.SystemId
+
+	err = global.GVA_DB.Transaction(func(tx *gorm.DB) error {
+		db := tx.Where("id = ?", addSetRequest.Set.ID).Find(&oldSet)
+		if oldSet.Name != addSetRequest.Set.Name {
+			if err = tx.Where("id <> ? AND name = ?", addSetRequest.Set.ID, addSetRequest.Set.Name).First(&taskMdl.TaskTemplateSet{}).Error; err != nil && err != gorm.ErrRecordNotFound {
+				global.GVA_LOG.Debug("存在相同name修改失败")
+				return errors.New("存在相同name修改失败")
+			}
+		}
+		txErr := db.Updates(upDateMap).Error
+		if txErr != nil {
+			global.GVA_LOG.Debug(txErr.Error())
+			return txErr
+		}
+		if addSetRequest.Templates != nil && len(addSetRequest.Templates) > 0 {
+			existSetTemplates := make([]taskMdl.TaskTemplateSetTemplate, 0)
+			if txErr = tx.Where("set_id = ?", addSetRequest.Set.ID).Find(&existSetTemplates).Delete(&existSetTemplates).Error; txErr != nil {
+				return txErr
+			}
+
+			for _, tmp := range addSetRequest.Templates {
+				if txErr = tx.Create(&taskMdl.TaskTemplateSetTemplate{
+					TemplateId: tmp.TemplateId,
+					SetId:      tmp.SetId,
+					Seq:        tmp.Seq,
+				}).Error; txErr != nil {
+					return txErr
+				}
+			}
+		}
+		return nil
+	})
+	return err
+}
+
+//@author: [telexy324](https://github.com/telexy324)
+//@function: GetSetById
+//@description: 返回当前选中system
+//@param: id float64
+//@return: err error, set taskMdl.TaskTemplateSet
+
+func (templateService *TaskTemplatesService) GetSetById(id float64) (err error, set taskMdl.TaskTemplateSet, templates []taskMdl.TaskTemplateSetTemplate) {
+	if err = global.GVA_DB.Where("id = ?", id).First(&set).Error; err != nil {
+		return
+	}
+	if err = global.GVA_DB.Where("set_id = ?", id).Find(&templates).Error; err != nil {
+		return
+	}
+	return
+}
+
+//@author: [telexy324](https://github.com/telexy324)
+//@function: GetSystemList
+//@description: 获取系统分页
+//@return: err error, list interface{}, total int64
+
+func (templateService *TaskTemplatesService) GetSetList(info request2.TaskTemplateSetSearch) (err error, list interface{}, total int64) {
+	limit := info.PageSize
+	offset := info.PageSize * (info.Page - 1)
+	var setList []taskMdl.TaskTemplateSet
+	db := global.GVA_DB.Model(&taskMdl.TaskTemplateSet{})
+	if info.Name != "" {
+		name := strings.Trim(info.Name, " ")
+		db = db.Where("`name` LIKE ?", "%"+name+"%")
+	}
+	err = db.Count(&total).Error
+	if err != nil {
+		return
+	}
+	err = db.Limit(limit).Offset(offset).Find(&setList).Error
+
+	setInfoList := make([]response.TaskTemplateSetResponse, 0, len(setList))
+	for _, set := range setList {
+		setTemplates := make([]taskMdl.TaskTemplateSetTemplate, 0)
+		if err = global.GVA_DB.Where("set_id = ?", set.ID).Find(&setTemplates).Error; err != nil {
+			return
+		}
+		setInfoList = append(setInfoList, response.TaskTemplateSetResponse{
+			Set:       set,
+			Templates: setTemplates,
+		})
+	}
+	return err, setInfoList, total
 }

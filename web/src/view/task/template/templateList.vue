@@ -24,6 +24,7 @@
             <el-button icon="el-icon-delete" size="mini" :disabled="!templates.length" style="margin-left: 10px;">删除</el-button>
           </template>
         </el-popover>
+        <el-button class="excel-btn" size="mini" type="success" icon="el-icon-download" @click="openDrawer()">选择系统</el-button>
       </div>
       <el-table :data="tableData" @sort-change="sortChange" @selection-change="handleSelectionChange">
         <el-table-column
@@ -191,6 +192,9 @@
         </div>
       </template>
     </el-dialog>
+    <el-drawer v-if="drawer" v-model="drawer" :with-header="false" size="40%" title="请选择系统">
+      <Systems ref="systems" :keys="searchInfo.systemIds" @checked="getCheckedTemplates" />
+    </el-drawer>
   </div>
 </template>
 
@@ -220,12 +224,14 @@ import { mapGetters } from 'vuex'
 // import service from '@/utils/request'
 import Axios from 'axios'
 import socket from '@/socket'
+import Systems from '@/components/task/systems.vue'
 
 export default {
   name: 'TemplateList',
   components: {
     warningBar,
-    TaskStatus
+    TaskStatus,
+    Systems
   },
   mixins: [infoList],
   data() {
@@ -271,6 +277,7 @@ export default {
       uploading: false,
       uploadingServer: false,
       uploadingStatus: false,
+      drawer: false
     }
   },
   computed: {
@@ -278,6 +285,9 @@ export default {
   },
   async created() {
     socket.addListener((data) => this.onWebsocketDataReceived(data))
+    if (this.$route.params.systemIds) {
+      this.searchInfo.systemIds = this.formRouterParam(this.$route.params.systemIds)
+    }
     await this.getTableData()
     const res = await getAllServerIds()
     this.setOptions(res.data)
@@ -627,6 +637,26 @@ export default {
         }
       }
     },
+    openDrawer() {
+      this.drawer = true
+    },
+    getCheckedTemplates(checkArr) {
+      const systemIDs = []
+      checkArr.forEach(item => {
+        systemIDs.push(Number(item.ID))
+      })
+      this.searchInfo.systemIds = systemIDs
+      this.getTableData()
+      this.drawer = false
+    },
+    formRouterParam(ids) {
+      const systemIDs = []
+      ids.forEach(
+        id => {
+          systemIDs.push(Number(id))
+        })
+      return systemIDs
+    }
   }
 }
 </script>
@@ -650,5 +680,8 @@ export default {
 }
 .progress-server{
   width: 300px
+}
+.excel-btn+.excel-btn{
+  margin-left: 10px;
 }
 </style>

@@ -8,6 +8,7 @@
       :data="systemTreeData"
       :props="systemDefaultProps"
       default-expand-all
+      :default-checked-keys="keys"
       highlight-current
       node-key="ID"
       show-checkbox
@@ -32,6 +33,12 @@ export default {
         return {}
       },
       type: Object
+    },
+    keys: {
+      type: Array,
+      default: function() {
+        return []
+      },
     }
   },
   data() {

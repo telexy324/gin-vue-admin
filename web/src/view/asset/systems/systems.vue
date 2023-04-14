@@ -32,7 +32,7 @@
         />
 <!--        <el-table-column align="left" label="id" min-width="60" prop="system.ID" sortable="custom" />-->
         <el-table-column align="left" label="系统名" min-width="150" prop="system.name" sortable="custom" />
-        <el-table-column align="left" fixed="right" label="操作" width="200">
+        <el-table-column align="left" fixed="right" label="操作" width="300">
           <template #default="scope">
             <el-button
               icon="el-icon-edit"
@@ -52,6 +52,12 @@
               type="text"
               @click="showRelation(scope.row)"
             >关系图</el-button>
+            <el-button
+              icon="el-icon-orange"
+              size="small"
+              type="text"
+              @click="showTemplates(scope.row)"
+            >模板列表</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -294,6 +300,16 @@ export default {
         name: 'antv',
         params: {
           systemId: row.system.ID,
+        }
+      })
+    },
+    showTemplates(row) {
+      const systemIds = []
+      systemIds.push(row.system.ID)
+      this.$router.push({
+        name: 'template',
+        params: {
+          systemIds: systemIds,
         }
       })
     },

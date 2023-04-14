@@ -41,6 +41,14 @@ func (s *TaskRouter) InitTaskRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 		taskRouter.POST("template/uploadScript", authorityTemplateApi.UploadScript)       // 分页获取管理员列表
 		taskRouter.POST("template/downloadScript", authorityTemplateApi.DownloadScript)   // 分页获取管理员列表
 	}
+	{
+		taskRouter.POST("template/addSet", authorityTemplateApi.AddSet)                 // 新增管理员
+		taskRouter.POST("template/deleteSet", authorityTemplateApi.DeleteSet)           // 删除管理员
+		taskRouter.POST("template/deleteSetByIds", authorityTemplateApi.DeleteSetByIds) // 删除管理员
+		taskRouter.POST("template/updateSet", authorityTemplateApi.UpdateSet)           // 更新管理员
+		taskRouter.POST("template/getSetById", authorityTemplateApi.GetSetById)         // 获取管理员
+		taskRouter.POST("template/getSetList", authorityTemplateApi.GetSetList)         // 分页获取管理员列表
+	}
 
 	var authorityScheduleApi = v1.ApiGroupApp.TaskApiGroup.ScheduleApi
 	{
