@@ -62,9 +62,17 @@ type TaskTemplateSet struct {
 	Name     string `json:"name" gorm:"column:name"`           // 模板集名称
 }
 
+func (m *TaskTemplateSet) TableName() string {
+	return "application_task_template_sets"
+}
+
 type TaskTemplateSetTemplate struct {
 	global.GVA_MODEL
 	TemplateId int `json:"templateId" gorm:"column:template_id"` // task id
 	SetId      int `json:"setId" gorm:"column:set_id"`           // task id
 	Seq        int `json:"seq" gorm:"column:seq"`                // 排序
+}
+
+func (m *TaskTemplateSetTemplate) TableName() string {
+	return "application_task_template_set_templates"
 }

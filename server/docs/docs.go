@@ -5108,6 +5108,44 @@ var doc = `{
                 }
             }
         },
+        "/task/template/addSet": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Template"
+                ],
+                "summary": "新增模板集",
+                "parameters": [
+                    {
+                        "description": "系统名, 位置, 管理员id, 主管",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.AddSet"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\":true,\"data\":{},\"msg\":\"添加成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/task/template/addTemplate": {
             "post": {
                 "security": [
@@ -5177,6 +5215,82 @@ var doc = `{
                 "responses": {
                     "200": {
                         "description": "{\"success\":true,\"data\":{},\"msg\":\"更新成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/task/template/deleteSet": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Template"
+                ],
+                "summary": "删除模板集",
+                "parameters": [
+                    {
+                        "description": "系统id",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.GetById"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\":true,\"data\":{},\"msg\":\"删除成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/task/template/deleteSetByIds": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Template"
+                ],
+                "summary": "批量删除模板集",
+                "parameters": [
+                    {
+                        "description": "ID",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.IdsReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\":true,\"data\":{},\"msg\":\"删除成功\"}",
                         "schema": {
                             "type": "string"
                         }
@@ -5298,6 +5412,82 @@ var doc = `{
                 }
             }
         },
+        "/task/template/getSetById": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Template"
+                ],
+                "summary": "根据id获取模板集",
+                "parameters": [
+                    {
+                        "description": "服务器id",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.GetById"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\":true,\"data\":{},\"msg\":\"获取成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/task/template/getSetList": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Template"
+                ],
+                "summary": "分页获取基础模板集列表",
+                "parameters": [
+                    {
+                        "description": "页码, 每页大小",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.PageInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\":true,\"data\":{},\"msg\":\"获取成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/task/template/getTemplateById": {
             "post": {
                 "security": [
@@ -5367,6 +5557,44 @@ var doc = `{
                 "responses": {
                     "200": {
                         "description": "{\"success\":true,\"data\":{},\"msg\":\"获取成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/task/template/updateSet": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Template"
+                ],
+                "summary": "更新模板集",
+                "parameters": [
+                    {
+                        "description": "系统名, 位置, 管理员id, 主管",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.AddSet"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\":true,\"data\":{},\"msg\":\"更新成功\"}",
                         "schema": {
                             "type": "string"
                         }
@@ -6579,6 +6807,20 @@ var doc = `{
                 }
             }
         },
+        "request.AddSet": {
+            "type": "object",
+            "properties": {
+                "set": {
+                    "$ref": "#/definitions/taskMdl.TaskTemplateSet"
+                },
+                "templates": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/taskMdl.TaskTemplateSetTemplate"
+                    }
+                }
+            }
+        },
         "request.AddSystem": {
             "type": "object",
             "properties": {
@@ -6695,20 +6937,6 @@ var doc = `{
                 "id": {
                     "description": "主键ID",
                     "type": "number"
-                },
-                "page": {
-                    "description": "页码",
-                    "type": "integer"
-                },
-                "pageSize": {
-                    "description": "每页大小",
-                    "type": "integer"
-                },
-                "sortBy": {
-                    "type": "string"
-                },
-                "sortInverted": {
-                    "type": "boolean"
                 }
             }
         },
@@ -7612,6 +7840,10 @@ var doc = `{
                     "description": "执行用户",
                     "type": "string"
                 },
+                "systemId": {
+                    "description": "所属系统",
+                    "type": "integer"
+                },
                 "targetIds": {
                     "type": "array",
                     "items": {
@@ -7627,6 +7859,60 @@ var doc = `{
                     "items": {
                         "$ref": "#/definitions/application.ApplicationServer"
                     }
+                },
+                "updatedAt": {
+                    "description": "更新时间",
+                    "type": "string"
+                }
+            }
+        },
+        "taskMdl.TaskTemplateSet": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "description": "创建时间",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "主键ID",
+                    "type": "integer"
+                },
+                "name": {
+                    "description": "模板集名称",
+                    "type": "string"
+                },
+                "systemId": {
+                    "description": "系统名称",
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "description": "更新时间",
+                    "type": "string"
+                }
+            }
+        },
+        "taskMdl.TaskTemplateSetTemplate": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "description": "创建时间",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "主键ID",
+                    "type": "integer"
+                },
+                "seq": {
+                    "description": "排序",
+                    "type": "integer"
+                },
+                "setId": {
+                    "description": "task id",
+                    "type": "integer"
+                },
+                "templateId": {
+                    "description": "task id",
+                    "type": "integer"
                 },
                 "updatedAt": {
                     "description": "更新时间",

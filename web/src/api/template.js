@@ -114,3 +114,86 @@ export const deleteTemplateByIds = (data) => {
     data
   })
 }
+
+// @Summary 获取set列表
+// @Produce  application/json
+// @Param {
+//  page     int
+//	pageSize int
+// }
+// @Router /task/template/getSetList [post]
+export const getSetList = (data) => {
+  return service({
+    url: '/task/template/getSetList',
+    method: 'post',
+    data
+  })
+}
+
+// @Summary 新增set
+// @Produce  application/json
+// @Param menu Object
+// @Router /task/template/addSet [post]
+export const addSet = (data) => {
+  return service({
+    url: '/task/template/addSet',
+    method: 'post',
+    data
+  })
+}
+
+// @Summary 删除set
+// @Produce  application/json
+// @Param ID float64
+// @Router /task/template/deleteSet [post]
+export const deleteSet = (data) => {
+  return service({
+    url: '/task/template/deleteSet',
+    method: 'post',
+    data
+  })
+}
+
+// @Summary 修改set
+// @Produce  application/json
+// @Param set Object
+// @Router /task/template/updateSet [post]
+export const updateSet = (data) => {
+  return service({
+    url: '/task/template/updateSet',
+    method: 'post',
+    data
+  })
+}
+
+// @Tags set
+// @Summary 根据id获取服务器
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body api.GetById true "根据id获取服务器"
+// @Success 200 {string} json "{"success":true,"data":{},"msg":"获取成功"}"
+// @Router /task/template/getSetById [post]
+export const getSetById = (data) => {
+  return service({
+    url: '/task/template/getSetById',
+    method: 'post',
+    data
+  })
+}
+
+// @Tags Set
+// @Summary 删除选中Set
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body request.IdsReq true "ID"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"删除成功"}"
+// @Router /task/template/deleteSetByIds [post]
+export const deleteSetByIds = (data) => {
+  return service({
+    url: '/task/template/deleteSetByIds',
+    method: 'post',
+    data
+  })
+}

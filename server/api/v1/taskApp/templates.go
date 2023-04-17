@@ -339,7 +339,7 @@ func (a *TemplateApi) UploadScript(c *gin.Context) {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body request2.AddSet true "系统名, 位置, 管理员id, 主管"
+// @Param data body templateReq.AddSet true "系统名, 位置, 管理员id, 主管"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"添加成功"}"
 // @Router /task/template/addSet [post]
 func (a *TemplateApi) AddSet(c *gin.Context) {
@@ -413,7 +413,7 @@ func (a *TemplateApi) DeleteSetByIds(c *gin.Context) {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body request2.AddSet true "系统名, 位置, 管理员id, 主管"
+// @Param data body templateReq.AddSet true "系统名, 位置, 管理员id, 主管"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"更新成功"}"
 // @Router /task/template/updateSet [post]
 func (a *TemplateApi) UpdateSet(c *gin.Context) {
