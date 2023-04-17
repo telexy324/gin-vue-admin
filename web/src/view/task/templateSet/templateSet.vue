@@ -43,13 +43,13 @@
               icon="el-icon-edit"
               size="small"
               type="text"
-              @click="editTemplate(scope.row)"
+              @click="editSet(scope.row)"
             >编辑</el-button>
             <el-button
               icon="el-icon-delete"
               size="small"
               type="text"
-              @click="deleteTemplate(scope.row)"
+              @click="deleteSet(scope.row)"
             >删除</el-button>
             <el-button
               icon="el-icon-caret-right"
@@ -97,7 +97,7 @@
                 :prop="'templates.' + index + '.ID'"
               >
                 <el-select v-model="item.templateId">
-                  <el-option v-for="val in systemTemplateOptions" :key="val.ID" :value="val.name" :label="val.name" />
+                  <el-option v-for="val in systemTemplateOptions" :key="val.ID" :value="val.ID" :label="val.name" />
                 </el-select>
               </el-form-item>
             </el-col>
@@ -106,7 +106,7 @@
                 label="序号"
                 :prop="'templates.' + index + '.seq'"
               >
-                <el-input v-model="item.seq" type="number" />
+                <el-input v-model.number="item.seq" />
               </el-form-item>
             </el-col>
             <el-col :span="2">
@@ -170,6 +170,7 @@ export default {
       dialogTitle: '新增模板集',
       sets: [],
       form: {
+        ID: '',
         name: '',
         systemId: '',
         templates: [],
@@ -237,8 +238,10 @@ export default {
     initForm() {
       this.$refs.setForm.resetFields()
       this.form = {
+        ID: '',
         name: '',
         systemId: '',
+        templates: [],
       }
     },
     closeDialog() {
@@ -261,10 +264,10 @@ export default {
     },
     async editSet(row) {
       const res = await getSetById({ id: row.ID })
-      this.form = res.data.set
+      this.form = res.data
       this.openDialog('edit')
     },
-    async deleteTemplate(row) {
+    async deleteSet(row) {
       this.$confirm('此操作将永久删除模板集?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
@@ -366,7 +369,8 @@ export default {
     },
     addItem() {
       this.form.templates.push({
-        templateId: 0,
+        setId: this.form.ID,
+        templateId: '',
         seq: 99
       })
     },
@@ -408,5 +412,9 @@ export default {
 }
 .progress-server{
   width: 300px
+}
+
+.el-row {
+  padding: 0 0;
 }
 </style>

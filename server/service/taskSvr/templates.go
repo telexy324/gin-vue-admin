@@ -271,11 +271,15 @@ func (templateService *TaskTemplatesService) UploadScript(ID int, file multipart
 //@return: error
 
 func (templateService *TaskTemplatesService) AddSet(addSetRequest request2.AddSet) (err error) {
-	if !errors.Is(global.GVA_DB.Where("name = ?", addSetRequest.Set.Name).First(&taskMdl.TaskTemplateSet{}).Error, gorm.ErrRecordNotFound) {
+	if !errors.Is(global.GVA_DB.Where("name = ?", addSetRequest.Name).First(&taskMdl.TaskTemplateSet{}).Error, gorm.ErrRecordNotFound) {
 		return errors.New("存在重复name，请修改name")
 	}
 	err = global.GVA_DB.Transaction(func(tx *gorm.DB) error {
-		if txErr := tx.Create(&addSetRequest.Set).Error; txErr != nil {
+		setMdl := &taskMdl.TaskTemplateSet{
+			SystemId: addSetRequest.SystemId,
+			Name:     addSetRequest.Name,
+		}
+		if txErr := tx.Create(&setMdl).Error; txErr != nil {
 			global.GVA_LOG.Error("添加系统失败", zap.Any("err", err))
 			return txErr
 		}
@@ -289,7 +293,7 @@ func (templateService *TaskTemplatesService) AddSet(addSetRequest request2.AddSe
 				}
 				setTemplate := &taskMdl.TaskTemplateSetTemplate{
 					TemplateId: t.TemplateId,
-					SetId:      int(addSetRequest.Set.ID),
+					SetId:      int(setMdl.ID),
 					Seq:        t.Seq,
 				}
 				if err = global.GVA_DB.Create(&setTemplate).Error; err != nil {
@@ -352,13 +356,13 @@ func (templateService *TaskTemplatesService) DeleteSetByIds(ids request.IdsReq) 
 func (templateService *TaskTemplatesService) UpdateSet(addSetRequest request2.AddSet) (err error) {
 	var oldSet taskMdl.TaskTemplateSet
 	upDateMap := make(map[string]interface{})
-	upDateMap["name"] = addSetRequest.Set.Name
-	upDateMap["system_id"] = addSetRequest.Set.SystemId
+	upDateMap["name"] = addSetRequest.Name
+	upDateMap["system_id"] = addSetRequest.SystemId
 
 	err = global.GVA_DB.Transaction(func(tx *gorm.DB) error {
-		db := tx.Where("id = ?", addSetRequest.Set.ID).Find(&oldSet)
-		if oldSet.Name != addSetRequest.Set.Name {
-			if err = tx.Where("id <> ? AND name = ?", addSetRequest.Set.ID, addSetRequest.Set.Name).First(&taskMdl.TaskTemplateSet{}).Error; err != nil && err != gorm.ErrRecordNotFound {
+		db := tx.Where("id = ?", addSetRequest.ID).Find(&oldSet)
+		if oldSet.Name != addSetRequest.Name {
+			if err = tx.Where("id <> ? AND name = ?", addSetRequest.ID, addSetRequest.Name).First(&taskMdl.TaskTemplateSet{}).Error; err != nil && err != gorm.ErrRecordNotFound {
 				global.GVA_LOG.Debug("存在相同name修改失败")
 				return errors.New("存在相同name修改失败")
 			}
@@ -370,7 +374,7 @@ func (templateService *TaskTemplatesService) UpdateSet(addSetRequest request2.Ad
 		}
 		if addSetRequest.Templates != nil && len(addSetRequest.Templates) > 0 {
 			existSetTemplates := make([]taskMdl.TaskTemplateSetTemplate, 0)
-			if txErr = tx.Where("set_id = ?", addSetRequest.Set.ID).Find(&existSetTemplates).Delete(&existSetTemplates).Error; txErr != nil {
+			if txErr = tx.Where("set_id = ?", addSetRequest.ID).Find(&existSetTemplates).Delete(&existSetTemplates).Error; txErr != nil {
 				return txErr
 			}
 
@@ -399,7 +403,7 @@ func (templateService *TaskTemplatesService) GetSetById(id float64) (err error, 
 	if err = global.GVA_DB.Where("id = ?", id).First(&set).Error; err != nil {
 		return
 	}
-	if err = global.GVA_DB.Where("set_id = ?", id).Find(&templates).Error; err != nil {
+	if err = global.GVA_DB.Where("set_id = ?", id).Order("seq").Find(&templates).Error; err != nil {
 		return
 	}
 	return
@@ -432,8 +436,8 @@ func (templateService *TaskTemplatesService) GetSetList(info request2.TaskTempla
 			return
 		}
 		setInfoList = append(setInfoList, response.TaskTemplateSetResponse{
-			Set:       set,
-			Templates: setTemplates,
+			TaskTemplateSet: set,
+			Templates:       setTemplates,
 		})
 	}
 	return err, setInfoList, total

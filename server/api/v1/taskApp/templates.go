@@ -349,7 +349,7 @@ func (a *TemplateApi) AddSet(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err := utils.Verify(addSetRequest.Set, utils.TaskTemplateSetVerify); err != nil {
+	if err := utils.Verify(addSetRequest, utils.TaskTemplateSetVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
@@ -423,7 +423,7 @@ func (a *TemplateApi) UpdateSet(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err := utils.Verify(addSetRequest.Set, utils.TaskTemplateSetVerify); err != nil {
+	if err := utils.Verify(addSetRequest, utils.TaskTemplateSetVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
@@ -460,8 +460,8 @@ func (a *TemplateApi) GetSetById(c *gin.Context) {
 		response.FailWithMessage("获取失败", c)
 	}
 	response.OkWithDetailed(templateRes.TaskTemplateSetResponse{
-		Set:       set,
-		Templates: templates,
+		TaskTemplateSet: set,
+		Templates:       templates,
 	}, "获取成功", c)
 }
 
