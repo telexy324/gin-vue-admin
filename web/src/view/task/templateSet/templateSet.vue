@@ -55,7 +55,7 @@
               icon="el-icon-caret-right"
               size="small"
               type="text"
-              @click="runTask(scope.row)"
+              @click="showDetail(scope.row)"
             >构建</el-button>
           </template>
         </el-table-column>
@@ -170,7 +170,7 @@ export default {
       dialogTitle: '新增模板集',
       sets: [],
       form: {
-        ID: '',
+        ID: 0,
         name: '',
         systemId: '',
         templates: [],
@@ -204,7 +204,7 @@ export default {
       this.sets = val
     },
     async onDelete() {
-      const ids = this.templates.map(item => item.ID)
+      const ids = this.sets.map(item => item.ID)
       const res = await deleteSetByIds({ ids })
       if (res.code === 0) {
         this.$message({
@@ -238,7 +238,7 @@ export default {
     initForm() {
       this.$refs.setForm.resetFields()
       this.form = {
-        ID: '',
+        ID: 0,
         name: '',
         systemId: '',
         templates: [],
@@ -369,7 +369,7 @@ export default {
     },
     addItem() {
       this.form.templates.push({
-        setId: this.form.ID,
+        setId: this.form.ID ? this.form.ID : 0,
         templateId: '',
         seq: 99
       })
@@ -388,6 +388,14 @@ export default {
     },
     setSystemOptions(data) {
       this.systemOptions = data
+    },
+    showDetail(row) {
+      this.$router.push({
+        name: 'templateSetDetail',
+        params: {
+          setId: row.ID,
+        }
+      })
     },
   }
 }

@@ -322,7 +322,7 @@ func (templateService *TaskTemplatesService) DeleteSet(id float64) (err error) {
 		return err
 	}
 	var setTemplates []taskMdl.TaskTemplateSetTemplate
-	err = global.GVA_DB.Where("template_id = ?", id).Find(&setTemplates).Delete(&setTemplates).Error
+	err = global.GVA_DB.Where("set_id = ?", id).Find(&setTemplates).Delete(&setTemplates).Error
 	if err != nil {
 		return err
 	}
@@ -399,12 +399,24 @@ func (templateService *TaskTemplatesService) UpdateSet(addSetRequest request2.Ad
 //@param: id float64
 //@return: err error, set taskMdl.TaskTemplateSet
 
-func (templateService *TaskTemplatesService) GetSetById(id float64) (err error, set taskMdl.TaskTemplateSet, templates []taskMdl.TaskTemplateSetTemplate) {
+func (templateService *TaskTemplatesService) GetSetById(id float64) (err error, set taskMdl.TaskTemplateSet, templateRes []response.TaskTemplateSetTemplateResponse) {
 	if err = global.GVA_DB.Where("id = ?", id).First(&set).Error; err != nil {
 		return
 	}
+	templates := make([]taskMdl.TaskTemplateSetTemplate, 0)
 	if err = global.GVA_DB.Where("set_id = ?", id).Order("seq").Find(&templates).Error; err != nil {
 		return
+	}
+	for _, t := range templates {
+		var template taskMdl.TaskTemplate
+		if err = global.GVA_DB.Where("id = ?", t.TemplateId).Find(&template).Error; err != nil {
+			return
+		}
+		res := response.TaskTemplateSetTemplateResponse{
+			TaskTemplateSetTemplate: t,
+			TemplateName:            template.Name,
+		}
+		templateRes = append(templateRes, res)
 	}
 	return
 }
@@ -435,9 +447,21 @@ func (templateService *TaskTemplatesService) GetSetList(info request2.TaskTempla
 		if err = global.GVA_DB.Where("set_id = ?", set.ID).Find(&setTemplates).Error; err != nil {
 			return
 		}
+		ress := make([]response.TaskTemplateSetTemplateResponse, 0)
+		for _, t := range setTemplates {
+			var template taskMdl.TaskTemplate
+			if err = global.GVA_DB.Where("id = ?", t.TemplateId).Find(&template).Error; err != nil {
+				return
+			}
+			res := response.TaskTemplateSetTemplateResponse{
+				TaskTemplateSetTemplate: t,
+				TemplateName:            template.Name,
+			}
+			ress = append(ress, res)
+		}
 		setInfoList = append(setInfoList, response.TaskTemplateSetResponse{
 			TaskTemplateSet: set,
-			Templates:       setTemplates,
+			Templates:       ress,
 		})
 	}
 	return err, setInfoList, total

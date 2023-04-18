@@ -23,5 +23,10 @@ type UploadScriptResponse struct {
 
 type TaskTemplateSetResponse struct {
 	taskMdl.TaskTemplateSet
-	Templates []taskMdl.TaskTemplateSetTemplate `json:"templates"`
+	Templates []TaskTemplateSetTemplateResponse `json:"templates"`
+}
+
+type TaskTemplateSetTemplateResponse struct {
+	taskMdl.TaskTemplateSetTemplate
+	TemplateName string `json:"templateName"`
 }
