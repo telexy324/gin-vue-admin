@@ -466,3 +466,64 @@ func (templateService *TaskTemplatesService) GetSetList(info request2.TaskTempla
 	}
 	return err, setInfoList, total
 }
+
+//@author: [telexy324](https://github.com/telexy324)
+//@function: AddSetTask
+//@description: 添加模板集
+//@param: setTask taskMdl.TaskTemplateSetTask
+//@return: error
+
+func (templateService *TaskTemplatesService) AddSetTask(addSetTaskRequest taskMdl.SetTask) (err error) {
+	templates := make([]taskMdl.TaskTemplateSetTemplate, 0)
+	if err = global.GVA_DB.Where("set_id = ?", addSetTaskRequest.SetId).Order("seq").Find(&templates).Error; err != nil {
+		return
+	}
+	ids := make([]int, 0)
+	for _, t := range templates {
+		ids = append(ids, t.TemplateId)
+	}
+	idBytes, err := json.Marshal(ids)
+	if err != nil {
+		return
+	}
+	addSetTaskRequest.TemplatesString = string(idBytes)
+	addSetTaskRequest.TotalSteps = len(ids)
+	return global.GVA_DB.Create(&addSetTaskRequest).Error
+}
+
+//@author: [telexy324](https://github.com/telexy324)
+//@function: UpdateSetTask
+//@description: 更新模板集任务集
+//@param: system taskMdl.SetTask
+//@return: error
+
+func (templateService *TaskTemplatesService) UpdateSetTask(setTask taskMdl.SetTask) (err error) {
+	var oldSetTask taskMdl.SetTask
+	upDateMap := make(map[string]interface{})
+	upDateMap["status"] = setTask.Status
+	upDateMap["begin_time"] = setTask.BeginTime
+	upDateMap["end_time"] = setTask.EndTime
+	upDateMap["current_task_id"] = setTask.CurrentTaskId
+	upDateMap["current_step"] = setTask.CurrentStep
+
+	db := global.GVA_DB.Where("id = ?", setTask.ID).Find(&oldSetTask)
+	err = db.Updates(upDateMap).Error
+	if err != nil {
+		global.GVA_LOG.Error(err.Error())
+		return err
+	}
+	return
+}
+
+//@author: [telexy324](https://github.com/telexy324)
+//@function: GetSetTaskById
+//@description: 返回当前选中system
+//@param: id float64
+//@return: err error, set taskMdl.SetTask
+
+func (templateService *TaskTemplatesService) GetSetTaskById(id float64) (err error, setTask taskMdl.SetTask) {
+	if err = global.GVA_DB.Where("id = ?", id).First(&setTask).Error; err != nil {
+		return
+	}
+	return
+}

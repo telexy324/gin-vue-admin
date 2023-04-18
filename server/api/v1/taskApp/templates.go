@@ -8,6 +8,7 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl"
 	templateReq "github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl/request"
 	templateRes "github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl/response"
+	"github.com/flipped-aurora/gin-vue-admin/server/plugin/taskPool"
 	"github.com/flipped-aurora/gin-vue-admin/server/utils"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -494,5 +495,117 @@ func (a *TemplateApi) GetSetList(c *gin.Context) {
 			Page:     pageInfo.Page,
 			PageSize: pageInfo.PageSize,
 		}, "获取成功", c)
+	}
+}
+
+// @Tags Template
+// @Summary 新增模板集任务集
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body templateReq.AddSet true "系统名, 位置, 管理员id, 主管"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"添加成功"}"
+// @Router /task/template/addSetTask [post]
+func (a *TemplateApi) AddSetTask(c *gin.Context) {
+	var addSetTaskRequest taskMdl.SetTask
+	if err := c.ShouldBindJSON(&addSetTaskRequest); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err := utils.Verify(addSetTaskRequest, utils.TaskTemplateSetTaskVerify); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	addSetTaskRequest.SystemUserId = int(utils.GetUserID(c))
+	if err := templateService.AddSetTask(addSetTaskRequest); err != nil {
+		global.GVA_LOG.Error("添加失败!", zap.Any("err", err))
+
+		response.FailWithMessage("添加失败", c)
+	} else {
+		response.OkWithMessage("添加成功", c)
+	}
+}
+
+// @Tags Template
+// @Summary 更新模板集任务集
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body request.GetById true "模板集id"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"更新成功"}"
+// @Router /task/template/processSetTask [post]
+func (a *TemplateApi) ProcessSetTask(c *gin.Context) {
+	var idInfo request.GetById
+	if err := c.ShouldBindJSON(&idInfo); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err := utils.Verify(idInfo, utils.IdVerify); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	err, setTask := templateService.GetSetTaskById(idInfo.ID)
+	if err != nil {
+		global.GVA_LOG.Error("更新失败!", zap.Any("err", err))
+		response.FailWithMessage("更新失败", c)
+		return
+	}
+	if setTask.Status != taskMdl.TaskSuccessStatus {
+		global.GVA_LOG.Error("任务未结束或存在异常!", zap.Any("err", err))
+		response.FailWithMessage("更新失败", c)
+		return
+	}
+	if setTask.TotalSteps == setTask.CurrentStep {
+		global.GVA_LOG.Error("任务已结束!", zap.Any("err", err))
+		response.FailWithMessage("更新失败", c)
+		return
+	}
+	userID := int(utils.GetUserID(c))
+	var task taskMdl.Task
+	task.TemplateId = setTask.TemplateIds[setTask.CurrentStep]
+	newTask, err := taskPool.TPool.AddTask(task, userID)
+	if err != nil {
+		global.GVA_LOG.Error("添加任务失败!", zap.Any("err", err))
+		response.FailWithMessage("更新失败", c)
+		return
+	}
+	setTask.CurrentStep += 1
+	setTask.Status = newTask.Status
+	setTask.BeginTime = newTask.BeginTime
+	setTask.CurrentTaskId = int(newTask.ID)
+	if err = templateService.UpdateSetTask(setTask); err != nil {
+		global.GVA_LOG.Error("更新失败!", zap.Any("err", err))
+		response.FailWithMessage("更新失败", c)
+	} else {
+		response.OkWithMessage("更新成功", c)
+	}
+}
+
+// @Tags Template
+// @Summary 根据id获取模板集任务集
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body request.GetById true "模板集id"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
+// @Router /task/template/getSetTaskById [post]
+func (a *TemplateApi) GetSetTaskById(c *gin.Context) {
+	var idInfo request.GetById
+	if err := c.ShouldBindJSON(&idInfo); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err := utils.Verify(idInfo, utils.IdVerify); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err, setTask := templateService.GetSetTaskById(idInfo.ID); err != nil {
+		global.GVA_LOG.Error("更新失败!", zap.Any("err", err))
+		response.FailWithMessage("更新失败", c)
+	} else {
+		response.OkWithDetailed(setTask, "获取成功", c)
 	}
 }

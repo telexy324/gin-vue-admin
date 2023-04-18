@@ -48,6 +48,9 @@ func (s *TaskRouter) InitTaskRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 		taskRouter.POST("template/updateSet", authorityTemplateApi.UpdateSet)           // 更新管理员
 		taskRouter.POST("template/getSetById", authorityTemplateApi.GetSetById)         // 获取管理员
 		taskRouter.POST("template/getSetList", authorityTemplateApi.GetSetList)         // 分页获取管理员列表
+		taskRouter.POST("template/addSetTask", authorityTemplateApi.AddSetTask)         // 分页获取管理员列表
+		taskRouter.POST("template/processSetTask", authorityTemplateApi.ProcessSetTask) // 分页获取管理员列表
+		taskRouter.POST("template/getSetTaskById", authorityTemplateApi.GetSetTaskById) // 获取管理员
 	}
 
 	var authorityScheduleApi = v1.ApiGroupApp.TaskApiGroup.ScheduleApi
