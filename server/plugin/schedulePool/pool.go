@@ -25,7 +25,7 @@ func (r ScheduleRunner) Run() {
 
 	_, err = r.pool.taskPool.AddTask(taskMdl.Task{
 		TemplateId: schedule.TemplateID,
-	}, 999999)
+	}, 999999, 0)
 
 	if err != nil {
 		global.GVA_LOG.Error(err.Error())

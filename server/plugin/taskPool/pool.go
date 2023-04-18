@@ -277,17 +277,18 @@ func getNextBuildVersion(startVersion string, currentVersion string) string {
 	return prefix + strconv.Itoa(newVer) + suffix
 }
 
-func (p *TaskPool) AddTask(taskObj taskMdl.Task, userID int) (newTask taskMdl.Task, err error) {
+func (p *TaskPool) AddTask(taskObj taskMdl.Task, userID int, setTaskId int) (newTask taskMdl.Task, err error) {
 	taskObj.Status = taskMdl.TaskWaitingStatus
 	taskObj.SystemUserId = userID
 	taskObj.BeginTime = sql.NullTime{
-		Time:  time.Unix(0,0),
+		Time:  time.Unix(0, 0),
 		Valid: true,
 	}
 	taskObj.EndTime = sql.NullTime{
-		Time:  time.Unix(0,0),
+		Time:  time.Unix(0, 0),
 		Valid: true,
 	}
+	taskObj.SetTaskId = setTaskId
 
 	//tpl, err := taskService.GetTaskTemplate(float64(taskObj.TemplateId))
 	//if err != nil {

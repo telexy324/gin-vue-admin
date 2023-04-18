@@ -127,6 +127,7 @@ create table `application_tasks`
     `system_user_id` bigint UNSIGNED NOT NULL DEFAULT '0',
     `begin_time`     datetime(0) NULL DEFAULT NULL,
     `end_time`       datetime(0) NULL DEFAULT NULL,
+    `set_task_id`    bigint UNSIGNED NOT NULL DEFAULT '0',
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -209,17 +210,18 @@ CREATE TABLE `application_task_template_set_templates`
 
 create table `application_set_tasks`
 (
-    `id`              bigint UNSIGNED NOT NULL AUTO_INCREMENT,
-    `created_at`      datetime(0) NULL DEFAULT NULL,
-    `updated_at`      datetime(0) NULL DEFAULT NULL,
-    `deleted_at`      datetime(0) NULL DEFAULT NULL,
-    `set_id`          bigint UNSIGNED NOT NULL DEFAULT '0',
-    `status`          varchar(255) NOT NULL DEFAULT '',
-    `system_user_id`  bigint UNSIGNED NOT NULL DEFAULT '0',
-    `begin_time`      datetime(0) NULL DEFAULT NULL,
-    `end_time`        datetime(0) NULL DEFAULT NULL,
-    `current_task_id` bigint UNSIGNED NOT NULL DEFAULT '0',
-    `total_steps`     int(4) NOT NULL DEFAULT '0',
-    `current_step`    int(4) NOT NULL DEFAULT '0',
+    `id`               bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+    `created_at`       datetime(0) NULL DEFAULT NULL,
+    `updated_at`       datetime(0) NULL DEFAULT NULL,
+    `deleted_at`       datetime(0) NULL DEFAULT NULL,
+    `set_id`           bigint UNSIGNED NOT NULL DEFAULT '0',
+    `status`           varchar(255) NOT NULL DEFAULT '',
+    `system_user_id`   bigint UNSIGNED NOT NULL DEFAULT '0',
+    `begin_time`       datetime(0) NULL DEFAULT NULL,
+    `end_time`         datetime(0) NULL DEFAULT NULL,
+    `current_task_id`  bigint UNSIGNED NOT NULL DEFAULT '0',
+    `total_steps`      int(4) NOT NULL DEFAULT '0',
+    `current_step`     int(4) NOT NULL DEFAULT '0',
+    `templates_string` text,
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

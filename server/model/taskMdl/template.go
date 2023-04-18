@@ -1,7 +1,6 @@
 package taskMdl
 
 import (
-	"database/sql"
 	"encoding/json"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/application"
@@ -80,16 +79,14 @@ func (m *TaskTemplateSetTemplate) TableName() string {
 
 type SetTask struct {
 	global.GVA_MODEL
-	SetId           int          `json:"setId" gorm:"column:set_id"`                              // task id
-	Status          TaskStatus   `json:"status" gorm:"column:status"`                             // 状态
-	SystemUserId    int          `json:"systemUserId" gorm:"column:system_user_id" `              // 执行人
-	BeginTime       sql.NullTime `json:"beginTime" gorm:"column:begin_time" swaggertype:"string"` // 开始时间
-	EndTime         sql.NullTime `json:"endTime" gorm:"column:end_time" swaggertype:"string"`     // 结束时间
-	CurrentTaskId   int          `json:"currentTaskId" gorm:"column:current_task_id" `
-	TotalSteps      int          `json:"totalSteps" gorm:"column:total_steps" `
-	CurrentStep     int          `json:"currentStep" gorm:"column:current_step" `
-	TemplatesString string       `json:"templatesString" gorm:"column:templates_string"` // 关联服务器id
-	TemplateIds     []int        `json:"templateIds" gorm:"-"`
+	SetId           int    `json:"setId" gorm:"column:set_id"`                 // task id
+	SystemUserId    int    `json:"systemUserId" gorm:"column:system_user_id" ` // 执行人
+	CurrentTaskId   int    `json:"currentTaskId" gorm:"column:current_task_id" `
+	TotalSteps      int    `json:"totalSteps" gorm:"column:total_steps" `
+	CurrentStep     int    `json:"currentStep" gorm:"column:current_step" `
+	TemplatesString string `json:"templatesString" gorm:"column:templates_string"` // 关联服务器id
+	TemplateIds     []int  `json:"templateIds" gorm:"-"`
+	CurrentTask     Task   `json:"currentTask" gorm:"-"`
 }
 
 func (m *SetTask) TableName() string {
@@ -105,5 +102,11 @@ func (m *SetTask) AfterFind(tx *gorm.DB) (err error) {
 		}
 	}
 	m.TemplateIds = templateIds
+	if m.CurrentTaskId > 0 {
+		if err = tx.Model(&Task{}).Where("id = ?", m.CurrentTaskId).Find(&m.CurrentTask).Error; err != nil {
+			global.GVA_LOG.Error("转换失败", zap.Any("err", err))
+			return
+		}
+	}
 	return nil
 }

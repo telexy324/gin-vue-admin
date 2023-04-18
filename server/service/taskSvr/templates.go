@@ -500,9 +500,6 @@ func (templateService *TaskTemplatesService) AddSetTask(addSetTaskRequest taskMd
 func (templateService *TaskTemplatesService) UpdateSetTask(setTask taskMdl.SetTask) (err error) {
 	var oldSetTask taskMdl.SetTask
 	upDateMap := make(map[string]interface{})
-	upDateMap["status"] = setTask.Status
-	upDateMap["begin_time"] = setTask.BeginTime
-	upDateMap["end_time"] = setTask.EndTime
 	upDateMap["current_task_id"] = setTask.CurrentTaskId
 	upDateMap["current_step"] = setTask.CurrentStep
 

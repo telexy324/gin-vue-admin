@@ -552,7 +552,7 @@ func (a *TemplateApi) ProcessSetTask(c *gin.Context) {
 		response.FailWithMessage("更新失败", c)
 		return
 	}
-	if setTask.Status != taskMdl.TaskSuccessStatus {
+	if setTask.CurrentTask.Status != taskMdl.TaskSuccessStatus {
 		global.GVA_LOG.Error("任务未结束或存在异常!", zap.Any("err", err))
 		response.FailWithMessage("更新失败", c)
 		return
@@ -565,15 +565,13 @@ func (a *TemplateApi) ProcessSetTask(c *gin.Context) {
 	userID := int(utils.GetUserID(c))
 	var task taskMdl.Task
 	task.TemplateId = setTask.TemplateIds[setTask.CurrentStep]
-	newTask, err := taskPool.TPool.AddTask(task, userID)
+	newTask, err := taskPool.TPool.AddTask(task, userID, int(setTask.ID))
 	if err != nil {
 		global.GVA_LOG.Error("添加任务失败!", zap.Any("err", err))
 		response.FailWithMessage("更新失败", c)
 		return
 	}
 	setTask.CurrentStep += 1
-	setTask.Status = newTask.Status
-	setTask.BeginTime = newTask.BeginTime
 	setTask.CurrentTaskId = int(newTask.ID)
 	if err = templateService.UpdateSetTask(setTask); err != nil {
 		global.GVA_LOG.Error("更新失败!", zap.Any("err", err))

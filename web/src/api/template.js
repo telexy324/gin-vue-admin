@@ -197,3 +197,43 @@ export const deleteSetByIds = (data) => {
     data
   })
 }
+
+// @Summary 新增setTask
+// @Produce  application/json
+// @Param menu Object
+// @Router /task/template/addSetTask [post]
+export const addSetTask = (data) => {
+  return service({
+    url: '/task/template/addSetTask',
+    method: 'post',
+    data
+  })
+}
+
+// @Summary 修改set
+// @Produce  application/json
+// @Param set Object
+// @Router /task/template/processSetTask [post]
+export const processSetTask = (data) => {
+  return service({
+    url: '/task/template/processSetTask',
+    method: 'post',
+    data
+  })
+}
+
+// @Tags set
+// @Summary 根据id获取服务器
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body api.GetById true "根据id获取服务器"
+// @Success 200 {string} json "{"success":true,"data":{},"msg":"获取成功"}"
+// @Router /task/template/getSetTaskById [post]
+export const getSetTaskById = (data) => {
+  return service({
+    url: '/task/template/getSetTaskById',
+    method: 'post',
+    data
+  })
+}

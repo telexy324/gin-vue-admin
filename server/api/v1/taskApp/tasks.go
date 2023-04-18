@@ -51,7 +51,7 @@ func (a *TaskApi) AddTask(c *gin.Context) {
 		return
 	}
 	userID := int(utils.GetUserID(c))
-	if task, err := taskPool.TPool.AddTask(task, userID); err != nil {
+	if task, err := taskPool.TPool.AddTask(task, userID, 0); err != nil {
 		global.GVA_LOG.Error("添加失败!", zap.Any("err", err))
 
 		response.FailWithMessage("添加失败", c)
