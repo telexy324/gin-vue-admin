@@ -27,6 +27,11 @@
         <el-button class="excel-btn" size="mini" type="success" icon="el-icon-download" @click="openDrawer()">选择系统</el-button>
       </div>
       <el-table :data="tableData" @sort-change="sortChange" @selection-change="handleSelectionChange">
+        <el-table-column type="expand">
+          <template #default="scope">
+            <TemplateSetTask :set-id="scope.row.ID" />
+          </template>
+        </el-table-column>
         <el-table-column
           type="selection"
           width="55"
@@ -55,8 +60,8 @@
               icon="el-icon-caret-right"
               size="small"
               type="text"
-              @click="showDetail(scope.row)"
-            >构建</el-button>
+              @click="createSetTask(scope.row)"
+            >新增</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -144,7 +149,8 @@ import {
   getSetById,
   addSet,
   updateSet,
-  deleteSetByIds
+  deleteSetByIds,
+  addSetTask,
 } from '@/api/template'
 import { addTask } from '@/api/task'
 import { getAllServerIds } from '@/api/cmdb'
@@ -154,12 +160,14 @@ import warningBar from '@/components/warningBar/warningBar.vue'
 import { emitter } from '@/utils/bus'
 // import socket from '@/socket'
 import Systems from '@/components/task/systems.vue'
+import TemplateSetTask from '@/view/task/templateSet/components/templateSetTask.vue'
 
 export default {
   name: 'TemplateSet',
   components: {
     warningBar,
-    Systems
+    Systems,
+    TemplateSetTask
   },
   mixins: [infoList],
   data() {
@@ -389,14 +397,18 @@ export default {
     setSystemOptions(data) {
       this.systemOptions = data
     },
-    showDetail(row) {
-      this.$router.push({
-        name: 'templateSetDetail',
-        params: {
-          setId: row.ID,
-        }
-      })
-    },
+    // showDetail(row) {
+    //   this.$router.push({
+    //     name: 'templateSetDetail',
+    //     params: {
+    //       setId: row.ID,
+    //     }
+    //   })
+    // },
+    async createSetTask(row) {
+      await addSetTask({ setId: row.ID })
+      await this.getTableData()
+    }
   }
 }
 </script>

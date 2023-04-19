@@ -524,3 +524,23 @@ func (templateService *TaskTemplatesService) GetSetTaskById(id float64) (err err
 	}
 	return
 }
+
+//@author: [telexy324](https://github.com/telexy324)
+//@function: GetSystemList
+//@description: 获取系统分页
+//@return: err error, list interface{}, total int64
+
+func (templateService *TaskTemplatesService) GetSetTaskList(info request2.SetTaskSearch) (err error, list interface{}, total int64) {
+	limit := info.PageSize
+	offset := info.PageSize * (info.Page - 1)
+	var setTaskList []taskMdl.SetTask
+	db := global.GVA_DB.Model(&taskMdl.SetTask{})
+	db = db.Where("set_id = ?", info.SetId)
+	err = db.Count(&total).Error
+	if err != nil {
+		return
+	}
+	err = db.Limit(limit).Offset(offset).Find(&setTaskList).Error
+
+	return err, setTaskList, total
+}

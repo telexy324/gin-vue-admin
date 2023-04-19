@@ -79,14 +79,14 @@ func (m *TaskTemplateSetTemplate) TableName() string {
 
 type SetTask struct {
 	global.GVA_MODEL
-	SetId           int    `json:"setId" gorm:"column:set_id"`                 // task id
-	SystemUserId    int    `json:"systemUserId" gorm:"column:system_user_id" ` // 执行人
-	CurrentTaskId   int    `json:"currentTaskId" gorm:"column:current_task_id" `
-	TotalSteps      int    `json:"totalSteps" gorm:"column:total_steps" `
-	CurrentStep     int    `json:"currentStep" gorm:"column:current_step" `
-	TemplatesString string `json:"templatesString" gorm:"column:templates_string"` // 关联服务器id
-	TemplateIds     []int  `json:"templateIds" gorm:"-"`
-	CurrentTask     Task   `json:"currentTask" gorm:"-"`
+	SetId           int            `json:"setId" gorm:"column:set_id"`                 // task id
+	SystemUserId    int            `json:"systemUserId" gorm:"column:system_user_id" ` // 执行人
+	CurrentTaskId   int            `json:"currentTaskId" gorm:"column:current_task_id" `
+	TotalSteps      int            `json:"totalSteps" gorm:"column:total_steps" `
+	CurrentStep     int            `json:"currentStep" gorm:"column:current_step" `
+	TemplatesString string         `json:"templatesString" gorm:"column:templates_string"` // 关联服务器id
+	Templates       []TaskTemplate `json:"templates" gorm:"-"`
+	CurrentTask     Task           `json:"currentTask" gorm:"-"`
 }
 
 func (m *SetTask) TableName() string {
@@ -101,7 +101,16 @@ func (m *SetTask) AfterFind(tx *gorm.DB) (err error) {
 			return
 		}
 	}
-	m.TemplateIds = templateIds
+	if len(templateIds) > 0 {
+		for _, id := range templateIds {
+			template := TaskTemplate{}
+			if err = tx.Model(&TaskTemplate{}).Where("id = ?", id).Find(&template).Error; err != nil {
+				global.GVA_LOG.Error("转换失败", zap.Any("err", err))
+				return
+			}
+			m.Templates = append(m.Templates, template)
+		}
+	}
 	if m.CurrentTaskId > 0 {
 		if err = tx.Model(&Task{}).Where("id = ?", m.CurrentTaskId).Find(&m.CurrentTask).Error; err != nil {
 			global.GVA_LOG.Error("转换失败", zap.Any("err", err))

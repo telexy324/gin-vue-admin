@@ -552,7 +552,7 @@ func (a *TemplateApi) ProcessSetTask(c *gin.Context) {
 		response.FailWithMessage("更新失败", c)
 		return
 	}
-	if setTask.CurrentTask.Status != taskMdl.TaskSuccessStatus {
+	if setTask.CurrentTask.ID > 0 && setTask.CurrentTask.Status != taskMdl.TaskSuccessStatus {
 		global.GVA_LOG.Error("任务未结束或存在异常!", zap.Any("err", err))
 		response.FailWithMessage("更新失败", c)
 		return
@@ -564,7 +564,7 @@ func (a *TemplateApi) ProcessSetTask(c *gin.Context) {
 	}
 	userID := int(utils.GetUserID(c))
 	var task taskMdl.Task
-	task.TemplateId = setTask.TemplateIds[setTask.CurrentStep]
+	task.TemplateId = int(setTask.Templates[setTask.CurrentStep].ID)
 	newTask, err := taskPool.TPool.AddTask(task, userID, int(setTask.ID))
 	if err != nil {
 		global.GVA_LOG.Error("添加任务失败!", zap.Any("err", err))
@@ -577,7 +577,9 @@ func (a *TemplateApi) ProcessSetTask(c *gin.Context) {
 		global.GVA_LOG.Error("更新失败!", zap.Any("err", err))
 		response.FailWithMessage("更新失败", c)
 	} else {
-		response.OkWithMessage("更新成功", c)
+		response.OkWithDetailed(templateRes.TaskResponse{
+			Task: newTask,
+		}, "添加成功", c)
 	}
 }
 
@@ -605,5 +607,41 @@ func (a *TemplateApi) GetSetTaskById(c *gin.Context) {
 		response.FailWithMessage("更新失败", c)
 	} else {
 		response.OkWithDetailed(setTask, "获取成功", c)
+	}
+}
+
+// @Tags Template
+// @Summary 分页获取模板集任务集列表
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body request.PageInfo true "页码, 每页大小"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
+// @Router /task/template/getSetTaskList [post]
+func (a *TemplateApi) GetSetTaskList(c *gin.Context) {
+	var pageInfo templateReq.SetTaskSearch
+	if err := c.ShouldBindJSON(&pageInfo); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err := utils.Verify(pageInfo.PageInfo, utils.PageInfoVerify); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err := utils.Verify(pageInfo, utils.TaskTemplateSetTaskVerify); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err, setTaskList, total := templateService.GetSetTaskList(pageInfo); err != nil {
+		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
+		response.FailWithMessage("获取失败", c)
+	} else {
+		response.OkWithDetailed(response.PageResult{
+			List:     setTaskList,
+			Total:    total,
+			Page:     pageInfo.Page,
+			PageSize: pageInfo.PageSize,
+		}, "获取成功", c)
 	}
 }

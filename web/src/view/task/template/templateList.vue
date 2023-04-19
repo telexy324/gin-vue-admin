@@ -292,6 +292,11 @@ export default {
     const res = await getAllServerIds()
     this.setOptions(res.data)
   },
+  mounted() {
+    emitter.on('i-close-task', () => {
+      this.getTableData()
+    })
+  },
   methods: {
     //  选中api
     handleSelectionChange(val) {

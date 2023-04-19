@@ -5131,6 +5131,44 @@
                 }
             }
         },
+        "/task/template/addSetTask": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Template"
+                ],
+                "summary": "新增模板集任务集",
+                "parameters": [
+                    {
+                        "description": "系统名, 位置, 管理员id, 主管",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.AddSet"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\":true,\"data\":{},\"msg\":\"添加成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/task/template/addTemplate": {
             "post": {
                 "security": [
@@ -5473,6 +5511,82 @@
                 }
             }
         },
+        "/task/template/getSetTaskById": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Template"
+                ],
+                "summary": "根据id获取模板集任务集",
+                "parameters": [
+                    {
+                        "description": "模板集id",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.GetById"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\":true,\"data\":{},\"msg\":\"获取成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/task/template/getSetTaskList": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Template"
+                ],
+                "summary": "分页获取模板集任务集列表",
+                "parameters": [
+                    {
+                        "description": "页码, 每页大小",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.PageInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\":true,\"data\":{},\"msg\":\"获取成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/task/template/getTemplateById": {
             "post": {
                 "security": [
@@ -5542,6 +5656,44 @@
                 "responses": {
                     "200": {
                         "description": "{\"success\":true,\"data\":{},\"msg\":\"获取成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/task/template/processSetTask": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Template"
+                ],
+                "summary": "更新模板集任务集",
+                "parameters": [
+                    {
+                        "description": "模板集id",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.GetById"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\":true,\"data\":{},\"msg\":\"更新成功\"}",
                         "schema": {
                             "type": "string"
                         }
@@ -6795,14 +6947,31 @@
         "request.AddSet": {
             "type": "object",
             "properties": {
-                "set": {
-                    "$ref": "#/definitions/taskMdl.TaskTemplateSet"
+                "createdAt": {
+                    "description": "创建时间",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "主键ID",
+                    "type": "integer"
+                },
+                "name": {
+                    "description": "模板集名称",
+                    "type": "string"
+                },
+                "systemId": {
+                    "description": "系统名称",
+                    "type": "integer"
                 },
                 "templates": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/taskMdl.TaskTemplateSetTemplate"
                     }
+                },
+                "updatedAt": {
+                    "description": "更新时间",
+                    "type": "string"
                 }
             }
         },
@@ -6922,6 +7091,20 @@
                 "id": {
                     "description": "主键ID",
                     "type": "number"
+                },
+                "page": {
+                    "description": "页码",
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "description": "每页大小",
+                    "type": "integer"
+                },
+                "sortBy": {
+                    "type": "string"
+                },
+                "sortInverted": {
+                    "type": "boolean"
                 }
             }
         },
@@ -7765,6 +7948,10 @@
                     "description": "主键ID",
                     "type": "integer"
                 },
+                "setTaskId": {
+                    "description": "结束时间",
+                    "type": "integer"
+                },
                 "status": {
                     "description": "状态",
                     "type": "string"
@@ -7844,31 +8031,6 @@
                     "items": {
                         "$ref": "#/definitions/application.ApplicationServer"
                     }
-                },
-                "updatedAt": {
-                    "description": "更新时间",
-                    "type": "string"
-                }
-            }
-        },
-        "taskMdl.TaskTemplateSet": {
-            "type": "object",
-            "properties": {
-                "createdAt": {
-                    "description": "创建时间",
-                    "type": "string"
-                },
-                "id": {
-                    "description": "主键ID",
-                    "type": "integer"
-                },
-                "name": {
-                    "description": "模板集名称",
-                    "type": "string"
-                },
-                "systemId": {
-                    "description": "系统名称",
-                    "type": "integer"
                 },
                 "updatedAt": {
                     "description": "更新时间",

@@ -84,6 +84,7 @@ export default {
       // await this.$router.replace({ query })
       // await this.$router.push({ name: this.$route.name })
       this.isGetData = false
+      emitter.emit('i-close-task')
     },
     async onScriptLogDialogClosed() {
       this.scriptDialog = false

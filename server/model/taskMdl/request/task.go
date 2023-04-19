@@ -51,3 +51,8 @@ type TaskTemplateSetSearch struct {
 	taskMdl.TaskTemplateSet
 	request.PageInfo
 }
+
+type SetTaskSearch struct {
+	taskMdl.SetTask
+	request.PageInfo
+}

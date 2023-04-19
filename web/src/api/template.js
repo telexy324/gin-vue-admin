@@ -237,3 +237,18 @@ export const getSetTaskById = (data) => {
     data
   })
 }
+
+// @Summary 获取setTask列表
+// @Produce  application/json
+// @Param {
+//  page     int
+//	pageSize int
+// }
+// @Router /task/template/getSetTaskList [post]
+export const getSetTaskList = (data) => {
+  return service({
+    url: '/task/template/getSetTaskList',
+    method: 'post',
+    data
+  })
+}

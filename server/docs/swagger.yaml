@@ -571,12 +571,25 @@ definitions:
     type: object
   request.AddSet:
     properties:
-      set:
-        $ref: '#/definitions/taskMdl.TaskTemplateSet'
+      createdAt:
+        description: 创建时间
+        type: string
+      id:
+        description: 主键ID
+        type: integer
+      name:
+        description: 模板集名称
+        type: string
+      systemId:
+        description: 系统名称
+        type: integer
       templates:
         items:
           $ref: '#/definitions/taskMdl.TaskTemplateSetTemplate'
         type: array
+      updatedAt:
+        description: 更新时间
+        type: string
     type: object
   request.AddSystem:
     properties:
@@ -657,6 +670,16 @@ definitions:
       id:
         description: 主键ID
         type: number
+      page:
+        description: 页码
+        type: integer
+      pageSize:
+        description: 每页大小
+        type: integer
+      sortBy:
+        type: string
+      sortInverted:
+        type: boolean
     type: object
   request.GetByProjectId:
     properties:
@@ -1256,6 +1279,9 @@ definitions:
       id:
         description: 主键ID
         type: integer
+      setTaskId:
+        description: 结束时间
+        type: integer
       status:
         description: 状态
         type: string
@@ -1314,24 +1340,6 @@ definitions:
         items:
           $ref: '#/definitions/application.ApplicationServer'
         type: array
-      updatedAt:
-        description: 更新时间
-        type: string
-    type: object
-  taskMdl.TaskTemplateSet:
-    properties:
-      createdAt:
-        description: 创建时间
-        type: string
-      id:
-        description: 主键ID
-        type: integer
-      name:
-        description: 模板集名称
-        type: string
-      systemId:
-        description: 系统名称
-        type: integer
       updatedAt:
         description: 更新时间
         type: string
@@ -4485,6 +4493,29 @@ paths:
       summary: 新增模板集
       tags:
       - Template
+  /task/template/addSetTask:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 系统名, 位置, 管理员id, 主管
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.AddSet'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"添加成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 新增模板集任务集
+      tags:
+      - Template
   /task/template/addTemplate:
     post:
       consumes:
@@ -4692,6 +4723,52 @@ paths:
       summary: 分页获取基础模板集列表
       tags:
       - Template
+  /task/template/getSetTaskById:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 模板集id
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetById'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 根据id获取模板集任务集
+      tags:
+      - Template
+  /task/template/getSetTaskList:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 页码, 每页大小
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.PageInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 分页获取模板集任务集列表
+      tags:
+      - Template
   /task/template/getTemplateById:
     post:
       consumes:
@@ -4736,6 +4813,29 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: 分页获取基础Template列表
+      tags:
+      - Template
+  /task/template/processSetTask:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 模板集id
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetById'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"更新成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 更新模板集任务集
       tags:
       - Template
   /task/template/updateSet:
