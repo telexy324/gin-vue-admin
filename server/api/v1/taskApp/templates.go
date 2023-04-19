@@ -554,7 +554,7 @@ func (a *TemplateApi) ProcessSetTask(c *gin.Context) {
 	}
 	if setTask.CurrentTask.ID > 0 && setTask.CurrentTask.Status != taskMdl.TaskSuccessStatus {
 		global.GVA_LOG.Error("任务未结束或存在异常!", zap.Any("err", err))
-		response.FailWithMessage("更新失败", c)
+		response.FailWithMessage("任务未结束或存在异常!", c)
 		return
 	}
 	if setTask.TotalSteps == setTask.CurrentStep {

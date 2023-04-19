@@ -77,16 +77,21 @@ func (m *TaskTemplateSetTemplate) TableName() string {
 	return "application_task_template_set_templates"
 }
 
+type TaskTemplateWithSeq struct {
+	TaskTemplate
+	Seq int `json:"seq"`
+}
+
 type SetTask struct {
 	global.GVA_MODEL
-	SetId           int            `json:"setId" gorm:"column:set_id"`                 // task id
-	SystemUserId    int            `json:"systemUserId" gorm:"column:system_user_id" ` // 执行人
-	CurrentTaskId   int            `json:"currentTaskId" gorm:"column:current_task_id" `
-	TotalSteps      int            `json:"totalSteps" gorm:"column:total_steps" `
-	CurrentStep     int            `json:"currentStep" gorm:"column:current_step" `
-	TemplatesString string         `json:"templatesString" gorm:"column:templates_string"` // 关联服务器id
-	Templates       []TaskTemplate `json:"templates" gorm:"-"`
-	CurrentTask     Task           `json:"currentTask" gorm:"-"`
+	SetId           int                   `json:"setId" gorm:"column:set_id"`                 // task id
+	SystemUserId    int                   `json:"systemUserId" gorm:"column:system_user_id" ` // 执行人
+	CurrentTaskId   int                   `json:"currentTaskId" gorm:"column:current_task_id" `
+	TotalSteps      int                   `json:"totalSteps" gorm:"column:total_steps" `
+	CurrentStep     int                   `json:"currentStep" gorm:"column:current_step" `
+	TemplatesString string                `json:"templatesString" gorm:"column:templates_string"` // 关联服务器id
+	Templates       []TaskTemplateWithSeq `json:"templates" gorm:"-"`
+	CurrentTask     Task                  `json:"currentTask" gorm:"-"`
 }
 
 func (m *SetTask) TableName() string {
@@ -102,13 +107,17 @@ func (m *SetTask) AfterFind(tx *gorm.DB) (err error) {
 		}
 	}
 	if len(templateIds) > 0 {
-		for _, id := range templateIds {
+		for index, id := range templateIds {
 			template := TaskTemplate{}
 			if err = tx.Model(&TaskTemplate{}).Where("id = ?", id).Find(&template).Error; err != nil {
 				global.GVA_LOG.Error("转换失败", zap.Any("err", err))
 				return
 			}
-			m.Templates = append(m.Templates, template)
+			templateWithSeq := TaskTemplateWithSeq{
+				TaskTemplate: template,
+				Seq:          index,
+			}
+			m.Templates = append(m.Templates, templateWithSeq)
 		}
 	}
 	if m.CurrentTaskId > 0 {

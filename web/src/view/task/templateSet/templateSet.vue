@@ -413,6 +413,12 @@ export default {
 }
 </script>
 
+<style lang="scss">
+.el-table__expand-icon {
+  height: 35px;
+}
+</style>
+
 <style scoped lang="scss">
 .button-box {
   padding: 10px 20px;

@@ -4,8 +4,9 @@
       <div class="gva-btn-list">
         <el-button size="mini" type="primary" icon="el-icon-plus" style="margin-bottom: 12px;" @click="processSetTask">下一步</el-button>
       </div>
-      <el-steps :active="active" finish-status="success" process-status="finish">
-        <el-step v-for="item in steps" :key="item.ID" :title="item.name" />
+<!--      <el-steps :active="active" finish-status="success" :process-status="taskStatus">-->
+      <el-steps>
+        <el-step v-for="item in steps" :key="item.seq" :title="item.name" :status="getStatus(item.seq)"/>
       </el-steps>
     </div>
   </div>
@@ -31,14 +32,17 @@ export default {
       setTaskId: '',
       path: path,
       steps: [],
-      active: '',
+      active: 0,
       setTask: '',
+      // taskStatus: '',
     }
   },
   async created() {
     this.setTaskId = this.$route.params.setTaskId
-    console.log(this.setTaskId)
-    await this.initSteps()
+    // await this.initSteps()
+    await this.$nextTick(() => {
+      this.initSteps()
+    })
   },
   mounted() {
     emitter.on('i-close-task', () => {
@@ -50,6 +54,7 @@ export default {
       this.setTask = (await getSetTaskById({ 'ID': Number(this.setTaskId) })).data
       this.steps = this.setTask.templates
       this.active = this.setTask.currentStep
+      // this.taskStatus = this.getStepStatus(this.setTask.currentTask.status)
     },
     async processSetTask() {
       const task = (await processSetTask({
@@ -60,6 +65,29 @@ export default {
     },
     showTaskLog(task) {
       emitter.emit('i-show-task', task)
+    },
+    // getStepStatus(status) {
+    //   switch (status) {
+    //     case 'success':
+    //       return 'success'
+    //     default:
+    //       return 'error'
+    //   }
+    // },
+    getStatus(seq) {
+      if (seq + 1 < this.active) {
+        return 'success'
+      } else if (seq + 1 === this.active) {
+        const status = this.steps[seq].status
+        switch (status) {
+          case 'success':
+            return 'success'
+          default:
+            return 'error'
+        }
+      } else {
+        return 'wait'
+      }
     },
   }
 }
