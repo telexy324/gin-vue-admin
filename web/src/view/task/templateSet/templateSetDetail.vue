@@ -4,7 +4,7 @@
       <div class="gva-btn-list">
         <el-button size="mini" type="primary" icon="el-icon-plus" style="margin-bottom: 12px;" @click="processSetTask">下一步</el-button>
       </div>
-      <el-steps :active="active" finish-status="success" process-status="error">
+      <el-steps :active="active" finish-status="success" process-status="finish">
         <el-step v-for="item in steps" :key="item.ID" :title="item.name" />
       </el-steps>
     </div>
@@ -31,7 +31,7 @@ export default {
       setTaskId: '',
       path: path,
       steps: [],
-      active: 1,
+      active: '',
       setTask: '',
     }
   },
@@ -49,6 +49,7 @@ export default {
     async initSteps() {
       this.setTask = (await getSetTaskById({ 'ID': Number(this.setTaskId) })).data
       this.steps = this.setTask.templates
+      this.active = this.setTask.currentStep
     },
     async processSetTask() {
       const task = (await processSetTask({
