@@ -1,6 +1,7 @@
 package taskApp
 
 import (
+	"encoding/json"
 	"github.com/flipped-aurora/gin-vue-admin/server/common"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
@@ -552,14 +553,14 @@ func (a *TemplateApi) ProcessSetTask(c *gin.Context) {
 		response.FailWithMessage("更新失败", c)
 		return
 	}
-	if setTask.CurrentTask.ID > 0 && setTask.CurrentTask.Status != taskMdl.TaskSuccessStatus {
+	if setTask.Tasks != nil && len(setTask.Tasks) > 0 && setTask.Tasks[len(setTask.Tasks)-1].Status != taskMdl.TaskSuccessStatus {
 		global.GVA_LOG.Error("任务未结束或存在异常!", zap.Any("err", err))
 		response.FailWithMessage("任务未结束或存在异常!", c)
 		return
 	}
 	if setTask.TotalSteps == setTask.CurrentStep {
 		global.GVA_LOG.Error("任务已结束!", zap.Any("err", err))
-		response.FailWithMessage("更新失败", c)
+		response.FailWithMessage("任务已结束!", c)
 		return
 	}
 	userID := int(utils.GetUserID(c))
@@ -572,6 +573,18 @@ func (a *TemplateApi) ProcessSetTask(c *gin.Context) {
 		return
 	}
 	setTask.CurrentStep += 1
+	setTask.Tasks = append(setTask.Tasks, newTask)
+	taskIds := make([]int, 0, len(setTask.Tasks))
+	for _, t := range setTask.Tasks {
+		taskIds = append(taskIds, int(t.ID))
+	}
+	s, err := json.Marshal(taskIds)
+	if err != nil {
+		global.GVA_LOG.Error("更新失败!", zap.Any("err", err))
+		response.FailWithMessage("更新失败", c)
+		return
+	}
+	setTask.TasksString = string(s)
 	setTask.CurrentTaskId = int(newTask.ID)
 	if err = templateService.UpdateSetTask(setTask); err != nil {
 		global.GVA_LOG.Error("更新失败!", zap.Any("err", err))

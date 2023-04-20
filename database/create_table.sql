@@ -220,5 +220,6 @@ create table `application_set_tasks`
     `total_steps`      int(4) NOT NULL DEFAULT '0',
     `current_step`     int(4) NOT NULL DEFAULT '0',
     `templates_string` text,
+    `tasks_string`     text,
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

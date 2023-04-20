@@ -501,6 +501,7 @@ func (templateService *TaskTemplatesService) UpdateSetTask(setTask taskMdl.SetTa
 	var oldSetTask taskMdl.SetTask
 	upDateMap := make(map[string]interface{})
 	upDateMap["current_task_id"] = setTask.CurrentTaskId
+	upDateMap["tasks_string"] = setTask.TasksString
 	upDateMap["current_step"] = setTask.CurrentStep
 
 	db := global.GVA_DB.Where("id = ?", setTask.ID).Find(&oldSetTask)

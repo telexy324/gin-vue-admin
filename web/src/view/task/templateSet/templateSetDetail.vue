@@ -2,11 +2,11 @@
   <div>
     <div class="gva-search-box">
       <div class="gva-btn-list">
-        <el-button size="mini" type="primary" icon="el-icon-plus" style="margin-bottom: 12px;" @click="processSetTask">下一步</el-button>
+        <el-button size="mini" type="primary" icon="el-icon-plus" style="margin-bottom: 12px;" :disabled="disabled" @click="processSetTask">下一步</el-button>
       </div>
 <!--      <el-steps :active="active" finish-status="success" :process-status="taskStatus">-->
       <el-steps>
-        <el-step v-for="item in steps" :key="item.seq" :title="item.name" :status="getStatus(item.seq)"/>
+        <el-step v-for="item in steps" :key="item.seq" :title="item.name" :status="getStatus(item.seq)" @click.enter="show(item.seq)"/>
       </el-steps>
     </div>
   </div>
@@ -35,6 +35,7 @@ export default {
       active: 0,
       setTask: '',
       // taskStatus: '',
+      disabled: false,
     }
   },
   async created() {
@@ -55,6 +56,9 @@ export default {
       this.steps = this.setTask.templates
       this.active = this.setTask.currentStep
       // this.taskStatus = this.getStepStatus(this.setTask.currentTask.status)
+      if (this.setTask.currentStep === this.setTask.totalSteps || this.setTask.tasks[this.active - 1].status !== 'success' && this.setTask.tasks[this.active - 1].status !== '') {
+        this.disabled = true
+      }
     },
     async processSetTask() {
       const task = (await processSetTask({
@@ -78,7 +82,7 @@ export default {
       if (seq + 1 < this.active) {
         return 'success'
       } else if (seq + 1 === this.active) {
-        const status = this.steps[seq].status
+        const status = this.setTask.tasks[seq].status
         switch (status) {
           case 'success':
             return 'success'
@@ -89,9 +93,18 @@ export default {
         return 'wait'
       }
     },
+    show(seq) {
+      this.showTaskLog(this.setTask.tasks[seq])
+    }
   }
 }
 </script>
+
+<style lang="scss">
+.el-step:hover {
+  cursor: pointer;
+}
+</style>
 
 <style scoped lang="scss">
 .button-box {

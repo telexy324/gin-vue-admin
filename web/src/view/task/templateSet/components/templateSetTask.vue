@@ -13,7 +13,7 @@
         </el-table-column>
         <el-table-column align="left" label="状态" min-width="150" sortable="custom">
           <template v-slot="scope">
-            <TaskStatus :status="scope.row.currentTask.status" />
+            <TaskStatus :status="getCurrentStatus(scope.row)" />
           </template>
         </el-table-column>
         <el-table-column align="left" label="创建人" min-width="200" prop="systemUserId" sortable="custom">
@@ -125,6 +125,15 @@ export default {
         }
       })
     },
+    getCurrentStatus(row) {
+      if (row.tasks) {
+        return row.tasks.find((item) => {
+          return row.currentTaskId === item.ID
+        }).status
+      } else {
+        return
+      }
+    }
   }
 }
 </script>

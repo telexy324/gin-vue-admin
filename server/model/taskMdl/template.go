@@ -90,8 +90,9 @@ type SetTask struct {
 	TotalSteps      int                   `json:"totalSteps" gorm:"column:total_steps" `
 	CurrentStep     int                   `json:"currentStep" gorm:"column:current_step" `
 	TemplatesString string                `json:"templatesString" gorm:"column:templates_string"` // 关联服务器id
+	TasksString     string                `json:"tasksString" gorm:"column:tasks_string"`         // 关联服务器id
 	Templates       []TaskTemplateWithSeq `json:"templates" gorm:"-"`
-	CurrentTask     Task                  `json:"currentTask" gorm:"-"`
+	Tasks           []Task                `json:"tasks" gorm:"-"`
 }
 
 func (m *SetTask) TableName() string {
@@ -120,10 +121,21 @@ func (m *SetTask) AfterFind(tx *gorm.DB) (err error) {
 			m.Templates = append(m.Templates, templateWithSeq)
 		}
 	}
-	if m.CurrentTaskId > 0 {
-		if err = tx.Model(&Task{}).Where("id = ?", m.CurrentTaskId).Find(&m.CurrentTask).Error; err != nil {
+	taskIds := make([]int, 0)
+	if m.TasksString != "" {
+		if err = json.Unmarshal([]byte(m.TasksString), &taskIds); err != nil {
 			global.GVA_LOG.Error("转换失败", zap.Any("err", err))
 			return
+		}
+	}
+	if len(taskIds) > 0 {
+		for _, id := range taskIds {
+			task := Task{}
+			if err = tx.Model(&Task{}).Where("id = ?", id).Find(&task).Error; err != nil {
+				global.GVA_LOG.Error("转换失败", zap.Any("err", err))
+				return
+			}
+			m.Tasks = append(m.Tasks, task)
 		}
 	}
 	return nil
