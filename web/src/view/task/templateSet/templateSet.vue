@@ -90,7 +90,7 @@
           </el-col>
         </el-row>
         <el-form-item label="所属系统" prop="systemId">
-          <el-select v-model="form.systemId">
+          <el-select v-model="form.systemId" @change="setTemplate">
             <el-option v-for="val in systemOptions" :key="val.ID" :value="val.ID" :label="val.name" />
           </el-select>
         </el-form-item>
@@ -100,6 +100,9 @@
               <el-form-item
                 label="模板名"
                 :prop="'templates.' + index + '.ID'"
+                :rules="{
+                  required: true, message: '请选择模板', trigger: 'blur'
+                }"
               >
                 <el-select v-model="item.templateId">
                   <el-option v-for="val in systemTemplateOptions" :key="val.ID" :value="val.ID" :label="val.name" />
@@ -124,7 +127,7 @@
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button size="small" type="warning" @click="addItem">增加</el-button>
+          <el-button size="small" type="warning" :disabled="setDisabled" @click="addItem">增加</el-button>
           <el-button size="small" @click="closeDialog">取 消</el-button>
           <el-button size="small" type="primary" @click="enterDialog">确 定</el-button>
         </div>
@@ -188,14 +191,24 @@ export default {
         name: [{ required: true, message: '请输入模板名', trigger: 'blur' }],
         systemId: [
           { required: true, message: '请选择系统', trigger: 'blur' }
-        ]
+        ],
       },
       path: path,
       drawer: false,
       systemOptions: [],
       systemTemplateOptions: [],
+      setDisabled: true,
     }
   },
+  // watch: {
+  //   'form.systemId': function(newVal, oldval) {
+  //     this.setDisabled = !newVal
+  //     this.form.templates = []
+  //     this.searchInfo.systemIds = []
+  //     this.searchInfo.systemIds.push(Number(newVal))
+  //     this.setTemplateOptions()
+  //   },
+  // },
   async created() {
     // socket.addListener((data) => this.onWebsocketDataReceived(data))
     if (this.$route.params.systemIds) {
@@ -345,7 +358,6 @@ export default {
       const task = (await addTask({
         templateId: row.ID
       })).data.task
-      console.log(task.ID)
       this.showTaskLog(task)
     },
     showTaskLog(task) {
@@ -408,6 +420,13 @@ export default {
     async createSetTask(row) {
       await addSetTask({ setId: row.ID })
       await this.getTableData()
+    },
+    setTemplate(val) {
+      this.setDisabled = !val
+      this.form.templates = []
+      this.searchInfo.systemIds = []
+      this.searchInfo.systemIds.push(Number(val))
+      this.setTemplateOptions()
     }
   }
 }

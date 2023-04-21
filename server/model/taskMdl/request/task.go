@@ -32,7 +32,7 @@ type GetTaskOutputsByTaskId struct {
 type TaskTemplateSearch struct {
 	taskMdl.TaskTemplate
 	request.PageInfo
-	SystemIDs []int
+	SystemIDs []int `json:"systemIds"`
 }
 
 type AddTaskTemplate struct {

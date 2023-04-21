@@ -443,7 +443,10 @@ export default {
       if (!fileName || typeof fileName !== 'string') {
         fileName = 'ExcelExport.xlsx'
       }
-      exportExcel(this.tableData, fileName)
+      exportExcel({
+        fileName: fileName,
+        infoList: this.tableData,
+      })
     },
     downloadExcelTemplate() {
       downloadTemplate('ExcelTemplate.xlsx')
