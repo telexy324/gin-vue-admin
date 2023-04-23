@@ -32,12 +32,20 @@
           width="55"
         />
         <el-table-column align="left" label="name" min-width="60" prop="name" sortable="custom" />
-        <el-table-column align="left" label="lastStatus" min-width="150" prop="lastTask.status" sortable="custom" >
+        <el-table-column align="left" label="lastStatus" min-width="150" prop="lastTask.status" sortable="custom">
           <template v-slot="scope">
             <TaskStatus :status="scope.row.lastTask.status" />
           </template>
         </el-table-column>
-        <el-table-column align="left" label="task" min-width="200" prop="lastTask.ID" sortable="custom" />
+        <el-table-column align="left" label="task" min-width="200" sortable="custom">
+          <template v-slot="scope">
+            <el-button
+              type="text"
+              link
+              @click="showTaskLog(scope.row.lastTask)"
+            >#{{ scope.row.lastTask.ID }}</el-button>
+          </template>
+        </el-table-column>
         <el-table-column align="left" fixed="right" label="操作" width="250">
           <template #default="scope">
             <el-button

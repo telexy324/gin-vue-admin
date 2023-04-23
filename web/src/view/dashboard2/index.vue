@@ -140,9 +140,9 @@ export default {
           bg: 'rgba(255, 133, 192,.3)'
         },
         {
-          label: '本机状态',
-          icon: ' el-icon-cloudy',
-          name: 'state',
+          label: '模板集管理',
+          icon: ' el-icon-copy-document',
+          name: 'templateSet',
           color: '#5cdbd3',
           bg: 'rgba(92, 219, 211,.3)'
         }
