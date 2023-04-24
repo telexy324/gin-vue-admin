@@ -65,6 +65,9 @@ export default {
       //   const query = { ...this.$route.query, t: e.ID }
       //   await this.$router.replace({ query })
       // }
+      if (!socket.isRunning()) {
+        socket.start()
+      }
       this.task = (await getTaskById({ ID: e.ID })).data.task
       this.template = (await getTemplateById({ ID: e.templateId })).data.template
       // this.dialogTitle = 'Task #' + this.task.ID
@@ -72,6 +75,9 @@ export default {
       // this.taskLogDialog = true
     })
     emitter.on('i-show-script', (e) => {
+      if (!socket.isRunning()) {
+        socket.start()
+      }
       this.script = e
       console.log(e)
       this.scriptDialog = true

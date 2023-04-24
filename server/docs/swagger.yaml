@@ -670,16 +670,6 @@ definitions:
       id:
         description: 主键ID
         type: number
-      page:
-        description: 页码
-        type: integer
-      pageSize:
-        description: 每页大小
-        type: integer
-      sortBy:
-        type: string
-      sortInverted:
-        type: boolean
     type: object
   request.GetByProjectId:
     properties:
@@ -1371,29 +1361,6 @@ info:
   title: Swagger Example API
   version: 0.0.1
 paths:
-  /ansible/task/stopTask:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: TaskId
-        in: body
-        name: data
-        required: true
-        schema:
-          $ref: '#/definitions/request.GetByProjectId'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: '{"success":true,"data":{},"msg":"获取成功"}'
-          schema:
-            type: string
-      security:
-      - ApiKeyAuth: []
-      summary: 停止Task
-      tags:
-      - Task
   /api/createApi:
     post:
       consumes:
@@ -2760,7 +2727,7 @@ paths:
       summary: 删除编辑器关系图
       tags:
       - CmdbSystem
-  /cmdb/system/getSystemEditRelations:
+  /cmdb/system/getSystemEditRelation:
     post:
       consumes:
       - application/json
@@ -4470,6 +4437,29 @@ paths:
       summary: 确认Schedule
       tags:
       - Schedule
+  /task/stopTask:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: TaskId
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetByProjectId'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 停止Task
+      tags:
+      - Task
   /task/template/addSet:
     post:
       consumes:

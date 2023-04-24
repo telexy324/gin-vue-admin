@@ -391,7 +391,7 @@ func (a *CmdbSystemApi) UpdateEditRelation(c *gin.Context) {
 // @Produce application/json
 // @Param data body request.GetById true "系统id"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /cmdb/system/getSystemEditRelations [post]
+// @Router /cmdb/system/getSystemEditRelation [post]
 func (a *CmdbSystemApi) GetSystemEditRelations(c *gin.Context) {
 	var idInfo request.GetById
 	if err := c.ShouldBindJSON(&idInfo); err != nil {

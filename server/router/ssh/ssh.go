@@ -11,10 +11,10 @@ type SshRouter struct {
 
 func (s *SshRouter) InitSshRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 	sshRouter := Router.Group("ssh").Use(middleware.OperationRecord())
-	sshRouterWithoutRecord := Router.Group("ssh")
+	//sshRouterWithoutRecord := Router.Group("ssh")
 	var authoritySshApi = v1.ApiGroupApp.SshApiGroup.SshApi
 	{
-		sshRouterWithoutRecord.GET("run", authoritySshApi.ShellWeb)       // 新增管理员
+		sshRouter.GET("run", authoritySshApi.ShellWeb) // 新增管理员
 	}
 	return sshRouter
 }

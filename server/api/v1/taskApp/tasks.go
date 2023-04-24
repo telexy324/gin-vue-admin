@@ -248,7 +248,7 @@ func (a *TaskApi) GetTaskOutputs(c *gin.Context) {
 // @Produce application/json
 // @Param data body request.GetByProjectId true "TaskId"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /ansible/task/stopTask [post]
+// @Router /task/stopTask [post]
 func (a *TaskApi) StopTask(c *gin.Context) {
 	var idInfo request.GetById
 	if err := c.ShouldBindJSON(&idInfo); err != nil {
