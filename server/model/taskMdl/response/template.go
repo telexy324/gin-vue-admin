@@ -30,3 +30,7 @@ type TaskTemplateSetTemplateResponse struct {
 	taskMdl.TaskTemplateSetTemplate
 	TemplateName string `json:"templateName"`
 }
+
+type TemplateFileListResponse struct {
+	FileNames []string `json:"fileNames"`
+}

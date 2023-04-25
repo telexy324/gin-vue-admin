@@ -49,6 +49,9 @@ func (templateService *TaskTemplatesService) UpdateTaskTemplate(template taskMdl
 	upDateMap["script_path"] = template.ScriptPath
 	upDateMap["last_task_id"] = template.LastTaskId
 	upDateMap["sys_user"] = template.SysUser
+	upDateMap["system_id"] = template.SystemId
+	upDateMap["execute_type"] = template.ExecuteType
+	upDateMap["log_path"] = template.LogPath
 
 	err := global.GVA_DB.Transaction(func(tx *gorm.DB) error {
 		db := tx.Where("id = ?", template.ID).Find(&oldTaskTemplate)
@@ -169,7 +172,6 @@ func (templateService *TaskTemplatesService) CheckScript(s application.Applicati
 	var command string
 	command = `[ -f ` + template.ScriptPath + ` ] && echo yes || echo no`
 	output, err = sshClient.CommandSingle(command)
-	global.GVA_LOG.Info(strings.Trim(output, " "))
 	if err != nil || strings.Trim(output, " ") == "no" || strings.Trim(output, "\n") == "no" {
 		global.GVA_LOG.Error("judge script exist: ", zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
 		return
@@ -544,4 +546,15 @@ func (templateService *TaskTemplatesService) GetSetTaskList(info request2.SetTas
 	err = db.Limit(limit).Offset(offset).Find(&setTaskList).Error
 
 	return err, setTaskList, total
+}
+
+func (templateService *TaskTemplatesService) GetFileList(s application.ApplicationServer, sshClient *common.SSHClient, template taskMdl.TaskTemplate) (fileNames []string, err error) {
+	var command string
+	command = `ls -l ` + template.LogPath + ` | grep ^- | awk '{print $9}'`
+	outputs, err := sshClient.CommandSingle(command)
+	if err != nil {
+		return
+	}
+	fileNames = strings.Split(outputs, "\n")
+	return
 }

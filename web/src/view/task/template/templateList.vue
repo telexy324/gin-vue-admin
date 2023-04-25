@@ -14,6 +14,7 @@
     <div class="gva-table-box">
       <div class="gva-btn-list">
         <el-button size="mini" type="primary" icon="el-icon-plus" @click="openDialog('addTemplate')">新增</el-button>
+        <el-button size="mini" type="primary" icon="el-icon-plus" @click="openLogDialog('addLogTemplate')">新增日志提取</el-button>
         <el-popover v-model:visible="deleteVisible" placement="top" width="160">
           <p>确定要删除吗？</p>
           <div style="text-align: right; margin-top: 8px;">
@@ -168,6 +169,46 @@
       </template>
     </el-dialog>
 
+    <el-dialog v-model="dialogLogFormVisible" :before-close="closeLogDialog" :title="dialogLogTitle">
+      <warning-bar title="新增日志提取模板" />
+      <el-form ref="templateLogForm" :model="logForm" :rules="logRules" label-width="150px">
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="模版名" prop="name">
+              <el-input v-model="logForm.name" autocomplete="off" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="执行用户" prop="sysUser">
+              <el-input v-model="logForm.sysUser" autocomplete="off" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-form-item label="描述" prop="description">
+          <el-input v-model="logForm.description" autocomplete="off" type="textarea" />
+        </el-form-item>
+        <el-form-item label="目标" prop="targetServerIds">
+          <el-cascader
+            v-model="logForm.targetIds"
+            style="width:100%"
+            :options="serverOptions"
+            :show-all-levels="false"
+            :props="{ multiple:false,checkStrictly: true,label:'name',value:'ID',disabled:'disabled',emitPath:false}"
+            :clearable="false"
+          />
+        </el-form-item>
+        <el-form-item label="日志文件夹位置" prop="logPath">
+          <el-input v-model="logForm.logPath" autocomplete="off" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button size="small" @click="closeLogDialog">取 消</el-button>
+          <el-button size="small" type="primary" @click="enterLogDialog">确 定</el-button>
+        </div>
+      </template>
+    </el-dialog>
+
     <el-dialog v-model="dialogFormVisibleScript" :before-close="closeScriptDialog" title='上传模板'>
       <el-form ref="scriptForm" :model="scriptForm" :rules="rules" label-width="80px">
         <el-form-item label="脚本位置" prop="scriptPath">
@@ -285,7 +326,25 @@ export default {
       uploading: false,
       uploadingServer: false,
       uploadingStatus: false,
-      drawer: false
+      drawer: false,
+      logForm: {
+        ID: '',
+        name: '',
+        description: '',
+        logPath: '',
+        sysUser: '',
+        targetIds: '',
+        executeType: 1,
+      },
+      logRules: {
+        name: [{ required: true, message: '请输入模板名', trigger: 'blur' }],
+        logPath: [
+          { required: true, message: '请输入日志文件夹路径', trigger: 'blur' }
+        ]
+      },
+      dialogLogFormVisible: false,
+      dialogLogTitle: '新增日志提取模板',
+      logType: '',
     }
   },
   computed: {
@@ -379,8 +438,14 @@ export default {
     },
     async editTemplate(row) {
       const res = await getTemplateById({ id: row.ID })
-      this.form = res.data.taskTemplate
-      this.openDialog('edit')
+      if (res.data.taskTemplate.executeType === 1) {
+        this.logForm = res.data.taskTemplate
+        this.logForm.targetIds = this.logForm.targetIds[0]
+        this.openLogDialog('edit')
+      } else {
+        this.form = res.data.taskTemplate
+        this.openDialog('edit')
+      }
     },
     async deleteTemplate(row) {
       this.$confirm('此操作将永久删除服务器?', '提示', {
@@ -408,6 +473,7 @@ export default {
           switch (this.type) {
             case 'addTemplate':
               {
+                this.form.ID = 0
                 const res = await addTemplate(this.form)
                 if (res.code === 0) {
                   this.$message({
@@ -669,7 +735,88 @@ export default {
           systemIDs.push(Number(id))
         })
       return systemIDs
-    }
+    },
+    closeLogDialog() {
+      this.initLogForm()
+      this.dialogLogFormVisible = false
+    },
+    initLogForm() {
+      this.$refs.templateLogForm.resetFields()
+      this.form = {
+        ID: '',
+        name: '',
+        description: '',
+        logPath: '',
+        sysUser: '',
+        targetIds: '',
+        executeType: 1,
+      }
+    },
+    openLogDialog(type) {
+      switch (type) {
+        case 'addLogTemplate':
+          this.dialogTitle = '新增日志提取模板'
+          break
+        case 'edit':
+          this.dialogTitle = '编辑日志提取模板'
+          break
+        default:
+          break
+      }
+      this.logType = type
+      this.dialogLogFormVisible = true
+    },
+    async enterLogDialog() {
+      this.$refs.templateLogForm.validate(async valid => {
+        if (valid) {
+          switch (this.logType) {
+            case 'addLogTemplate':
+              {
+                this.logForm.ID = 0
+                const _targetId = this.logForm.targetIds
+                this.logForm.targetIds = [_targetId]
+                const res = await addTemplate(this.logForm)
+                if (res.code === 0) {
+                  this.$message({
+                    type: 'success',
+                    message: '添加成功',
+                    showClose: true
+                  })
+                }
+                this.getTableData()
+                this.closeLogDialog()
+              }
+              break
+            case 'edit':
+              {
+                const _targetId = this.logForm.targetIds
+                this.logForm.targetIds = [_targetId]
+                const res = await updateTemplate(this.logForm)
+                if (res.code === 0) {
+                  this.$message({
+                    type: 'success',
+                    message: '编辑成功',
+                    showClose: true
+                  })
+                }
+                this.getTableData()
+                this.closeLogDialog()
+              }
+              break
+            default:
+              // eslint-disable-next-line no-lone-blocks
+              {
+                this.$message({
+                  type: 'error',
+                  message: '未知操作',
+                  showClose: true
+                })
+              }
+              break
+          }
+        }
+      })
+    },
   }
 }
 </script>

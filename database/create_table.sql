@@ -159,6 +159,8 @@ create table `application_task_templates`
     `last_task_id`    int          NOT NULL DEFAULT '0',
     `sys_user`        varchar(30)  NOT NULL DEFAULT 'root',
     `system_id`       bigint UNSIGNED NOT NULL DEFAULT '0',
+    `execute_type`    tinyint(2) NOT NULL DEFAULT '0' COMMENT '模板类型 0 普通 1 日志提取',
+    `log_path`        varchar(255) NOT NULL DEFAULT '',
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

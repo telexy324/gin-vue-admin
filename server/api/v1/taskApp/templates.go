@@ -658,3 +658,52 @@ func (a *TemplateApi) GetSetTaskList(c *gin.Context) {
 		}, "获取成功", c)
 	}
 }
+
+// @Tags Template
+// @Summary 检查script
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body request.GetById true "模板id"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"更新成功"}"
+// @Router /task/template/getFileList [post]
+func (a *TemplateApi) GetFileList(c *gin.Context) {
+	var idInfo request.GetById
+	if err := c.ShouldBindJSON(&idInfo); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err := utils.Verify(idInfo.ID, utils.IdVerify); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	template, err := templateService.GetTaskTemplate(idInfo.ID)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if template.TargetIds == nil || len(template.TargetIds) == 0 {
+		response.FailWithMessage("template target ids is null", c)
+	}
+	err, server := cmdbServerService.GetServerById(float64(template.TargetIds[0]))
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	sshClient, err := common.FillSSHClient(server.ManageIp, template.SysUser, "", server.SshPort)
+	err = sshClient.GenerateClient()
+	if err != nil {
+		global.GVA_LOG.Error("create ssh client failed: ", zap.String("server IP: ", server.ManageIp), zap.Any("err", err))
+		return
+	}
+	fileNames, err := templateService.GetFileList(server, &sshClient, template)
+	if err != nil {
+		global.GVA_LOG.Error("check script failed", zap.Any("err", err))
+		response.FailWithMessage("check script failed", c)
+	} else {
+		response.OkWithDetailed(templateRes.TemplateFileListResponse{
+			FileNames: fileNames,
+		}, "获取成功", c)
+	}
+}
