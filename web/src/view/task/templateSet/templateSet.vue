@@ -161,7 +161,6 @@ import infoList from '@/mixins/infoList'
 import { toSQLLine } from '@/utils/stringFun'
 import warningBar from '@/components/warningBar/warningBar.vue'
 import { emitter } from '@/utils/bus'
-// import socket from '@/socket'
 import Systems from '@/components/task/systems.vue'
 import TemplateSetTask from '@/view/task/templateSet/components/templateSetTask.vue'
 
@@ -402,6 +401,7 @@ export default {
       return rowLabel && rowLabel[0] && rowLabel[0].name
     },
     async setTemplateOptions() {
+      this.searchInfo.executeType = 1
       const res = await getTemplateList({ page: 1, pageSize: 99999, ...this.searchInfo })
       this.systemTemplateOptions = res.data.list
       console.log(this.systemTemplateOptions)

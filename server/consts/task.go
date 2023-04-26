@@ -10,6 +10,6 @@ const (
 )
 
 const (
-	ExecuteTypeNormal = iota
+	ExecuteTypeNormal = iota + 1
 	ExecuteTypeDownload
 )

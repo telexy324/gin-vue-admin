@@ -32,13 +32,13 @@
           type="selection"
           width="55"
         />
-        <el-table-column align="left" label="name" min-width="60" prop="name" sortable="custom" />
-        <el-table-column align="left" label="lastStatus" min-width="150" prop="lastTask.status" sortable="custom">
+        <el-table-column align="left" label="模版名" min-width="60" prop="name" sortable="custom" />
+        <el-table-column align="left" label="最近执行状态" min-width="150" prop="lastTask.status" sortable="custom">
           <template v-slot="scope">
             <TaskStatus :status="scope.row.lastTask.status" />
           </template>
         </el-table-column>
-        <el-table-column align="left" label="task" min-width="200" sortable="custom">
+        <el-table-column align="left" label="最近任务" min-width="200" sortable="custom">
           <template v-slot="scope">
             <el-button
               type="text"
@@ -125,6 +125,13 @@
                 <el-option :value="1" label="命令" />
                 <el-option :value="2" label="脚本" />
               </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="所属系统" prop="mode">
+              <el-option v-for="val in systemOptions" :key="val.ID" :value="val.ID" :label="val.name" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -243,13 +250,11 @@
     </el-dialog>
 
     <el-dialog v-model="dialogFormVisibleDownload" :before-close="closeDownloadDialog" title="文件列表">
-      <div class="fileName">
-        <ul>
-          <li v-for="(item,index) in fileNames" :key="index" @click="downLoadFile(item)">
-            {{ item }}
-          </li>
-        </ul>
-      </div>
+      <ul class="file-name">
+        <li v-for="(item,index) in fileNames" :key="index" @click="downLoadFile(item)">
+          {{ item }}
+        </li>
+      </ul>
       <template #footer>
         <div class="dialog-footer">
           <el-button size="small" @click="closeDownloadDialog">取 消</el-button>
@@ -279,7 +284,7 @@ import {
   downloadFile,
 } from '@/api/template'
 import { addTask } from '@/api/task'
-import { getAllServerIds } from '@/api/cmdb'
+import { getAdminSystems, getAllServerIds } from '@/api/cmdb'
 import infoList from '@/mixins/infoList'
 import { toSQLLine } from '@/utils/stringFun'
 import warningBar from '@/components/warningBar/warningBar.vue'
@@ -308,6 +313,7 @@ export default {
       dialogTitle: '新增template',
       templates: [],
       serverOptions: [],
+      systemOptions: [],
       form: {
         ID: '',
         name: '',
@@ -318,6 +324,7 @@ export default {
         sysUser: '',
         targetIds: '',
         detail: false,
+        systemId: '',
       },
       type: '',
       rules: {
@@ -351,7 +358,8 @@ export default {
         logPath: '',
         sysUser: '',
         targetIds: '',
-        executeType: 1,
+        executeType: 2,
+        systemId: '',
       },
       logRules: {
         name: [{ required: true, message: '请输入模板名', trigger: 'blur' }],
@@ -376,8 +384,8 @@ export default {
       this.searchInfo.systemIds = this.formRouterParam(this.$route.params.systemIds)
     }
     await this.getTableData()
-    const res = await getAllServerIds()
-    this.setOptions(res.data)
+    await this.setServerOptions()
+    await this.setSystemOptions()
   },
   mounted() {
     emitter.on('i-close-task', () => {
@@ -534,8 +542,13 @@ export default {
         }
       })
     },
-    setOptions(data) {
-      this.serverOptions = data
+    async setServerOptions() {
+      const res = await getAllServerIds()
+      this.serverOptions = res.data
+    },
+    async setSystemOptions() {
+      const res = await getAdminSystems()
+      this.systemOptions = res.data.systems
     },
     async runTask(row) {
       if (row.executeType === 1) {
@@ -884,5 +897,27 @@ export default {
 }
 .excel-btn+.excel-btn{
   margin-left: 10px;
+}
+.file-name {
+  width: 100%;
+  height: 100%;
+  text-align: left;
+  li {
+    width: 100%;
+    white-space:nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    i {
+      margin-right: 8px;
+    }
+    padding: 10px 0;
+    font-size: 16px;
+    font-weight: 400;
+    color: #0154ff;
+  }
+  li:hover {
+    background: #f2f2f2;
+    cursor: pointer;
+  }
 }
 </style>

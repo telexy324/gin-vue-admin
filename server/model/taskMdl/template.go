@@ -19,7 +19,7 @@ type TaskTemplate struct {
 	LastTaskId      int                             `json:"lastTaskId" gorm:"column:last_task_id"`           // 最后一次task id
 	SysUser         string                          `json:"sysUser" gorm:"column:sys_user"`                  // 执行用户
 	SystemId        int                             `json:"systemId" gorm:"column:system_id"`                // 所属系统
-	ExecuteType     int                             `json:"executeType" gorm:"column:execute_type"`          // 模板类型 0 普通 1 日志提取
+	ExecuteType     int                             `json:"executeType" gorm:"column:execute_type"`          // 模板类型 1 普通 2 日志提取
 	LogPath         string                          `json:"logPath" gorm:"column:log_path"`                  // 日志位置
 	TargetIds       []int                           `json:"targetIds" gorm:"-"`
 	TargetServers   []application.ApplicationServer `json:"targetServers" gorm:"-"`
