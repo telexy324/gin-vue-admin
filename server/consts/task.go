@@ -8,3 +8,8 @@ const (
 const (
 	ScheduleValid = iota + 1
 )
+
+const (
+	ExecuteTypeNormal = iota
+	ExecuteTypeDownload
+)

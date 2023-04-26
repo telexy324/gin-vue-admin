@@ -209,7 +209,7 @@
       </template>
     </el-dialog>
 
-    <el-dialog v-model="dialogFormVisibleScript" :before-close="closeScriptDialog" title='上传模板'>
+    <el-dialog v-model="dialogFormVisibleScript" :before-close="closeScriptDialog" title="上传模板">
       <el-form ref="scriptForm" :model="scriptForm" :rules="rules" label-width="80px">
         <el-form-item label="脚本位置" prop="scriptPath">
           <el-input v-model="scriptForm.scriptPath" autocomplete="off" />
@@ -241,6 +241,21 @@
         </div>
       </template>
     </el-dialog>
+
+    <el-dialog v-model="dialogFormVisibleDownload" :before-close="closeDownloadDialog" title="文件列表">
+      <div class="fileName">
+        <ul>
+          <li v-for="(item,index) in fileNames" :key="index" @click="downLoadFile(item)">
+            {{ item }}
+          </li>
+        </ul>
+      </div>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button size="small" @click="closeDownloadDialog">取 消</el-button>
+        </div>
+      </template>
+    </el-dialog>
     <el-drawer v-if="drawer" v-model="drawer" :with-header="false" size="40%" title="请选择系统">
       <Systems ref="systems" :keys="searchInfo.systemIds" @checked="getCheckedTemplates" />
     </el-drawer>
@@ -259,7 +274,9 @@ import {
   addTemplate,
   updateTemplate,
   checkScript,
-  deleteTemplateByIds
+  deleteTemplateByIds,
+  getFileList,
+  downloadFile,
 } from '@/api/template'
 import { addTask } from '@/api/task'
 import { getAllServerIds } from '@/api/cmdb'
@@ -345,6 +362,9 @@ export default {
       dialogLogFormVisible: false,
       dialogLogTitle: '新增日志提取模板',
       logType: '',
+      fileNames: [],
+      currentTemplate: '',
+      dialogFormVisibleDownload: false,
     }
   },
   computed: {
@@ -518,11 +538,19 @@ export default {
       this.serverOptions = data
     },
     async runTask(row) {
-      const task = (await addTask({
-        templateId: row.ID
-      })).data.task
-      console.log(task.ID)
-      this.showTaskLog(task)
+      if (row.executeType === 1) {
+        this.currentTemplate = row
+        this.fileNames = (await getFileList({
+          ID: row.ID
+        })).data.fileNames
+        this.showFileList()
+      } else {
+        const task = (await addTask({
+          templateId: row.ID
+        })).data.task
+        console.log(task.ID)
+        this.showTaskLog(task)
+      }
     },
     showTaskLog(task) {
       emitter.emit('i-show-task', task)
@@ -817,6 +845,19 @@ export default {
         }
       })
     },
+    showFileList() {
+      this.dialogFormVisibleDownload = true
+    },
+    closeDownloadDialog() {
+      this.fileNames = []
+      this.currentTemplate = ''
+      this.dialogFormVisibleDownload = false
+    },
+    downLoadFile(item) {
+      const id = this.currentTemplate.ID
+      this.closeDownloadDialog()
+      downloadFile(id, item)
+    }
   }
 }
 </script>

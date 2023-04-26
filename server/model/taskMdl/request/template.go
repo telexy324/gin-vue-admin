@@ -21,3 +21,8 @@ type AddSet struct {
 	taskMdl.TaskTemplateSet
 	Templates []taskMdl.TaskTemplateSetTemplate `json:"templates"`
 }
+
+type DownLoadFileRequest struct {
+	ID   float64 `json:"id" form:"id"` // 主键ID
+	File string  `json:"file" form:"file"`
+}

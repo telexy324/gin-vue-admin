@@ -1,4 +1,5 @@
 import service from '@/utils/request'
+import download from "../utils/download";
 
 // @Summary 获取template列表
 // @Produce  application/json
@@ -250,5 +251,31 @@ export const getSetTaskList = (data) => {
     url: '/task/template/getSetTaskList',
     method: 'post',
     data
+  })
+}
+
+// @Summary 获取文件列表
+// @Produce  application/json
+// @Param checkScript Object
+// @Router /task/template/getFileList [post]
+export const getFileList = (data) => {
+  return service({
+    url: '/task/template/getFileList',
+    method: 'post',
+    data
+  })
+}
+
+// @Summary 下载文件
+// @Produce  application/json
+// @Param checkScript Object
+// @Router /task/template/downloadFile [post]
+export const downloadFile = (id, fileName) => {
+  return service({
+    url: '/task/template/downloadFile?id=' + id + '&file=' + fileName,
+    method: 'get',
+    responseType: 'blob'
+  }).then((res) => {
+    download(res, fileName)
   })
 }

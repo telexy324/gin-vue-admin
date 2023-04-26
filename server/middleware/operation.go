@@ -77,7 +77,9 @@ func OperationRecord() gin.HandlerFunc {
 		record.ErrorMessage = c.Errors.ByType(gin.ErrorTypePrivate).String()
 		record.Status = c.Writer.Status()
 		record.Latency = latency
-		record.Resp = writer.body.String()
+		if c.Request.URL.Path != "/task/template/downloadFile" {
+			record.Resp = writer.body.String()
+		}
 
 		if err := operationRecordService.CreateSysOperationRecord(record); err != nil {
 			global.GVA_LOG.Error("create operation record error:", zap.Any("err", err))

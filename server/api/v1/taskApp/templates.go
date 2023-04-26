@@ -3,6 +3,7 @@ package taskApp
 import (
 	"encoding/json"
 	"github.com/flipped-aurora/gin-vue-admin/server/common"
+	"github.com/flipped-aurora/gin-vue-admin/server/consts"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/response"
@@ -14,6 +15,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"strconv"
+	"strings"
 )
 
 type TemplateApi struct {
@@ -283,14 +285,14 @@ func (a *TemplateApi) DownloadScript(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	file, err := templateService.DownloadScript(info.ID, server)
+	fileBytes, err := templateService.DownloadScript(info.ID, server)
 
 	//c.Writer.Header().Add("success", "true")
 	c.Header("Content-Type", "application/octet-stream")
 	c.Header("Content-Disposition", "attachment; filename="+"serverTemplate.xlsx")
 	c.Header("Content-Transfer-Encoding", "binary")
 	c.Header("success", "true")
-	if _, err = file.WriteTo(c.Writer); err != nil {
+	if _, err = c.Writer.Write(fileBytes); err != nil {
 		global.GVA_LOG.Error("下载脚本失败!", zap.Any("err", err))
 	}
 }
@@ -660,7 +662,7 @@ func (a *TemplateApi) GetSetTaskList(c *gin.Context) {
 }
 
 // @Tags Template
-// @Summary 检查script
+// @Summary 获取文件列表
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
@@ -674,7 +676,7 @@ func (a *TemplateApi) GetFileList(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err := utils.Verify(idInfo.ID, utils.IdVerify); err != nil {
+	if err := utils.Verify(idInfo, utils.IdVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
@@ -685,6 +687,9 @@ func (a *TemplateApi) GetFileList(c *gin.Context) {
 	}
 	if template.TargetIds == nil || len(template.TargetIds) == 0 {
 		response.FailWithMessage("template target ids is null", c)
+	}
+	if template.ExecuteType != consts.ExecuteTypeDownload {
+		response.FailWithMessage("template type is not download", c)
 	}
 	err, server := cmdbServerService.GetServerById(float64(template.TargetIds[0]))
 	if err != nil {
@@ -697,7 +702,7 @@ func (a *TemplateApi) GetFileList(c *gin.Context) {
 		global.GVA_LOG.Error("create ssh client failed: ", zap.String("server IP: ", server.ManageIp), zap.Any("err", err))
 		return
 	}
-	fileNames, err := templateService.GetFileList(server, &sshClient, template)
+	fileNames, err := templateService.GetFileList(&sshClient, template)
 	if err != nil {
 		global.GVA_LOG.Error("check script failed", zap.Any("err", err))
 		response.FailWithMessage("check script failed", c)
@@ -705,5 +710,71 @@ func (a *TemplateApi) GetFileList(c *gin.Context) {
 		response.OkWithDetailed(templateRes.TemplateFileListResponse{
 			FileNames: fileNames,
 		}, "获取成功", c)
+	}
+}
+
+// @Tags Template
+// @Summary 下载文件
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body templateReq.DownLoadFileRequest true "id,文件路径"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"更新成功"}"
+// @Router /task/template/downloadFile [get]
+func (a *TemplateApi) DownloadFile(c *gin.Context) {
+	var info templateReq.DownLoadFileRequest
+	if err := c.ShouldBindQuery(&info); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err := utils.Verify(info, utils.IdVerify); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	template, err := templateService.GetTaskTemplate(info.ID)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if template.TargetIds == nil || len(template.TargetIds) == 0 {
+		response.FailWithMessage("template target ids is null", c)
+	}
+	if template.ExecuteType != consts.ExecuteTypeDownload {
+		response.FailWithMessage("template type is not download", c)
+	}
+	err, server := cmdbServerService.GetServerById(float64(template.TargetIds[0]))
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	sshClient, err := common.FillSSHClient(server.ManageIp, template.SysUser, "", server.SshPort)
+	err = sshClient.GenerateClient()
+	if err != nil {
+		global.GVA_LOG.Error("create ssh client failed: ", zap.String("server IP: ", server.ManageIp), zap.Any("err", err))
+		return
+	}
+	filePath := "/" + strings.Trim(template.LogPath, "/") + "/"
+	fileBytes, err := sshClient.Download(filePath + info.File)
+	if err != nil {
+		global.GVA_LOG.Error("download file failed", zap.Any("err", err))
+		response.FailWithMessage("download file failed", c)
+		return
+	}
+	c.Header("Content-Type", "application/octet-stream")
+	c.Header("Content-Disposition", "attachment; filename="+info.File)
+	c.Header("Content-Transfer-Encoding", "binary")
+	c.Header("success", "true")
+	//fileBytes,err:=io.ReadAll(file)
+	//if err != nil {
+	//	global.GVA_LOG.Error("read file failed", zap.Any("err", err))
+	//	response.FailWithMessage("read file failed", c)
+	//	return
+	//}
+	//if _, err = c.Writer.Write(fileBytes); err != nil {
+	//	global.GVA_LOG.Error("下载文件失败!", zap.Any("err", err))
+	//}
+	if _, err = c.Writer.Write(fileBytes); err != nil {
+		global.GVA_LOG.Error("下载文件失败!", zap.Any("err", err))
 	}
 }

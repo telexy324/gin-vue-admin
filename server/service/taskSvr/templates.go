@@ -12,7 +12,6 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl"
 	request2 "github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl/response"
-	"github.com/pkg/sftp"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"io/ioutil"
@@ -187,7 +186,7 @@ func (templateService *TaskTemplatesService) CheckScript(s application.Applicati
 	return
 }
 
-func (templateService *TaskTemplatesService) DownloadScript(ID float64, server application.ApplicationServer) (file *sftp.File, err error) {
+func (templateService *TaskTemplatesService) DownloadScript(ID float64, server application.ApplicationServer) (fileBytes []byte, err error) {
 	template, err := templateService.GetTaskTemplate(ID)
 	if err != nil {
 		return
@@ -548,7 +547,7 @@ func (templateService *TaskTemplatesService) GetSetTaskList(info request2.SetTas
 	return err, setTaskList, total
 }
 
-func (templateService *TaskTemplatesService) GetFileList(s application.ApplicationServer, sshClient *common.SSHClient, template taskMdl.TaskTemplate) (fileNames []string, err error) {
+func (templateService *TaskTemplatesService) GetFileList(sshClient *common.SSHClient, template taskMdl.TaskTemplate) (fileNames []string, err error) {
 	var command string
 	command = `ls -l ` + template.LogPath + ` | grep ^- | awk '{print $9}'`
 	outputs, err := sshClient.CommandSingle(command)

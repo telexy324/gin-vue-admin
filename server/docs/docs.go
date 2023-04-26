@@ -5412,6 +5412,44 @@ var doc = `{
                 }
             }
         },
+        "/task/template/downloadFile": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Template"
+                ],
+                "summary": "下载文件",
+                "parameters": [
+                    {
+                        "description": "id,文件路径",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.DownLoadFileRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\":true,\"data\":{},\"msg\":\"更新成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/task/template/downloadScript": {
             "get": {
                 "security": [
@@ -5443,6 +5481,44 @@ var doc = `{
                 "responses": {
                     "200": {
                         "description": "{\"success\":true,\"data\":{},\"msg\":\"下载成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/task/template/getFileList": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Template"
+                ],
+                "summary": "获取文件列表",
+                "parameters": [
+                    {
+                        "description": "模板id",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.GetById"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\":true,\"data\":{},\"msg\":\"更新成功\"}",
                         "schema": {
                             "type": "string"
                         }
@@ -7067,6 +7143,18 @@ var doc = `{
                 }
             }
         },
+        "request.DownLoadFileRequest": {
+            "type": "object",
+            "properties": {
+                "file": {
+                    "type": "string"
+                },
+                "id": {
+                    "description": "主键ID",
+                    "type": "number"
+                }
+            }
+        },
         "request.Empty": {
             "type": "object"
         },
@@ -7106,6 +7194,20 @@ var doc = `{
                 "id": {
                     "description": "主键ID",
                     "type": "number"
+                },
+                "page": {
+                    "description": "页码",
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "description": "每页大小",
+                    "type": "integer"
+                },
+                "sortBy": {
+                    "type": "string"
+                },
+                "sortInverted": {
+                    "type": "boolean"
                 }
             }
         },
@@ -7986,6 +8088,10 @@ var doc = `{
                     "description": "task描述",
                     "type": "string"
                 },
+                "executeType": {
+                    "description": "模板类型 0 普通 1 日志提取",
+                    "type": "integer"
+                },
                 "id": {
                     "description": "主键ID",
                     "type": "integer"
@@ -7996,6 +8102,10 @@ var doc = `{
                 "lastTaskId": {
                     "description": "最后一次task id",
                     "type": "integer"
+                },
+                "logPath": {
+                    "description": "日志位置",
+                    "type": "string"
                 },
                 "mode": {
                     "description": "执行方式 1 命令 2 脚本",
