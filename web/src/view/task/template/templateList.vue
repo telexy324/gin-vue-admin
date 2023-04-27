@@ -76,6 +76,7 @@
               icon="el-icon-edit"
               size="small"
               type="text"
+              :disabled="scope.row.executeType!==1"
               @click="uploadScript(scope.row)"
             >上传脚本</el-button>
           </template>
