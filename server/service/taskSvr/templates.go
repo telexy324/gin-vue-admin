@@ -552,11 +552,19 @@ func (templateService *TaskTemplatesService) GetSetTaskList(info request2.SetTas
 
 func (templateService *TaskTemplatesService) GetFileList(sshClient *common.SSHClient, template taskMdl.TaskTemplate) (fileNames []string, err error) {
 	var command string
-	command = `ls -l ` + template.LogPath + ` | grep ^- | awk '{print $9}'`
+	command = `ls -lh ` + template.LogPath + ` | grep ^- | awk '{print $5 " " $9}'`
 	outputs, err := sshClient.CommandSingle(command)
 	if err != nil {
 		return
 	}
 	fileNames = strings.Split(outputs, "\n")
+	//files := strings.Split(outputs, "\n")
+	//for _, f := range files {
+	//	fields := strings.Split(f, " ")
+	//	if len(fields) < 2 {
+	//		continue
+	//	}
+	//	fileNames = append(fileNames, fields[0]+strings.Repeat(" ", 12-len(fields[0]))+fields[1])
+	//}
 	return
 }

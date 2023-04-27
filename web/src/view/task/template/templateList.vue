@@ -47,6 +47,11 @@
             >#{{ scope.row.lastTask.ID }}</el-button>
           </template>
         </el-table-column>
+        <el-table-column align="left" label="所属系统" min-width="150" prop="systemId" sortable="custom">
+          <template #default="scope">
+            <div>{{ filterSystemName(scope.row.systemId) }}</div>
+          </template>
+        </el-table-column>
         <el-table-column align="left" fixed="right" label="操作" width="250">
           <template #default="scope">
             <el-button
@@ -127,11 +132,11 @@
               </el-select>
             </el-form-item>
           </el-col>
-        </el-row>
-        <el-row>
           <el-col :span="12">
-            <el-form-item label="所属系统" prop="mode">
-              <el-option v-for="val in systemOptions" :key="val.ID" :value="val.ID" :label="val.name" />
+            <el-form-item label="所属系统" prop="systemId">
+              <el-select v-model="form.systemId">
+                <el-option v-for="val in systemOptions" :key="val.ID" :value="val.ID" :label="val.name" />
+              </el-select>
             </el-form-item>
           </el-col>
         </el-row>
@@ -204,6 +209,11 @@
             :clearable="false"
           />
         </el-form-item>
+        <el-form-item label="所属系统" prop="systemId">
+          <el-select v-model="logForm.systemId">
+            <el-option v-for="val in systemOptions" :key="val.ID" :value="val.ID" :label="val.name" />
+          </el-select>
+        </el-form-item>
         <el-form-item label="日志文件夹位置" prop="logPath">
           <el-input v-model="logForm.logPath" autocomplete="off" />
         </el-form-item>
@@ -251,8 +261,8 @@
 
     <el-dialog v-model="dialogFormVisibleDownload" :before-close="closeDownloadDialog" title="文件列表">
       <ul class="file-name">
-        <li v-for="(item,index) in fileNames" :key="index" @click="downLoadFile(item)">
-          {{ item }}
+        <li v-for="(item,index) in fileNames" :key="index" @click="downLoadFile(index)">
+          <pre>{{ item }}</pre>
         </li>
       </ul>
       <template #footer>
@@ -371,6 +381,7 @@ export default {
       dialogLogTitle: '新增日志提取模板',
       logType: '',
       fileNames: [],
+      fNames: [],
       currentTemplate: '',
       dialogFormVisibleDownload: false,
     }
@@ -466,7 +477,7 @@ export default {
     },
     async editTemplate(row) {
       const res = await getTemplateById({ id: row.ID })
-      if (res.data.taskTemplate.executeType === 1) {
+      if (res.data.taskTemplate.executeType === 2) {
         this.logForm = res.data.taskTemplate
         this.logForm.targetIds = this.logForm.targetIds[0]
         this.openLogDialog('edit')
@@ -551,11 +562,18 @@ export default {
       this.systemOptions = res.data.systems
     },
     async runTask(row) {
-      if (row.executeType === 1) {
+      if (row.executeType === 2) {
         this.currentTemplate = row
-        this.fileNames = (await getFileList({
+        const fileNames = (await getFileList({
           ID: row.ID
         })).data.fileNames
+        this.fileNames = fileNames.map((item) => {
+          const fields = item.split(' ')
+          const replacing = ' '.repeat(12 - fields[0].length)
+          this.fNames.push(fields[1])
+          return item.replace(' ', replacing)
+        })
+        console.log(this.fileNames)
         this.showFileList()
       } else {
         const task = (await addTask({
@@ -866,11 +884,16 @@ export default {
       this.currentTemplate = ''
       this.dialogFormVisibleDownload = false
     },
-    downLoadFile(item) {
+    downLoadFile(index) {
+      const item = this.fNames[index]
       const id = this.currentTemplate.ID
       this.closeDownloadDialog()
       downloadFile(id, item)
-    }
+    },
+    filterSystemName(value) {
+      const rowLabel = this.systemOptions.filter(item => item.ID === value)
+      return rowLabel && rowLabel[0] && rowLabel[0].name
+    },
   }
 }
 </script>
