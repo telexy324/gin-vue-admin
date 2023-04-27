@@ -58,6 +58,7 @@
               icon="el-icon-edit"
               size="small"
               type="text"
+              :disabled="!hasEdit"
               @click="editTemplate(scope.row)"
             >编辑</el-button>
             <el-button
@@ -296,6 +297,7 @@ import {
 } from '@/api/template'
 import { addTask } from '@/api/task'
 import { getAdminSystems, getAllServerIds } from '@/api/cmdb'
+import { getPolicyPathByAuthorityId } from '@/api/casbin'
 import infoList from '@/mixins/infoList'
 import { toSQLLine } from '@/utils/stringFun'
 import warningBar from '@/components/warningBar/warningBar.vue'
@@ -385,6 +387,7 @@ export default {
       fNames: [],
       currentTemplate: '',
       dialogFormVisibleDownload: false,
+      hasEdit: true,
     }
   },
   computed: {
@@ -403,6 +406,7 @@ export default {
     emitter.on('i-close-task', () => {
       this.getTableData()
     })
+    this.authorities()
   },
   methods: {
     //  选中api
@@ -895,6 +899,15 @@ export default {
       const rowLabel = this.systemOptions.filter(item => item.ID === value)
       return rowLabel && rowLabel[0] && rowLabel[0].name
     },
+    async authorities() {
+      const res = await getPolicyPathByAuthorityId({
+        authorityId: this.userInfo.authorityId
+      })
+      this.hasEdit = !!res.data.paths.filter((item) => {
+        return item.path === '/task/template/updateTemplate'
+      })
+      console.log(this.hasEdit)
+    }
   }
 }
 </script>
