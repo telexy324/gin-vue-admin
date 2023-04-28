@@ -13,8 +13,8 @@
     </div>
     <div class="gva-table-box">
       <div class="gva-btn-list">
-        <el-button size="mini" type="primary" icon="el-icon-plus" @click="openDialog('addTemplate')">新增</el-button>
-        <el-button size="mini" type="primary" icon="el-icon-plus" @click="openLogDialog('addLogTemplate')">新增日志提取</el-button>
+        <el-button size="mini" type="primary" icon="el-icon-plus" :disabled="!hasCreate" @click="openDialog('addTemplate')">新增</el-button>
+        <el-button size="mini" type="primary" icon="el-icon-plus" :disabled="!hasCreate" @click="openLogDialog('addLogTemplate')">新增日志提取</el-button>
         <el-popover v-model:visible="deleteVisible" placement="top" width="160">
           <p>确定要删除吗？</p>
           <div style="text-align: right; margin-top: 8px;">
@@ -22,7 +22,7 @@
             <el-button size="mini" type="primary" @click="onDelete">确定</el-button>
           </div>
           <template #reference>
-            <el-button icon="el-icon-delete" size="mini" :disabled="!templates.length" style="margin-left: 10px;">删除</el-button>
+            <el-button icon="el-icon-delete" size="mini" :disabled="!templates.length || !hasDelete" style="margin-left: 10px;">删除</el-button>
           </template>
         </el-popover>
         <el-button class="excel-btn" size="mini" type="success" icon="el-icon-download" @click="openDrawer()">选择系统</el-button>
@@ -65,6 +65,7 @@
               icon="el-icon-delete"
               size="small"
               type="text"
+              :disabled="!hasDelete"
               @click="deleteTemplate(scope.row)"
             >删除</el-button>
             <el-button
@@ -388,6 +389,8 @@ export default {
       currentTemplate: '',
       dialogFormVisibleDownload: false,
       hasEdit: true,
+      hasCreate: true,
+      hasDelete: true,
     }
   },
   computed: {
@@ -903,10 +906,15 @@ export default {
       const res = await getPolicyPathByAuthorityId({
         authorityId: this.userInfo.authorityId
       })
-      this.hasEdit = !!res.data.paths.filter((item) => {
+      this.hasEdit = !!res.data.paths.some((item) => {
         return item.path === '/task/template/updateTemplate'
       })
-      console.log(this.hasEdit)
+      this.hasCreate = !!res.data.paths.some((item) => {
+        return item.path === '/task/template/addTemplate'
+      })
+      this.hasDelete = !!res.data.paths.some((item) => {
+        return item.path === '/task/template/deleteTemplate'
+      })
     }
   }
 }

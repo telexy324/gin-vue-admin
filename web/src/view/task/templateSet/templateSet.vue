@@ -13,7 +13,7 @@
     </div>
     <div class="gva-table-box">
       <div class="gva-btn-list">
-        <el-button size="mini" type="primary" icon="el-icon-plus" @click="openDialog('addSet')">新增</el-button>
+        <el-button size="mini" type="primary" icon="el-icon-plus" :disabled="!hasCreate" @click="openDialog('addSet')">新增</el-button>
         <el-popover v-model:visible="deleteVisible" placement="top" width="160">
           <p>确定要删除吗？</p>
           <div style="text-align: right; margin-top: 8px;">
@@ -21,7 +21,7 @@
             <el-button size="mini" type="primary" @click="onDelete">确定</el-button>
           </div>
           <template #reference>
-            <el-button icon="el-icon-delete" size="mini" :disabled="!sets.length" style="margin-left: 10px;">删除</el-button>
+            <el-button icon="el-icon-delete" size="mini" :disabled="!sets.length || !hasDelete" style="margin-left: 10px;">删除</el-button>
           </template>
         </el-popover>
         <el-button class="excel-btn" size="mini" type="success" icon="el-icon-download" @click="openDrawer()">选择系统</el-button>
@@ -48,12 +48,14 @@
               icon="el-icon-edit"
               size="small"
               type="text"
+              :disabled="!hasEdit"
               @click="editSet(scope.row)"
             >编辑</el-button>
             <el-button
               icon="el-icon-delete"
               size="small"
               type="text"
+              :disabled="!hasDelete"
               @click="deleteSet(scope.row)"
             >删除</el-button>
             <el-button
@@ -76,7 +78,6 @@
           @size-change="handleSizeChange"
         />
       </div>
-
     </div>
 
     <el-dialog v-model="dialogFormVisible" :before-close="closeDialog" :title="dialogTitle">
@@ -157,10 +158,12 @@ import {
 } from '@/api/template'
 import { addTask } from '@/api/task'
 import { getAllServerIds } from '@/api/cmdb'
+import { getPolicyPathByAuthorityId } from '@/api/casbin'
 import infoList from '@/mixins/infoList'
 import { toSQLLine } from '@/utils/stringFun'
 import warningBar from '@/components/warningBar/warningBar.vue'
 import { emitter } from '@/utils/bus'
+import { mapGetters } from 'vuex'
 import Systems from '@/components/task/systems.vue'
 import TemplateSetTask from '@/view/task/templateSet/components/templateSetTask.vue'
 
@@ -197,6 +200,9 @@ export default {
       systemOptions: [],
       systemTemplateOptions: [],
       setDisabled: true,
+      hasEdit: true,
+      hasCreate: true,
+      hasDelete: true,
     }
   },
   // watch: {
@@ -208,6 +214,9 @@ export default {
   //     this.setTemplateOptions()
   //   },
   // },
+  computed: {
+    ...mapGetters('user', ['userInfo'])
+  },
   async created() {
     // socket.addListener((data) => this.onWebsocketDataReceived(data))
     if (this.$route.params.systemIds) {
@@ -217,6 +226,9 @@ export default {
     const res = await getAllServerIds()
     this.setSystemOptions(res.data)
     await this.setTemplateOptions()
+  },
+  mounted() {
+    this.authorities()
   },
   methods: {
     //  选中api
@@ -427,6 +439,20 @@ export default {
       this.searchInfo.systemIds = []
       this.searchInfo.systemIds.push(Number(val))
       this.setTemplateOptions()
+    },
+    async authorities() {
+      const res = await getPolicyPathByAuthorityId({
+        authorityId: this.userInfo.authorityId
+      })
+      this.hasEdit = !!res.data.paths.some((item) => {
+        return item.path === '/task/template/updateSet'
+      })
+      this.hasCreate = !!res.data.paths.some((item) => {
+        return item.path === '/task/template/addSet'
+      })
+      this.hasDelete = !!res.data.paths.some((item) => {
+        return item.path === '/task/template/deleteSet'
+      })
     }
   }
 }

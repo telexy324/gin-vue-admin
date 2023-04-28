@@ -13,7 +13,7 @@
     </div>
     <div class="gva-table-box">
       <div class="gva-btn-list">
-        <el-button size="mini" type="primary" icon="el-icon-plus" @click="openDialog('addSystem')">新增</el-button>
+        <el-button size="mini" type="primary" icon="el-icon-plus" :disabled="!hasCreate" @click="openDialog('addSystem')">新增</el-button>
         <el-popover v-model:visible="deleteVisible" placement="top" width="160">
           <p>确定要删除吗？</p>
           <div style="text-align: right; margin-top: 8px;">
@@ -21,7 +21,7 @@
             <el-button size="mini" type="primary" @click="onDelete">确定</el-button>
           </div>
           <template #reference>
-            <el-button icon="el-icon-delete" size="mini" :disabled="!systems.length" style="margin-left: 10px;">删除</el-button>
+            <el-button icon="el-icon-delete" size="mini" :disabled="!systems.length || !hasDelete" style="margin-left: 10px;">删除</el-button>
           </template>
         </el-popover>
       </div>
@@ -38,18 +38,21 @@
               icon="el-icon-edit"
               size="small"
               type="text"
+              :disabled="!hasEdit"
               @click="editSystem(scope.row)"
             >编辑</el-button>
             <el-button
               icon="el-icon-delete"
               size="small"
               type="text"
+              :disabled="!hasDelete"
               @click="deleteSystem(scope.row)"
             >删除</el-button>
             <el-button
               icon="el-icon-orange"
               size="small"
               type="text"
+              :disabled="!hasRelation"
               @click="showRelation(scope.row)"
             >关系图</el-button>
             <el-button
@@ -108,6 +111,7 @@
 </template>
 
 <script>
+
 const path = import.meta.env.VITE_BASE_API
 // 获取列表内容封装在mixins内部  getTableData方法 初始化已封装完成 条件搜索时候 请把条件安好后台定制的结构体字段 放到 this.searchInfo 中即可实现条件搜索
 
@@ -117,9 +121,11 @@ import {
 import {
   getUserList
 } from '@/api/user'
+import { getPolicyPathByAuthorityId } from '@/api/casbin'
 import infoList from '@/mixins/infoList'
 import { toSQLLine } from '@/utils/stringFun'
 import warningBar from '@/components/warningBar/warningBar.vue'
+import { mapGetters } from 'vuex'
 
 export default {
   name: 'Systems',
@@ -146,8 +152,15 @@ export default {
         ]
       },
       path: path,
-      userOptions: []
+      userOptions: [],
+      hasEdit: true,
+      hasCreate: true,
+      hasDelete: true,
+      hasRelation: true,
     }
+  },
+  computed: {
+    ...mapGetters('user', ['userInfo'])
   },
   async created() {
     await this.getTableData()
@@ -156,6 +169,9 @@ export default {
       pageSize: 99999
     })
     this.setOptions(res.data.list)
+  },
+  mounted() {
+    this.authorities()
   },
   methods: {
     //  选中api
@@ -313,6 +329,23 @@ export default {
         }
       })
     },
+    async authorities() {
+      const res = await getPolicyPathByAuthorityId({
+        authorityId: this.userInfo.authorityId
+      })
+      this.hasEdit = !!res.data.paths.some((item) => {
+        return item.path === '/cmdb/updateSystem'
+      })
+      this.hasCreate = !!res.data.paths.some((item) => {
+        return item.path === '/cmdb/addSystem'
+      })
+      this.hasDelete = !!res.data.paths.some((item) => {
+        return item.path === '/cmdb/deleteSystem'
+      })
+      this.hasRelation = !!res.data.paths.some((item) => {
+        return item.path === '/cmdb/system/getSystemEditRelation'
+      })
+    }
   }
 }
 </script>

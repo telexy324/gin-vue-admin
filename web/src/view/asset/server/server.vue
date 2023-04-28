@@ -16,7 +16,7 @@
     </div>
     <div class="gva-table-box">
       <div class="gva-btn-list">
-        <el-button size="mini" type="primary" icon="el-icon-plus" @click="openDialog('addServer')">新增</el-button>
+        <el-button size="mini" type="primary" icon="el-icon-plus" :disabled="!hasCreate" @click="openDialog('addServer')">新增</el-button>
         <el-popover v-model:visible="deleteVisible" placement="top" width="160">
           <p>确定要删除吗？</p>
           <div style="text-align: right; margin-top: 8px;">
@@ -24,7 +24,7 @@
             <el-button size="mini" type="primary" @click="onDelete">确定</el-button>
           </div>
           <template #reference>
-            <el-button icon="el-icon-delete" size="mini" :disabled="!servers.length" style="margin-left: 10px;">删除</el-button>
+            <el-button icon="el-icon-delete" size="mini" :disabled="!servers.length || !hasDelete" style="margin-left: 10px;">删除</el-button>
           </template>
         </el-popover>
         <el-upload
@@ -69,18 +69,21 @@
               icon="el-icon-edit"
               size="small"
               type="text"
+              :disabled="!hasEdit"
               @click="editServer(scope.row)"
             >编辑</el-button>
             <el-button
               icon="el-icon-delete"
               size="small"
               type="text"
+              :disabled="!hasDelete"
               @click="deleteServer(scope.row)"
             >删除</el-button>
             <el-button
               icon="el-icon-orange"
               size="small"
               type="text"
+              :disabled="!hasSsh"
               @click="runSsh(scope.row)"
             >执行</el-button>
           </template>
@@ -182,6 +185,7 @@ import {
   getAllServerIds,
   deleteServerByIds
 } from '@/api/cmdb'
+import { getPolicyPathByAuthorityId } from '@/api/casbin'
 import infoList from '@/mixins/infoList'
 import { toSQLLine } from '@/utils/stringFun'
 import warningBar from '@/components/warningBar/warningBar.vue'
@@ -241,7 +245,11 @@ export default {
       drawer: false,
       systemOptions: [],
       archs: [],
-      oss: []
+      oss: [],
+      hasEdit: true,
+      hasCreate: true,
+      hasDelete: true,
+      hasSsh: true,
     }
   },
   computed: {
@@ -252,6 +260,9 @@ export default {
     this.oss = await this.getDict('osVersion')
     this.systemOptions = (await getAllServerIds()).data
     await this.getTableData()
+  },
+  mounted() {
+    this.authorities()
   },
   methods: {
     //  选中api
@@ -467,6 +478,23 @@ export default {
       const rowLabel = this.systemOptions.filter(item => item.ID === value)
       return rowLabel && rowLabel[0] && rowLabel[0].name
     },
+    async authorities() {
+      const res = await getPolicyPathByAuthorityId({
+        authorityId: this.userInfo.authorityId
+      })
+      this.hasEdit = !!res.data.paths.some((item) => {
+        return item.path === '/cmdb/updateServer'
+      })
+      this.hasCreate = !!res.data.paths.some((item) => {
+        return item.path === '/cmdb/addServer'
+      })
+      this.hasDelete = !!res.data.paths.some((item) => {
+        return item.path === '/cmdb/deleteServer'
+      })
+      this.hasSsh = !!res.data.paths.some((item) => {
+        return item.path === '/ssh/run'
+      })
+    }
   }
 }
 </script>

@@ -27,7 +27,7 @@
               type="text"
               link
               @click="showTaskLog(scope.row)"
-            >{{ scope.row.currentTaskId }}</el-button>
+            >#{{ scope.row.currentTaskId }}</el-button>
             <!--            <a @click="showTaskLog(scope.row)">{{ scope.row.ID }}</a>-->
           </template>
         </el-table-column>

@@ -13,7 +13,7 @@
 <!--    </div>-->
     <div class="gva-table-box">
       <div class="gva-btn-list">
-        <el-button size="mini" type="primary" icon="el-icon-plus" @click="openDialog('addSchedule')">新增</el-button>
+        <el-button size="mini" type="primary" icon="el-icon-plus" :disabled="!hasCreate" @click="openDialog('addSchedule')">新增</el-button>
         <el-popover v-model:visible="deleteVisible" placement="top" width="160">
           <p>确定要删除吗？</p>
           <div style="text-align: right; margin-top: 8px;">
@@ -21,7 +21,7 @@
             <el-button size="mini" type="primary" @click="onDelete">确定</el-button>
           </div>
           <template #reference>
-            <el-button icon="el-icon-delete" size="mini" :disabled="!schedules.length" style="margin-left: 10px;">删除</el-button>
+            <el-button icon="el-icon-delete" size="mini" :disabled="!schedules.length || !hasDelete" style="margin-left: 10px;">删除</el-button>
           </template>
         </el-popover>
       </div>
@@ -42,6 +42,7 @@
               v-model="scope.row.valid"
               :active-value="1"
               :inactive-value="0"
+              :disabled="!hasEdit"
               @change="changeValid(scope.row)"
             />
           </template>
@@ -53,12 +54,14 @@
               icon="el-icon-edit"
               size="small"
               type="text"
+              :disabled="!hasEdit"
               @click="editSchedule(scope.row)"
             >编辑</el-button>
             <el-button
               icon="el-icon-delete"
               size="small"
               type="text"
+              :disabled="!hasDelete"
               @click="deleteSchedule(scope.row)"
             >删除</el-button>
           </template>
@@ -144,9 +147,11 @@ import {
 import {
   getTemplateList
 } from '@/api/template'
+import { getPolicyPathByAuthorityId } from '@/api/casbin'
 import infoList from '@/mixins/infoList'
 import { toSQLLine } from '@/utils/stringFun'
 import warningBar from '@/components/warningBar/warningBar.vue'
+import { mapGetters } from 'vuex'
 
 export default {
   name: 'Schedule',
@@ -172,8 +177,14 @@ export default {
         cronFormat: [{ required: true, message: '请输入定时任务', trigger: 'blur' }],
       },
       path: path,
-      templateOptions: []
+      templateOptions: [],
+      hasEdit: true,
+      hasCreate: true,
+      hasDelete: true,
     }
+  },
+  computed: {
+    ...mapGetters('user', ['userInfo'])
   },
   async created() {
     await this.getTableData()
@@ -182,6 +193,9 @@ export default {
       pageSize: 99999
     })
     this.setOptions(res.data.list)
+  },
+  mounted() {
+    this.authorities()
   },
   methods: {
     //  选中api
@@ -341,6 +355,20 @@ export default {
     filterTemplateName(value) {
       const rowLabel = this.templateOptions.filter(item => item.ID === value)
       return rowLabel && rowLabel[0] && rowLabel[0].name
+    },
+    async authorities() {
+      const res = await getPolicyPathByAuthorityId({
+        authorityId: this.userInfo.authorityId
+      })
+      this.hasEdit = !!res.data.paths.some((item) => {
+        return item.path === '/task/template/updateSchedule'
+      })
+      this.hasCreate = !!res.data.paths.some((item) => {
+        return item.path === '/task/template/addSchedule'
+      })
+      this.hasDelete = !!res.data.paths.some((item) => {
+        return item.path === '/task/template/deleteSchedule'
+      })
     },
   }
 }
