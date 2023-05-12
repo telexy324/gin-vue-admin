@@ -257,7 +257,7 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button size="small" @click="closeScriptDialog">取 消</el-button>
-          <el-button size="small" type="primary" @click="submitUpload">确 定</el-button>
+          <el-button :disabled="uploadingDisable" size="small" type="primary" @click="submitUpload">确 定</el-button>
         </div>
       </template>
     </el-dialog>
@@ -284,7 +284,6 @@
 
 const path = import.meta.env.VITE_BASE_API
 // 获取列表内容封装在mixins内部  getTableData方法 初始化已封装完成 条件搜索时候 请把条件安好后台定制的结构体字段 放到 this.searchInfo 中即可实现条件搜索
-const HTTP_AXIOS = Axios.create()
 
 import {
   getTemplateList,
@@ -365,6 +364,7 @@ export default {
       uploading: false,
       uploadingServer: false,
       uploadingStatus: false,
+      uploadingDisable: false,
       drawer: false,
       logForm: {
         ID: '',
@@ -664,6 +664,7 @@ export default {
       this.uploadingServer = false
       this.initScriptForm()
       this.dialogFormVisibleScript = false
+      this.uploadingDisable = false
     },
     handleRemove(file, fileList) {
       if (!fileList.length) {
@@ -687,6 +688,7 @@ export default {
           this.uploading = true
         }
       })
+      this.uploadingDisable = true
     },
     httpRequest(param) {
       this.progressPercent = 0
@@ -718,7 +720,7 @@ export default {
       //   },
       //   timeout: 99999,
       // }
-      HTTP_AXIOS.post(import.meta.env.VITE_BASE_API + '/task/template/uploadScript', fd, {
+      Axios.post(import.meta.env.VITE_BASE_API + '/task/template/uploadScript', fd, {
         headers: {
           // 'Content-Type': 'multipart/form-data',
           'x-token': this.token,
@@ -766,7 +768,6 @@ export default {
       if (data.type !== 'uploadScript') {
         return
       }
-      console.log(this.scriptForm.items)
       for (let i = 0; i < this.scriptForm.items.length; i++) {
         if (this.scriptForm.items[i].ID === data.ID) {
           switch (data.status) {
@@ -782,6 +783,16 @@ export default {
               break
           }
         }
+      }
+      if (this.scriptForm.items.every((item) => {
+        return item.status === 'success'
+      })) {
+        ElMessage({
+          showClose: true,
+          message: '上传成功',
+          type: 'success'
+        })
+        this.closeScriptDialog()
       }
     },
     openDrawer() {
