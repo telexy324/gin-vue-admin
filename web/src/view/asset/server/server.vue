@@ -141,7 +141,7 @@
     </el-dialog>
 
     <el-dialog v-model="dialogSSHFormVisible" :before-close="closeDialog" :title="dialogSSHTitle">
-      <warning-bar title="连接信息" />
+      <warning-bar title="连接信息，必须使用密码连接" />
       <el-form ref="sshForm" :model="sshForm" :rules="rules" label-width="80px">
         <el-form-item label="管理IP" prop="manageIp">
           <el-input v-model="sshForm.server.manageIp" autocomplete="off" :disabled="true" />

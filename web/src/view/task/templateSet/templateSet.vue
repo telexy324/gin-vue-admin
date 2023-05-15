@@ -81,7 +81,7 @@
     </div>
 
     <el-dialog v-model="dialogFormVisible" :before-close="closeDialog" :title="dialogTitle">
-      <warning-bar title="新增模板集" />
+      <warning-bar title="新增模板集，模板集为任务模板的集合，模板集内模板顺序执行" />
       <el-form ref="setForm" :model="form" :rules="rules" label-width="80px">
         <el-row>
           <el-col :span="12">
@@ -283,10 +283,10 @@ export default {
     openDialog(type) {
       switch (type) {
         case 'addSet':
-          this.dialogTitle = '新增Set'
+          this.dialogTitle = '新增模板集'
           break
         case 'edit':
-          this.dialogTitle = '编辑Set'
+          this.dialogTitle = '编辑模板集'
           break
         default:
           break

@@ -79,7 +79,7 @@
     </div>
 
     <el-dialog v-model="dialogFormVisible" :before-close="closeDialog" :title="dialogTitle">
-      <warning-bar title="新增系统" />
+      <warning-bar title="新增系统，需要指定管理员" />
       <el-form ref="systemForm" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="系统名" prop="system.name">
           <el-input v-model="form.system.name" autocomplete="off" />

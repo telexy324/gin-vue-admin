@@ -99,7 +99,7 @@
     </div>
 
     <el-dialog v-model="dialogFormVisible" :before-close="closeDialog" :title="dialogTitle">
-      <warning-bar title="新增Template" />
+      <warning-bar title="任务模板，可以对多个服务器生效" />
       <el-form ref="templateForm" :model="form" :rules="rules" label-width="80px">
         <el-row>
           <el-col :span="12">
@@ -185,7 +185,7 @@
     </el-dialog>
 
     <el-dialog v-model="dialogLogFormVisible" :before-close="closeLogDialog" :title="dialogLogTitle">
-      <warning-bar title="新增日志提取模板" />
+      <warning-bar title="日志提取模板，仅可用于下载日志，只对单个服务器生效" />
       <el-form ref="templateLogForm" :model="logForm" :rules="logRules" label-width="150px">
         <el-row>
           <el-col :span="12">
@@ -324,7 +324,7 @@ export default {
       deleteVisible: false,
       listApi: getTemplateList,
       dialogFormVisible: false,
-      dialogTitle: '新增template',
+      dialogTitle: '新增任务模板',
       templates: [],
       serverOptions: [],
       systemOptions: [],
@@ -470,11 +470,11 @@ export default {
     openDialog(type) {
       switch (type) {
         case 'addTemplate':
-          this.dialogTitle = '新增Template'
+          this.dialogTitle = '新增任务模板'
           this.canCheck = false
           break
         case 'edit':
-          this.dialogTitle = '编辑Template'
+          this.dialogTitle = '编辑任务模板'
           this.canCheck = true
           this.commandChange(this.form.mode)
           break
@@ -496,7 +496,7 @@ export default {
       }
     },
     async deleteTemplate(row) {
-      this.$confirm('此操作将永久删除服务器?', '提示', {
+      this.$confirm('此操作将永久删除任务模板?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'

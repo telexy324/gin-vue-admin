@@ -82,7 +82,7 @@
     </div>
 
     <el-dialog v-model="dialogFormVisible" :before-close="closeDialog" :title="dialogTitle">
-      <warning-bar title="新增Schedule" />
+      <warning-bar title="新增定时任务，可预先检查时间格式，类似crontab" />
       <el-form ref="scheduleForm" :model="form" :rules="rules" label-width="120px">
         <el-form-item label="模版名" prop="templateId">
           <el-select
@@ -249,10 +249,10 @@ export default {
     openDialog(type) {
       switch (type) {
         case 'addSchedule':
-          this.dialogTitle = '新增Schedule'
+          this.dialogTitle = '新增定时任务'
           break
         case 'edit':
-          this.dialogTitle = '编辑Schedule'
+          this.dialogTitle = '编辑定时任务'
           break
         default:
           break
@@ -266,7 +266,7 @@ export default {
       this.openDialog('edit')
     },
     async deleteSchedule(row) {
-      this.$confirm('此操作将永久删除Schedule?', '提示', {
+      this.$confirm('此操作将永久删除定时任务?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
@@ -361,13 +361,13 @@ export default {
         authorityId: this.userInfo.authorityId
       })
       this.hasEdit = !!res.data.paths.some((item) => {
-        return item.path === '/task/template/updateSchedule'
+        return item.path === '/task/schedule/updateSchedule'
       })
       this.hasCreate = !!res.data.paths.some((item) => {
-        return item.path === '/task/template/addSchedule'
+        return item.path === '/task/schedule/addSchedule'
       })
       this.hasDelete = !!res.data.paths.some((item) => {
-        return item.path === '/task/template/deleteSchedule'
+        return item.path === '/task/schedule/deleteSchedule'
       })
     },
   }
