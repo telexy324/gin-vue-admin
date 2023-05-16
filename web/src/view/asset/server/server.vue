@@ -33,10 +33,10 @@
           :headers="{'x-token':token}"
           :show-file-list="false"
         >
-          <el-button size="mini" type="primary" icon="el-icon-upload2">导入</el-button>
+          <el-button disabled="true" size="mini" type="primary" icon="el-icon-upload2">导入</el-button>
         </el-upload>
-        <el-button class="excel-btn" size="mini" type="primary" icon="el-icon-download" @click="handleExcelExport('ExcelExport.xlsx')">导出</el-button>
-        <el-button class="excel-btn" size="mini" type="success" icon="el-icon-download" @click="downloadExcelTemplate()">下载模板</el-button>
+        <el-button disabled="true" class="excel-btn" size="mini" type="primary" icon="el-icon-download" @click="handleExcelExport('ExcelExport.xlsx')">导出</el-button>
+        <el-button disabled="true" class="excel-btn" size="mini" type="success" icon="el-icon-download" @click="downloadExcelTemplate()">下载模板</el-button>
         <el-button class="excel-btn" size="mini" type="success" icon="el-icon-download" @click="openDrawer()">选择系统</el-button>
       </div>
       <el-table :data="tableData" @sort-change="sortChange" @selection-change="handleSelectionChange">
@@ -131,6 +131,9 @@
             <el-option v-for="val in systemOptions" :key="val.ID" :value="val.ID" :label="val.name" />
           </el-select>
         </el-form-item>
+        <el-form-item label="ssh端口" prop="sshPort">
+          <el-input v-model="form.sshPort" autocomplete="off" />
+        </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
@@ -216,6 +219,7 @@ export default {
         os: '',
         osVersion: '',
         systemId: '',
+        sshPort: '',
       },
       sshForm: {
         server: {
@@ -310,6 +314,7 @@ export default {
         os: '',
         osVersion: '',
         systemId: '',
+        sshPort: '',
       }
     },
     closeDialog() {

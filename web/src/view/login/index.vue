@@ -7,7 +7,7 @@
             class="login_panle_form_title_logo"
             src="@/assets/nfhlogo.jpg"
             alt
-          />
+          >
           <p class="login_panle_form_title_p">{{ $GIN_VUE_ADMIN.appName }}</p>
         </div>
         <el-form
@@ -112,8 +112,8 @@ export default {
       curYear: 0,
       lock: 'lock',
       loginForm: {
-        username: 'admin',
-        password: '123456',
+        username: '',
+        password: '',
         captcha: '',
         captchaId: ''
       },
