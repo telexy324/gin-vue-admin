@@ -2,6 +2,8 @@ package taskSvr
 
 import (
 	"bytes"
+	"crypto/md5"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	sockets "github.com/flipped-aurora/gin-vue-admin/server/api/v1/socket"
@@ -14,7 +16,7 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl/response"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
-	"io/ioutil"
+	"io"
 	"mime/multipart"
 	"strings"
 	"sync"
@@ -171,23 +173,56 @@ func (templateService *TaskTemplatesService) Validate(tpl taskMdl.TaskTemplate) 
 //	return
 //}
 
-func (templateService *TaskTemplatesService) CheckScript(s application.ApplicationServer, needDetail bool, sshClient *common.SSHClient, template taskMdl.TaskTemplate) (exist bool, output string, err error) {
+//func (templateService *TaskTemplatesService) CheckScript(s application.ApplicationServer, needDetail bool, sshClient *common.SSHClient, template taskMdl.TaskTemplate) (exist bool, output string, err error) {
+//	var command string
+//	command = `[ -f ` + template.ScriptPath + ` ] && echo yes || echo no`
+//	output, err = sshClient.CommandSingle(command)
+//	if err != nil || strings.Trim(output, " ") == "no" || strings.Trim(output, "\n") == "no" {
+//		global.GVA_LOG.Error("judge script exist: ", zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
+//		return
+//	}
+//	exist = true
+//	if needDetail {
+//		command = `cat ` + template.ScriptPath
+//		output, err = sshClient.CommandSingle(command)
+//		if err != nil {
+//			global.GVA_LOG.Error("judge script exist: ", zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
+//		}
+//	}
+//	return
+//}
+
+func (templateService *TaskTemplatesService) CheckScript(s application.ApplicationServer, sshClient *common.SSHClient, template taskMdl.TaskTemplate) (exist bool, err error) {
 	var command string
 	command = `[ -f ` + template.ScriptPath + ` ] && echo yes || echo no`
-	output, err = sshClient.CommandSingle(command)
+	output, err := sshClient.CommandSingle(command)
 	if err != nil || strings.Trim(output, " ") == "no" || strings.Trim(output, "\n") == "no" {
 		global.GVA_LOG.Error("judge script exist: ", zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
 		return
 	}
-	exist = true
-	if needDetail {
-		command = `cat ` + template.ScriptPath
-		output, err = sshClient.CommandSingle(command)
-		if err != nil {
-			global.GVA_LOG.Error("judge script exist: ", zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
-		}
+	ftp, err := sshClient.NewSftp()
+	if err != nil {
+		return
+	}
+	defer ftp.Close()
+
+	remote, err := ftp.Open(template.ScriptPath)
+	if err != nil {
+		return
+	}
+	defer remote.Close()
+
+	hash := md5.New()
+	_, _ = io.Copy(hash, remote)
+	if hex.EncodeToString(hash.Sum(nil)) == template.ScriptHash {
+		exist = true
 	}
 	return
+}
+
+func (templateService *TaskTemplatesService) CheckScriptDetail(s application.ApplicationServer, sshClient *common.SSHClient, template taskMdl.TaskTemplate) (output string, err error) {
+	command := `cat ` + template.ScriptPath
+	return sshClient.CommandSingle(command)
 }
 
 func (templateService *TaskTemplatesService) DownloadScript(ID float64, server application.ApplicationServer) (fileBytes []byte, err error) {
@@ -217,7 +252,7 @@ func (templateService *TaskTemplatesService) UploadScript(ID int, file multipart
 	}
 	wg := &sync.WaitGroup{}
 	failedChan := make(chan string, len(template.TargetServers))
-	fileByte, _ := ioutil.ReadAll(file)
+	fileByte, _ := io.ReadAll(file)
 	for _, server := range template.TargetServers {
 		wg.Add(1)
 		go func(w *sync.WaitGroup, s application.ApplicationServer, f chan string) {

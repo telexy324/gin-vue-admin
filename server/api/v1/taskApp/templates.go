@@ -5,6 +5,7 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/common"
 	"github.com/flipped-aurora/gin-vue-admin/server/consts"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/application"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/response"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl"
@@ -16,6 +17,7 @@ import (
 	"go.uber.org/zap"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 type TemplateApi struct {
@@ -237,15 +239,34 @@ func (a *TemplateApi) CheckScript(c *gin.Context) {
 	//	response.FailWithMessage(err.Error(), c)
 	//	return
 	//}
-	err, server := cmdbServerService.GetServerById(info.ServerId)
-	if err != nil {
-		response.FailWithMessage(err.Error(), c)
-		return
-	}
+	//err, server := cmdbServerService.GetServerById(info.ServerId)
+	//if err != nil {
+	//	response.FailWithMessage(err.Error(), c)
+	//	return
+	//}
 	template, err := templateService.GetTaskTemplate(info.ID)
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
+	}
+	wg := &sync.WaitGroup{}
+	for _, server := range template.TargetServers {
+		wg.Add(1)
+		go func(w *sync.WaitGroup, s application.ApplicationServer) {
+			defer w.Done()
+			sshClient, err := common.FillSSHClient(server.ManageIp, template.SysUser, "", server.SshPort)
+			err = sshClient.GenerateClient()
+			if err != nil {
+				global.GVA_LOG.Error("create ssh client failed: ", zap.String("server IP: ", server.ManageIp), zap.Any("err", err))
+				return
+			}
+		}(wg, server)
+		sshClient, err := common.FillSSHClient(server.ManageIp, template.SysUser, "", server.SshPort)
+		err = sshClient.GenerateClient()
+		if err != nil {
+			global.GVA_LOG.Error("create ssh client failed: ", zap.String("server IP: ", server.ManageIp), zap.Any("err", err))
+			return
+		}
 	}
 	sshClient, err := common.FillSSHClient(server.ManageIp, template.SysUser, "", server.SshPort)
 	err = sshClient.GenerateClient()
