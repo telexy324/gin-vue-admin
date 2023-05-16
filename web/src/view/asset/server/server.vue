@@ -33,10 +33,10 @@
           :headers="{'x-token':token}"
           :show-file-list="false"
         >
-          <el-button disabled="true" size="mini" type="primary" icon="el-icon-upload2">导入</el-button>
+          <el-button :disabled="disabledTemp" size="mini" type="primary" icon="el-icon-upload2">导入</el-button>
         </el-upload>
-        <el-button disabled="true" class="excel-btn" size="mini" type="primary" icon="el-icon-download" @click="handleExcelExport('ExcelExport.xlsx')">导出</el-button>
-        <el-button disabled="true" class="excel-btn" size="mini" type="success" icon="el-icon-download" @click="downloadExcelTemplate()">下载模板</el-button>
+        <el-button :disabled="disabledTemp" class="excel-btn" size="mini" type="primary" icon="el-icon-download" @click="handleExcelExport('ExcelExport.xlsx')">导出</el-button>
+        <el-button :disabled="disabledTemp" class="excel-btn" size="mini" type="success" icon="el-icon-download" @click="downloadExcelTemplate()">下载模板</el-button>
         <el-button class="excel-btn" size="mini" type="success" icon="el-icon-download" @click="openDrawer()">选择系统</el-button>
       </div>
       <el-table :data="tableData" @sort-change="sortChange" @selection-change="handleSelectionChange">
@@ -115,9 +115,18 @@
             <el-option v-for="val in archs" :key="val.value" :value="val.value" :label="val.label" />
           </el-select>
         </el-form-item>
-        <el-form-item label="管理IP" prop="manageIp">
-          <el-input v-model="form.manageIp" autocomplete="off" />
-        </el-form-item>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="管理IP" prop="manageIp">
+              <el-input v-model="form.manageIp" autocomplete="off" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="ssh端口" prop="sshPort">
+              <el-input v-model="form.sshPort" autocomplete="off" />
+            </el-form-item>
+          </el-col>
+        </el-row>
         <el-form-item label="操作系统" prop="os">
           <el-select v-model="form.os">
             <el-option v-for="val in oss" :key="val.value" :value="val.value" :label="val.label" />
@@ -131,9 +140,6 @@
             <el-option v-for="val in systemOptions" :key="val.ID" :value="val.ID" :label="val.name" />
           </el-select>
         </el-form-item>
-        <el-form-item label="ssh端口" prop="sshPort">
-          <el-input v-model="form.sshPort" autocomplete="off" />
-        </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
@@ -145,7 +151,7 @@
 
     <el-dialog v-model="dialogSSHFormVisible" :before-close="closeDialog" :title="dialogSSHTitle">
       <warning-bar title="连接信息，必须使用密码连接" />
-      <el-form ref="sshForm" :model="sshForm" :rules="rules" label-width="80px">
+      <el-form ref="sshForm" :model="sshForm" label-width="80px">
         <el-form-item label="管理IP" prop="manageIp">
           <el-input v-model="sshForm.server.manageIp" autocomplete="off" :disabled="true" />
         </el-form-item>
@@ -235,8 +241,12 @@ export default {
         architecture: [
           { required: true, message: '请输入架构', trigger: 'blur' }
         ],
-        manageIP: [
+        manageIp: [
           { required: true, message: '请输入管理IP', trigger: 'blur' }
+        ],
+        sshPort: [
+          { required: true, message: '请输入连接端口', trigger: 'blur' },
+          { validator: this.isNum, trigger: 'blur' }
         ],
         os: [
           { required: true, message: '请输入系统名称', trigger: 'blur' }
@@ -254,6 +264,7 @@ export default {
       hasCreate: true,
       hasDelete: true,
       hasSsh: true,
+      disabledTemp: true,
     }
   },
   computed: {
@@ -393,6 +404,7 @@ export default {
     async enterDialog() {
       this.$refs.serverForm.validate(async valid => {
         if (valid) {
+          this.form.sshPort = Number(this.form.sshPort)
           switch (this.type) {
             case 'addServer':
               {
@@ -438,22 +450,18 @@ export default {
       })
     },
     async enterSSHDialog() {
-      this.$refs.sshForm.validate(async valid => {
-        if (valid) {
-          await this.$router.push({
-            name: 'ssh',
-            params: {
-              manageIp: this.sshForm.server.manageIp,
-              username: this.sshForm.username,
-              password: this.sshForm.password,
-              sshPort: this.sshForm.server.sshPort
-            }
-          })
-          // console.log(this.sshForm.server.manageIp)
-          // window.open(routeData.href, '_self')
-          this.closeSSHDialog()
+      await this.$router.push({
+        name: 'ssh',
+        params: {
+          manageIp: this.sshForm.server.manageIp,
+          username: this.sshForm.username,
+          password: this.sshForm.password,
+          sshPort: this.sshForm.server.sshPort
         }
       })
+      // console.log(this.sshForm.server.manageIp)
+      // window.open(routeData.href, '_self')
+      this.closeSSHDialog()
     },
     handleExcelExport(fileName) {
       if (!fileName || typeof fileName !== 'string') {
@@ -499,6 +507,14 @@ export default {
       this.hasSsh = !!res.data.paths.some((item) => {
         return item.path === '/ssh/run'
       })
+    },
+    isNum(rule, value, callback) {
+      const n = /^[0-9]*$/
+      if (!n.test(value)) {
+        callback(new Error('只能为数字'))
+      } else {
+        callback()
+      }
     }
   }
 }

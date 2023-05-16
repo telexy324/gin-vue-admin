@@ -96,6 +96,7 @@ func (cmdbServerService *CmdbServerService) UpdateServer(server request2.UpdateS
 	upDateMap["os"] = server.Os
 	upDateMap["os_version"] = server.OsVersion
 	upDateMap["architecture"] = server.Architecture
+	upDateMap["ssh_port"] = server.SshPort
 
 	err = global.GVA_DB.Transaction(func(tx *gorm.DB) error {
 		db := tx.Where("id = ?", server.ID).Find(&oldServer)
