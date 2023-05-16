@@ -29,5 +29,7 @@ yarn-error.log*
 /server/go_build_gin_vue_admin_main_go.exe
 /server/go_build_main_go.exe
 /server/server
+/server/serverx86
+/server/serverarm
 
 *.iml

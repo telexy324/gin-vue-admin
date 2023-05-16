@@ -78,7 +78,7 @@
               icon="el-icon-edit"
               size="small"
               type="text"
-              :disabled="scope.row.executeType!==1"
+              :disabled="scope.row.mode!==2"
               @click="uploadScript(scope.row)"
             >上传脚本</el-button>
           </template>
@@ -339,6 +339,7 @@ export default {
         targetIds: '',
         detail: false,
         systemId: '',
+        executeType: 1,
       },
       type: '',
       rules: {
@@ -460,7 +461,8 @@ export default {
         scriptPath: '',
         sysUser: '',
         targetIds: '',
-        detail: false
+        detail: false,
+        executeType: 1
       }
     },
     closeDialog() {
