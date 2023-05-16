@@ -51,6 +51,7 @@ func (templateService *TaskTemplatesService) UpdateTaskTemplate(template taskMdl
 	upDateMap["system_id"] = template.SystemId
 	upDateMap["execute_type"] = template.ExecuteType
 	upDateMap["log_path"] = template.LogPath
+	upDateMap["script_hash"] = template.ScriptHash
 
 	err := global.GVA_DB.Transaction(func(tx *gorm.DB) error {
 		db := tx.Where("id = ?", template.ID).Find(&oldTaskTemplate)

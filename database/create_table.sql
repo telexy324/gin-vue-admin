@@ -161,6 +161,7 @@ create table `application_task_templates`
     `system_id`       bigint UNSIGNED NOT NULL DEFAULT '0',
     `execute_type`    tinyint(2) NOT NULL DEFAULT '0' COMMENT '模板类型 0 普通 1 日志提取',
     `log_path`        varchar(255) NOT NULL DEFAULT '',
+    `script_hash`     char(32)     NOT NULL DEFAULT '',
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

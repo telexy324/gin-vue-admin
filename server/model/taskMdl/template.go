@@ -21,6 +21,7 @@ type TaskTemplate struct {
 	SystemId        int                             `json:"systemId" gorm:"column:system_id"`                // 所属系统
 	ExecuteType     int                             `json:"executeType" gorm:"column:execute_type"`          // 模板类型 1 普通 2 日志提取
 	LogPath         string                          `json:"logPath" gorm:"column:log_path"`                  // 日志位置
+	ScriptHash      string                          `json:"scriptHash" gorm:"column:script_hash"`            // 脚本哈希
 	TargetIds       []int                           `json:"targetIds" gorm:"-"`
 	TargetServers   []application.ApplicationServer `json:"targetServers" gorm:"-"`
 	LastTask        Task                            `json:"lastTask" gorm:"-"`
