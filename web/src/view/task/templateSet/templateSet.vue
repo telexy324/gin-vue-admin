@@ -101,9 +101,6 @@
               <el-form-item
                 label="模板名"
                 :prop="'templates.' + index + '.ID'"
-                :rules="{
-                  required: true, message: '请选择模板', trigger: 'blur'
-                }"
               >
                 <el-select v-model="item.templateId">
                   <el-option v-for="val in systemTemplateOptions" :key="val.ID" :value="val.ID" :label="val.name" />
@@ -275,6 +272,7 @@ export default {
         systemId: '',
         templates: [],
       }
+      this.setDisabled = true
     },
     closeDialog() {
       this.initForm()
@@ -297,6 +295,7 @@ export default {
     async editSet(row) {
       const res = await getSetById({ id: row.ID })
       this.form = res.data
+      this.setDisabled = false
       this.openDialog('edit')
     },
     async deleteSet(row) {
