@@ -68,6 +68,7 @@ export default {
       if (!socket.isRunning()) {
         socket.start()
       }
+      console.log(e)
       this.task = (await getTaskById({ ID: e.ID })).data.task
       this.template = (await getTemplateById({ ID: e.templateId })).data.template
       // this.dialogTitle = 'Task #' + this.task.ID

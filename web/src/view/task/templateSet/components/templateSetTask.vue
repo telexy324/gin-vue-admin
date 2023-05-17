@@ -58,6 +58,9 @@ import {
   getSetTaskList
 } from '@/api/template'
 import {
+  getTaskById
+} from '@/api/task'
+import {
   getUserList
 } from '@/api/user'
 import infoList from '@/mixins/infoList'
@@ -104,7 +107,10 @@ export default {
       }
       this.getTableData()
     },
-    showTaskLog(t) {
+    async showTaskLog(s) {
+      const t = (await getTaskById({
+        ID: s.currentTaskId
+      })).data.task
       emitter.emit('i-show-task', t)
     },
     setUserOptions(data) {
