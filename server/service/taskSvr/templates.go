@@ -213,14 +213,18 @@ func (templateService *TaskTemplatesService) CheckScript(s application.Applicati
 	defer remote.Close()
 
 	hash := md5.New()
-	_, _ = io.Copy(hash, remote)
-	if hex.EncodeToString(hash.Sum(nil)) == template.ScriptHash {
+	_, err = io.Copy(hash, remote)
+	if err != nil {
+		return
+	}
+	hashString := hex.EncodeToString(hash.Sum(nil))
+	if hashString == template.ScriptHash {
 		exist = true
 	}
 	return
 }
 
-func (templateService *TaskTemplatesService) CheckScriptDetail(s application.ApplicationServer, sshClient *common.SSHClient, template taskMdl.TaskTemplate) (output string, err error) {
+func (templateService *TaskTemplatesService) CheckScriptDetail(sshClient *common.SSHClient, template taskMdl.TaskTemplate) (output string, err error) {
 	command := `cat ` + template.ScriptPath
 	return sshClient.CommandSingle(command)
 }
@@ -257,7 +261,13 @@ func (templateService *TaskTemplatesService) UploadScript(ID int, file multipart
 		wg.Add(1)
 		go func(w *sync.WaitGroup, s application.ApplicationServer, f chan string) {
 			var er error
+			var sshClient common.SSHClient
 			defer w.Done()
+			defer func() {
+				if sshClient.Client != nil {
+					sshClient.Client.Close()
+				}
+			}()
 			defer func() {
 				var status string
 				if er == nil {
@@ -278,7 +288,7 @@ func (templateService *TaskTemplatesService) UploadScript(ID int, file multipart
 				}
 				sockets.Message(int(userID), b)
 			}()
-			sshClient, er := common.FillSSHClient(s.ManageIp, template.SysUser, "", s.SshPort)
+			sshClient, er = common.FillSSHClient(s.ManageIp, template.SysUser, "", s.SshPort)
 			er = sshClient.GenerateClient()
 			if er != nil {
 				global.GVA_LOG.Error("upload script failed on create ssh client: ", zap.String("server IP: ", s.ManageIp), zap.Any("err", er))

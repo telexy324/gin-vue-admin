@@ -609,7 +609,6 @@ export default {
     async checkScript() {
       const res = (await checkScript({
         ID: this.form.ID,
-        serverId: this.form.targetIds[0],
         detail: this.form.detail
       }))
       if (res.code !== 0) {
@@ -618,13 +617,16 @@ export default {
           message: '检查脚本失败',
           type: 'error'
         })
+        return
       }
-      if (!res.data.exist) {
+      if (res.data.failedIps.length > 0) {
+        const msg = '以下服务器脚本不存在' + res.data.failedIps
         ElMessage({
           showClose: true,
-          message: '脚本不存在',
+          message: msg,
           type: 'error'
         })
+        return
       }
       if (!this.form.detail) {
         ElMessage({
@@ -632,10 +634,9 @@ export default {
           message: '检查成功',
           type: 'info'
         })
-        if (this.form.detail) {
-          this.closeDialog()
-          this.showScript(res.data.script)
-        }
+      } else {
+        this.closeDialog()
+        this.showScript(res.data.script)
       }
     },
     showScript(s) {

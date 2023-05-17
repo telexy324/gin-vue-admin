@@ -77,7 +77,7 @@ func OperationRecord() gin.HandlerFunc {
 		record.ErrorMessage = c.Errors.ByType(gin.ErrorTypePrivate).String()
 		record.Status = c.Writer.Status()
 		record.Latency = latency
-		if c.Request.URL.Path != "/task/template/downloadFile" {
+		if c.Request.URL.Path != "/task/template/downloadFile" && c.Request.URL.Path != "/task/template/checkScript" {
 			record.Resp = writer.body.String()
 		}
 

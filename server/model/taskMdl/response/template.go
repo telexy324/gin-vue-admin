@@ -12,13 +12,13 @@ type TaskTemplateResponse struct {
 	Template taskMdl.TaskTemplate `json:"taskTemplate"`
 }
 
-type TemplateScriptResponse struct {
-	Exist  bool   `json:"exist"`
-	Script string `json:"script"`
-}
-
 type UploadScriptResponse struct {
 	FailedIps []string `json:"failedIps"`
+}
+
+type CheckScriptResponse struct {
+	FailedIps []string `json:"failedIps"`
+	Script    string   `json:"script"`
 }
 
 type TaskTemplateSetResponse struct {

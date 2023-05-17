@@ -1,6 +1,8 @@
 package taskApp
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"encoding/json"
 	"github.com/flipped-aurora/gin-vue-admin/server/common"
 	"github.com/flipped-aurora/gin-vue-admin/server/consts"
@@ -15,6 +17,7 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/utils"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
+	"io"
 	"strconv"
 	"strings"
 	"sync"
@@ -249,41 +252,62 @@ func (a *TemplateApi) CheckScript(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
+	failedChan := make(chan string, len(template.TargetServers))
 	wg := &sync.WaitGroup{}
 	for _, server := range template.TargetServers {
 		wg.Add(1)
-		go func(w *sync.WaitGroup, s application.ApplicationServer) {
+		go func(w *sync.WaitGroup, s application.ApplicationServer, f chan string) {
+			var sshClient common.SSHClient
 			defer w.Done()
-			sshClient, err := common.FillSSHClient(server.ManageIp, template.SysUser, "", server.SshPort)
+			defer func() {
+				if sshClient.Client != nil {
+					sshClient.Client.Close()
+				}
+			}()
+			sshClient, err := common.FillSSHClient(s.ManageIp, template.SysUser, "", s.SshPort)
 			err = sshClient.GenerateClient()
 			if err != nil {
-				global.GVA_LOG.Error("create ssh client failed: ", zap.String("server IP: ", server.ManageIp), zap.Any("err", err))
+				global.GVA_LOG.Error("create ssh client failed: ", zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
+				f <- s.ManageIp
 				return
 			}
-		}(wg, server)
-		sshClient, err := common.FillSSHClient(server.ManageIp, template.SysUser, "", server.SshPort)
+			if exist, err := templateService.CheckScript(s, &sshClient, template); err != nil || !exist {
+				f <- s.ManageIp
+				return
+			}
+			return
+		}(wg, server, failedChan)
+	}
+	wg.Wait()
+	close(failedChan)
+	failedIPs := make([]string, 0)
+	for ip := range failedChan {
+		failedIPs = append(failedIPs, ip)
+	}
+	if len(failedIPs) == 0 && info.Detail {
+		sshClient, err := common.FillSSHClient(template.TargetServers[0].ManageIp, template.SysUser, "", template.TargetServers[0].SshPort)
 		err = sshClient.GenerateClient()
 		if err != nil {
-			global.GVA_LOG.Error("create ssh client failed: ", zap.String("server IP: ", server.ManageIp), zap.Any("err", err))
+			global.GVA_LOG.Error("create ssh client failed: ", zap.String("server IP: ", template.TargetServers[0].ManageIp), zap.Any("err", err))
+			response.FailWithMessage(err.Error(), c)
+			return
+		}
+		if output, err := templateService.CheckScriptDetail(&sshClient, template); err != nil {
+			sshClient.Client.Close()
+			response.FailWithMessage(err.Error(), c)
+			return
+		} else {
+			sshClient.Client.Close()
+			response.OkWithDetailed(templateRes.CheckScriptResponse{
+				FailedIps: failedIPs,
+				Script:    output,
+			}, "获取成功", c)
 			return
 		}
 	}
-	sshClient, err := common.FillSSHClient(server.ManageIp, template.SysUser, "", server.SshPort)
-	err = sshClient.GenerateClient()
-	if err != nil {
-		global.GVA_LOG.Error("create ssh client failed: ", zap.String("server IP: ", server.ManageIp), zap.Any("err", err))
-		return
-	}
-	exist, output, err := templateService.CheckScript(server, info.Detail, &sshClient, template)
-	if err != nil {
-		global.GVA_LOG.Error("check script failed", zap.Any("err", err))
-		response.FailWithMessage("check script failed", c)
-	} else {
-		response.OkWithDetailed(templateRes.TemplateScriptResponse{
-			Exist:  exist,
-			Script: output,
-		}, "获取成功", c)
-	}
+	response.OkWithDetailed(templateRes.CheckScriptResponse{
+		FailedIps: failedIPs,
+	}, "获取成功", c)
 }
 
 // @Tags Template
@@ -348,6 +372,26 @@ func (a *TemplateApi) UploadScript(c *gin.Context) {
 		response.FailWithMessage("接收文件失败", c)
 		return
 	}
+	tmpl, err := templateService.GetTaskTemplate(float64(ID))
+	if err != nil {
+		global.GVA_LOG.Error("获取模板失败!", zap.Any("err", err))
+		response.FailWithMessage("接收文件失败", c)
+		return
+	}
+	hash := md5.New()
+	_, err = io.Copy(hash, file)
+	if err != nil {
+		global.GVA_LOG.Error("计算文件md5失败!", zap.Any("err", err))
+		response.FailWithMessage("接收文件失败", c)
+		return
+	}
+	tmpl.ScriptHash = hex.EncodeToString(hash.Sum(nil))
+	if err = templateService.UpdateTaskTemplate(tmpl); err != nil {
+		global.GVA_LOG.Error("更新模板脚本md5失败!", zap.Any("err", err))
+		response.FailWithMessage("接收文件失败", c)
+		return
+	}
+	file.Seek(0, io.SeekStart)
 	failedIps, err := templateService.UploadScript(ID, file, scriptPath, userID)
 	if err != nil {
 		global.GVA_LOG.Error("上传脚本失败!", zap.Any("err", err))
