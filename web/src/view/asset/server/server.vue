@@ -33,10 +33,10 @@
           :headers="{'x-token':token}"
           :show-file-list="false"
         >
-          <el-button :disabled="disabledTemp" size="mini" type="primary" icon="el-icon-upload2">导入</el-button>
+<!--          <el-button :disabled="disabledTemp" size="mini" type="primary" icon="el-icon-upload2">导入</el-button>-->
         </el-upload>
-        <el-button :disabled="disabledTemp" class="excel-btn" size="mini" type="primary" icon="el-icon-download" @click="handleExcelExport('ExcelExport.xlsx')">导出</el-button>
-        <el-button :disabled="disabledTemp" class="excel-btn" size="mini" type="success" icon="el-icon-download" @click="downloadExcelTemplate()">下载模板</el-button>
+<!--        <el-button :disabled="disabledTemp" class="excel-btn" size="mini" type="primary" icon="el-icon-download" @click="handleExcelExport('ExcelExport.xlsx')">导出</el-button>-->
+<!--        <el-button :disabled="disabledTemp" class="excel-btn" size="mini" type="success" icon="el-icon-download" @click="downloadExcelTemplate()">下载模板</el-button>-->
         <el-button class="excel-btn" size="mini" type="success" icon="el-icon-download" @click="openDrawer()">选择系统</el-button>
       </div>
       <el-table :data="tableData" @sort-change="sortChange" @selection-change="handleSelectionChange">

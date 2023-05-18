@@ -457,6 +457,7 @@ func (templateService *TaskTemplatesService) GetSetById(id float64) (err error, 
 	if err = global.GVA_DB.Where("set_id = ?", id).Order("seq").Find(&templates).Error; err != nil {
 		return
 	}
+	templateRes = make([]response.TaskTemplateSetTemplateResponse, 0)
 	for _, t := range templates {
 		var template taskMdl.TaskTemplate
 		if err = global.GVA_DB.Where("id = ?", t.TemplateId).Find(&template).Error; err != nil {

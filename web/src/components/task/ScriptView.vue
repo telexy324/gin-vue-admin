@@ -32,6 +32,7 @@
   font-family: monospace;
   margin: 0 -18px;
   padding: 5px 10px;
+  white-space: pre;
 }
 
 .task-log-view--with-message .task-log-records {

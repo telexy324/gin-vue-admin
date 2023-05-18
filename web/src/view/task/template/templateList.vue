@@ -43,6 +43,7 @@
             <el-button
               type="text"
               link
+              :style="{ display: scope.row.lastTask.ID?'':'none' }"
               @click="showTaskLog(scope.row.lastTask)"
             >#{{ scope.row.lastTask.ID }}</el-button>
           </template>
@@ -114,7 +115,7 @@
           </el-col>
         </el-row>
         <el-form-item label="描述" prop="description">
-          <el-input v-model="form.description" autocomplete="off" type="textarea"/>
+          <el-input v-model="form.description" autocomplete="off" type="textarea" />
         </el-form-item>
         <el-form-item label="目标" prop="targetServerIds">
           <el-cascader
@@ -147,7 +148,7 @@
           <el-input v-model="form.command" autocomplete="off" type="textarea" />
         </el-form-item>
         <el-form-item v-if="isScript" label="脚本位置" prop="scriptPath">
-          <el-input v-model="form.scriptPath" autocomplete="off" :disabled="true" />
+          <el-input v-model="form.scriptPath" autocomplete="off" />
         </el-form-item>
         <el-row>
           <el-col :span="6">
@@ -232,7 +233,7 @@
     <el-dialog v-model="dialogFormVisibleScript" :before-close="closeScriptDialog" title="上传模板">
       <el-form ref="scriptForm" :model="scriptForm" :rules="rules" label-width="80px">
         <el-form-item label="脚本位置" prop="scriptPath">
-          <el-input v-model="scriptForm.scriptPath" autocomplete="off" />
+          <el-input v-model="scriptForm.scriptPath" autocomplete="off" :disabled="true" />
         </el-form-item>
         <el-form-item>
           <el-upload

@@ -26,6 +26,7 @@
             <el-button
               type="text"
               link
+              :style="{ display: scope.row.currentTaskId?'':'none' }"
               @click="showTaskLog(scope.row)"
             >#{{ scope.row.currentTaskId }}</el-button>
             <!--            <a @click="showTaskLog(scope.row)">{{ scope.row.ID }}</a>-->
@@ -159,5 +160,10 @@ export default {
 
 .excel-btn + .excel-btn {
   margin-left: 10px;
+}
+
+.task-log-records__output {
+  width: 100%;
+  white-space: pre;
 }
 </style>
