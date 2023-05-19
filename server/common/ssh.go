@@ -192,6 +192,51 @@ func (c *SSHClient) CommandSingle(command string) (output string, err error) {
 	return string(outputBytes), nil
 }
 
+func (c *SSHClient) Commands(command string, logger Logger, manageIP string) (err error) {
+	logger.Log(command, manageIP)
+	session, err := c.Client.NewSession()
+	if err != nil {
+		logger.Log("ssh open session failed")
+		return
+	}
+	stdinP, err := session.StdinPipe()
+	if err != nil {
+		logger.Log("ssh open session stdin failed")
+		return
+	}
+	buffer:=new(bytes.Buffer)
+	session.Stdout = buffer
+	session.Stderr = buffer
+	quitChan := make(chan bool)
+	go func(outputBuffer *bytes.Buffer, exitCh chan bool) {
+		//every 120ms write combine output bytes into websocket response
+		tick := time.NewTicker(time.Millisecond * time.Duration(120))
+		//for range time.Tick(120 * time.Millisecond){}
+		defer tick.Stop()
+		for {
+			select {
+			case <-tick.C:
+				//write combine output bytes into websocket response
+				//if err := flushComboOutput(outputBuffer, wsConn); err != nil {
+				//	global.GVA_LOG.Error("ssh sending combo output to webSocket failed", zap.Any("err ", err))
+				//	return
+				//}
+				if outputBuffer.Len() != 0 {
+					logger.Log(outputBuffer.String(),manageIP)
+					outputBuffer.Reset()
+				}
+			case <-exitCh:
+				return
+			}
+		}
+	}(buffer,quitChan)
+
+	if _, err = stdinP.Write([]byte(command)); err != nil {
+		global.GVA_LOG.Error("ws cmd bytes write to ssh.stdin pipe failed", zap.Any("err ", err))
+	}
+	return
+}
+
 func (c *SSHClient) NewSftp(opts ...sftp.ClientOption) (*sftp.Client, error) {
 	return sftp.NewClient(c.Client, opts...)
 }
