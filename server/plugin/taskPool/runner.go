@@ -14,6 +14,7 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/model/system"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl"
 	"go.uber.org/zap"
+	"golang.org/x/crypto/ssh"
 	"gorm.io/gorm"
 	"io"
 	"os"
@@ -31,7 +32,7 @@ type TaskRunner struct {
 	//alert     bool
 	//alertChat *string
 	prepared bool
-	process  *os.Process
+	clients  []*ssh.Client
 	pool     *TaskPool
 }
 
@@ -561,17 +562,25 @@ func (t *TaskRunner) runTask() (failedIPs []string) {
 	global.GVA_LOG.Info("run ", zap.Uint("task ID: ", t.task.ID))
 	wg := &sync.WaitGroup{}
 	failedChan := make(chan string, len(servers))
+	t.clients = make([]*ssh.Client, 0, len(servers))
 	for _, server := range servers {
 		wg.Add(1)
 		go func(w *sync.WaitGroup, s application.ApplicationServer, f chan string) {
 			defer w.Done()
 			sshClient, err := common.FillSSHClient(s.ManageIp, t.template.SysUser, "", s.SshPort)
-			err = sshClient.GenerateClient()
 			if err != nil {
 				global.GVA_LOG.Error("run task failed on create ssh client: ", zap.Uint("task ID: ", t.task.ID), zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
 				f <- s.ManageIp
 				return
 			}
+			err = sshClient.GenerateClient()
+			if err != nil {
+				global.GVA_LOG.Error("run task failed on generate ssh client: ", zap.Uint("task ID: ", t.task.ID), zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
+				f <- s.ManageIp
+				return
+			}
+			defer sshClient.Client.Close()
+			t.clients = append(t.clients, sshClient.Client)
 			//ssConn, err := sshService.NewSshConn(sshClient.Client, 0, 0)
 			//if err != nil {
 			//	global.GVA_LOG.Error("run task failed on create ssh session: ", zap.Uint("task ID: ", t.task.ID), zap.String("server IP: ", s.ManageIp), zap.Any("err", err))

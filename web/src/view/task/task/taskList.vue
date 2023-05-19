@@ -136,7 +136,7 @@ export default {
     },
     dateFormatter2(row) {
       if (row.endTime.Time !== null && row.endTime.Time !== '') {
-        var date = new Date(row.endTime.Time)
+        const date = new Date(row.endTime.Time)
         return formatTimeToStr(date, 'yyyy-MM-dd hh:mm:ss')
       } else {
         return ''

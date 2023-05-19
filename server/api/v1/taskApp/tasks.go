@@ -265,12 +265,14 @@ func (a *TaskApi) StopTask(c *gin.Context) {
 		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 		response.FailWithMessage("获取失败", c)
 	}
-	err = taskPool.TPool.StopTask(task)
+	failedIps, err := taskPool.TPool.StopTask(task)
 	if err != nil {
 		global.GVA_LOG.Error("停止失败!", zap.Any("err", err))
 		response.FailWithMessage("停止失败", c)
 	} else {
-		response.OkWithMessage("停止成功", c)
+		response.OkWithDetailed(taskRes.StopTaskResponse{
+			FailedIps: failedIps,
+		}, "获取成功", c)
 	}
 }
 

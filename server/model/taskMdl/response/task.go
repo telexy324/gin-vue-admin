@@ -24,3 +24,7 @@ type TaskDashboardInfo struct {
 type TaskDashboardResponse struct {
 	TaskDashboardInfos []TaskDashboardInfo `json:"taskDashboardInfos"`
 }
+
+type StopTaskResponse struct {
+	FailedIps []string `json:"failedIps"`
+}

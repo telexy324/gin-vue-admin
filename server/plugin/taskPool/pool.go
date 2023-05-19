@@ -193,16 +193,17 @@ func CreateTaskPool() TaskPool {
 	return TPool
 }
 
-func (p *TaskPool) StopTask(targetTask taskMdl.Task) error {
+func (p *TaskPool) StopTask(targetTask taskMdl.Task) (failedIps []string, err error) {
 	tsk := p.GetTask(int(targetTask.ID))
+	failedIps = make([]string,0)
 	if tsk == nil { // task not active, but exists in database
 		tsk = &TaskRunner{
 			task: targetTask,
 			pool: p,
 		}
-		err := tsk.populateDetails()
+		err = tsk.populateDetails()
 		if err != nil {
-			return err
+			return
 		}
 		tsk.setStatus(taskMdl.TaskStoppedStatus)
 		//tsk.createTaskEvent()
@@ -210,17 +211,18 @@ func (p *TaskPool) StopTask(targetTask taskMdl.Task) error {
 		status := tsk.task.Status
 		tsk.setStatus(taskMdl.TaskStoppingStatus)
 		if status == taskMdl.TaskRunningStatus {
-			if tsk.process == nil {
+			if tsk.clients == nil || len(tsk.clients) == 0 {
 				panic("running process can not be nil")
 			}
-			err := tsk.process.Kill()
-			if err != nil {
-				return err
+			for _,client:=range tsk.clients {
+				if err = client.Close();err!=nil {
+					global.GVA_LOG.Error("close client failed", zap.Uint("Task ID ", targetTask.ID), zap.String("client ip ", client.RemoteAddr().String()))
+					failedIps = append(failedIps, client.RemoteAddr().String())
+				}
 			}
 		}
 	}
-
-	return nil
+	return
 }
 
 func getNextBuildVersion(startVersion string, currentVersion string) string {
