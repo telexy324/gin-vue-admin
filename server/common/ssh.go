@@ -192,8 +192,19 @@ func (c *SSHClient) CommandSingle(command string) (output string, err error) {
 	return string(outputBytes), nil
 }
 
-func (c *SSHClient) Commands(commands []string, logger Logger, manageIP string) (err error) {
-	//logger.Log(command, manageIP)
+type singleWriter struct {
+	b  bytes.Buffer
+	mu sync.Mutex
+}
+
+func (w *singleWriter) Write(p []byte) (int, error) {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	return w.b.Write(p)
+}
+
+func (c *SSHClient) Commands(command string, logger Logger, manageIP string) (err error) {
+	logger.Log(command, manageIP)
 	session, err := c.Client.NewSession()
 	if err != nil {
 		logger.Log("ssh open session failed")
@@ -205,6 +216,7 @@ func (c *SSHClient) Commands(commands []string, logger Logger, manageIP string) 
 	//	return
 	//}
 	buffer := new(bytes.Buffer)
+	//var buffer singleWriter
 	session.Stdout = buffer
 	session.Stderr = buffer
 	//if err = session.Shell(); err != nil {
@@ -214,7 +226,7 @@ func (c *SSHClient) Commands(commands []string, logger Logger, manageIP string) 
 	quitChan := make(chan bool)
 	go func(outputBuffer *bytes.Buffer, exitCh chan bool) {
 		//every 120ms write combine output bytes into websocket response
-		tick := time.NewTicker(time.Millisecond * time.Duration(10))
+		tick := time.NewTicker(time.Millisecond * time.Duration(100))
 		//for range time.Tick(120 * time.Millisecond){}
 		defer tick.Stop()
 		for {
@@ -229,6 +241,9 @@ func (c *SSHClient) Commands(commands []string, logger Logger, manageIP string) 
 					logger.Log(outputBuffer.String(), manageIP)
 					outputBuffer.Reset()
 				}
+				//buf:=make([]byte,0,4096)
+				//outputBuffer.Write(buf)
+				//logger.Log(string(buf), manageIP)
 			case <-exitCh:
 				return
 			}
@@ -241,17 +256,18 @@ func (c *SSHClient) Commands(commands []string, logger Logger, manageIP string) 
 	//	}
 	//}(session, quitChan)
 
-	time.Sleep(time.Second)
-	for _, command := range commands {
-		logger.Log(command, manageIP)
-		if err = session.Start(command); err != nil {
-			global.GVA_LOG.Info("command ", zap.Any("command ", command))
-			global.GVA_LOG.Error("ws cmd bytes write to ssh.stdin pipe failed", zap.Any("err ", err))
-		}
-		if err = session.Wait(); err != nil {
-			global.GVA_LOG.Info("ssh receive error ", zap.Any("err ", err))
-			quitChan <- true
-		}
+	//if err = session.Start(command); err != nil {
+	//	global.GVA_LOG.Info("command ", zap.Any("command ", command))
+	//	global.GVA_LOG.Error("ws cmd bytes write to ssh.stdin pipe failed", zap.Any("err ", err))
+	//}
+	//if err = session.Wait(); err != nil {
+	//	global.GVA_LOG.Info("ssh receive error ", zap.Any("err ", err))
+	//	quitChan <- true
+	//}
+	if err = session.Run(command); err != nil {
+		global.GVA_LOG.Info("command ", zap.Any("command ", command))
+		global.GVA_LOG.Error("ws cmd bytes write to ssh.stdin pipe failed", zap.Any("err ", err))
+		quitChan <- true
 	}
 	return
 }
