@@ -612,6 +612,7 @@ func (t *TaskRunner) runTask() (failedIPs []string) {
 					} else {
 						failed = true
 					}
+					time.Sleep(time.Microsecond * 500)
 				}
 				//err = sshClient.Commands(commands, t, s.ManageIp)
 				//if err != nil {

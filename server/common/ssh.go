@@ -192,16 +192,16 @@ func (c *SSHClient) CommandSingle(command string) (output string, err error) {
 	return string(outputBytes), nil
 }
 
-type singleWriter struct {
-	b  bytes.Buffer
-	mu sync.Mutex
-}
-
-func (w *singleWriter) Write(p []byte) (int, error) {
-	w.mu.Lock()
-	defer w.mu.Unlock()
-	return w.b.Write(p)
-}
+//type singleWriter struct {
+//	b  bytes.Buffer
+//	mu sync.Mutex
+//}
+//
+//func (w *singleWriter) Write(p []byte) (int, error) {
+//	w.mu.Lock()
+//	defer w.mu.Unlock()
+//	return w.b.Write(p)
+//}
 
 func (c *SSHClient) Commands(command string, logger Logger, manageIP string) (err error) {
 	logger.Log(command, manageIP)
@@ -229,16 +229,17 @@ func (c *SSHClient) Commands(command string, logger Logger, manageIP string) (er
 		tick := time.NewTicker(time.Millisecond * time.Duration(100))
 		//for range time.Tick(120 * time.Millisecond){}
 		defer tick.Stop()
+		var last = 0
 		for {
 			select {
 			case <-tick.C:
-				//write combine output bytes into websocket response
-				//if err := flushComboOutput(outputBuffer, wsConn); err != nil {
-				//	global.GVA_LOG.Error("ssh sending combo output to webSocket failed", zap.Any("err ", err))
-				//	return
+				//if outputBuffer.Len() != 0 {
+				//	logger.Log(outputBuffer.String(), manageIP)
+				//	outputBuffer.Reset()
 				//}
 				if outputBuffer.Len() != 0 {
-					logger.Log(outputBuffer.String(), manageIP)
+					logger.Log(string(outputBuffer.Next(last)), manageIP)
+					last = outputBuffer.Len()
 					outputBuffer.Reset()
 				}
 				//buf:=make([]byte,0,4096)
@@ -264,11 +265,11 @@ func (c *SSHClient) Commands(command string, logger Logger, manageIP string) (er
 	//	global.GVA_LOG.Info("ssh receive error ", zap.Any("err ", err))
 	//	quitChan <- true
 	//}
-	if err = session.Run(command); err != nil {
-		global.GVA_LOG.Info("command ", zap.Any("command ", command))
+	err = session.Run(command)
+	if err != nil {
 		global.GVA_LOG.Error("ws cmd bytes write to ssh.stdin pipe failed", zap.Any("err ", err))
-		quitChan <- true
 	}
+	quitChan <- true
 	return
 }
 
