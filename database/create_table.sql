@@ -226,3 +226,28 @@ create table `application_set_tasks`
     `tasks_string`     text,
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE `application_upload_servers`
+(
+    `id`         bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+    `created_at` datetime(0) NULL DEFAULT NULL,
+    `updated_at` datetime(0) NULL DEFAULT NULL,
+    `deleted_at` datetime(0) NULL DEFAULT NULL,
+    `hostname`   varchar(100) NOT NULL DEFAULT '' COMMENT '机器名称',
+    `manage_ip`  varchar(15)  NOT NULL DEFAULT '' COMMENT '管理ip',
+    `mode`       tinyint(2) NOT NULL DEFAULT '0' COMMENT '运行方式 0 未定义 1 命令 2 脚本',
+    `port`       int(5) NOT NULL DEFAULT '0' COMMENT '端口',
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE `application_upload_secrets`
+(
+    `id`         bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+    `created_at` datetime(0) NULL DEFAULT NULL,
+    `updated_at` datetime(0) NULL DEFAULT NULL,
+    `deleted_at` datetime(0) NULL DEFAULT NULL,
+    `server_id`  bigint UNSIGNED NOT NULL COMMENT '上传服务器id',
+    `name`       varchar(100) NOT NULL DEFAULT '' COMMENT '用户名',
+    `password`   varchar(100) NOT NULL DEFAULT '' COMMENT '密码',
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

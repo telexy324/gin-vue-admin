@@ -12,29 +12,29 @@ import (
 	"go.uber.org/zap"
 )
 
-type LogUploadServerApi struct {
+type LogUploadSecretApi struct {
 }
 
 // @Tags LogUpload
-// @Summary 新增服务器
+// @Summary 新增密钥
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body logUploadMdl.Server true "主机名, 管理ip"
+// @Param data body logUploadMdl.Secret true "主机名, 管理ip"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"添加成功"}"
-// @Router /logUpload/addServer [post]
-func (a *LogUploadServerApi) AddServer(c *gin.Context) {
-	var server logUploadMdl.Server
-	if err := c.ShouldBindJSON(&server); err != nil {
+// @Router /logUpload/addSecret [post]
+func (a *LogUploadSecretApi) AddSecret(c *gin.Context) {
+	var secret logUploadMdl.Secret
+	if err := c.ShouldBindJSON(&secret); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err := utils.Verify(server, utils.LogServerVerify); err != nil {
+	if err := utils.Verify(secret, utils.LogSecretVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err := serverService.AddServer(server); err != nil {
+	if err := secretService.AddSecret(secret); err != nil {
 		global.GVA_LOG.Error("添加失败!", zap.Any("err", err))
 
 		response.FailWithMessage("添加失败", c)
@@ -44,25 +44,25 @@ func (a *LogUploadServerApi) AddServer(c *gin.Context) {
 }
 
 // @Tags LogUpload
-// @Summary 删除服务器
+// @Summary 删除密钥
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body request.GetById true "服务器id"
+// @Param data body request.GetById true "密钥id"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"删除成功"}"
-// @Router /logUpload/deleteServer [post]
-func (a *LogUploadServerApi) DeleteServer(c *gin.Context) {
-	var server request.GetById
-	if err := c.ShouldBindJSON(&server); err != nil {
+// @Router /logUpload/deleteSecret [post]
+func (a *LogUploadSecretApi) DeleteSecret(c *gin.Context) {
+	var secret request.GetById
+	if err := c.ShouldBindJSON(&secret); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err := utils.Verify(server, utils.IdVerify); err != nil {
+	if err := utils.Verify(secret, utils.IdVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err := serverService.DeleteServer(server.ID); err != nil {
+	if err := secretService.DeleteSecret(secret.ID); err != nil {
 		global.GVA_LOG.Error("删除失败!", zap.Any("err", err))
 		response.FailWithMessage("删除失败", c)
 	} else {
@@ -71,17 +71,17 @@ func (a *LogUploadServerApi) DeleteServer(c *gin.Context) {
 }
 
 // @Tags LogUpload
-// @Summary 批量删除服务器
+// @Summary 批量删除密钥
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
 // @Param data body request.IdsReq true "ID"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"删除成功"}"
-// @Router /logUpload/deleteServerByIds [post]
-func (a *LogUploadServerApi) DeleteServerByIds(c *gin.Context) {
+// @Router /logUpload/deleteSecretByIds [post]
+func (a *LogUploadSecretApi) DeleteSecretByIds(c *gin.Context) {
 	var ids request.IdsReq
 	_ = c.ShouldBindJSON(&ids)
-	if err := serverService.DeleteServerByIds(ids); err != nil {
+	if err := secretService.DeleteSecretByIds(ids); err != nil {
 		global.GVA_LOG.Error("删除失败!", zap.Any("err", err))
 		response.FailWithMessage("删除失败", c)
 	} else {
@@ -90,25 +90,25 @@ func (a *LogUploadServerApi) DeleteServerByIds(c *gin.Context) {
 }
 
 // @Tags LogUpload
-// @Summary 更新服务器
+// @Summary 更新密钥
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body logUploadMdl.Server true "主机名, 架构, 管理ip, 系统, 系统版本"
+// @Param data body logUploadMdl.Secret true "主机名, 架构, 管理ip, 系统, 系统版本"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"更新成功"}"
-// @Router /logUpload/updateServer [post]
-func (a *LogUploadServerApi) UpdateServer(c *gin.Context) {
-	var server logUploadMdl.Server
-	if err := c.ShouldBindJSON(&server); err != nil {
+// @Router /logUpload/updateSecret [post]
+func (a *LogUploadSecretApi) UpdateSecret(c *gin.Context) {
+	var secret logUploadMdl.Secret
+	if err := c.ShouldBindJSON(&secret); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err := utils.Verify(server, utils.LogServerVerify); err != nil {
+	if err := utils.Verify(secret, utils.LogSecretVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err := serverService.UpdateServer(server); err != nil {
+	if err := secretService.UpdateSecret(secret); err != nil {
 		global.GVA_LOG.Error("更新失败!", zap.Any("err", err))
 		response.FailWithMessage("更新失败", c)
 	} else {
@@ -117,14 +117,14 @@ func (a *LogUploadServerApi) UpdateServer(c *gin.Context) {
 }
 
 // @Tags LogUpload
-// @Summary 根据id获取服务器
+// @Summary 根据id获取密钥
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body request.GetById true "服务器id"
+// @Param data body request.GetById true "密钥id"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /logUpload/getServerById [post]
-func (a *LogUploadServerApi) GetServerById(c *gin.Context) {
+// @Router /logUpload/getSecretById [post]
+func (a *LogUploadSecretApi) GetSecretById(c *gin.Context) {
 	var idInfo request.GetById
 	if err := c.ShouldBindJSON(&idInfo); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
@@ -135,26 +135,26 @@ func (a *LogUploadServerApi) GetServerById(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err, server := serverService.GetServerById(idInfo.ID); err != nil {
+	if err, secret := secretService.GetSecretById(idInfo.ID); err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 		response.FailWithMessage("获取失败", c)
 	} else {
-		response.OkWithDetailed(logUploadRes.ServerResponse{
-			Server: server,
+		response.OkWithDetailed(logUploadRes.SecretResponse{
+			Secret: secret,
 		}, "获取成功", c)
 	}
 }
 
 // @Tags LogUpload
-// @Summary 分页获取基础server列表
+// @Summary 分页获取基础secret列表
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
 // @Param data body request.PageInfo true "页码, 每页大小"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /logUpload/getServerList [post]
-func (a *LogUploadServerApi) GetServerList(c *gin.Context) {
-	var pageInfo request2.ServerSearch
+// @Router /logUpload/getSecretList [post]
+func (a *LogUploadSecretApi) GetSecretList(c *gin.Context) {
+	var pageInfo request2.SecretSearch
 	if err := c.ShouldBindJSON(&pageInfo); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
@@ -164,15 +164,16 @@ func (a *LogUploadServerApi) GetServerList(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err, serverList, total := serverService.GetServerList(pageInfo); err != nil {
+	if err, secretList, total := secretService.GetSecretList(pageInfo); err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 		response.FailWithMessage("获取失败", c)
 	} else {
 		response.OkWithDetailed(response.PageResult{
-			List:     serverList,
+			List:     secretList,
 			Total:    total,
 			Page:     pageInfo.Page,
 			PageSize: pageInfo.PageSize,
 		}, "获取成功", c)
 	}
 }
+

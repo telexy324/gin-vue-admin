@@ -28,4 +28,5 @@ var (
 	TaskTemplateSetVerify     = Rules{"Name": {NotEmpty()}}
 	TaskTemplateSetTaskVerify = Rules{"SetId": {NotEmpty()}}
 	LogServerVerify           = Rules{"HostName": {NotEmpty()}, "ManageIp": {NotEmpty()}}
+	LogSecretVerify           = Rules{"Name": {NotEmpty()}, "Password": {NotEmpty()}}
 )

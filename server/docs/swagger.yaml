@@ -730,6 +730,16 @@ definitions:
       id:
         description: 主键ID
         type: number
+      page:
+        description: 页码
+        type: integer
+      pageSize:
+        description: 每页大小
+        type: integer
+      sortBy:
+        type: string
+      sortInverted:
+        type: boolean
     type: object
   request.GetByProjectId:
     properties:
@@ -3384,6 +3394,29 @@ paths:
       summary: jwt加入黑名单
       tags:
       - Jwt
+  /logUpload/addSecret:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 主机名, 管理ip
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/logUploadMdl.Secret'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"添加成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 新增密钥
+      tags:
+      - LogUpload
   /logUpload/addServer:
     post:
       consumes:
@@ -3405,6 +3438,52 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: 新增服务器
+      tags:
+      - LogUpload
+  /logUpload/deleteSecret:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 密钥id
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetById'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"删除成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 删除密钥
+      tags:
+      - LogUpload
+  /logUpload/deleteSecretByIds:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.IdsReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"删除成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 批量删除密钥
       tags:
       - LogUpload
   /logUpload/deleteServer:
@@ -3453,6 +3532,52 @@ paths:
       summary: 批量删除服务器
       tags:
       - LogUpload
+  /logUpload/getSecretById:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 密钥id
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetById'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 根据id获取密钥
+      tags:
+      - LogUpload
+  /logUpload/getSecretList:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 页码, 每页大小
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.PageInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 分页获取基础secret列表
+      tags:
+      - LogUpload
   /logUpload/getServerById:
     post:
       consumes:
@@ -3497,6 +3622,29 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: 分页获取基础server列表
+      tags:
+      - LogUpload
+  /logUpload/updateSecret:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 主机名, 架构, 管理ip, 系统, 系统版本
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/logUploadMdl.Secret'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"更新成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 更新密钥
       tags:
       - LogUpload
   /logUpload/updateServer:

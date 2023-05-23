@@ -9,3 +9,8 @@ type ServerSearch struct {
 	logUploadMdl.Server
 	request.PageInfo
 }
+
+type SecretSearch struct {
+	logUploadMdl.Secret
+	request.PageInfo
+}

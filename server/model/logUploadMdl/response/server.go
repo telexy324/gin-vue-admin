@@ -11,3 +11,11 @@ type ServersResponse struct {
 type ServerResponse struct {
 	Server logUploadMdl.Server `json:"server"`
 }
+
+type SecretsResponse struct {
+	Secrets []logUploadMdl.Secret `json:"secrets"`
+}
+
+type SecretResponse struct {
+	Secret logUploadMdl.Secret `json:"secret"`
+}

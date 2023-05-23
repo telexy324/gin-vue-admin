@@ -23,7 +23,7 @@ func (serverService *ServerService) AddServer(server logUploadMdl.Server) error 
 	if !errors.Is(global.GVA_DB.Where("hostname = ?", server.Hostname).First(&logUploadMdl.Server{}).Error, gorm.ErrRecordNotFound) {
 		return errors.New("存在重复hostname，请修改name")
 	}
-	return global.GVA_DB.Create(server).Error
+	return global.GVA_DB.Create(&server).Error
 }
 
 //@author: [telexy324](https://github.com/telexy324)
@@ -65,7 +65,6 @@ func (serverService *ServerService) UpdateServer(server logUploadMdl.Server) (er
 	upDateMap["manage_ip"] = server.ManageIp
 	upDateMap["mode"] = server.Mode
 	upDateMap["port"] = server.Port
-	upDateMap["auth_mode"] = server.AuthMode
 
 	err = global.GVA_DB.Transaction(func(tx *gorm.DB) error {
 		db := tx.Where("id = ?", server.ID).Find(&oldServer)
