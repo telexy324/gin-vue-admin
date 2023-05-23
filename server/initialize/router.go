@@ -44,6 +44,7 @@ func Routers() *gin.Engine {
 	sshRouter := router.RouterGroupApp.Ssh
 	taskRouter := router.RouterGroupApp.Task
 	taskSocketRouter := router.RouterGroupApp.TaskSocket
+	logUploadRouter := router.RouterGroupApp.LogUpload
 	PublicGroup := Router.Group("")
 	{
 		// 健康监测
@@ -85,6 +86,7 @@ func Routers() *gin.Engine {
 		applicationRouter.InitCmdbRouter(PrivateGroup)
 		//sshRouter.InitSshRouter(PrivateGroup)
 		taskRouter.InitTaskRouter(PrivateGroup)
+		logUploadRouter.InitLogUploadRouter(PrivateGroup)
 	}
 
 	InstallPlugin(PublicGroup, PrivateGroup) // 安装插件

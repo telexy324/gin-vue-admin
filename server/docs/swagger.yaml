@@ -559,6 +559,58 @@ definitions:
           $ref: '#/definitions/system.SysBaseMenu'
         type: array
     type: object
+  logUploadMdl.Secret:
+    properties:
+      createdAt:
+        description: 创建时间
+        type: string
+      id:
+        description: 主键ID
+        type: integer
+      name:
+        description: 用户名
+        type: string
+      password:
+        description: 密码
+        type: string
+      serverId:
+        description: 主机ID
+        type: integer
+      updatedAt:
+        description: 更新时间
+        type: string
+    type: object
+  logUploadMdl.Server:
+    properties:
+      authMode:
+        description: ssh认证方式 1 密码 2 免密
+        type: integer
+      createdAt:
+        description: 创建时间
+        type: string
+      hostname:
+        description: 主机名
+        type: string
+      id:
+        description: 主键ID
+        type: integer
+      manageIp:
+        description: 管理ip
+        type: string
+      mode:
+        description: 方式 1 ftp 2 sftp
+        type: integer
+      port:
+        description: 上传端口
+        type: integer
+      secrets:
+        items:
+          $ref: '#/definitions/logUploadMdl.Secret'
+        type: array
+      updatedAt:
+        description: 更新时间
+        type: string
+    type: object
   request.AddMenuAuthorityInfo:
     properties:
       authorityId:
@@ -678,16 +730,6 @@ definitions:
       id:
         description: 主键ID
         type: number
-      page:
-        description: 页码
-        type: integer
-      pageSize:
-        description: 每页大小
-        type: integer
-      sortBy:
-        type: string
-      sortInverted:
-        type: boolean
     type: object
   request.GetByProjectId:
     properties:
@@ -1315,7 +1357,7 @@ definitions:
         description: task描述
         type: string
       executeType:
-        description: 模板类型 0 普通 1 日志提取
+        description: 模板类型 1 普通 2 日志提取
         type: integer
       id:
         description: 主键ID
@@ -1333,6 +1375,9 @@ definitions:
         type: integer
       name:
         description: task名称
+        type: string
+      scriptHash:
+        description: 脚本哈希
         type: string
       scriptPath:
         description: 脚本位置
@@ -3339,6 +3384,144 @@ paths:
       summary: jwt加入黑名单
       tags:
       - Jwt
+  /logUpload/addServer:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 主机名, 管理ip
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/logUploadMdl.Server'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"添加成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 新增服务器
+      tags:
+      - LogUpload
+  /logUpload/deleteServer:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 服务器id
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetById'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"删除成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 删除服务器
+      tags:
+      - LogUpload
+  /logUpload/deleteServerByIds:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.IdsReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"删除成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 批量删除服务器
+      tags:
+      - LogUpload
+  /logUpload/getServerById:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 服务器id
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetById'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 根据id获取服务器
+      tags:
+      - LogUpload
+  /logUpload/getServerList:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 页码, 每页大小
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.PageInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 分页获取基础server列表
+      tags:
+      - LogUpload
+  /logUpload/updateServer:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 主机名, 架构, 管理ip, 系统, 系统版本
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/logUploadMdl.Server'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"更新成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 更新服务器
+      tags:
+      - LogUpload
   /menu/addBaseMenu:
     post:
       consumes:

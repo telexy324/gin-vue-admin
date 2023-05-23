@@ -27,4 +27,5 @@ var (
 	SystemEditRelationVerify  = Rules{"SystemId": {NotEmpty()}}
 	TaskTemplateSetVerify     = Rules{"Name": {NotEmpty()}}
 	TaskTemplateSetTaskVerify = Rules{"SetId": {NotEmpty()}}
+	LogServerVerify           = Rules{"HostName": {NotEmpty()}, "ManageIp": {NotEmpty()}}
 )
