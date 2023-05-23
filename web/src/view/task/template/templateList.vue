@@ -38,7 +38,7 @@
             <TaskStatus :status="scope.row.lastTask.status" />
           </template>
         </el-table-column>
-        <el-table-column align="left" label="最近任务" min-width="200" sortable="custom">
+        <el-table-column align="left" label="最近任务" min-width="100" sortable="custom">
           <template v-slot="scope">
             <el-button
               type="text"
@@ -51,6 +51,11 @@
         <el-table-column align="left" label="所属系统" min-width="150" prop="systemId" sortable="custom">
           <template #default="scope">
             <div>{{ filterSystemName(scope.row.systemId) }}</div>
+          </template>
+        </el-table-column>
+        <el-table-column align="left" label="类型" min-width="150" prop="executeType" sortable="custom">
+          <template #default="scope">
+            <div>{{ filterExecuteType(scope.row.executeType) }}</div>
           </template>
         </el-table-column>
         <el-table-column align="left" fixed="right" label="操作" width="250">
@@ -931,7 +936,17 @@ export default {
       this.hasDelete = !!res.data.paths.some((item) => {
         return item.path === '/task/template/deleteTemplate'
       })
-    }
+    },
+    filterExecuteType(value) {
+      switch (value) {
+        case 1:
+          return '普通'
+        case 2:
+          return '日志提取'
+        default:
+          return ''
+      }
+    },
   }
 }
 </script>
