@@ -195,7 +195,7 @@ func CreateTaskPool() TaskPool {
 
 func (p *TaskPool) StopTask(targetTask taskMdl.Task) (failedIps []string, err error) {
 	tsk := p.GetTask(int(targetTask.ID))
-	failedIps = make([]string,0)
+	failedIps = make([]string, 0)
 	if tsk == nil { // task not active, but exists in database
 		tsk = &TaskRunner{
 			task: targetTask,
@@ -214,8 +214,8 @@ func (p *TaskPool) StopTask(targetTask taskMdl.Task) (failedIps []string, err er
 			if tsk.clients == nil || len(tsk.clients) == 0 {
 				panic("running process can not be nil")
 			}
-			for _,client:=range tsk.clients {
-				if err = client.Close();err!=nil {
+			for _, client := range tsk.clients {
+				if err = client.Close(); err != nil {
 					global.GVA_LOG.Error("close client failed", zap.Uint("Task ID ", targetTask.ID), zap.String("client ip ", client.RemoteAddr().String()))
 					failedIps = append(failedIps, client.RemoteAddr().String())
 				}

@@ -159,9 +159,13 @@ create table `application_task_templates`
     `last_task_id`    int          NOT NULL DEFAULT '0',
     `sys_user`        varchar(30)  NOT NULL DEFAULT 'root',
     `system_id`       bigint UNSIGNED NOT NULL DEFAULT '0',
-    `execute_type`    tinyint(2) NOT NULL DEFAULT '0' COMMENT '模板类型 0 普通 1 日志提取',
+    `execute_type`    tinyint(2) NOT NULL DEFAULT '0' COMMENT '模板类型 1 普通 2 日志提取',
     `log_path`        varchar(255) NOT NULL DEFAULT '',
     `script_hash`     char(32)     NOT NULL DEFAULT '',
+    `log_output`      tinyint(2) NOT NULL DEFAULT '0' COMMENT '1 直接下载 2 上传服务器',
+    `log_dst`         varchar(255) NOT NULL DEFAULT '',
+    `dst_server_id`   int          NOT NULL DEFAULT '0',
+    `secret_id`       int          NOT NULL DEFAULT '0',
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

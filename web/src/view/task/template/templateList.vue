@@ -226,6 +226,28 @@
         <el-form-item label="日志文件夹位置" prop="logPath">
           <el-input v-model="logForm.logPath" autocomplete="off" />
         </el-form-item>
+        <el-form-item label="执行方式" prop="logOutput" @change="logOutputChange">
+          <el-select v-model="logForm.logOutput">
+            <el-option v-for="val in logOutputOptions" :key="val.ID" :value="val.ID" :label="val.name" />
+          </el-select>
+        </el-form-item>
+        <el-form-item v-if="!downloadDirectly" label="上传位置" prop="logDst">
+          <el-input v-model="logForm.logDst" autocomplete="off" />
+        </el-form-item>
+        <el-row>
+          <el-col :span="6">
+            <el-form-item v-if="!downloadDirectly">
+              <el-select v-model="logForm.dstServerId" @change="changeServerId">
+                <el-option v-for="val in logServerOptions" :key="val.ID" :value="val.ID" :label="val.hostname" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="6">
+            <el-select v-model="logForm.secretId">
+              <el-option v-for="val in logSecretOptionsFiltered" :key="val.ID" :value="val.ID" :label="val.name" />
+            </el-select>
+          </el-col>
+        </el-row>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
@@ -305,6 +327,7 @@ import {
 import { addTask } from '@/api/task'
 import { getAdminSystems, getAllServerIds } from '@/api/cmdb'
 import { getPolicyPathByAuthorityId } from '@/api/casbin'
+import { getServerList, getSecretList } from '@/api/logUpload'
 import infoList from '@/mixins/infoList'
 import { toSQLLine } from '@/utils/stringFun'
 import warningBar from '@/components/warningBar/warningBar.vue'
@@ -382,6 +405,10 @@ export default {
         targetIds: '',
         executeType: 2,
         systemId: '',
+        logOutput: '',
+        logDst: '',
+        dstServerId: '',
+        secretId: ''
       },
       logRules: {
         name: [{ required: true, message: '请输入模板名', trigger: 'blur' }],
@@ -399,6 +426,14 @@ export default {
       hasEdit: true,
       hasCreate: true,
       hasDelete: true,
+      logOutputOptions: [
+        { ID: 1, name: '直接下载' },
+        { ID: 2, name: '上传服务器' }
+      ],
+      downloadDirectly: true,
+      logServerOptions: [],
+      logSecretOptions: [],
+      logSecretOptionsFiltered: [],
     }
   },
   computed: {
@@ -840,7 +875,15 @@ export default {
         executeType: 1,
       }
     },
-    openLogDialog(type) {
+    async openLogDialog(type) {
+      this.logServerOptions = (await getServerList({
+        page: 1,
+        pageSize: 99999
+      })).data.list
+      this.logSecretOptions = (await getSecretList({
+        page: 1,
+        pageSize: 99999
+      })).data.list
       switch (type) {
         case 'addLogTemplate':
           this.dialogTitle = '新增日志提取模板'
@@ -946,6 +989,14 @@ export default {
         default:
           return ''
       }
+    },
+    logOutputChange(selectValue) {
+      selectValue === 1 ? this.downloadDirectly = true : this.downloadDirectly = false
+    },
+    changeServerId(selectValue) {
+      this.logSecretOptionsFiltered = this.logSecretOptions.filter(item => {
+        return item.serverId === selectValue
+      })
     },
   }
 }
