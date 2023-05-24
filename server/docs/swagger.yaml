@@ -582,9 +582,6 @@ definitions:
     type: object
   logUploadMdl.Server:
     properties:
-      authMode:
-        description: ssh认证方式 1 密码 2 免密
-        type: integer
       createdAt:
         description: 创建时间
         type: string
@@ -730,16 +727,6 @@ definitions:
       id:
         description: 主键ID
         type: number
-      page:
-        description: 页码
-        type: integer
-      pageSize:
-        description: 每页大小
-        type: integer
-      sortBy:
-        type: string
-      sortInverted:
-        type: boolean
     type: object
   request.GetByProjectId:
     properties:
@@ -1366,6 +1353,9 @@ definitions:
       description:
         description: task描述
         type: string
+      dstServerId:
+        description: 日志位置
+        type: integer
       executeType:
         description: 模板类型 1 普通 2 日志提取
         type: integer
@@ -1376,6 +1366,12 @@ definitions:
         $ref: '#/definitions/taskMdl.Task'
       lastTaskId:
         description: 最后一次task id
+        type: integer
+      logDst:
+        description: 日志位置
+        type: string
+      logOutput:
+        description: 日志位置
         type: integer
       logPath:
         description: 日志位置
@@ -1392,6 +1388,9 @@ definitions:
       scriptPath:
         description: 脚本位置
         type: string
+      secretId:
+        description: 日志位置
+        type: integer
       sysUser:
         description: 执行用户
         type: string
@@ -5273,6 +5272,29 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: 更新Template
+      tags:
+      - Template
+  /task/template/uploadLogServer:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: id,文件路径
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.DownLoadFileRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"更新成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 上传日志服务器
       tags:
       - Template
   /task/template/uploadScript:

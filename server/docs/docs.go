@@ -6324,6 +6324,44 @@ var doc = `{
                 }
             }
         },
+        "/task/template/uploadLogServer": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Template"
+                ],
+                "summary": "上传日志服务器",
+                "parameters": [
+                    {
+                        "description": "id,文件路径",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.DownLoadFileRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\":true,\"data\":{},\"msg\":\"更新成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/task/template/uploadScript": {
             "post": {
                 "security": [
@@ -7508,10 +7546,6 @@ var doc = `{
         "logUploadMdl.Server": {
             "type": "object",
             "properties": {
-                "authMode": {
-                    "description": "ssh认证方式 1 密码 2 免密",
-                    "type": "integer"
-                },
                 "createdAt": {
                     "description": "创建时间",
                     "type": "string"
@@ -7722,20 +7756,6 @@ var doc = `{
                 "id": {
                     "description": "主键ID",
                     "type": "number"
-                },
-                "page": {
-                    "description": "页码",
-                    "type": "integer"
-                },
-                "pageSize": {
-                    "description": "每页大小",
-                    "type": "integer"
-                },
-                "sortBy": {
-                    "type": "string"
-                },
-                "sortInverted": {
-                    "type": "boolean"
                 }
             }
         },
@@ -8616,6 +8636,10 @@ var doc = `{
                     "description": "task描述",
                     "type": "string"
                 },
+                "dstServerId": {
+                    "description": "日志位置",
+                    "type": "integer"
+                },
                 "executeType": {
                     "description": "模板类型 1 普通 2 日志提取",
                     "type": "integer"
@@ -8629,6 +8653,14 @@ var doc = `{
                 },
                 "lastTaskId": {
                     "description": "最后一次task id",
+                    "type": "integer"
+                },
+                "logDst": {
+                    "description": "日志位置",
+                    "type": "string"
+                },
+                "logOutput": {
+                    "description": "日志位置",
                     "type": "integer"
                 },
                 "logPath": {
@@ -8650,6 +8682,10 @@ var doc = `{
                 "scriptPath": {
                     "description": "脚本位置",
                     "type": "string"
+                },
+                "secretId": {
+                    "description": "日志位置",
+                    "type": "integer"
                 },
                 "sysUser": {
                     "description": "执行用户",
