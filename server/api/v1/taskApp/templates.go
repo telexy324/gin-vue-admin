@@ -858,7 +858,7 @@ func (a *TemplateApi) DownloadFile(c *gin.Context) {
 // @Router /task/template/uploadLogServer [post]
 func (a *TemplateApi) UploadLogServer(c *gin.Context) {
 	var info templateReq.DownLoadFileRequest
-	if err := c.ShouldBindQuery(&info); err != nil {
+	if err := c.ShouldBindJSON(&info); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
 		return

@@ -325,6 +325,7 @@ import {
   deleteTemplateByIds,
   getFileList,
   downloadFile,
+  uploadLogServer,
 } from '@/api/template'
 import { addTask } from '@/api/task'
 import { getAdminSystems, getAllServerIds } from '@/api/cmdb'
@@ -961,8 +962,16 @@ export default {
     downLoadFile(index) {
       const item = this.fNames[index]
       const id = this.currentTemplate.ID
+      const type = this.currentTemplate.logOutput
       this.closeDownloadDialog()
-      downloadFile(id, item)
+      if (type === 2) {
+        uploadLogServer({
+          ID: id,
+          file: item,
+        })
+      } else {
+        downloadFile(id, item)
+      }
     },
     filterSystemName(value) {
       const rowLabel = this.systemOptions.filter(item => item.ID === value)

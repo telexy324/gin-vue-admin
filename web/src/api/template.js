@@ -279,3 +279,15 @@ export const downloadFile = (id, fileName) => {
     download(res, fileName)
   })
 }
+
+// @Summary 上传文件
+// @Produce  application/json
+// @Param checkScript Object
+// @Router /task/template/uploadLogServer [post]
+export const uploadLogServer = (data) => {
+  return service({
+    url: '/task/template/uploadLogServer',
+    method: 'post',
+    data
+  })
+}

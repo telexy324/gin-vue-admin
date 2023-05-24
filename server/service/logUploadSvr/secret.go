@@ -66,14 +66,14 @@ func (secretService *SecretService) UpdateSecret(secret logUploadMdl.Secret) (er
 	upDateMap["password"] = secret.Password
 
 	err = global.GVA_DB.Transaction(func(tx *gorm.DB) error {
-		db := tx.Where("id = ?", secret.ID).Find(&oldSecret)
-		if oldSecret.Name != secret.Name {
-			if !errors.Is(tx.Where("id <> ? AND name = ?", secret.ID, secret.Name).First(&logUploadMdl.Secret{}).Error, gorm.ErrRecordNotFound) {
-				global.GVA_LOG.Debug("存在相同name修改失败")
-				return errors.New("存在相同name修改失败")
-			}
-		}
-		txErr := db.Updates(upDateMap).Error
+		//db := tx.Where("id = ?", secret.ID).Find(&oldSecret)
+		//if oldSecret.Name != secret.Name {
+		//	if !errors.Is(tx.Where("id <> ? AND name = ?", secret.ID, secret.Name).First(&logUploadMdl.Secret{}).Error, gorm.ErrRecordNotFound) {
+		//		global.GVA_LOG.Debug("存在相同name修改失败")
+		//		return errors.New("存在相同name修改失败")
+		//	}
+		//}
+		txErr := tx.Where("id = ?", secret.ID).Find(&oldSecret).Updates(upDateMap).Error
 		if txErr != nil {
 			global.GVA_LOG.Debug(txErr.Error())
 			return txErr
