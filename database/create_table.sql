@@ -239,7 +239,7 @@ CREATE TABLE `application_upload_servers`
     `deleted_at` datetime(0) NULL DEFAULT NULL,
     `hostname`   varchar(100) NOT NULL DEFAULT '' COMMENT '机器名称',
     `manage_ip`  varchar(15)  NOT NULL DEFAULT '' COMMENT '管理ip',
-    `mode`       tinyint(2) NOT NULL DEFAULT '0' COMMENT '运行方式 0 未定义 1 命令 2 脚本',
+    `mode`       tinyint(2) NOT NULL DEFAULT '0' COMMENT '运行方式 0 未定义 1 ssh 2 ftp',
     `port`       int(5) NOT NULL DEFAULT '0' COMMENT '端口',
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

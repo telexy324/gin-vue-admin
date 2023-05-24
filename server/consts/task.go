@@ -13,3 +13,13 @@ const (
 	ExecuteTypeNormal = iota + 1
 	ExecuteTypeDownload
 )
+
+const (
+	LogOutputTypeDirect = iota + 1
+	LogOutputTypeUpload
+)
+
+const (
+	LogServerModeFtp = iota + 1
+	LogServerModeSSH
+)

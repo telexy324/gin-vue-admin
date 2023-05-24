@@ -17,6 +17,7 @@ require (
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gookit/color v1.3.1
 	github.com/gorilla/websocket v1.4.2
+	github.com/jlaffaye/ftp v0.2.0
 	github.com/jordan-wright/email v0.0.0-20200824153738-3f5bafa1cd84
 	github.com/mojocn/base64Captcha v1.3.1
 	github.com/natefinch/lumberjack v2.0.0+incompatible
@@ -27,7 +28,7 @@ require (
 	github.com/shirou/gopsutil v3.21.9+incompatible
 	github.com/songzhibin97/gkit v1.1.1
 	github.com/spf13/viper v1.7.0
-	github.com/stretchr/testify v1.7.0
+	github.com/stretchr/testify v1.8.3
 	github.com/swaggo/gin-swagger v1.3.0
 	github.com/swaggo/swag v1.7.4
 	github.com/tencentyun/cos-go-sdk-v5 v0.7.19

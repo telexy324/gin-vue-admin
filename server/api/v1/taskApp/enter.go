@@ -12,3 +12,5 @@ var taskService = service.ServiceGroupApp.TaskServiceGroup.TaskService
 var templateService = service.ServiceGroupApp.TaskServiceGroup.TaskTemplatesService
 var scheduleService = service.ServiceGroupApp.ScheduleServiceGroup.ScheduleService
 var cmdbServerService = service.ServiceGroupApp.ApplicationServiceGroup.CmdbServerService
+var logUploadServerService = service.ServiceGroupApp.LogUploadServiceGroup.ServerService
+var logUploadSecretService = service.ServiceGroupApp.LogUploadServiceGroup.SecretService

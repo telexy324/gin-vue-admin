@@ -331,6 +331,27 @@ func (c *SSHClient) Download(remotePath string) (fileBytes []byte, err error) {
 	//return remote, nil
 }
 
+// Download file from remote server!
+func (c *SSHClient) DownloadReader(remotePath string) (file io.Reader, err error) {
+	ftp, err := c.NewSftp()
+	if err != nil {
+		return
+	}
+	defer ftp.Close()
+
+	remote, err := ftp.Open(remotePath)
+	if err != nil {
+		return
+	}
+	defer remote.Close()
+
+	buf := new(bytes.Buffer)
+	if _, err = io.Copy(buf, remote); err != nil {
+		return
+	}
+	return buf, nil
+}
+
 //func (c *SSHClient) RequestTerminal(terminal Terminal) *SSHClient {
 //	//session, err := c.Client.NewSession()
 //	//if err != nil {
