@@ -533,8 +533,10 @@ export default {
     async editTemplate(row) {
       const res = await getTemplateById({ id: row.ID })
       if (res.data.taskTemplate.executeType === 2) {
-        this.logForm = res.data.taskTemplate
+        const temp = res.data.taskTemplate
+        this.logForm = temp
         this.logForm.targetIds = this.logForm.targetIds[0]
+        temp.logOutput === 2 ? this.downloadDirectly = false : this.downloadDirectly = true
         this.openLogDialog('edit')
       } else {
         this.form = res.data.taskTemplate
@@ -898,6 +900,7 @@ export default {
           break
       }
       this.logType = type
+      this.changeServerId(this.logForm.dstServerId)
       this.dialogLogFormVisible = true
     },
     async enterLogDialog() {
