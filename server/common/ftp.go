@@ -12,7 +12,7 @@ type FtpClient struct {
 }
 
 func NewFtpClient(host string, port int, username, password string) (client FtpClient, err error) {
-	addr := host + strconv.Itoa(port)
+	addr := host + ":" + strconv.Itoa(port)
 	c, err := ftp.Dial(addr, ftp.DialWithTimeout(5*time.Second))
 	if err != nil {
 		return
