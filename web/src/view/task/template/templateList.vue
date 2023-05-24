@@ -226,8 +226,8 @@
         <el-form-item label="日志文件夹位置" prop="logPath">
           <el-input v-model="logForm.logPath" autocomplete="off" />
         </el-form-item>
-        <el-form-item label="执行方式" prop="logOutput" @change="logOutputChange">
-          <el-select v-model="logForm.logOutput">
+        <el-form-item label="执行方式" prop="logOutput">
+          <el-select v-model="logForm.logOutput" @change="logOutputChange">
             <el-option v-for="val in logOutputOptions" :key="val.ID" :value="val.ID" :label="val.name" />
           </el-select>
         </el-form-item>
@@ -235,17 +235,19 @@
           <el-input v-model="logForm.logDst" autocomplete="off" />
         </el-form-item>
         <el-row>
-          <el-col :span="6">
-            <el-form-item v-if="!downloadDirectly">
+          <el-col :span="12">
+            <el-form-item v-if="!downloadDirectly" label="日志服务器" prop="dstServerId">
               <el-select v-model="logForm.dstServerId" @change="changeServerId">
                 <el-option v-for="val in logServerOptions" :key="val.ID" :value="val.ID" :label="val.hostname" />
               </el-select>
             </el-form-item>
           </el-col>
-          <el-col :span="6">
-            <el-select v-model="logForm.secretId">
-              <el-option v-for="val in logSecretOptionsFiltered" :key="val.ID" :value="val.ID" :label="val.name" />
-            </el-select>
+          <el-col :span="12">
+            <el-form-item v-if="!downloadDirectly" label="上传用户" prop="secretId">
+              <el-select v-model="logForm.secretId">
+                <el-option v-for="val in logSecretOptionsFiltered" :key="val.ID" :value="val.ID" :label="val.name" />
+              </el-select>
+            </el-form-item>
           </el-col>
         </el-row>
       </el-form>

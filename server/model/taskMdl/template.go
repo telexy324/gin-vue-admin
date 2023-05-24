@@ -22,6 +22,10 @@ type TaskTemplate struct {
 	ExecuteType     int                             `json:"executeType" gorm:"column:execute_type"`          // 模板类型 1 普通 2 日志提取
 	LogPath         string                          `json:"logPath" gorm:"column:log_path"`                  // 日志位置
 	ScriptHash      string                          `json:"scriptHash" gorm:"column:script_hash"`            // 脚本哈希
+	LogOutput       int                             `json:"logOutput" gorm:"column:log_output"`              // 日志位置
+	LogDst          string                          `json:"logDst" gorm:"column:log_dst"`                    // 日志位置
+	DstServerId     string                          `json:"dstServerId" gorm:"column:dst_server_id"`         // 日志位置
+	SecretId        string                          `json:"secretId" gorm:"column:secret_id"`                // 日志位置
 	TargetIds       []int                           `json:"targetIds" gorm:"-"`
 	TargetServers   []application.ApplicationServer `json:"targetServers" gorm:"-"`
 	LastTask        Task                            `json:"lastTask" gorm:"-"`
