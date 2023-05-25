@@ -968,10 +968,6 @@ export default {
       const type = this.currentTemplate.logOutput
       this.closeDownloadDialog()
       if (type === 2) {
-        uploadLogServer({
-          ID: id,
-          file: item,
-        })
         const task = (await uploadLogServer({
           ID: id,
           file: item,
