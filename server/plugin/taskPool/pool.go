@@ -220,6 +220,12 @@ func (p *TaskPool) StopTask(targetTask taskMdl.Task) (failedIps []string, err er
 					failedIps = append(failedIps, client.RemoteAddr().String())
 				}
 			}
+			for _, client := range tsk.ftpConn {
+				if err = client.Quit(); err != nil {
+					global.GVA_LOG.Error("close ftp client failed", zap.Uint("Task ID ", targetTask.ID))
+					//failedIps = append(failedIps, client.RemoteAddr().String())
+				}
+			}
 		}
 	}
 	return

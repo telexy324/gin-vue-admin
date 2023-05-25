@@ -13,6 +13,7 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/system"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl"
+	"github.com/jlaffaye/ftp"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/ssh"
 	"gorm.io/gorm"
@@ -34,6 +35,7 @@ type TaskRunner struct {
 	prepared bool
 	clients  []*ssh.Client
 	pool     *TaskPool
+	ftpConn  []*ftp.ServerConn
 }
 
 func getMD5Hash(filepath string) (string, error) {
@@ -268,7 +270,12 @@ func (t *TaskRunner) run() {
 		return
 	}
 
-	failedIPs := t.runTask()
+	failedIPs := make([]string, 0)
+	if t.template.ExecuteType == consts.ExecuteTypeDownload {
+		failedIPs = t.runUploadTask()
+	} else {
+		failedIPs = t.runTask()
+	}
 	if len(failedIPs) > 0 {
 		failed, _ := json.Marshal(failedIPs)
 		t.Log("Running task failed: " + string(failed))
@@ -646,6 +653,72 @@ func (t *TaskRunner) runTask() (failedIPs []string) {
 	for ip := range failedChan {
 		failedIPs = append(failedIPs, ip)
 	}
+	return
+}
+
+func (t *TaskRunner) runUploadTask() (failedIPs []string) {
+	if t.template.TargetServers == nil || len(t.template.TargetServers) <= 0 {
+		global.GVA_LOG.Error("run task failed on nil target server: ", zap.Uint("task ID: ", t.task.ID))
+		return
+	}
+	global.GVA_LOG.Info("run ", zap.Uint("task ID: ", t.task.ID))
+	server := t.template.TargetServers[0]
+	sshClient, err := common.FillSSHClient(server.ManageIp, t.template.SysUser, "", server.SshPort)
+	if err != nil {
+		global.GVA_LOG.Error("run task failed on create ssh client: ", zap.Uint("task ID: ", t.task.ID), zap.String("server IP: ", server.ManageIp), zap.Any("err", err))
+		failedIPs = append(failedIPs, server.ManageIp)
+		return
+	}
+	err = sshClient.GenerateClient()
+	if err != nil {
+		global.GVA_LOG.Error("run task failed on generate ssh client: ", zap.Uint("task ID: ", t.task.ID), zap.String("server IP: ", server.ManageIp), zap.Any("err", err))
+		failedIPs = append(failedIPs, server.ManageIp)
+		return
+	}
+	defer sshClient.Client.Close()
+	t.clients = append(t.clients, sshClient.Client)
+	//filePath := "/" + strings.Trim(t.template.LogPath, "/") + "/"
+	fileReader, err := sshClient.DownloadReader(t.task.FileDownload)
+	if err != nil {
+		global.GVA_LOG.Error("run task failed on download file failed", zap.Any("err", err))
+		failedIPs = append(failedIPs, server.ManageIp)
+		return
+	}
+	t.Log("download "+t.task.FileDownload+" success", server.ManageIp)
+	filePathUpload := "/" + strings.Trim(t.template.LogDst, "/") + "/"
+	paths := strings.Split(t.task.FileDownload, "/")
+	fileUpload := filePathUpload + paths[len(paths)-1]
+	if t.template.LogUploadServer.Mode == consts.LogServerModeFtp {
+		ftpClient, err := common.NewFtpClient(t.template.LogUploadServer.ManageIp, t.template.LogUploadServer.Port, t.template.Secret.Name, t.template.Secret.Password)
+		if err != nil {
+			global.GVA_LOG.Error("create ftp client failed", zap.Any("err", err))
+			failedIPs = append(failedIPs, server.ManageIp)
+			return
+		}
+		defer ftpClient.Conn.Quit()
+		t.ftpConn = append(t.ftpConn, ftpClient.Conn)
+		if err = ftpClient.Upload(fileUpload, fileReader); err != nil {
+			global.GVA_LOG.Error("upload via ftp failed", zap.Any("err", err))
+			failedIPs = append(failedIPs, server.ManageIp)
+			return
+		}
+	} else if t.template.LogUploadServer.Mode == consts.LogServerModeSSH {
+		sshClientUpload, err := common.FillSSHClient(t.template.LogUploadServer.ManageIp, t.template.Secret.Name, t.template.Secret.Password, t.template.LogUploadServer.Port)
+		err = sshClientUpload.GenerateClient()
+		if err != nil {
+			global.GVA_LOG.Error("create ssh client failed: ", zap.String("server IP: ", server.ManageIp), zap.Any("err", err))
+			failedIPs = append(failedIPs, server.ManageIp)
+			return
+		}
+		defer sshClientUpload.Client.Close()
+		t.clients = append(t.clients, sshClientUpload.Client)
+		if err = sshClientUpload.Upload(fileReader, fileUpload); err != nil {
+			global.GVA_LOG.Error("upload via sftp failed", zap.Any("err", err))
+			failedIPs = append(failedIPs, server.ManageIp)
+			return
+		}
+	}
+	t.Log("upload "+t.task.FileDownload+" success", t.template.LogUploadServer.ManageIp)
 	return
 }
 

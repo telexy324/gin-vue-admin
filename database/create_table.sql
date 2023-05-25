@@ -128,6 +128,7 @@ create table `application_tasks`
     `begin_time`     datetime(0) NULL DEFAULT NULL,
     `end_time`       datetime(0) NULL DEFAULT NULL,
     `set_task_id`    bigint UNSIGNED NOT NULL DEFAULT '0',
+    `file_download`  varchar(255) NOT NULL DEFAULT '',
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

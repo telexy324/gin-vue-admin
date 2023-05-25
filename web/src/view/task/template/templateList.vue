@@ -962,7 +962,7 @@ export default {
       this.currentTemplate = ''
       this.dialogFormVisibleDownload = false
     },
-    downLoadFile(index) {
+    async downLoadFile(index) {
       const item = this.fNames[index]
       const id = this.currentTemplate.ID
       const type = this.currentTemplate.logOutput
@@ -972,6 +972,13 @@ export default {
           ID: id,
           file: item,
         })
+        const task = (await uploadLogServer({
+          ID: id,
+          file: item,
+        })).data.task
+        console.log(task.ID)
+        this.dialogFormVisibleDownload = false
+        this.showTaskLog(task)
       } else {
         downloadFile(id, item)
       }

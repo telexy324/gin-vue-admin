@@ -25,6 +25,7 @@ type Task struct {
 	BeginTime    sql.NullTime `json:"beginTime" gorm:"column:begin_time" swaggertype:"string"` // 开始时间
 	EndTime      sql.NullTime `json:"endTime" gorm:"column:end_time" swaggertype:"string"`     // 结束时间
 	SetTaskId    int          `json:"setTaskId" gorm:"column:set_task_id"`                     // 结束时间
+	FileDownload string       `json:"fileDownload" gorm:"column:file_download"`                // 结束时间
 }
 
 func (m *Task) TableName() string {

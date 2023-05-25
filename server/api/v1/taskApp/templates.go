@@ -884,72 +884,86 @@ func (a *TemplateApi) UploadLogServer(c *gin.Context) {
 		response.FailWithMessage("template type is not upload to log server", c)
 		return
 	}
-	err, server := cmdbServerService.GetServerById(float64(template.TargetIds[0]))
-	if err != nil {
-		response.FailWithMessage(err.Error(), c)
-		return
-	}
-	sshClient, err := common.FillSSHClient(server.ManageIp, template.SysUser, "", server.SshPort)
-	err = sshClient.GenerateClient()
-	if err != nil {
-		global.GVA_LOG.Error("create ssh client failed: ", zap.String("server IP: ", server.ManageIp), zap.Any("err", err))
-		response.FailWithMessage(err.Error(), c)
-		return
-	}
 	filePath := "/" + strings.Trim(template.LogPath, "/") + "/"
-	fileReader, err := sshClient.DownloadReader(filePath + info.File)
-	if err != nil {
-		global.GVA_LOG.Error("download file failed", zap.Any("err", err))
-		response.FailWithMessage("download file failed", c)
-		return
+	userID := int(utils.GetUserID(c))
+	task := taskMdl.Task{
+		TemplateId:   int(info.ID),
+		FileDownload: filePath + info.File,
 	}
-	err, logServer := logUploadServerService.GetServerById(float64(template.DstServerId))
-	if err != nil {
-		global.GVA_LOG.Error("get log server failed", zap.Any("err", err))
-		response.FailWithMessage("get log server failed", c)
-		return
-	}
-	err, secret := logUploadSecretService.GetSecretById(float64(template.SecretId))
-	if err != nil {
-		global.GVA_LOG.Error("get log server secret failed", zap.Any("err", err))
-		response.FailWithMessage("get log server secret failed", c)
-		return
-	}
-	filePathUpload := "/" + strings.Trim(template.LogDst, "/") + "/"
-	if logServer.Mode == consts.LogServerModeFtp {
-		ftpClient, err := common.NewFtpClient(logServer.ManageIp, logServer.Port, secret.Name, secret.Password)
-		if err != nil {
-			global.GVA_LOG.Error("create ftp client failed", zap.Any("err", err))
-			response.FailWithMessage("create ftp client failed", c)
-			return
-		}
-		defer ftpClient.Conn.Quit()
-		if err = ftpClient.Upload(filePathUpload+info.File, fileReader); err != nil {
-			global.GVA_LOG.Error("upload via ftp failed", zap.Any("err", err))
-			response.FailWithMessage("upload via ftp failed", c)
-			return
-		} else {
-			response.OkWithMessage("上传成功", c)
-			return
-		}
-	} else if logServer.Mode == consts.LogServerModeSSH {
-		sshClientUpload, err := common.FillSSHClient(logServer.ManageIp, secret.Name, secret.Password, logServer.Port)
-		err = sshClientUpload.GenerateClient()
-		if err != nil {
-			global.GVA_LOG.Error("create ssh client failed: ", zap.String("server IP: ", server.ManageIp), zap.Any("err", err))
-			response.FailWithMessage(err.Error(), c)
-			return
-		}
-		if err = sshClientUpload.Upload(fileReader, filePathUpload+info.File); err != nil {
-			global.GVA_LOG.Error("upload via sftp failed", zap.Any("err", err))
-			response.FailWithMessage("upload via sftp failed", c)
-			return
-		} else {
-			response.OkWithMessage("上传成功", c)
-			return
-		}
+	if taskNew, err := taskPool.TPool.AddTask(task, userID, 0); err != nil {
+		global.GVA_LOG.Error("添加失败!", zap.Any("err", err))
+		response.FailWithMessage("添加失败", c)
 	} else {
-		response.FailWithMessage("上传失败", c)
-		return
+		response.OkWithDetailed(templateRes.TaskResponse{
+			Task: taskNew,
+		}, "添加成功", c)
 	}
+	//err, server := cmdbServerService.GetServerById(float64(template.TargetIds[0]))
+	//if err != nil {
+	//	response.FailWithMessage(err.Error(), c)
+	//	return
+	//}
+	//sshClient, err := common.FillSSHClient(server.ManageIp, template.SysUser, "", server.SshPort)
+	//err = sshClient.GenerateClient()
+	//if err != nil {
+	//	global.GVA_LOG.Error("create ssh client failed: ", zap.String("server IP: ", server.ManageIp), zap.Any("err", err))
+	//	response.FailWithMessage(err.Error(), c)
+	//	return
+	//}
+	//filePath := "/" + strings.Trim(template.LogPath, "/") + "/"
+	//fileReader, err := sshClient.DownloadReader(filePath + info.File)
+	//if err != nil {
+	//	global.GVA_LOG.Error("download file failed", zap.Any("err", err))
+	//	response.FailWithMessage("download file failed", c)
+	//	return
+	//}
+	//err, logServer := logUploadServerService.GetServerById(float64(template.DstServerId))
+	//if err != nil {
+	//	global.GVA_LOG.Error("get log server failed", zap.Any("err", err))
+	//	response.FailWithMessage("get log server failed", c)
+	//	return
+	//}
+	//err, secret := logUploadSecretService.GetSecretById(float64(template.SecretId))
+	//if err != nil {
+	//	global.GVA_LOG.Error("get log server secret failed", zap.Any("err", err))
+	//	response.FailWithMessage("get log server secret failed", c)
+	//	return
+	//}
+	//filePathUpload := "/" + strings.Trim(template.LogDst, "/") + "/"
+	//if logServer.Mode == consts.LogServerModeFtp {
+	//	ftpClient, err := common.NewFtpClient(logServer.ManageIp, logServer.Port, secret.Name, secret.Password)
+	//	if err != nil {
+	//		global.GVA_LOG.Error("create ftp client failed", zap.Any("err", err))
+	//		response.FailWithMessage("create ftp client failed", c)
+	//		return
+	//	}
+	//	defer ftpClient.Conn.Quit()
+	//	if err = ftpClient.Upload(filePathUpload+info.File, fileReader); err != nil {
+	//		global.GVA_LOG.Error("upload via ftp failed", zap.Any("err", err))
+	//		response.FailWithMessage("upload via ftp failed", c)
+	//		return
+	//	} else {
+	//		response.OkWithMessage("上传成功", c)
+	//		return
+	//	}
+	//} else if logServer.Mode == consts.LogServerModeSSH {
+	//	sshClientUpload, err := common.FillSSHClient(logServer.ManageIp, secret.Name, secret.Password, logServer.Port)
+	//	err = sshClientUpload.GenerateClient()
+	//	if err != nil {
+	//		global.GVA_LOG.Error("create ssh client failed: ", zap.String("server IP: ", server.ManageIp), zap.Any("err", err))
+	//		response.FailWithMessage(err.Error(), c)
+	//		return
+	//	}
+	//	if err = sshClientUpload.Upload(fileReader, filePathUpload+info.File); err != nil {
+	//		global.GVA_LOG.Error("upload via sftp failed", zap.Any("err", err))
+	//		response.FailWithMessage("upload via sftp failed", c)
+	//		return
+	//	} else {
+	//		response.OkWithMessage("上传成功", c)
+	//		return
+	//	}
+	//} else {
+	//	response.FailWithMessage("上传失败", c)
+	//	return
+	//}
 }

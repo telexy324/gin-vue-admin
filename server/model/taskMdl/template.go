@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/application"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/logUploadMdl"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -29,6 +30,8 @@ type TaskTemplate struct {
 	TargetIds       []int                           `json:"targetIds" gorm:"-"`
 	TargetServers   []application.ApplicationServer `json:"targetServers" gorm:"-"`
 	LastTask        Task                            `json:"lastTask" gorm:"-"`
+	LogUploadServer logUploadMdl.Server             `json:"logUploadServer" gorm:"-"`
+	Secret          logUploadMdl.Secret             `json:"secret" gorm:"-"`
 }
 
 func (m *TaskTemplate) TableName() string {
@@ -56,6 +59,18 @@ func (m *TaskTemplate) AfterFind(tx *gorm.DB) (err error) {
 	}
 	if m.LastTaskId > 0 {
 		if err = tx.Model(&Task{}).Where("id = ?", m.LastTaskId).Find(&m.LastTask).Error; err != nil {
+			global.GVA_LOG.Error("转换失败", zap.Any("err", err))
+			return
+		}
+	}
+	if m.DstServerId > 0 {
+		if err = tx.Model(&logUploadMdl.Server{}).Where("id = ?", m.DstServerId).Find(&m.LogUploadServer).Error; err != nil {
+			global.GVA_LOG.Error("转换失败", zap.Any("err", err))
+			return
+		}
+	}
+	if m.SecretId > 0 {
+		if err = tx.Model(&logUploadMdl.Secret{}).Where("id = ?", m.SecretId).Find(&m.Secret).Error; err != nil {
 			global.GVA_LOG.Error("转换失败", zap.Any("err", err))
 			return
 		}
