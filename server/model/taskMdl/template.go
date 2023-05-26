@@ -27,6 +27,8 @@ type TaskTemplate struct {
 	LogDst          string                          `json:"logDst" gorm:"column:log_dst"`                    // 日志位置
 	DstServerId     int                             `json:"dstServerId" gorm:"column:dst_server_id"`         // 日志位置
 	SecretId        int                             `json:"secretId" gorm:"column:secret_id"`                // 日志位置
+	ShellType       int                             `json:"shellType" gorm:"column:shell_type"`              // 日志位置
+	ShellVars       string                          `json:"shellVars" gorm:"column:shell_vars"`              // 日志位置
 	TargetIds       []int                           `json:"targetIds" gorm:"-"`
 	TargetServers   []application.ApplicationServer `json:"targetServers" gorm:"-"`
 	LastTask        Task                            `json:"lastTask" gorm:"-"`

@@ -23,3 +23,8 @@ const (
 	LogServerModeFtp = iota + 1
 	LogServerModeSSH
 )
+
+const (
+	ShellTypeSh = iota + 1
+	ShellTypeBash
+)

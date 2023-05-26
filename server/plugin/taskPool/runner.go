@@ -631,7 +631,17 @@ func (t *TaskRunner) runTask() (failedIPs []string) {
 					f <- s.ManageIp
 				}
 			} else {
-				command := "sh " + t.template.ScriptPath
+				//command := "sh " + t.template.ScriptPath
+				var shellType = "sh "
+				if t.template.ShellType == consts.ShellTypeSh {
+					shellType = "sh "
+				} else if t.template.ShellType == consts.ShellTypeBash {
+					shellType = "bash "
+				}
+				command := shellType + strings.Trim(t.template.ScriptPath," ")
+				if len(strings.Trim(t.template.ShellVars," ")) > 0 {
+					command = command + " " + strings.Trim(t.template.ShellVars," ")
+				}
 				err = sshClient.Commands(command, t, s.ManageIp)
 				if err != nil {
 					global.GVA_LOG.Error("run task failed on exec command: ", zap.Uint("task ID: ", t.task.ID), zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
@@ -718,7 +728,7 @@ func (t *TaskRunner) runUploadTask() (failedIPs []string) {
 			return
 		}
 	}
-	t.Log("upload "+t.task.FileDownload+" success", t.template.LogUploadServer.ManageIp)
+	t.Log("upload "+fileUpload+" success", t.template.LogUploadServer.ManageIp)
 	return
 }
 

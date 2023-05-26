@@ -167,6 +167,8 @@ create table `application_task_templates`
     `log_dst`         varchar(255) NOT NULL DEFAULT '',
     `dst_server_id`   int          NOT NULL DEFAULT '0',
     `secret_id`       int          NOT NULL DEFAULT '0',
+    `shell_type`      int          NOT NULL DEFAULT '0' COMMENT '1 sh 2 bash',
+    `shell_vars`      varchar(255) NOT NULL DEFAULT '',
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

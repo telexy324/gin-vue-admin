@@ -167,6 +167,20 @@
             </el-form-item>
           </el-col>
         </el-row>
+        <el-row>
+          <el-col :span="6">
+            <el-form-item v-if="isScript" label="shell方式">
+              <el-select v-model="form.shellType">
+                <el-option v-for="val in shellTypeOptions" :key="val.key" :value="val.key" :label="val.value" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="18">
+            <el-form-item v-if="isScript" label="脚本参数">
+              <el-input v-model="form.shellVars" autocomplete="off" />
+            </el-form-item>
+          </el-col>
+        </el-row>
 <!--        <el-form-item v-if="isScript">-->
 <!--          <el-upload-->
 <!--            ref="upload"-->
@@ -372,6 +386,8 @@ export default {
         detail: false,
         systemId: '',
         executeType: 1,
+        shellType: '',
+        shellVars: '',
       },
       type: '',
       rules: {
@@ -437,6 +453,10 @@ export default {
       logServerOptions: [],
       logSecretOptions: [],
       logSecretOptionsFiltered: [],
+      shellTypeOptions: [
+        { 'key': 1, 'value': 'sh' },
+        { 'key': 2, 'value': 'bash' },
+      ],
     }
   },
   computed: {
@@ -506,7 +526,9 @@ export default {
         sysUser: '',
         targetIds: '',
         detail: false,
-        executeType: 1
+        executeType: 1,
+        shellType: '',
+        shellVars: '',
       }
     },
     closeDialog() {
