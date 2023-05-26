@@ -249,6 +249,51 @@ func (a *CmdbServerApi) GetAllServerIds(c *gin.Context) {
 }
 
 // @Tags CmdbServer
+// @Summary 根据系统id获取服务器id
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body request.GetById true "系统id"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
+// @Router /cmdb/getSystemServerIds [post]
+func (a *CmdbServerApi) GetSystemServerIds(c *gin.Context) {
+	var idInfo request.GetById
+	if err := c.ShouldBindJSON(&idInfo); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err := utils.Verify(idInfo, utils.IdVerify); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	err, sys, _, _ := cmdbSystemService.GetSystemById(idInfo.ID)
+	if err != nil {
+		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
+		response.FailWithMessage("获取失败", c)
+	}
+	err, serverList := cmdbServerService.GetSystemServers(idInfo.ID)
+	if err != nil {
+		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
+		response.FailWithMessage("获取失败", c)
+	}
+	res := make([]applicationRes.AllServersResponse, 0)
+	resServers := make([]applicationRes.Children, 0)
+	for _, server := range serverList {
+		resServers = append(resServers, applicationRes.Children{
+			ID:   server.ID,
+			Name: server.ManageIp,
+		})
+	}
+	res = append(res, applicationRes.AllServersResponse{
+		ID:       sys.ID,
+		Name:     sys.Name,
+		Children: resServers,
+	})
+	response.OkWithDetailed(res, "获取成功", c)
+}
+
+// @Tags CmdbServer
 // @Summary 新增联系
 // @Security ApiKeyAuth
 // @accept application/json

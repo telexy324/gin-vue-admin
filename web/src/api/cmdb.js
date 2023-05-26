@@ -98,6 +98,22 @@ export const getAllServerIds = () => {
   })
 }
 
+// @Tags CmdbServer
+// @Summary 根据系统id获取服务器id
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body request.GetById true "系统id"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
+// @Router /cmdb/getSystemServerIds [post]
+export const getSystemServerIds = (data) => {
+  return service({
+    url: '/cmdb/getSystemServerIds',
+    method: 'post',
+    data
+  })
+}
+
 // @Tags Server
 // @Summary 导出Excel
 // @Security ApiKeyAuth

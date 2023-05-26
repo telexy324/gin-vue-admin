@@ -2015,6 +2015,44 @@ var doc = `{
                 }
             }
         },
+        "/cmdb/getSystemServerIds": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "CmdbServer"
+                ],
+                "summary": "根据系统id获取服务器id",
+                "parameters": [
+                    {
+                        "description": "系统id",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.GetById"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\":true,\"data\":{},\"msg\":\"获取成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/cmdb/getSystemServers": {
             "post": {
                 "security": [
@@ -7756,6 +7794,20 @@ var doc = `{
                 "id": {
                     "description": "主键ID",
                     "type": "number"
+                },
+                "page": {
+                    "description": "页码",
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "description": "每页大小",
+                    "type": "integer"
+                },
+                "sortBy": {
+                    "type": "string"
+                },
+                "sortInverted": {
+                    "type": "boolean"
                 }
             }
         },
@@ -8595,6 +8647,10 @@ var doc = `{
                     "description": "结束时间",
                     "type": "string"
                 },
+                "fileDownload": {
+                    "description": "结束时间",
+                    "type": "string"
+                },
                 "id": {
                     "description": "主键ID",
                     "type": "integer"
@@ -8667,6 +8723,9 @@ var doc = `{
                     "description": "日志位置",
                     "type": "string"
                 },
+                "logUploadServer": {
+                    "$ref": "#/definitions/logUploadMdl.Server"
+                },
                 "mode": {
                     "description": "执行方式 1 命令 2 脚本",
                     "type": "integer"
@@ -8683,9 +8742,20 @@ var doc = `{
                     "description": "脚本位置",
                     "type": "string"
                 },
+                "secret": {
+                    "$ref": "#/definitions/logUploadMdl.Secret"
+                },
                 "secretId": {
                     "description": "日志位置",
                     "type": "integer"
+                },
+                "shellType": {
+                    "description": "日志位置",
+                    "type": "integer"
+                },
+                "shellVars": {
+                    "description": "日志位置",
+                    "type": "string"
                 },
                 "sysUser": {
                     "description": "执行用户",

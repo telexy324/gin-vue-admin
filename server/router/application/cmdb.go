@@ -20,10 +20,11 @@ func (s *CmdbRouter) InitCmdbRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 		cmdbRouter.POST("updateServer", authorityServerApi.UpdateServer)           // 更新菜单
 	}
 	{
-		cmdbRouter.POST("getServerById", authorityServerApi.GetServerById)       // 获取菜单树
-		cmdbRouter.POST("getServerList", authorityServerApi.GetServerList)       // 分页获取基础menu列表
-		cmdbRouter.POST("getSystemServers", authorityServerApi.GetSystemServers) // 分页获取基础menu列表
-		cmdbRouter.GET("getAllServerIds", authorityServerApi.GetAllServerIds)    // 分页获取基础menu列表
+		cmdbRouter.POST("getServerById", authorityServerApi.GetServerById)           // 获取菜单树
+		cmdbRouter.POST("getServerList", authorityServerApi.GetServerList)           // 分页获取基础menu列表
+		cmdbRouter.POST("getSystemServers", authorityServerApi.GetSystemServers)     // 分页获取基础menu列表
+		cmdbRouter.GET("getAllServerIds", authorityServerApi.GetAllServerIds)        // 分页获取基础menu列表
+		cmdbRouter.POST("getSystemServerIds", authorityServerApi.GetSystemServerIds) // 分页获取基础menu列表
 	}
 	{
 		cmdbRouter.POST("server/addRelation", authorityServerApi.AddRelation)   // 获取菜单树

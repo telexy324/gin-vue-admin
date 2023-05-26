@@ -727,6 +727,16 @@ definitions:
       id:
         description: 主键ID
         type: number
+      page:
+        description: 页码
+        type: integer
+      pageSize:
+        description: 每页大小
+        type: integer
+      sortBy:
+        type: string
+      sortInverted:
+        type: boolean
     type: object
   request.GetByProjectId:
     properties:
@@ -1323,6 +1333,9 @@ definitions:
       endTime:
         description: 结束时间
         type: string
+      fileDownload:
+        description: 结束时间
+        type: string
       id:
         description: 主键ID
         type: integer
@@ -1376,6 +1389,8 @@ definitions:
       logPath:
         description: 日志位置
         type: string
+      logUploadServer:
+        $ref: '#/definitions/logUploadMdl.Server'
       mode:
         description: 执行方式 1 命令 2 脚本
         type: integer
@@ -1388,9 +1403,17 @@ definitions:
       scriptPath:
         description: 脚本位置
         type: string
+      secret:
+        $ref: '#/definitions/logUploadMdl.Secret'
       secretId:
         description: 日志位置
         type: integer
+      shellType:
+        description: 日志位置
+        type: integer
+      shellVars:
+        description: 日志位置
+        type: string
       sysUser:
         description: 执行用户
         type: string
@@ -2645,6 +2668,29 @@ paths:
       summary: 分页获取基础server列表
       tags:
       - CmdbSystem
+  /cmdb/getSystemServerIds:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 系统id
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetById'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 根据系统id获取服务器id
+      tags:
+      - CmdbServer
   /cmdb/getSystemServers:
     post:
       consumes:

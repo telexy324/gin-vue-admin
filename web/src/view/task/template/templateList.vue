@@ -122,16 +122,6 @@
         <el-form-item label="描述" prop="description">
           <el-input v-model="form.description" autocomplete="off" type="textarea" />
         </el-form-item>
-        <el-form-item label="目标" prop="targetServerIds">
-          <el-cascader
-            v-model="form.targetIds"
-            style="width:100%"
-            :options="serverOptions"
-            :show-all-levels="false"
-            :props="{ multiple:true,checkStrictly: true,label:'name',value:'ID',disabled:'disabled',emitPath:false}"
-            :clearable="false"
-          />
-        </el-form-item>
         <el-row>
           <el-col :span="12">
             <el-form-item label="执行方式" prop="mode">
@@ -143,12 +133,22 @@
           </el-col>
           <el-col :span="12">
             <el-form-item label="所属系统" prop="systemId">
-              <el-select v-model="form.systemId">
+              <el-select v-model="form.systemId" @change="changeSystemId">
                 <el-option v-for="val in systemOptions" :key="val.ID" :value="val.ID" :label="val.name" />
               </el-select>
             </el-form-item>
           </el-col>
         </el-row>
+        <el-form-item label="目标" prop="targetServerIds">
+          <el-cascader
+            v-model="form.targetIds"
+            style="width:100%"
+            :options="serverOptions"
+            :show-all-levels="false"
+            :props="{ multiple:true,checkStrictly: true,label:'name',value:'ID',disabled:'disabled',emitPath:false}"
+            :clearable="false"
+          />
+        </el-form-item>
         <el-form-item v-if="isCommand" label="命令" prop="command">
           <el-input v-model="form.command" autocomplete="off" type="textarea" />
         </el-form-item>
@@ -222,6 +222,11 @@
         <el-form-item label="描述" prop="description">
           <el-input v-model="logForm.description" autocomplete="off" type="textarea" />
         </el-form-item>
+        <el-form-item label="所属系统" prop="systemId">
+          <el-select v-model="logForm.systemId" @change="changeSystemId">
+            <el-option v-for="val in systemOptions" :key="val.ID" :value="val.ID" :label="val.name" />
+          </el-select>
+        </el-form-item>
         <el-form-item label="目标" prop="targetServerIds">
           <el-cascader
             v-model="logForm.targetIds"
@@ -231,11 +236,6 @@
             :props="{ multiple:false,checkStrictly: true,label:'name',value:'ID',disabled:'disabled',emitPath:false}"
             :clearable="false"
           />
-        </el-form-item>
-        <el-form-item label="所属系统" prop="systemId">
-          <el-select v-model="logForm.systemId">
-            <el-option v-for="val in systemOptions" :key="val.ID" :value="val.ID" :label="val.name" />
-          </el-select>
         </el-form-item>
         <el-form-item label="日志文件夹位置" prop="logPath">
           <el-input v-model="logForm.logPath" autocomplete="off" />
@@ -342,7 +342,7 @@ import {
   uploadLogServer,
 } from '@/api/template'
 import { addTask } from '@/api/task'
-import { getAdminSystems, getAllServerIds } from '@/api/cmdb'
+import { getAdminSystems, getSystemServerIds } from '@/api/cmdb'
 import { getPolicyPathByAuthorityId } from '@/api/casbin'
 import { getServerList, getSecretList } from '@/api/logUpload'
 import infoList from '@/mixins/infoList'
@@ -468,7 +468,7 @@ export default {
       this.searchInfo.systemIds = this.formRouterParam(this.$route.params.systemIds)
     }
     await this.getTableData()
-    await this.setServerOptions()
+    // await this.setServerOptions()
     await this.setSystemOptions()
   },
   mounted() {
@@ -534,6 +534,7 @@ export default {
     closeDialog() {
       this.initForm()
       this.dialogFormVisible = false
+      this.serverOptions = []
     },
     openDialog(type) {
       switch (type) {
@@ -557,11 +558,13 @@ export default {
       if (res.data.taskTemplate.executeType === 2) {
         const temp = res.data.taskTemplate
         this.logForm = temp
+        await this.setServerOptions(temp.systemId)
         this.logForm.targetIds = this.logForm.targetIds[0]
         temp.logOutput === 2 ? this.downloadDirectly = false : this.downloadDirectly = true
-        this.openLogDialog('edit')
+        await this.openLogDialog('edit')
       } else {
         this.form = res.data.taskTemplate
+        await this.setServerOptions(this.form.systemId)
         this.openDialog('edit')
       }
     },
@@ -632,13 +635,15 @@ export default {
         }
       })
     },
-    async setServerOptions() {
-      const res = await getAllServerIds()
-      this.serverOptions = res.data
-    },
     async setSystemOptions() {
       const res = await getAdminSystems()
       this.systemOptions = res.data.systems
+    },
+    async setServerOptions(systemId) {
+      const res = await getSystemServerIds({
+        ID: systemId
+      })
+      this.serverOptions = res.data
     },
     async runTask(row) {
       if (row.executeType === 2) {
@@ -889,6 +894,7 @@ export default {
     closeLogDialog() {
       this.initLogForm()
       this.dialogLogFormVisible = false
+      this.serverOptions = []
     },
     initLogForm() {
       this.$refs.templateLogForm.resetFields()
@@ -1036,6 +1042,9 @@ export default {
       this.logSecretOptionsFiltered = this.logSecretOptions.filter(item => {
         return item.serverId === selectValue
       })
+    },
+    changeSystemId(selectValue) {
+      this.setServerOptions(selectValue)
     },
   }
 }
