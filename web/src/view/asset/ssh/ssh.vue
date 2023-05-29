@@ -47,6 +47,7 @@ export default {
       const fitAddon = new FitAddon()
       term.loadAddon(fitAddon)
       console.log(this.manageIp)
+      console.log(this.password)
       term.open(this.$refs.terminalBox)
       fitAddon.fit()
       this.term = term

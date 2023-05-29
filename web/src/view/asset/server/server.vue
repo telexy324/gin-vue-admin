@@ -450,12 +450,13 @@ export default {
       })
     },
     async enterSSHDialog() {
+      const pw = this.sshForm.password.replace("\\", "\\\\")
       await this.$router.push({
         name: 'ssh',
         params: {
           manageIp: this.sshForm.server.manageIp,
           username: this.sshForm.username,
-          password: this.sshForm.password,
+          password: pw,
           sshPort: this.sshForm.server.sshPort
         }
       })

@@ -38,7 +38,9 @@ func (a *SshApi) ShellWeb(c *gin.Context) {
 	fmt.Println(err)
 	if err != nil {
 		global.GVA_LOG.Error("websocket 读取ip、用户名、密码 失败", zap.Error(err))
-		response.FailWithMessage(err.Error(), c)
+		//response.FailWithMessage(err.Error(), c)
+		conn.WriteMessage(websocket.CloseMessage, []byte(err.Error()))
+		conn.Close()
 		return
 	}
 	fmt.Printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ readContent: %v\n", string(readContent))
@@ -46,7 +48,9 @@ func (a *SshApi) ShellWeb(c *gin.Context) {
 	sshClient, err := common.DecodeMsgToSSHClient(string(readContent))
 	if err != nil {
 		global.GVA_LOG.Error(err.Error())
-		response.FailWithMessage(err.Error(), c)
+		//response.FailWithMessage(err.Error(), c)
+		conn.WriteMessage(websocket.CloseMessage, []byte(err.Error()))
+		conn.Close()
 		return
 	}
 	fmt.Printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ sshClient: %v\n", sshClient)
@@ -69,7 +73,7 @@ func (a *SshApi) ShellWeb(c *gin.Context) {
 	if err != nil {
 		conn.WriteMessage(websocket.CloseMessage, []byte(err.Error()))
 		conn.Close()
-		response.FailWithMessage(err.Error(), c)
+		//response.FailWithMessage(err.Error(), c)
 		return
 	}
 	//sshClient.RequestTerminal(terminal)
@@ -79,8 +83,8 @@ func (a *SshApi) ShellWeb(c *gin.Context) {
 
 	if err != nil {
 		conn.WriteMessage(websocket.CloseMessage, []byte(err.Error()))
-		//conn.Close()
-		response.FailWithMessage(err.Error(), c)
+		conn.Close()
+		//response.FailWithMessage(err.Error(), c)
 		return
 	}
 	defer ssConn.Close()

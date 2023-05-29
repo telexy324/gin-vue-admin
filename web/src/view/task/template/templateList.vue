@@ -595,6 +595,9 @@ export default {
             case 'addTemplate':
               {
                 this.form.ID = 0
+                if (this.form.shellType === '') {
+                  this.form.shellType = 0
+                }
                 const res = await addTemplate(this.form)
                 if (res.code === 0) {
                   this.$message({
