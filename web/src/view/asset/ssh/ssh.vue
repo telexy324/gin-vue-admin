@@ -46,8 +46,6 @@ export default {
       })
       const fitAddon = new FitAddon()
       term.loadAddon(fitAddon)
-      console.log(this.manageIp)
-      console.log(this.password)
       term.open(this.$refs.terminalBox)
       fitAddon.fit()
       this.term = term
@@ -74,9 +72,10 @@ export default {
           // console.log(data)
         })
         // ElMessage.success("会话成功连接！")
-        var jsonStr = `{"manageIp":"${this.manageIp}", "sshPort":${this.sshPort}, "username":"${this.username}", "password":"${this.password}"}`
+        const jsonStrRaw = { manageIp: this.manageIp, sshPort: Number(this.sshPort), username: this.username, password: this.password }
+        const jsonStr = JSON.stringify(jsonStrRaw)
         console.log(jsonStr)
-        var datMsg = window.btoa(jsonStr)
+        const datMsg = window.btoa(jsonStr)
         // socket.send(JSON.stringify({ ip: ip.value, name: name.value, password: password.value }))
         this.socket.send(datMsg)
       }

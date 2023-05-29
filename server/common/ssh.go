@@ -36,7 +36,7 @@ type Terminal struct {
 
 type SSHClient struct {
 	Username string `json:"username"`
-	Password json.RawMessage `json:"password"`
+	Password string `json:"password"`
 	ManageIp string `json:"manageIp"`
 	SshPort  int    `json:"sshPort"`
 	//Session  *ssh.Session
@@ -110,7 +110,7 @@ func DecodeMsgToSSHClient(msg string) (SSHClient, error) {
 func FillSSHClient(ip, username, password string, port int) (SSHClient, error) {
 	client := newSSHClient()
 	client.ManageIp, client.SshPort = ip, port
-	client.Username, client.Password = username, json.RawMessage(password)
+	client.Username, client.Password = username, password
 	return client, nil
 }
 
@@ -126,7 +126,7 @@ func (c *SSHClient) GenerateClient() error {
 
 	auth = make([]ssh.AuthMethod, 0)
 	if len(c.Password) > 0 {
-		auth = append(auth, ssh.Password(string(c.Password)))
+		auth = append(auth, ssh.Password(c.Password))
 	} else {
 		homePath, e := os.UserHomeDir()
 		if e != nil {
