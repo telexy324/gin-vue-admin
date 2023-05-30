@@ -101,7 +101,6 @@
           @size-change="handleSizeChange"
         />
       </div>
-
     </div>
 
     <el-dialog v-model="dialogFormVisible" :before-close="closeDialog" :title="dialogTitle">
@@ -150,7 +149,7 @@
           />
         </el-form-item>
         <el-form-item v-if="isCommand" label="命令" prop="command">
-          <el-input v-model="form.command" autocomplete="off" type="textarea" />
+          <el-input v-model="form.command" autocomplete="off" type="textarea" :rows="10" />
         </el-form-item>
         <el-form-item v-if="isScript" label="脚本位置" prop="scriptPath">
           <el-input v-model="form.scriptPath" autocomplete="off" />
@@ -394,7 +393,11 @@ export default {
         name: [{ required: true, message: '请输入模板名', trigger: 'blur' }],
         mode: [
           { required: true, message: '请选择执行方式', trigger: 'blur' }
-        ]
+        ],
+        sysUser: [{ required: true, message: '请输入执行用户', trigger: 'blur' }],
+        systemId: [{ required: true, message: '请选择所属系统', trigger: 'blur' }],
+        targetServerIds: [{ required: true, message: '请选择目标', trigger: 'blur' }],
+        command: [{ required: true, message: '请输入命令', trigger: 'blur' }],
       },
       path: path,
       isCommand: true,
@@ -1047,6 +1050,7 @@ export default {
       })
     },
     changeSystemId(selectValue) {
+      this.form.targetIds = ''
       this.setServerOptions(selectValue)
     },
   }
