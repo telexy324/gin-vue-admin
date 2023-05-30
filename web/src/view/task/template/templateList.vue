@@ -381,7 +381,7 @@ export default {
         command: '',
         scriptPath: '',
         sysUser: '',
-        targetIds: '',
+        targetIds: [],
         detail: false,
         systemId: '',
         executeType: 1,
@@ -424,7 +424,7 @@ export default {
         description: '',
         logPath: '',
         sysUser: '',
-        targetIds: '',
+        targetIds: [],
         executeType: 2,
         systemId: '',
         logOutput: '',
@@ -527,7 +527,7 @@ export default {
         command: '',
         scriptPath: '',
         sysUser: '',
-        targetIds: '',
+        targetIds: [],
         detail: false,
         executeType: 1,
         shellType: '',
@@ -910,7 +910,7 @@ export default {
         description: '',
         logPath: '',
         sysUser: '',
-        targetIds: '',
+        targetIds: [],
         executeType: 1,
       }
     },
@@ -1050,7 +1050,7 @@ export default {
       })
     },
     changeSystemId(selectValue) {
-      this.form.targetIds = ''
+      this.form.targetIds = []
       this.setServerOptions(selectValue)
     },
   }
