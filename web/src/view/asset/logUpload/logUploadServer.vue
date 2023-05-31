@@ -35,7 +35,7 @@
         />
         <el-table-column align="left" label="服务器名" min-width="150" prop="hostname" sortable="custom" />
         <el-table-column align="left" label="管理IP" min-width="200" prop="manageIp" sortable="custom" />
-        <el-table-column align="left" label="运行方式" min-width="150" prop="systemId" sortable="custom">
+        <el-table-column align="left" label="运行方式" min-width="150" prop="mode" sortable="custom">
           <template #default="scope">
             <div>{{ filterMode(scope.row.mode) }}</div>
           </template>
@@ -91,7 +91,7 @@
             </el-form-item>
           </el-col>
         </el-row>
-        <el-form-item label="执行方式" prop="systemId">
+        <el-form-item label="执行方式" prop="mode">
           <el-select v-model="form.mode">
             <el-option v-for="val in modeOptions" :key="val.key" :value="val.key" :label="val.value" />
           </el-select>
@@ -152,6 +152,9 @@ export default {
         port: [
           { required: true, message: '请输入连接端口', trigger: 'blur' },
           { validator: this.isNum, trigger: 'blur' }
+        ],
+        mode: [
+          { required: true, message: '请选择执行方式', trigger: 'blur' }
         ],
       },
       path: path,

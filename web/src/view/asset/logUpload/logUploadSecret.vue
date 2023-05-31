@@ -138,6 +138,7 @@ export default {
         password: [
           { required: true, message: '请输入密码', trigger: 'blur' }
         ],
+        serverId: [{ required: true, message: '请选择所属服务器', trigger: 'blur' }],
       },
       path: path,
       serverOptions: [],

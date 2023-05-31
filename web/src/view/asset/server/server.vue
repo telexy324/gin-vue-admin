@@ -151,7 +151,7 @@
 
     <el-dialog v-model="dialogSSHFormVisible" :before-close="closeDialog" :title="dialogSSHTitle">
       <warning-bar title="连接信息，必须使用密码连接" />
-      <el-form ref="sshForm" :model="sshForm" label-width="80px">
+      <el-form ref="sshForm" :model="sshForm" :rules="sshRules" label-width="80px">
         <el-form-item label="管理IP" prop="manageIp">
           <el-input v-model="sshForm.server.manageIp" autocomplete="off" :disabled="true" />
         </el-form-item>
@@ -253,7 +253,10 @@ export default {
         ],
         osVersion: [
           { required: true, message: '请输入系统版本', trigger: 'blur' }
-        ]
+        ],
+        systemId: [
+          { required: true, message: '请选择所属系统', trigger: 'blur' }
+        ],
       },
       path: path,
       drawer: false,
@@ -265,6 +268,14 @@ export default {
       hasDelete: true,
       hasSsh: true,
       disabledTemp: true,
+      sshRules: {
+        username: [
+          { required: true, message: '请输入用户名', trigger: 'blur' }
+        ],
+        password: [
+          { required: true, message: '请输入密码', trigger: 'blur' }
+        ],
+      },
     }
   },
   computed: {
