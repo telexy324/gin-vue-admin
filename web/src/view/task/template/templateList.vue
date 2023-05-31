@@ -138,14 +138,14 @@
             </el-form-item>
           </el-col>
         </el-row>
-        <el-form-item label="目标" prop="targetServerIds">
+        <el-form-item label="目标" prop="targetIds">
           <el-cascader
             v-model="form.targetIds"
             style="width:100%"
             :options="serverOptions"
             :show-all-levels="false"
-            :props="{ multiple:true,checkStrictly: true,label:'name',value:'ID',disabled:'disabled',emitPath:false}"
-            :clearable="false"
+            :props="{ multiple:true,checkStrictly: false,label:'name',value:'ID',disabled:'disabled',emitPath:false}"
+            :clearable="true"
           />
         </el-form-item>
         <el-form-item v-if="isCommand" label="命令" prop="command">
@@ -168,14 +168,14 @@
         </el-row>
         <el-row>
           <el-col :span="6">
-            <el-form-item v-if="isScript" label="shell方式">
+            <el-form-item v-if="isScript" label="shell方式" prop="scriptType">
               <el-select v-model="form.shellType">
                 <el-option v-for="val in shellTypeOptions" :key="val.key" :value="val.key" :label="val.value" />
               </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="18">
-            <el-form-item v-if="isScript" label="脚本参数">
+            <el-form-item v-if="isScript" label="脚本参数" prop="scriptVars">
               <el-input v-model="form.shellVars" autocomplete="off" />
             </el-form-item>
           </el-col>
@@ -226,13 +226,13 @@
             <el-option v-for="val in systemOptions" :key="val.ID" :value="val.ID" :label="val.name" />
           </el-select>
         </el-form-item>
-        <el-form-item label="目标" prop="targetServerIds">
+        <el-form-item label="目标" prop="targetIds">
           <el-cascader
             v-model="logForm.targetIds"
             style="width:100%"
             :options="serverOptions"
             :show-all-levels="false"
-            :props="{ multiple:false,checkStrictly: true,label:'name',value:'ID',disabled:'disabled',emitPath:false}"
+            :props="{ multiple:false,checkStrictly: false,label:'name',value:'ID',disabled:'disabled',emitPath:false}"
             :clearable="false"
           />
         </el-form-item>
@@ -396,8 +396,10 @@ export default {
         ],
         sysUser: [{ required: true, message: '请输入执行用户', trigger: 'blur' }],
         systemId: [{ required: true, message: '请选择所属系统', trigger: 'blur' }],
-        targetServerIds: [{ required: true, message: '请选择目标', trigger: 'blur' }],
+        targetIds: [{ required: true, message: '请选择目标', trigger: 'blur' }],
         command: [{ required: true, message: '请输入命令', trigger: 'blur' }],
+        scriptPath: [{ required: true, message: '请输入脚本位置', trigger: 'blur' }],
+        scriptType: [{ required: true, message: '请选择shell方式', trigger: 'blur' }],
       },
       path: path,
       isCommand: true,
@@ -436,7 +438,14 @@ export default {
         name: [{ required: true, message: '请输入模板名', trigger: 'blur' }],
         logPath: [
           { required: true, message: '请输入日志文件夹路径', trigger: 'blur' }
-        ]
+        ],
+        sysUser: [{ required: true, message: '请输入执行用户', trigger: 'blur' }],
+        systemId: [{ required: true, message: '请选择所属系统', trigger: 'blur' }],
+        targetIds: [{ required: true, message: '请选择目标', trigger: 'blur' }],
+        logOutput: [{ required: true, message: '请选择下载方式', trigger: 'blur' }],
+        logDst: [{ required: true, message: '请输入上传位置', trigger: 'blur' }],
+        dstServerId: [{ required: true, message: '请选择日志服务器', trigger: 'blur' }],
+        secretId: [{ required: true, message: '请选择上传用户', trigger: 'blur' }],
       },
       dialogLogFormVisible: false,
       dialogLogTitle: '新增日志提取模板',
@@ -711,7 +720,7 @@ export default {
         ElMessage({
           showClose: true,
           message: '检查成功',
-          type: 'info'
+          type: 'success'
         })
       } else {
         this.closeDialog()

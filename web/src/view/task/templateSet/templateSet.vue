@@ -59,11 +59,11 @@
               @click="deleteSet(scope.row)"
             >删除</el-button>
             <el-button
-              icon="el-icon-caret-right"
+              icon="el-icon-plus"
               size="small"
               type="text"
               @click="createSetTask(scope.row)"
-            >新增</el-button>
+            >新增模板集任务</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -81,7 +81,7 @@
     </div>
 
     <el-dialog v-model="dialogFormVisible" :before-close="closeDialog" :title="dialogTitle">
-      <warning-bar title="新增模板集，模板集为任务模板的集合，模板集内模板顺序执行" />
+      <warning-bar title="新增模板集，模板集为任务模板的集合，模板集内模板按序号升序执行" />
       <el-form ref="setForm" :model="form" :rules="rules" label-width="80px">
         <el-row>
           <el-col :span="12">
@@ -163,6 +163,7 @@ import { emitter } from '@/utils/bus'
 import { mapGetters } from 'vuex'
 import Systems from '@/components/task/systems.vue'
 import TemplateSetTask from '@/view/task/templateSet/components/templateSetTask.vue'
+import { ElMessage } from 'element-plus'
 
 export default {
   name: 'TemplateSet',
@@ -429,7 +430,20 @@ export default {
     //   })
     // },
     async createSetTask(row) {
-      await addSetTask({ setId: row.ID })
+      const res = (await addSetTask({ setId: row.ID }))
+      if (res.code !== 0) {
+        ElMessage({
+          showClose: true,
+          message: '添加模板集任务成功失败',
+          type: 'error'
+        })
+      } else {
+        ElMessage({
+          showClose: true,
+          message: '添加模板集任务成功',
+          type: 'success'
+        })
+      }
       await this.getTableData()
     },
     setTemplate(val) {
