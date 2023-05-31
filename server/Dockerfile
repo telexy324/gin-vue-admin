@@ -1,4 +1,4 @@
-0
+FROM golang:alpine as builder
 
 WORKDIR /go/src/github.com/flipped-aurora/gin-vue-admin/server
 COPY . .
