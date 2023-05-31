@@ -101,6 +101,7 @@
               <el-form-item
                 label="模板名"
                 :prop="'templates.' + index + '.ID'"
+                :rules="rules.templateId"
               >
                 <el-select v-model="item.templateId">
                   <el-option v-for="val in systemTemplateOptions" :key="val.ID" :value="val.ID" :label="val.name" />
@@ -111,6 +112,7 @@
               <el-form-item
                 label="序号"
                 :prop="'templates.' + index + '.seq'"
+                :rules="rules.seq"
               >
                 <el-input v-model.number="item.seq" />
               </el-form-item>
@@ -127,7 +129,7 @@
         <div class="dialog-footer">
           <el-button size="small" type="warning" :disabled="setDisabled" @click="addItem">增加</el-button>
           <el-button size="small" @click="closeDialog">取 消</el-button>
-          <el-button size="small" type="primary" @click="enterDialog">确 定</el-button>
+          <el-button size="small" type="primary" :disabled="form.templates.length === 0" @click="enterDialog">确 定</el-button>
         </div>
       </template>
     </el-dialog>
@@ -192,6 +194,8 @@ export default {
         systemId: [
           { required: true, message: '请选择系统', trigger: 'blur' }
         ],
+        templateId: [{ required: true, message: '请选择模板', trigger: 'blur' }],
+        seq: [{ required: true, message: '请输入执行顺序', trigger: 'blur' }],
       },
       path: path,
       drawer: false,
