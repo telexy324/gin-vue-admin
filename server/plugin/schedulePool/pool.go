@@ -44,8 +44,6 @@ func (p *SchedulePool) init() {
 }
 
 func (p *SchedulePool) Refresh() {
-	defer p.locker.Unlock()
-
 	schedules, err := scheduleService.GetSchedules()
 
 	if err != nil {
@@ -54,6 +52,7 @@ func (p *SchedulePool) Refresh() {
 	}
 
 	p.locker.Lock()
+	defer p.locker.Unlock()
 	p.clear()
 	for _, schedule := range schedules {
 		if schedule.Valid != consts.ScheduleValid {
@@ -103,7 +102,9 @@ func CreateSchedulePool(taskPool *taskPool.TaskPool) {
 		taskPool: taskPool,
 	}
 	SPool.init()
-	SPool.Refresh()
+	if global.GVA_DB != nil {
+		SPool.Refresh()
+	}
 	go SPool.Run()
 }
 
