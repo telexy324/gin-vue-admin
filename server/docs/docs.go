@@ -7679,14 +7679,31 @@ var doc = `{
                     "description": "角色ID",
                     "type": "string"
                 },
-                "system": {
-                    "$ref": "#/definitions/application.ApplicationSystem"
+                "createdAt": {
+                    "description": "创建时间",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "主键ID",
+                    "type": "integer"
+                },
+                "name": {
+                    "description": "系统名",
+                    "type": "string"
+                },
+                "position": {
+                    "description": "系统位置",
+                    "type": "integer"
                 },
                 "systemAdmin": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/application.ApplicationSystemAdmin"
                     }
+                },
+                "updatedAt": {
+                    "description": "更新时间",
+                    "type": "string"
                 }
             }
         },
@@ -7794,20 +7811,6 @@ var doc = `{
                 "id": {
                     "description": "主键ID",
                     "type": "number"
-                },
-                "page": {
-                    "description": "页码",
-                    "type": "integer"
-                },
-                "pageSize": {
-                    "description": "每页大小",
-                    "type": "integer"
-                },
-                "sortBy": {
-                    "type": "string"
-                },
-                "sortInverted": {
-                    "type": "boolean"
                 }
             }
         },
