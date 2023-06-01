@@ -82,7 +82,7 @@
       <warning-bar title="新增系统，需要指定管理员" />
       <el-form ref="systemForm" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="系统名" prop="name">
-          <el-input v-model="form.system.name" autocomplete="off" />
+          <el-input v-model="form.name" autocomplete="off" />
         </el-form-item>
         <el-form-item label="管理员" prop="adminIds">
           <el-select
@@ -141,8 +141,8 @@ export default {
       dialogTitle: '新增system',
       systems: [],
       form: {
-        system: {},
-        adminIds: ''
+        name: '',
+        adminIds: []
       },
       type: '',
       rules: {
@@ -213,8 +213,8 @@ export default {
     initForm() {
       this.$refs.systemForm.resetFields()
       this.form = {
-        system: {},
-        adminIds: ''
+        name: '',
+        adminIds: []
       }
     },
     closeDialog() {
@@ -237,7 +237,7 @@ export default {
     },
     async editSystem(row) {
       const res = await getSystemById({ id: row.system.ID })
-      this.form = res.data
+      this.form = res.data.system
       this.form.adminIds = res.data.adminIds
       this.openDialog('edit')
     },

@@ -6,7 +6,7 @@ import (
 )
 
 type AddSystem struct {
-	System      application.ApplicationSystem        `json:"system"`
+	application.ApplicationSystem
 	SystemAdmin []application.ApplicationSystemAdmin `json:"systemAdmin"`
 	AuthorityId string                               `json:"authorityId"` // 角色ID
 	AdminIds    []int                                `json:"adminIds"`

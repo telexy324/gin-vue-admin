@@ -31,7 +31,7 @@ func (a *CmdbSystemApi) AddSystem(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err := utils.Verify(addSystemRequest.System, utils.SystemVerify); err != nil {
+	if err := utils.Verify(addSystemRequest, utils.SystemVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
@@ -105,7 +105,7 @@ func (a *CmdbSystemApi) UpdateSystem(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err := utils.Verify(addSystemRequest.System, utils.SystemVerify); err != nil {
+	if err := utils.Verify(addSystemRequest, utils.SystemVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
@@ -306,7 +306,7 @@ func (a *CmdbSystemApi) AddEditRelation(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err := utils.Verify(relation, utils.SystemEditRelationVerify ); err != nil {
+	if err := utils.Verify(relation, utils.SystemEditRelationVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
@@ -410,4 +410,3 @@ func (a *CmdbSystemApi) GetSystemEditRelations(c *gin.Context) {
 		response.OkWithDetailed(relations, "获取成功", c)
 	}
 }
-
