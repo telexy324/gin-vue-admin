@@ -27,6 +27,8 @@ func (d *dictionary) Init() error {
 		{GVA_MODEL: global.GVA_MODEL{ID: 4, CreatedAt: time.Now(), UpdatedAt: time.Now()}, Name: "数据库浮点型", Type: "float64", Status: status, Desc: "数据库浮点型"},
 		{GVA_MODEL: global.GVA_MODEL{ID: 5, CreatedAt: time.Now(), UpdatedAt: time.Now()}, Name: "数据库字符串", Type: "string", Status: status, Desc: "数据库字符串"},
 		{GVA_MODEL: global.GVA_MODEL{ID: 6, CreatedAt: time.Now(), UpdatedAt: time.Now()}, Name: "数据库bool类型", Type: "bool", Status: status, Desc: "数据库bool类型"},
+		{GVA_MODEL: global.GVA_MODEL{ID: 7, CreatedAt: time.Now(), UpdatedAt: time.Now()}, Name: "架构", Type: "architecture", Status: status, Desc: "服务器架构"},
+		{GVA_MODEL: global.GVA_MODEL{ID: 8, CreatedAt: time.Now(), UpdatedAt: time.Now()}, Name: "操作系统类型", Type: "osVersion", Status: status, Desc: "操作系统类型"},
 	}
 	return global.GVA_DB.Transaction(func(tx *gorm.DB) error {
 		if tx.Where("id IN ?", []int{1, 6}).Find(&[]system.SysDictionary{}).RowsAffected == 2 {

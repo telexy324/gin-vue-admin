@@ -41,6 +41,16 @@ func (d *dictionaryDetail) Init() error {
 		{global.GVA_MODEL{ID: 21, CreatedAt: time.Now(), UpdatedAt: time.Now()}, "longblob", 8, status, 8, 5},
 		{global.GVA_MODEL{ID: 22, CreatedAt: time.Now(), UpdatedAt: time.Now()}, "longtext", 9, status, 9, 5},
 		{global.GVA_MODEL{ID: 23, CreatedAt: time.Now(), UpdatedAt: time.Now()}, "tinyint", 0, status, 0, 6},
+		{global.GVA_MODEL{ID: 24, CreatedAt: time.Now(), UpdatedAt: time.Now()}, "X86 ", 1, status, 1, 7},
+		{global.GVA_MODEL{ID: 25, CreatedAt: time.Now(), UpdatedAt: time.Now()}, "arm ", 2, status, 2, 7},
+		{global.GVA_MODEL{ID: 26, CreatedAt: time.Now(), UpdatedAt: time.Now()}, "aix ", 3, status, 3, 7},
+		{global.GVA_MODEL{ID: 27, CreatedAt: time.Now(), UpdatedAt: time.Now()}, "Redhat", 1, status, 1, 8},
+		{global.GVA_MODEL{ID: 28, CreatedAt: time.Now(), UpdatedAt: time.Now()}, "Suse", 2, status, 2, 8},
+		{global.GVA_MODEL{ID: 29, CreatedAt: time.Now(), UpdatedAt: time.Now()}, "Centos", 3, status, 3, 8},
+		{global.GVA_MODEL{ID: 30, CreatedAt: time.Now(), UpdatedAt: time.Now()}, "Kylin", 4, status, 4, 8},
+		{global.GVA_MODEL{ID: 31, CreatedAt: time.Now(), UpdatedAt: time.Now()}, "Windows", 5, status, 5, 8},
+		{global.GVA_MODEL{ID: 32, CreatedAt: time.Now(), UpdatedAt: time.Now()}, "HP unix", 6, status, 6, 8},
+		{global.GVA_MODEL{ID: 33, CreatedAt: time.Now(), UpdatedAt: time.Now()}, "IBM aix", 7, status, 7, 8},
 	}
 	return global.GVA_DB.Transaction(func(tx *gorm.DB) error {
 		if tx.Where("id IN ?", []int{1, 23}).Find(&[]system.SysDictionaryDetail{}).RowsAffected == 2 {

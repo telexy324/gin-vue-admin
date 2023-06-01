@@ -18,6 +18,8 @@ var authorities = []system.SysAuthority{
 	{CreatedAt: time.Now(), UpdatedAt: time.Now(), AuthorityId: "888", AuthorityName: "普通用户", ParentId: "0", DefaultRouter: "dashboard"},
 	{CreatedAt: time.Now(), UpdatedAt: time.Now(), AuthorityId: "8881", AuthorityName: "普通用户子角色", ParentId: "888", DefaultRouter: "dashboard"},
 	{CreatedAt: time.Now(), UpdatedAt: time.Now(), AuthorityId: "9528", AuthorityName: "测试角色", ParentId: "0", DefaultRouter: "dashboard"},
+	{CreatedAt: time.Now(), UpdatedAt: time.Now(), AuthorityId: "9527", AuthorityName: "一般角色", ParentId: "0", DefaultRouter: "dashboard"},
+	{CreatedAt: time.Now(), UpdatedAt: time.Now(), AuthorityId: "9529", AuthorityName: "执行角色", ParentId: "0", DefaultRouter: "dashboard"},
 }
 
 //@author: [SliverHorn](https://github.com/SliverHorn)

@@ -3,6 +3,10 @@ package system
 import (
 	"database/sql"
 	"fmt"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/application"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/logUploadMdl"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/scheduleMdl"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl"
 	"path/filepath"
 
 	uuid "github.com/satori/go.uuid"
@@ -139,6 +143,25 @@ func (initDBService *InitDBService) InitDB(conf request.InitDB) error {
 		example.ExaCustomer{},
 		system.SysOperationRecord{},
 		system.SysAutoCodeHistory{},
+		application.ApplicationServer{},
+		application.ServerRelation{},
+		application.SystemRelation{},
+		application.ApplicationSystem{},
+		application.ApplicationSystemAdmin{},
+		application.App{},
+		application.ApplicationSystemSysAdmin{},
+		application.ApplicationSystemEditRelation{},
+		application.Admin{},
+		application.Department{},
+		taskMdl.Task{},
+		taskMdl.TaskTemplate{},
+		taskMdl.TaskOutput{},
+		taskMdl.TaskTemplateSet{},
+		taskMdl.TaskTemplateSetTemplate{},
+		taskMdl.SetTask{},
+		scheduleMdl.Schedule{},
+		logUploadMdl.Server{},
+		logUploadMdl.Secret{},
 	)
 	if err != nil {
 		global.GVA_DB = nil

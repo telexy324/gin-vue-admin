@@ -39,13 +39,27 @@ var menus = []system.SysBaseMenu{
 	{GVA_MODEL: global.GVA_MODEL{ID: 23, CreatedAt: time.Now(), UpdatedAt: time.Now()}, MenuLevel: 0, ParentId: "0", Path: "state", Name: "state", Hidden: false, Component: "view/system/state.vue", Sort: 6, Meta: system.Meta{Title: "服务器状态", Icon: "cloudy"}},
 	{GVA_MODEL: global.GVA_MODEL{ID: 24, CreatedAt: time.Now(), UpdatedAt: time.Now()}, MenuLevel: 0, ParentId: "14", Path: "autoCodeAdmin", Name: "autoCodeAdmin", Hidden: false, Component: "view/systemTools/autoCodeAdmin/index.vue", Sort: 1, Meta: system.Meta{Title: "自动化代码管理", Icon: "s-finance"}},
 	{GVA_MODEL: global.GVA_MODEL{ID: 25, CreatedAt: time.Now(), UpdatedAt: time.Now()}, MenuLevel: 0, ParentId: "14", Path: "autoCodeEdit/:id", Name: "autoCodeEdit", Hidden: true, Component: "view/systemTools/autoCode/index.vue", Sort: 0, Meta: system.Meta{Title: "自动化代码（复用）", Icon: "s-finance"}},
+	{GVA_MODEL: global.GVA_MODEL{ID: 26, CreatedAt: time.Now(), UpdatedAt: time.Now()}, MenuLevel: 0, Hidden: false, ParentId: "0", Path: "asset", Name: "asset", Component: "view/asset/index.vue", Sort: 8, Meta: system.Meta{Title: "资产", Icon: "goods"}},
+	{GVA_MODEL: global.GVA_MODEL{ID: 27, CreatedAt: time.Now(), UpdatedAt: time.Now()}, MenuLevel: 0, Hidden: true, ParentId: "26", Path: "graph", Name: "graph", Component: "view/asset/graph/graph.vue", Sort: 98, Meta: system.Meta{Title: "graph", Icon: "picture"}},
+	{GVA_MODEL: global.GVA_MODEL{ID: 34, CreatedAt: time.Now(), UpdatedAt: time.Now()}, MenuLevel: 0, Hidden: true, ParentId: "26", Path: "ssh/:manageIp/:username/:password/:sshPort", Name: "ssh", Component: "view/asset/ssh/ssh.vue", Sort: 99, Meta: system.Meta{Title: "远程执行", Icon: "bell"}},
+	{GVA_MODEL: global.GVA_MODEL{ID: 35, CreatedAt: time.Now(), UpdatedAt: time.Now()}, MenuLevel: 0, Hidden: false, ParentId: "0", Path: "task", Name: "task", Component: "view/task/index.vue", Sort: 11, Meta: system.Meta{Title: "任务", Icon: "sunny"}},
+	{GVA_MODEL: global.GVA_MODEL{ID: 36, CreatedAt: time.Now(), UpdatedAt: time.Now()}, MenuLevel: 0, Hidden: false, ParentId: "35", Path: "template", Name: "template", Component: "view/task/template/templateList.vue", Sort: 1, Meta: system.Meta{Title: "模板管理", Icon: "tickets"}},
+	{GVA_MODEL: global.GVA_MODEL{ID: 37, CreatedAt: time.Now(), UpdatedAt: time.Now()}, MenuLevel: 0, Hidden: false, ParentId: "35", Path: "taskList", Name: "taskList", Component: "view/task/task/taskList.vue", Sort: 2, Meta: system.Meta{Title: "任务列表", Icon: "bottom-left"}},
+	{GVA_MODEL: global.GVA_MODEL{ID: 38, CreatedAt: time.Now(), UpdatedAt: time.Now()}, MenuLevel: 0, Hidden: false, ParentId: "26", Path: "server", Name: "server", Component: "view/asset/server/server.vue", Sort: 1, Meta: system.Meta{Title: "服务器管理", Icon: "dish"}},
+	{GVA_MODEL: global.GVA_MODEL{ID: 39, CreatedAt: time.Now(), UpdatedAt: time.Now()}, MenuLevel: 0, Hidden: false, ParentId: "26", Path: "systems", Name: "systems", Component: "view/asset/systems/systems.vue", Sort: 2, Meta: system.Meta{Title: "生产系统管理", Icon: "burger"}},
+	{GVA_MODEL: global.GVA_MODEL{ID: 40, CreatedAt: time.Now(), UpdatedAt: time.Now()}, MenuLevel: 0, Hidden: false, ParentId: "35", Path: "schedule", Name: "schedule", Component: "view/task/schedule/schedule.vue", Sort: 3, Meta: system.Meta{Title: "定时任务管理", Icon: "time"}},
+	{GVA_MODEL: global.GVA_MODEL{ID: 42, CreatedAt: time.Now(), UpdatedAt: time.Now()}, MenuLevel: 0, Hidden: true, ParentId: "0", Path: "antv/:systemId", Name: "antv", Component: "view/antv/antv.vue", Sort: 21, Meta: system.Meta{Title: "关系图", Icon: "rank"}},
+	{GVA_MODEL: global.GVA_MODEL{ID: 43, CreatedAt: time.Now(), UpdatedAt: time.Now()}, MenuLevel: 0, Hidden: false, ParentId: "35", Path: "templateSet", Name: "templateSet", Component: "view/task/templateSet/templateSet.vue", Sort: 4, Meta: system.Meta{Title: "模板集管理", Icon: "copy-document"}},
+	{GVA_MODEL: global.GVA_MODEL{ID: 44, CreatedAt: time.Now(), UpdatedAt: time.Now()}, MenuLevel: 0, Hidden: true, ParentId: "35", Path: "templateSetDetail/:setTaskId", Name: "templateSetDetail", Component: "view/task/templateSet/templateSetDetail.vue", Sort: 99, Meta: system.Meta{Title: "模板集详情", Icon: "notebook-2"}},
+	{GVA_MODEL: global.GVA_MODEL{ID: 45, CreatedAt: time.Now(), UpdatedAt: time.Now()}, MenuLevel: 0, Hidden: false, ParentId: "26", Path: "logUploadServer", Name: "logUploadServer", Component: "view/asset/logUpload/logUploadServer.vue", Sort: 3, Meta: system.Meta{Title: "日志服务器管理", Icon: "potato-strips"}},
+	{GVA_MODEL: global.GVA_MODEL{ID: 46, CreatedAt: time.Now(), UpdatedAt: time.Now()}, MenuLevel: 0, Hidden: false, ParentId: "26", Path: "logUploadSecret", Name: "logUploadSecret", Component: "view/asset/logUpload/logUploadSecret.vue", Sort: 4, Meta: system.Meta{Title: "日志服务器密钥", Icon: "lock"}},
 }
 
 //@author: [SliverHorn](https://github.com/SliverHorn)
 //@description: sys_base_menus 表数据初始化
 func (m *menu) Init() error {
 	return global.GVA_DB.Transaction(func(tx *gorm.DB) error {
-		if tx.Where("id IN ?", []int{1, 29}).Find(&[]system.SysBaseMenu{}).RowsAffected == 2 {
+		if tx.Where("id IN ?", []int{1, 25}).Find(&[]system.SysBaseMenu{}).RowsAffected == 2 {
 			color.Danger.Println("\n[Mysql] --> sys_base_menus 表的初始数据已存在!")
 			return nil
 		}

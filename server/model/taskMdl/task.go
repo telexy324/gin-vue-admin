@@ -45,9 +45,9 @@ func (m *TaskOutput) TableName() string {
 }
 
 // TaskWithTpl is the task data with additional fields
-type TaskWithTpl struct {
-	Task          Task    `gorm:"-" json:"task"`
-	TemplateAlias string  `gorm:"-" json:"tplAlias"`
-	UserName      *string `gorm:"-" json:"userName"`
-	BuildTask     *Task   `gorm:"-" json:"buildTask"`
-}
+//type TaskWithTpl struct {
+//	Task          Task    `gorm:"-" json:"task"`
+//	TemplateAlias string  `gorm:"-" json:"tplAlias"`
+//	UserName      *string `gorm:"-" json:"userName"`
+//	BuildTask     *Task   `gorm:"-" json:"buildTask"`
+//}
