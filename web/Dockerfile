@@ -1,4 +1,4 @@
-FROM node:12.16.1
+FROM node:16.20.0
 
 WORKDIR /gva_web/
 COPY . .
@@ -6,7 +6,7 @@ COPY . .
 RUN npm install
 RUN npm run build
 
-FROM nginx:alpine
+FROM nginx:1.24-alpine
 LABEL MAINTAINER="SliverHorn@sliver_horn@qq.com"
 
 COPY .docker-compose/nginx/conf.d/my.conf /etc/nginx/conf.d/my.conf
