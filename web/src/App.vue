@@ -54,12 +54,10 @@ export default {
       scriptDialog: null,
     }
   },
-  created() {
+  mounted() {
     if (!socket.isRunning()) {
       socket.start()
     }
-  },
-  mounted() {
     emitter.on('i-show-task', async(e) => {
       // if (parseInt(this.$route.query.t || '', 10) !== e.ID) {
       //   const query = { ...this.$route.query, t: e.ID }

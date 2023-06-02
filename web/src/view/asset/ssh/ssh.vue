@@ -52,7 +52,7 @@ export default {
       this.term.write('正在连接...\r\n')
     },
     initSocket() {
-      this.socket = new WebSocket('ws://' + location.hostname + ':8888/ssh/run')
+      this.socket = new WebSocket('ws://' + location.hostname + ':' + import.meta.env.VITE_WS_PORT + '/ssh/run')
       this.socket.binaryType = 'arraybuffer'
       this.socketOnClose()
       this.socketOnOpen()
