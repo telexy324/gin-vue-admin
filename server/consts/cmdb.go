@@ -58,3 +58,7 @@ var OsMapReverse = map[string]int64{
 	"centos": OsCentos,
 	"kylin":  OsKylin,
 }
+
+const ManageIpPrefix = `220.2.*|10.21\d.*|212.2.*`
+
+const DiscoverSSHPort = 1122

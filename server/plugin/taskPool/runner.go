@@ -13,6 +13,7 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/system"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl"
+	"github.com/flipped-aurora/gin-vue-admin/server/utils"
 	"github.com/jlaffaye/ftp"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/ssh"
@@ -638,9 +639,9 @@ func (t *TaskRunner) runTask() (failedIPs []string) {
 				} else if t.template.ShellType == consts.ShellTypeBash {
 					shellType = "bash "
 				}
-				command := shellType + strings.Trim(t.template.ScriptPath," ")
-				if len(strings.Trim(t.template.ShellVars," ")) > 0 {
-					command = command + " " + strings.Trim(t.template.ShellVars," ")
+				command := shellType + strings.Trim(t.template.ScriptPath, " ")
+				if len(strings.Trim(t.template.ShellVars, " ")) > 0 {
+					command = command + " " + strings.Trim(t.template.ShellVars, " ")
 				}
 				err = sshClient.Commands(command, t, s.ManageIp)
 				if err != nil {
@@ -729,6 +730,67 @@ func (t *TaskRunner) runUploadTask() (failedIPs []string) {
 		}
 	}
 	t.Log("upload "+fileUpload+" success", t.template.LogUploadServer.ManageIp)
+	return
+}
+
+func (t *TaskRunner) runDiscoverTask() (failedIPs []string) {
+	mangeIp, err := utils.GetManageIp()
+	if err != nil {
+		return []string{"localhost"}
+	}
+	prefix := mangeIp.String()[:strings.LastIndex(mangeIp.String(), ".")+1]
+	servers := make([]string, 0, 253)
+	for i := 1; i < 254; i++ {
+		servers = append(servers, prefix+strconv.Itoa(i))
+	}
+	global.GVA_LOG.Info("run ", zap.Uint("task ID: ", t.task.ID))
+	wg := &sync.WaitGroup{}
+	failedChan := make(chan string, len(servers))
+	t.clients = make([]*ssh.Client, 0, len(servers))
+	for _, server := range servers {
+		wg.Add(1)
+		go func(w *sync.WaitGroup, s string, f chan string) {
+			defer w.Done()
+			sshClient, _ := common.FillSSHClient(s, t.template.SysUser, "", consts.DiscoverSSHPort)
+			err = sshClient.GenerateClient()
+			if err != nil {
+				sshClient, _ = common.FillSSHClient(s, t.template.SysUser, "", 22)
+				if err = sshClient.GenerateClient(); err != nil {
+					return
+				}
+			}
+			defer sshClient.Client.Close()
+			t.clients = append(t.clients, sshClient.Client)
+			newServer := &application.ApplicationServer{
+				ManageIp:  s,
+				Os:        0,
+				OsVersion: "",
+				SystemId:  0,
+				AppIds:    "",
+				Apps:      nil,
+				SshPort:   0,
+			}
+			var output string
+			if newServer.Hostname, err = sshClient.CommandSingle("hostname"); err != nil {
+				global.GVA_LOG.Error("get hostname failed", zap.Any("err", err))
+			}
+			if output, err = sshClient.CommandSingle("hostname"); err != nil {
+				global.GVA_LOG.Error("get architecture failed", zap.Any("err", err))
+			} else {
+				if strings.Contains(output, "86_64") {
+					newServer.Architecture = consts.ArchitectureX86
+				} else if strings.Contains(output, "aarch") || strings.Contains(output, "arm64") {
+					newServer.Architecture = consts.ArchitectureArm
+				}
+			}
+			return
+		}(wg, server, failedChan)
+	}
+	wg.Wait()
+	close(failedChan)
+	for ip := range failedChan {
+		failedIPs = append(failedIPs, ip)
+	}
 	return
 }
 
