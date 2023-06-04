@@ -92,7 +92,7 @@ var carbines = []gormadapter.CasbinRule{
 	{PType: "p", V0: "888", V1: "/autoCode/delSysHistory", V2: "POST"},
 	{PType: "p", V0: "888", V1: "/user/setUserAuthorities", V2: "POST"},
 	{PType: "p", V0: "888", V1: "/user/getUserInfo", V2: "GET"},
-	{PType: "p", V0: "9527", V1: "/user/getUserById", V2: "POST"},
+	{PType: "p", V0: "888", V1: "/user/getUserById", V2: "POST"},
 	{PType: "p", V0: "8881", V1: "/base/login", V2: "POST"},
 	{PType: "p", V0: "8881", V1: "/user/register", V2: "POST"},
 	{PType: "p", V0: "8881", V1: "/api/createApi", V2: "POST"},
@@ -374,8 +374,8 @@ var carbines = []gormadapter.CasbinRule{
 	{PType: "p", V0: "9529", V1: "/logUpload/getSecretList", V2: "POST"},
 }
 
-//@author: [SliverHorn](https://github.com/SliverHorn)
-//@description: casbin_rule 表数据初始化
+// @author: [SliverHorn](https://github.com/SliverHorn)
+// @description: casbin_rule 表数据初始化
 func (c *casbin) Init() error {
 	global.GVA_DB.AutoMigrate(gormadapter.CasbinRule{})
 	return global.GVA_DB.Transaction(func(tx *gorm.DB) error {
