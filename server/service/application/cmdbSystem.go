@@ -132,6 +132,7 @@ func (cmdbSystemService *CmdbSystemService) UpdateSystem(addSystemRequest reques
 	upDateMap := make(map[string]interface{})
 	upDateMap["name"] = addSystemRequest.Name
 	upDateMap["position"] = addSystemRequest.Position
+	upDateMap["network"] = addSystemRequest.Network
 
 	err = global.GVA_DB.Transaction(func(tx *gorm.DB) error {
 		db := tx.Where("id = ?", addSystemRequest.ID).Find(&oldSystem)

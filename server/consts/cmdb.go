@@ -15,6 +15,10 @@ const (
 	OsSuse
 	OsCentos
 	OsKylin
+	OsWindows
+	OsHP
+	OsAIX
+	OsUnionTech
 )
 
 const (

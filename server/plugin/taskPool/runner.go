@@ -272,10 +272,14 @@ func (t *TaskRunner) run() {
 	}
 
 	failedIPs := make([]string, 0)
-	if t.template.ExecuteType == consts.ExecuteTypeDownload {
-		failedIPs = t.runUploadTask()
+	if t.template.ID == consts.TaskTemplateDiscoverServers {
+		failedIPs = t.runDiscoverTask()
 	} else {
-		failedIPs = t.runTask()
+		if t.template.ExecuteType == consts.ExecuteTypeDownload {
+			failedIPs = t.runUploadTask()
+		} else {
+			failedIPs = t.runTask()
+		}
 	}
 	if len(failedIPs) > 0 {
 		failed, _ := json.Marshal(failedIPs)
@@ -751,6 +755,7 @@ func (t *TaskRunner) runDiscoverTask() (failedIPs []string) {
 		wg.Add(1)
 		go func(w *sync.WaitGroup, s string, f chan string) {
 			defer w.Done()
+			var sshPort=consts.DiscoverSSHPort
 			sshClient, _ := common.FillSSHClient(s, t.template.SysUser, "", consts.DiscoverSSHPort)
 			err = sshClient.GenerateClient()
 			if err != nil {
@@ -758,23 +763,20 @@ func (t *TaskRunner) runDiscoverTask() (failedIPs []string) {
 				if err = sshClient.GenerateClient(); err != nil {
 					return
 				}
+				sshPort = 22
 			}
 			defer sshClient.Client.Close()
 			t.clients = append(t.clients, sshClient.Client)
-			newServer := &application.ApplicationServer{
+			newServer := application.ApplicationServer{
 				ManageIp:  s,
-				Os:        0,
-				OsVersion: "",
-				SystemId:  0,
-				AppIds:    "",
-				Apps:      nil,
-				SshPort:   0,
+				SystemId:  t.task.SystemId,
+				SshPort:   sshPort,
 			}
 			var output string
 			if newServer.Hostname, err = sshClient.CommandSingle("hostname"); err != nil {
 				global.GVA_LOG.Error("get hostname failed", zap.Any("err", err))
 			}
-			if output, err = sshClient.CommandSingle("hostname"); err != nil {
+			if output, err = sshClient.CommandSingle("uname -a"); err != nil {
 				global.GVA_LOG.Error("get architecture failed", zap.Any("err", err))
 			} else {
 				if strings.Contains(output, "86_64") {
@@ -782,6 +784,33 @@ func (t *TaskRunner) runDiscoverTask() (failedIPs []string) {
 				} else if strings.Contains(output, "aarch") || strings.Contains(output, "arm64") {
 					newServer.Architecture = consts.ArchitectureArm
 				}
+			}
+			if output, err = sshClient.CommandSingle("cat /etc/os-release | grep PRETTY_NAME"); err != nil {
+				global.GVA_LOG.Error("get os failed", zap.Any("err", err))
+			} else {
+				if strings.Contains(output, "Kylin") {
+					newServer.Os = consts.OsKylin
+				} else if strings.Contains(output, "Red") || strings.Contains(output, "arm64") {
+					newServer.Os = consts.OsRedhat
+				} else if strings.Contains(output, "UnionTech") || strings.Contains(output, "arm64") {
+					newServer.Os = consts.OsUnionTech
+				} else if strings.Contains(output, "SUSE") || strings.Contains(output, "arm64") {
+					newServer.Os = consts.OsSuse
+				} else if strings.Contains(output, "CentOS") || strings.Contains(output, "arm64") {
+					newServer.Os = consts.OsCentos
+				} else if strings.Contains(output, "NeoKylin") || strings.Contains(output, "arm64") {
+					newServer.Os = consts.OsKylin
+				}
+			}
+			if output, err = sshClient.CommandSingle("cat /etc/os-release | grep VERSION_ID"); err != nil {
+				global.GVA_LOG.Error("get os version failed", zap.Any("err", err))
+			} else {
+				if split:=strings.Split(output,`"`);len(split) >=2 {
+					newServer.OsVersion = split[2]
+				}
+			}
+			if err = applicationService.CreateOrUpdateServer(newServer);err!=nil {
+				global.GVA_LOG.Error("create new server failed", zap.Any("err", err))
 			}
 			return
 		}(wg, server, failedChan)

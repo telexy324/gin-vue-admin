@@ -28,3 +28,8 @@ const (
 	ShellTypeSh = iota + 1
 	ShellTypeBash
 )
+
+const (
+	TaskTemplateDiscoverServers         = 99999999
+	TaskTemplateGatherServerInformation = 99999998
+)

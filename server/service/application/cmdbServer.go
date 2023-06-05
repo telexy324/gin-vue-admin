@@ -494,3 +494,32 @@ func (cmdbServerService *CmdbServerService) GetAppList(info request2.AppSearch) 
 	err = db.Limit(limit).Offset(offset).Find(&appList).Error
 	return err, appList, total
 }
+
+func (cmdbServerService *CmdbServerService) CreateOrUpdateServer(server application.ApplicationServer) error {
+	//if !errors.Is(global.GVA_DB.Where("manage_ip = ?", server.ManageIp).First(&application.ApplicationServer{}).Error, gorm.ErrRecordNotFound) {
+	//	return errors.New("存在重复ip，请修改ip")
+	//}
+	var oldServer application.ApplicationServer
+	db := global.GVA_DB
+	err := db.Where("manage_ip = ?", server.ManageIp).First(&oldServer).Error
+	if err != nil && err == gorm.ErrRecordNotFound {
+		if len(server.Apps) > 0 {
+			if js, err := json.Marshal(server.Apps); err != nil {
+				return err
+			} else {
+				server.AppIds = string(js)
+			}
+		}
+		return db.Create(&server).Error
+	} else if err != nil {
+		return err
+	}
+	upDateMap := make(map[string]interface{})
+	upDateMap["hostname"] = server.Hostname
+	upDateMap["manage_ip"] = server.ManageIp
+	upDateMap["os"] = server.Os
+	upDateMap["os_version"] = server.OsVersion
+	upDateMap["architecture"] = server.Architecture
+	upDateMap["ssh_port"] = server.SshPort
+	return db.Updates(upDateMap).Error
+}

@@ -32,7 +32,7 @@
         />
 <!--        <el-table-column align="left" label="id" min-width="60" prop="system.ID" sortable="custom" />-->
         <el-table-column align="left" label="系统名" min-width="150" prop="system.name" sortable="custom" />
-        <el-table-column align="left" fixed="right" label="操作" width="300">
+        <el-table-column align="left" fixed="right" label="操作" width="400">
           <template #default="scope">
             <el-button
               icon="el-icon-edit"
@@ -56,11 +56,17 @@
               @click="showRelation(scope.row)"
             >关系图</el-button>
             <el-button
-              icon="el-icon-orange"
+              icon="el-icon-tickets"
               size="small"
               type="text"
               @click="showTemplates(scope.row)"
             >模板列表</el-button>
+            <el-button
+              icon="el-icon-caret-right"
+              size="small"
+              type="text"
+              @click="runTask(scope.row)"
+            >服务器发现</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -99,6 +105,9 @@
             />
           </el-select>
         </el-form-item>
+        <el-form-item label="网段" prop="network">
+          <el-input v-model="form.network" autocomplete="off" type="textarea" :rows="4" placeholder="管理网段，每行写一个网段，例如220.2.201.0 255.255.255.0" />
+        </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
@@ -114,6 +123,8 @@
 
 const path = import.meta.env.VITE_BASE_API
 // 获取列表内容封装在mixins内部  getTableData方法 初始化已封装完成 条件搜索时候 请把条件安好后台定制的结构体字段 放到 this.searchInfo 中即可实现条件搜索
+const discoverServers = 99999999
+// const gatherInformation = 99999998
 
 import {
   getSystemList, addSystem, updateSystem, deleteSystem, getSystemById, deleteSystemByIds
@@ -121,11 +132,13 @@ import {
 import {
   getUserList
 } from '@/api/user'
+import { addTask } from '@/api/task'
 import { getPolicyPathByAuthorityId } from '@/api/casbin'
 import infoList from '@/mixins/infoList'
 import { toSQLLine } from '@/utils/stringFun'
 import warningBar from '@/components/warningBar/warningBar.vue'
 import { mapGetters } from 'vuex'
+import { emitter } from '@/utils/bus'
 
 export default {
   name: 'Systems',
@@ -142,13 +155,18 @@ export default {
       systems: [],
       form: {
         name: '',
-        adminIds: []
+        adminIds: [],
+        network: ''
       },
       type: '',
       rules: {
         name: [{ required: true, message: '请输入系统名', trigger: 'blur' }],
         adminIds: [
           { required: true, message: '请选择管理员', trigger: 'blur' }
+        ],
+        network: [
+          { required: true, message: '请选择管理员', trigger: 'blur' },
+          { validator: true, message: '请选择管理员', trigger: 'blur' }
         ]
       },
       path: path,
@@ -214,7 +232,8 @@ export default {
       this.$refs.systemForm.resetFields()
       this.form = {
         name: '',
-        adminIds: []
+        adminIds: [],
+        network: ''
       }
     },
     closeDialog() {
@@ -329,6 +348,17 @@ export default {
         }
       })
     },
+    async runTask(row) {
+      const task = (await addTask({
+        templateId: discoverServers,
+        systemId: row.ID
+      })).data.task
+      console.log(task.ID)
+      this.showTaskLog(task)
+    },
+    showTaskLog(task) {
+      emitter.emit('i-show-task', task)
+    },
     async authorities() {
       const res = await getPolicyPathByAuthorityId({
         authorityId: this.userInfo.authorityId
@@ -345,6 +375,27 @@ export default {
       this.hasRelation = !!res.data.paths.some((item) => {
         return item.path === '/cmdb/system/getSystemEditRelation'
       })
+    },
+    isValidIP(ip) {
+      const reg = /^(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])$/
+      return reg.test(ip)
+    },
+    isValidMask(mask) {
+      const reg = /^(254|252|248|240|224|192|128|0)\.0\.0\.0|255\.(254|252|248|240|224|192|128|0)\.0\.0|255\.255\.(254|252|248|240|224|192|128|0)\.0|255\.255\.255\.(254|252|248|240|224|192|128|0)$/
+      return reg.test(mask)
+    },
+    validIP(ipAll) {
+      const rows = ipAll.split(/[(\r\n)\r\n]+/) // 根据换行或者回车进行识别
+      rows.forEach((item, index) => {
+        const row = item.split(' ')
+        if (row.length < 2) {
+          return false
+        }
+        if (!(this.isValidIP(row[0]) && this.isValidMask(row[1]))) {
+          return false
+        }
+      })
+      return true
     }
   }
 }
