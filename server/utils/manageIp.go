@@ -3,7 +3,9 @@ package utils
 import (
 	"github.com/flipped-aurora/gin-vue-admin/server/consts"
 	"net"
+	"net/netip"
 	"regexp"
+	"strconv"
 )
 
 func GetManageIp() (ip net.IP, err error) {
@@ -45,4 +47,25 @@ func GetManageIp() (ip net.IP, err error) {
 		}
 	}
 	return nil, err
+}
+
+func hosts(cidr string) (ips []string, err error) {
+	prefix, err := netip.ParsePrefix(cidr)
+	if err != nil {
+		return
+	}
+	for addr := prefix.Addr(); prefix.Contains(addr); addr = addr.Next() {
+		ips = append(ips, addr.String())
+	}
+
+	if len(ips) < 2 {
+		return ips, nil
+	}
+
+	return ips[1 : len(ips)-1], nil
+}
+
+func Hosts(ip, mask string) ([]string, error) {
+	prefix, _ := net.IPMask(net.ParseIP(mask).To4()).Size()
+	return hosts(ip + `/` + strconv.Itoa(prefix))
 }

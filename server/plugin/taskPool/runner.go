@@ -738,14 +738,40 @@ func (t *TaskRunner) runUploadTask() (failedIPs []string) {
 }
 
 func (t *TaskRunner) runDiscoverTask() (failedIPs []string) {
-	mangeIp, err := utils.GetManageIp()
+	//mangeIp, err := utils.GetManageIp()
+	//if err != nil {
+	//	return []string{"localhost"}
+	//}
+	//prefix := mangeIp.String()[:strings.LastIndex(mangeIp.String(), ".")+1]
+	//servers := make([]string, 0, 253)
+	//for i := 1; i < 254; i++ {
+	//	servers = append(servers, prefix+strconv.Itoa(i))
+	//}
+	err, taskSystem, _, _ := applicationService.GetSystemById(float64(t.task.SystemId))
 	if err != nil {
-		return []string{"localhost"}
+		global.GVA_LOG.Error("get task system failed", zap.Any("err", err))
+		failedIPs = append(failedIPs, "localhost")
+		return
 	}
-	prefix := mangeIp.String()[:strings.LastIndex(mangeIp.String(), ".")+1]
 	servers := make([]string, 0, 253)
-	for i := 1; i < 254; i++ {
-		servers = append(servers, prefix+strconv.Itoa(i))
+	manageNets := strings.Split(taskSystem.Network, "\n")
+	for _, manageNet := range manageNets {
+		netDetails := strings.Split(manageNet, " ")
+		if len(netDetails) < 2 {
+			global.GVA_LOG.Error("please check network", zap.Int("system id", t.task.SystemId))
+			continue
+		}
+		ips, err := utils.Hosts(netDetails[0], netDetails[1])
+		if err != nil {
+			global.GVA_LOG.Error("please check network", zap.Int("system id", t.task.SystemId))
+			continue
+		}
+		servers = append(servers, ips...)
+	}
+	if len(servers) == 0 {
+		global.GVA_LOG.Error("parse 0 server, please check network", zap.Int("system id", t.task.SystemId))
+		failedIPs = append(failedIPs, "localhost")
+		return
 	}
 	global.GVA_LOG.Info("run ", zap.Uint("task ID: ", t.task.ID))
 	wg := &sync.WaitGroup{}
@@ -755,7 +781,7 @@ func (t *TaskRunner) runDiscoverTask() (failedIPs []string) {
 		wg.Add(1)
 		go func(w *sync.WaitGroup, s string, f chan string) {
 			defer w.Done()
-			var sshPort=consts.DiscoverSSHPort
+			var sshPort = consts.DiscoverSSHPort
 			sshClient, _ := common.FillSSHClient(s, t.template.SysUser, "", consts.DiscoverSSHPort)
 			err = sshClient.GenerateClient()
 			if err != nil {
@@ -768,9 +794,9 @@ func (t *TaskRunner) runDiscoverTask() (failedIPs []string) {
 			defer sshClient.Client.Close()
 			t.clients = append(t.clients, sshClient.Client)
 			newServer := application.ApplicationServer{
-				ManageIp:  s,
-				SystemId:  t.task.SystemId,
-				SshPort:   sshPort,
+				ManageIp: s,
+				SystemId: t.task.SystemId,
+				SshPort:  sshPort,
 			}
 			var output string
 			if newServer.Hostname, err = sshClient.CommandSingle("hostname"); err != nil {
@@ -805,11 +831,11 @@ func (t *TaskRunner) runDiscoverTask() (failedIPs []string) {
 			if output, err = sshClient.CommandSingle("cat /etc/os-release | grep VERSION_ID"); err != nil {
 				global.GVA_LOG.Error("get os version failed", zap.Any("err", err))
 			} else {
-				if split:=strings.Split(output,`"`);len(split) >=2 {
+				if split := strings.Split(output, `"`); len(split) >= 2 {
 					newServer.OsVersion = split[2]
 				}
 			}
-			if err = applicationService.CreateOrUpdateServer(newServer);err!=nil {
+			if err = applicationService.CreateOrUpdateServer(newServer); err != nil {
 				global.GVA_LOG.Error("create new server failed", zap.Any("err", err))
 			}
 			return

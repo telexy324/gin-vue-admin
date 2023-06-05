@@ -74,7 +74,7 @@ type ApplicationSystem struct {
 	global.GVA_MODEL
 	Name     string `json:"name" gorm:"column:name"`         // 系统名
 	Position int    `json:"position" gorm:"column:position"` // 系统位置
-	Network  int    `json:"network" gorm:"column:network"`   // 系统位置
+	Network  string `json:"network" gorm:"column:network"`   // 系统位置
 }
 
 type ApplicationSystemAdmin struct {
