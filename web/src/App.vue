@@ -27,6 +27,10 @@
 </template>
 
 <script>
+
+const discoverServers = 99999999
+// const gatherInformation = 99999998
+
 import { getTaskById } from '@/api/task'
 import { getTemplateById } from '@/api/template'
 import { emitter } from '@/utils/bus'
@@ -68,7 +72,9 @@ export default {
       }
       console.log(e)
       this.task = (await getTaskById({ ID: e.ID })).data.task
-      this.template = (await getTemplateById({ ID: e.templateId })).data.template
+      if (!(e.templateId >= discoverServers - 100)) {
+        this.template = (await getTemplateById({ ID: e.templateId })).data.template
+      }
       // this.dialogTitle = 'Task #' + this.task.ID
       this.isGetData = true
       // this.taskLogDialog = true

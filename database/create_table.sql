@@ -12,6 +12,7 @@ CREATE TABLE `application_servers`
     `system_id`    bigint UNSIGNED NOT NULL DEFAULT '0' COMMENT '所属系统id',
     `app_ids`      text COMMENT '部署应用ids',
     `ssh_port`     int(5) NOT NULL DEFAULT '0' COMMENT 'ssh端口',
+    `display_name` varchar(100) NOT NULL DEFAULT '' COMMENT '展示名称',
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

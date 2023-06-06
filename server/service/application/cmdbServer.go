@@ -97,11 +97,12 @@ func (cmdbServerService *CmdbServerService) UpdateServer(server request2.UpdateS
 	upDateMap["os_version"] = server.OsVersion
 	upDateMap["architecture"] = server.Architecture
 	upDateMap["ssh_port"] = server.SshPort
+	upDateMap["display_name"] = server.DisplayName
 
 	err = global.GVA_DB.Transaction(func(tx *gorm.DB) error {
 		db := tx.Where("id = ?", server.ID).Find(&oldServer)
 		if oldServer.Hostname != server.Hostname {
-			if !errors.Is(tx.Where("id <> ? AND hostname = ?", server.ID, server.Hostname).First(&application.ApplicationServer{}).Error, gorm.ErrRecordNotFound) {
+			if !errors.Is(tx.Where("id <> ? AND display_name = ?", server.ID, server.DisplayName).First(&application.ApplicationServer{}).Error, gorm.ErrRecordNotFound) {
 				global.GVA_LOG.Debug("存在相同name修改失败")
 				return errors.New("存在相同name修改失败")
 			}
@@ -521,5 +522,6 @@ func (cmdbServerService *CmdbServerService) CreateOrUpdateServer(server applicat
 	upDateMap["os_version"] = server.OsVersion
 	upDateMap["architecture"] = server.Architecture
 	upDateMap["ssh_port"] = server.SshPort
-	return db.Updates(upDateMap).Error
+	upDateMap["display_name"] = oldServer.DisplayName
+	return db.Where("id = ?", oldServer.ID).Find(&application.ApplicationServer{}).Updates(upDateMap).Error
 }

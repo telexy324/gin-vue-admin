@@ -326,7 +326,7 @@ func (p *TaskPool) AddTask(taskObj taskMdl.Task, userID int, setTaskId int) (new
 	if err != nil {
 		return
 	}
-	if taskObj.TemplateId < 99999900 {
+	if newTask.TemplateId < 99999900 {
 		template, er := taskService.GetTaskTemplate(float64(taskObj.TemplateId))
 		if er != nil {
 			err = er

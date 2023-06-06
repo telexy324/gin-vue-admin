@@ -69,3 +69,7 @@ func Hosts(ip, mask string) ([]string, error) {
 	prefix, _ := net.IPMask(net.ParseIP(mask).To4()).Size()
 	return hosts(ip + `/` + strconv.Itoa(prefix))
 }
+
+func HostsCIDR(cidr string) ([]string, error) {
+	return hosts(cidr)
+}

@@ -106,7 +106,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="网段" prop="network">
-          <el-input v-model="form.network" autocomplete="off" type="textarea" :rows="4" placeholder="管理网段，每行写一个网段，例如220.2.201.0 255.255.255.0" />
+          <el-input v-model="form.network" autocomplete="off" type="textarea" :rows="4" placeholder="管理网段，每行写一个网段，例如220.2.201.0/24" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -165,8 +165,8 @@ export default {
           { required: true, message: '请选择管理员', trigger: 'blur' }
         ],
         network: [
-          { required: true, message: '请选择管理员', trigger: 'blur' },
-          { validator: true, message: '请选择管理员', trigger: 'blur' }
+          { required: true, message: '请输入管理网段', trigger: 'blur' },
+          { validator: this.validIP, trigger: 'blur' }
         ]
       },
       path: path,
@@ -351,7 +351,7 @@ export default {
     async runTask(row) {
       const task = (await addTask({
         templateId: discoverServers,
-        systemId: row.ID
+        systemId: row.system.ID
       })).data.task
       console.log(task.ID)
       this.showTaskLog(task)
@@ -380,22 +380,27 @@ export default {
       const reg = /^(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])$/
       return reg.test(ip)
     },
+    // isValidMask(mask) {
+    //   const reg = /^(254|252|248|240|224|192|128|0)\.0\.0\.0|255\.(254|252|248|240|224|192|128|0)\.0\.0|255\.255\.(254|252|248|240|224|192|128|0)\.0|255\.255\.255\.(254|252|248|240|224|192|128|0)$/
+    //   return reg.test(mask)
+    // },
     isValidMask(mask) {
-      const reg = /^(254|252|248|240|224|192|128|0)\.0\.0\.0|255\.(254|252|248|240|224|192|128|0)\.0\.0|255\.255\.(254|252|248|240|224|192|128|0)\.0|255\.255\.255\.(254|252|248|240|224|192|128|0)$/
+      const reg = /^([1-9]|1[0-9]|2[0-9]|3[0-2])$/
       return reg.test(mask)
     },
-    validIP(ipAll) {
-      const rows = ipAll.split(/[(\r\n)\r\n]+/) // 根据换行或者回车进行识别
+    validIP(rule, value, callback) {
+      const rows = value.split(/[(\r\n)\r\n]+/) // 根据换行或者回车进行识别
       rows.forEach((item, index) => {
-        const row = item.split(' ')
+        const row = item.split('/')
         if (row.length < 2) {
-          return false
+          callback(new Error('请检查网段格式'))
+          return
         }
         if (!(this.isValidIP(row[0]) && this.isValidMask(row[1]))) {
-          return false
+          callback(new Error('请检查网段格式'))
         }
       })
-      return true
+      callback()
     }
   }
 }

@@ -272,7 +272,7 @@ func (t *TaskRunner) run() {
 	}
 
 	failedIPs := make([]string, 0)
-	if t.template.ID == consts.TaskTemplateDiscoverServers {
+	if t.task.TemplateId == consts.TaskTemplateDiscoverServers {
 		failedIPs = t.runDiscoverTask()
 	} else {
 		if t.template.ExecuteType == consts.ExecuteTypeDownload {
@@ -331,9 +331,11 @@ func (t *TaskRunner) populateDetails() error {
 	// get template
 	var err error
 
-	t.template, err = taskService.GetTaskTemplate(float64(t.task.TemplateId))
-	if err != nil {
-		return t.prepareError(err, "Template not found!")
+	if t.task.TemplateId < 99999900 {
+		t.template, err = taskService.GetTaskTemplate(float64(t.task.TemplateId))
+		if err != nil {
+			return t.prepareError(err, "Template not found!")
+		}
 	}
 
 	// get project alert setting
@@ -756,12 +758,12 @@ func (t *TaskRunner) runDiscoverTask() (failedIPs []string) {
 	servers := make([]string, 0, 253)
 	manageNets := strings.Split(taskSystem.Network, "\n")
 	for _, manageNet := range manageNets {
-		netDetails := strings.Split(manageNet, " ")
-		if len(netDetails) < 2 {
-			global.GVA_LOG.Error("please check network", zap.Int("system id", t.task.SystemId))
-			continue
-		}
-		ips, err := utils.Hosts(netDetails[0], netDetails[1])
+		//netDetails := strings.Split(manageNet, " ")
+		//if len(netDetails) < 2 {
+		//	global.GVA_LOG.Error("please check network", zap.Int("system id", t.task.SystemId))
+		//	continue
+		//}
+		ips, err := utils.HostsCIDR(manageNet)
 		if err != nil {
 			global.GVA_LOG.Error("please check network", zap.Int("system id", t.task.SystemId))
 			continue
@@ -782,10 +784,10 @@ func (t *TaskRunner) runDiscoverTask() (failedIPs []string) {
 		go func(w *sync.WaitGroup, s string, f chan string) {
 			defer w.Done()
 			var sshPort = consts.DiscoverSSHPort
-			sshClient, _ := common.FillSSHClient(s, t.template.SysUser, "", consts.DiscoverSSHPort)
+			sshClient, _ := common.FillSSHClient(s, "root", "", consts.DiscoverSSHPort)
 			err = sshClient.GenerateClient()
 			if err != nil {
-				sshClient, _ = common.FillSSHClient(s, t.template.SysUser, "", 22)
+				sshClient, _ = common.FillSSHClient(s, "root", "", 22)
 				if err = sshClient.GenerateClient(); err != nil {
 					return
 				}
@@ -801,6 +803,8 @@ func (t *TaskRunner) runDiscoverTask() (failedIPs []string) {
 			var output string
 			if newServer.Hostname, err = sshClient.CommandSingle("hostname"); err != nil {
 				global.GVA_LOG.Error("get hostname failed", zap.Any("err", err))
+			} else {
+				newServer.Hostname = strings.Trim(newServer.Hostname, "\n")
 			}
 			if output, err = sshClient.CommandSingle("uname -a"); err != nil {
 				global.GVA_LOG.Error("get architecture failed", zap.Any("err", err))
@@ -832,12 +836,13 @@ func (t *TaskRunner) runDiscoverTask() (failedIPs []string) {
 				global.GVA_LOG.Error("get os version failed", zap.Any("err", err))
 			} else {
 				if split := strings.Split(output, `"`); len(split) >= 2 {
-					newServer.OsVersion = split[2]
+					newServer.OsVersion = split[1]
 				}
 			}
 			if err = applicationService.CreateOrUpdateServer(newServer); err != nil {
 				global.GVA_LOG.Error("create new server failed", zap.Any("err", err))
 			}
+			t.Log("add or update server name " + newServer.Hostname + " manage ip " + newServer.ManageIp)
 			return
 		}(wg, server, failedChan)
 	}

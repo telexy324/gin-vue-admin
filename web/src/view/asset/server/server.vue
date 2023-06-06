@@ -46,13 +46,14 @@
         />
 <!--        <el-table-column align="left" label="id" min-width="60" prop="ID" sortable="custom" />-->
         <el-table-column align="left" label="服务器名" min-width="150" prop="hostname" sortable="custom" />
-        <el-table-column align="left" label="架构" min-width="150" prop="architecture" sortable="custom">
+        <el-table-column align="left" label="展示名" min-width="150" prop="displayName" sortable="custom" />
+        <el-table-column align="left" label="架构" min-width="80" prop="architecture" sortable="custom">
           <template #default="scope">
             <div>{{ filterDict(scope.row.architecture, 'architecture') }}</div>
           </template>
         </el-table-column>
         <el-table-column align="left" label="管理IP" min-width="200" prop="manageIp" sortable="custom" />
-        <el-table-column align="left" label="操作系统" min-width="150" prop="os" sortable="custom">
+        <el-table-column align="left" label="操作系统" min-width="120" prop="os" sortable="custom">
           <template #default="scope">
             <div>{{ filterDict(scope.row.os, 'osVersion') }}</div>
           </template>
@@ -108,6 +109,9 @@
       <el-form ref="serverForm" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="服务器名" prop="hostname">
           <el-input v-model="form.hostname" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="展示名" prop="displayName">
+          <el-input v-model="form.displayName" autocomplete="off" />
         </el-form-item>
         <el-form-item label="架构" prop="architecture">
 <!--          <el-input v-model="form.architecture" autocomplete="off" />-->
@@ -226,6 +230,7 @@ export default {
         osVersion: '',
         systemId: '',
         sshPort: '',
+        displayName: '',
       },
       sshForm: {
         server: {
@@ -337,6 +342,7 @@ export default {
         osVersion: '',
         systemId: '',
         sshPort: '',
+        displayName: '',
       }
     },
     closeDialog() {
