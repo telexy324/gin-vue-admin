@@ -653,3 +653,81 @@ func setQuit(ch chan bool) {
 //		}
 //	}
 //}
+
+func (c *SSHClient) CommandBatch(commands []string, logger Logger, manageIP string) (err error) {
+	session, err := c.Client.NewSession()
+	if err != nil {
+		global.GVA_LOG.Error("ssh open session failed ", zap.Any("err ", err))
+		logger.Log("ssh open session failed")
+		return
+	}
+	defer session.Close()
+
+	stdinP, err := session.StdinPipe()
+	if err != nil {
+		global.GVA_LOG.Error("ssh open stdin failed ", zap.Any("err ", err))
+		logger.Log("ssh open stdin failed")
+		return
+	}
+
+	buffer := new(singleWriter)
+	session.Stdout = buffer
+	session.Stderr = buffer
+
+	modes := ssh.TerminalModes{
+		ssh.ECHO:          1,     // disable echo
+		ssh.TTY_OP_ISPEED: 14400, // input speed = 14.4kbaud
+		ssh.TTY_OP_OSPEED: 14400, // output speed = 14.4kbaud
+	}
+	// Request pseudo terminal
+	if err = session.RequestPty("xterm", 150, 35, modes); err != nil {
+		global.GVA_LOG.Error("ssh request pty failed ", zap.Any("err ", err))
+		logger.Log("ssh request pty failed")
+		return
+	}
+	// Start remote shell
+	if err = session.Shell(); err != nil {
+		global.GVA_LOG.Error("ssh start shell failed ", zap.Any("err ", err))
+		logger.Log("ssh start shell failed")
+		return
+	}
+
+	quitChan := make(chan bool)
+	go func() {
+		//every 120ms write combine output bytes into websocket response
+		tick := time.NewTicker(time.Millisecond * time.Duration(100))
+		//for range time.Tick(120 * time.Millisecond){}
+		defer tick.Stop()
+		//var last = 0
+		for {
+			select {
+			case <-tick.C:
+				//if buffer.b.Len() != 0 {
+				//	last = buffer.b.Len()
+				//	logger.Log(string(buffer.b.Next(last)), manageIP)
+				//}
+				if buffer.b.Len() != 0 {
+					logger.Log(string(buffer.b.Bytes()), manageIP)
+					buffer.b.Reset()
+				}
+			case <-quitChan:
+				return
+			}
+		}
+	}()
+	go func() {
+		for _, command := range commands {
+			if _, err = stdinP.Write([]byte(command)); err != nil {
+				global.GVA_LOG.Error("cmd bytes write to ssh.stdin pipe failed", zap.Any("err ", err))
+			}
+			time.Sleep(time.Millisecond * time.Duration(200))
+		}
+	}()
+	err = session.Wait()
+	if err != nil {
+		global.GVA_LOG.Info("ssh receive error ", zap.Any("err ", err))
+	}
+	time.Sleep(time.Millisecond * time.Duration(300))
+	quitChan <- true
+	return
+}

@@ -36,7 +36,7 @@ CREATE TABLE `application_systems`
     `updated_at` datetime(0) NULL DEFAULT NULL,
     `deleted_at` datetime(0) NULL DEFAULT NULL,
     `name`       varchar(100) NOT NULL DEFAULT '' COMMENT '系统名称',
-    `network`    text COMMENT '系统名称',
+    `network`    text COMMENT 'cidr networks',
     `position`   tinyint(2) NOT NULL DEFAULT '0' COMMENT '系统位置 0 未知, 1 月坛, 2 昌平, 3 丰台, 4 珠海, 5 西安',
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
