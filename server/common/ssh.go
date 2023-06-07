@@ -633,26 +633,26 @@ func setQuit(ch chan bool) {
 	ch <- true
 }
 
-//func (ssConn *SshConn) SendCommand(command string, logger common.Logger, exitCh chan bool) (err error) {
-//	logger.Log(command)
-//	_, err = ssConn.StdinPipe.Write([]byte(command))
-//	if err != nil {
-//		logger.Log("ssh run command failed")
-//		return
-//	}
-//	tick := time.NewTicker(time.Millisecond * time.Duration(120))
-//	//for range time.Tick(120 * time.Millisecond){}
-//	defer tick.Stop()
-//	for {
-//		select {
-//		case <-tick.C:
-//			logger.Log(string(ssConn.ComboOutput.buffer.Bytes()))
-//			ssConn.ComboOutput.buffer.Reset()
-//		case <-exitCh:
+//	func (ssConn *SshConn) SendCommand(command string, logger common.Logger, exitCh chan bool) (err error) {
+//		logger.Log(command)
+//		_, err = ssConn.StdinPipe.Write([]byte(command))
+//		if err != nil {
+//			logger.Log("ssh run command failed")
 //			return
 //		}
+//		tick := time.NewTicker(time.Millisecond * time.Duration(120))
+//		//for range time.Tick(120 * time.Millisecond){}
+//		defer tick.Stop()
+//		for {
+//			select {
+//			case <-tick.C:
+//				logger.Log(string(ssConn.ComboOutput.buffer.Bytes()))
+//				ssConn.ComboOutput.buffer.Reset()
+//			case <-exitCh:
+//				return
+//			}
+//		}
 //	}
-//}
 
 func (c *SSHClient) CommandBatch(commands []string, logger Logger, manageIP string) (err error) {
 	session, err := c.Client.NewSession()
@@ -675,7 +675,7 @@ func (c *SSHClient) CommandBatch(commands []string, logger Logger, manageIP stri
 	session.Stderr = buffer
 
 	modes := ssh.TerminalModes{
-		ssh.ECHO:          1,     // disable echo
+		ssh.ECHO:          0,     // disable echo
 		ssh.TTY_OP_ISPEED: 14400, // input speed = 14.4kbaud
 		ssh.TTY_OP_OSPEED: 14400, // output speed = 14.4kbaud
 	}
@@ -717,10 +717,15 @@ func (c *SSHClient) CommandBatch(commands []string, logger Logger, manageIP stri
 	}()
 	go func() {
 		for _, command := range commands {
-			if _, err = stdinP.Write([]byte(command)); err != nil {
+			logger.Log(command, manageIP)
+			if _, err = stdinP.Write([]byte(command + "\n")); err != nil {
 				global.GVA_LOG.Error("cmd bytes write to ssh.stdin pipe failed", zap.Any("err ", err))
 			}
 			time.Sleep(time.Millisecond * time.Duration(200))
+		}
+		_, err = stdinP.Write([]byte("exit" + "\n"))
+		if err != nil {
+			global.GVA_LOG.Error("ssh exit failed", zap.Any("err ", err))
 		}
 	}()
 	err = session.Wait()
@@ -731,3 +736,87 @@ func (c *SSHClient) CommandBatch(commands []string, logger Logger, manageIP stri
 	quitChan <- true
 	return
 }
+
+//func (c *SSHClient) CommandSerial(commands []string, logger Logger, manageIP string) (err error) {
+//	session, err := c.Client.NewSession()
+//	if err != nil {
+//		global.GVA_LOG.Error("ssh open session failed ", zap.Any("err ", err))
+//		logger.Log("ssh open session failed")
+//		return
+//	}
+//	defer session.Close()
+//
+//	modes := ssh.TerminalModes{
+//		ssh.ECHO:          1,     // disable echo
+//		ssh.TTY_OP_ISPEED: 14400, // input speed = 14.4kbaud
+//		ssh.TTY_OP_OSPEED: 14400, // output speed = 14.4kbaud
+//	}
+//	// Request pseudo terminal
+//	if err = session.RequestPty("xterm", 80, 40, modes); err != nil {
+//		global.GVA_LOG.Error("ssh request pty failed ", zap.Any("err ", err))
+//		logger.Log("ssh request pty failed")
+//		return
+//	}
+//	w, err := session.StdinPipe()
+//	if err != nil {
+//		global.GVA_LOG.Error("ssh get stdin failed ", zap.Any("err ", err))
+//		logger.Log("ssh get stdin failed")
+//		return
+//	}
+//	r, err := session.StdoutPipe()
+//	if err != nil {
+//		global.GVA_LOG.Error("ssh get stdout failed ", zap.Any("err ", err))
+//		logger.Log("ssh get stdout failed")
+//		return
+//	}
+//	if err = session.Start("/bin/sh"); err != nil {
+//		global.GVA_LOG.Error("ssh start failed ", zap.Any("err ", err))
+//		logger.Log("ssh start failed")
+//		return
+//	}
+//	readUntil(r, escapePrompt) //ignore the shell output
+//	for _, command := range commands {
+//		write(w, command)
+//		out, _ := readUntil(r, escapePrompt)
+//		logger.Log(*out, manageIP)
+//	}
+//	write(w, "exit")
+//
+//	session.Wait()
+//	return
+//}
+//
+//var escapePrompt = []byte{'$', ' '}
+//
+//func write(w io.WriteCloser, command string) error {
+//	_, err := w.Write([]byte(command + "\n"))
+//	return err
+//}
+//
+//func readUntil(r io.Reader, matchingByte []byte) (*string, error) {
+//	var buf [64 * 1024]byte
+//	var t int
+//	for {
+//		n, err := r.Read(buf[t:])
+//		if err != nil {
+//			return nil, err
+//		}
+//		t += n
+//		if isMatch(buf[:t], t, matchingByte) {
+//			stringResult := string(buf[:t])
+//			return &stringResult, nil
+//		}
+//	}
+//}
+//
+//func isMatch(bytes []byte, t int, matchingBytes []byte) bool {
+//	if t >= len(matchingBytes) {
+//		for i := 0; i < len(matchingBytes); i++ {
+//			if bytes[t-len(matchingBytes)+i] != matchingBytes[i] {
+//				return false
+//			}
+//		}
+//		return true
+//	}
+//	return false
+//}
