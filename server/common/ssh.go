@@ -13,6 +13,7 @@ import (
 	"io"
 	"os"
 	"path"
+	"strings"
 	"sync"
 	"time"
 )
@@ -89,6 +90,7 @@ func flushComboOutput(w *wsBufferWriter, wsConn *websocket.Conn) error {
 		if err != nil {
 			return err
 		}
+		//global.GVA_LOG.Info("ssh direct message ", zap.ByteString("", w.buffer.Bytes()))
 		w.buffer.Reset()
 	}
 	return nil
@@ -707,7 +709,37 @@ func (c *SSHClient) CommandBatch(commands []string, logger Logger, manageIP stri
 				//	logger.Log(string(buffer.b.Next(last)), manageIP)
 				//}
 				if buffer.b.Len() != 0 {
-					logger.Log(string(buffer.b.Bytes()), manageIP)
+					//rawString := string(buffer.b.Bytes())
+					//raws := strings.Split(rawString, "\r\n")
+					//for _, raw := range raws {
+					//	if !(strings.Contains(raw, "Last login") || strings.Contains(raw, ` ~]# `)) {
+					//		logger.Log(string(buffer.b.Bytes()), manageIP)
+					//	}
+					//}
+					raw := make([]rune, 0)
+					var through bool
+					for {
+						r, _, err := buffer.b.ReadRune()
+						if err != nil && err != io.EOF {
+							global.GVA_LOG.Error("ssh read rune failed ", zap.Any("err ", err))
+							through = true
+							break
+						} else if err != nil && err == io.EOF {
+							break
+						} else if r == []rune("\u0007")[0] {
+							through = true
+						}
+						raw = append(raw, r)
+					}
+					if through {
+						continue
+					}
+					rawStrings := strings.Split(string(raw), "\r\n")
+					for _, rs := range rawStrings {
+						if !(strings.Contains(rs, "Last login")) {
+							logger.Log(rs, manageIP)
+						}
+					}
 					buffer.b.Reset()
 				}
 			case <-quitChan:
