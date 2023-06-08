@@ -291,3 +291,16 @@ export const uploadLogServer = (data) => {
     data
   })
 }
+
+// @Summary 下载部署程序包
+// @Produce  application/json
+// @Param checkScript Object
+// @Router /task/template/deployServer [post]
+export const deployServer = (data) => {
+  return service({
+    url: '/task/template/deployServer',
+    method: 'post',
+    data
+  })
+}
+

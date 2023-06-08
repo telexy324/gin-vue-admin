@@ -12,6 +12,7 @@ const (
 const (
 	ExecuteTypeNormal = iota + 1
 	ExecuteTypeDownload
+	ExecuteTypeDeploy
 )
 
 const (

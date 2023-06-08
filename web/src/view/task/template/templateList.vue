@@ -15,6 +15,7 @@
       <div class="gva-btn-list">
         <el-button size="mini" type="primary" icon="el-icon-plus" :disabled="!hasCreate" @click="openDialog('addTemplate')">新增</el-button>
         <el-button size="mini" type="primary" icon="el-icon-plus" :disabled="!hasCreate" @click="openLogDialog('addLogTemplate')">新增日志提取</el-button>
+        <el-button size="mini" type="primary" icon="el-icon-plus" :disabled="!hasCreate" @click="openDeployDialog('addDeployTemplate')">新增程序上传</el-button>
         <el-popover v-model:visible="deleteVisible" placement="top" width="160">
           <p>确定要删除吗？</p>
           <div style="text-align: right; margin-top: 8px;">
@@ -317,6 +318,70 @@
         </div>
       </template>
     </el-dialog>
+
+    <el-dialog v-model="dialogDeployFormVisible" :before-close="closeDeployDialog" :title="dialogDeployTitle">
+      <warning-bar title="程序上传模板" />
+      <el-form ref="templateDeployForm" :model="deployForm" :rules="deployRules" label-width="150px">
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="模版名" prop="name">
+              <el-input v-model="deployForm.name" autocomplete="off" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="执行用户" prop="sysUser">
+              <el-input v-model="deployForm.sysUser" autocomplete="off" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-form-item label="描述" prop="description">
+          <el-input v-model="deployForm.description" autocomplete="off" type="textarea" />
+        </el-form-item>
+        <el-form-item label="所属系统" prop="systemId">
+          <el-select v-model="deployForm.systemId" @change="changeSystemId">
+            <el-option v-for="val in systemOptions" :key="val.ID" :value="val.ID" :label="val.name" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="目标" prop="targetIds">
+          <el-cascader
+            v-model="deployForm.targetIds"
+            style="width:100%"
+            :options="serverOptions"
+            :show-all-levels="false"
+            :props="{ multiple:true,checkStrictly: false,label:'name',value:'ID',disabled:'disabled',emitPath:false}"
+            :clearable="false"
+          />
+        </el-form-item>
+        <el-form-item label="程序包上传位置" prop="deployPath">
+          <el-input v-model="deployForm.deployPath" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="源文件位置" prop="downloadSource">
+          <el-input v-model="deployForm.downloadSource" autocomplete="off" />
+        </el-form-item>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="ftp/sftp服务器" prop="dstServerId">
+              <el-select v-model="deployForm.dstServerId" @change="changeServerId">
+                <el-option v-for="val in logServerOptions" :key="val.ID" :value="val.ID" :label="val.hostname" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="上传用户" prop="secretId">
+              <el-select v-model="deployForm.secretId">
+                <el-option v-for="val in logSecretOptionsFiltered" :key="val.ID" :value="val.ID" :label="val.name" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button size="small" @click="closeDeployDialog">取 消</el-button>
+          <el-button size="small" type="primary" @click="enterDeployDialog">确 定</el-button>
+        </div>
+      </template>
+    </el-dialog>
     <el-drawer v-if="drawer" v-model="drawer" :with-header="false" size="40%" title="请选择系统">
       <Systems ref="systems" :keys="searchInfo.systemIds" @checked="getCheckedTemplates" />
     </el-drawer>
@@ -339,6 +404,7 @@ import {
   getFileList,
   downloadFile,
   uploadLogServer,
+  deployServer,
 } from '@/api/template'
 import { addTask } from '@/api/task'
 import { getAdminSystems, getSystemServerIds } from '@/api/cmdb'
@@ -469,6 +535,32 @@ export default {
         { 'key': 1, 'value': 'sh' },
         { 'key': 2, 'value': 'bash' },
       ],
+      deployForm: {
+        ID: '',
+        name: '',
+        description: '',
+        sysUser: '',
+        targetIds: [],
+        executeType: 3,
+        systemId: '',
+        deployPath: '',
+        downloadSource: '',
+        dstServerId: '',
+        secretId: ''
+      },
+      deployRules: {
+        name: [{ required: true, message: '请输入模板名', trigger: 'blur' }],
+        sysUser: [{ required: true, message: '请输入上传用户', trigger: 'blur' }],
+        systemId: [{ required: true, message: '请选择所属系统', trigger: 'blur' }],
+        targetIds: [{ required: true, message: '请选择目标', trigger: 'blur' }],
+        deployPath: [{ required: true, message: '请输入上传位置', trigger: 'blur' }],
+        downloadSource: [{ required: true, message: '请输入源程序包位置', trigger: 'blur' }],
+        dstServerId: [{ required: true, message: '请选择日志服务器', trigger: 'blur' }],
+        secretId: [{ required: true, message: '请选择下载用户', trigger: 'blur' }],
+      },
+      dialogDeployFormVisible: false,
+      dialogDeployTitle: '新增程序上传模板',
+      deployType: '',
     }
   },
   computed: {
@@ -574,6 +666,11 @@ export default {
         this.logForm.targetIds = this.logForm.targetIds[0]
         temp.logOutput === 2 ? this.downloadDirectly = false : this.downloadDirectly = true
         await this.openLogDialog('edit')
+      } else if (res.data.taskTemplate.executeType === 3) {
+        const temp = res.data.taskTemplate
+        this.deployForm = temp
+        await this.setServerOptions(temp.systemId)
+        await this.openDeployDialog('edit')
       } else {
         this.form = res.data.taskTemplate
         await this.setServerOptions(this.form.systemId)
@@ -674,6 +771,12 @@ export default {
         })
         console.log(this.fileNames)
         this.showFileList()
+      } else if (row.executeType === 3) {
+        const task = (await deployServer({
+          ID: row.ID
+        })).data.task
+        console.log(task.ID)
+        this.showTaskLog(task)
       } else {
         const task = (await addTask({
           templateId: row.ID
@@ -1061,6 +1164,98 @@ export default {
     changeSystemId(selectValue) {
       this.form.targetIds = []
       this.setServerOptions(selectValue)
+    },
+    initDeployForm() {
+      this.$refs.templateDeployForm.resetFields()
+      this.form = {
+        ID: '',
+        name: '',
+        description: '',
+        sysUser: '',
+        targetIds: [],
+        executeType: 2,
+        systemId: '',
+        deployPath: '',
+        downloadSource: '',
+        dstServerId: '',
+        secretId: ''
+      }
+    },
+    async openDeployDialog(type) {
+      this.logServerOptions = (await getServerList({
+        page: 1,
+        pageSize: 99999
+      })).data.list
+      this.logSecretOptions = (await getSecretList({
+        page: 1,
+        pageSize: 99999
+      })).data.list
+      switch (type) {
+        case 'addDeployTemplate':
+          this.dialogTitle = '新增程序上传模板'
+          break
+        case 'edit':
+          this.dialogTitle = '编辑程序上传模板'
+          break
+        default:
+          break
+      }
+      this.deployType = type
+      this.changeServerId(this.deployForm.dstServerId)
+      this.dialogDeployFormVisible = true
+    },
+    async enterDeployDialog() {
+      this.$refs.templateDeployForm.validate(async valid => {
+        if (valid) {
+          switch (this.deployType) {
+            case 'addDeployTemplate':
+              {
+                this.deployForm.ID = 0
+                const res = await addTemplate(this.deployForm)
+                if (res.code === 0) {
+                  this.$message({
+                    type: 'success',
+                    message: '添加成功',
+                    showClose: true
+                  })
+                }
+                this.getTableData()
+                this.closeDeployDialog()
+              }
+              break
+            case 'edit':
+              {
+                const res = await updateTemplate(this.deployForm)
+                if (res.code === 0) {
+                  this.$message({
+                    type: 'success',
+                    message: '编辑成功',
+                    showClose: true
+                  })
+                }
+                this.getTableData()
+                this.closeDeployDialog()
+              }
+              break
+            default:
+              // eslint-disable-next-line no-lone-blocks
+              {
+                this.$message({
+                  type: 'error',
+                  message: '未知操作',
+                  showClose: true
+                })
+              }
+              break
+          }
+        }
+      })
+    },
+    closeDeployDialog() {
+      this.initDeployForm()
+      this.dialogDeployFormVisible = false
+      this.logServerOptions = []
+      this.logSecretOptions = []
     },
   }
 }

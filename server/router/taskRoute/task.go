@@ -43,6 +43,7 @@ func (s *TaskRouter) InitTaskRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 		taskRouter.POST("template/getFileList", authorityTemplateApi.GetFileList)         // 获取管理员
 		taskRouter.GET("template/downloadFile", authorityTemplateApi.DownloadFile)        // 获取管理员
 		taskRouter.POST("template/uploadLogServer", authorityTemplateApi.UploadLogServer)
+		taskRouter.POST("template/deployServer", authorityTemplateApi.DeployServer)
 	}
 	{
 		taskRouter.POST("template/addSet", authorityTemplateApi.AddSet)                 // 新增管理员

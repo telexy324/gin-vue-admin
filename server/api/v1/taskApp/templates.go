@@ -967,3 +967,49 @@ func (a *TemplateApi) UploadLogServer(c *gin.Context) {
 	//	return
 	//}
 }
+
+// @Tags Template
+// @Summary 上传日志服务器
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body templateReq.DownLoadFileRequest true "id,文件路径"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"更新成功"}"
+// @Router /task/template/deployServer [post]
+func (a *TemplateApi) DeployServer(c *gin.Context) {
+	var info templateReq.GetById
+	if err := c.ShouldBindJSON(&info); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err := utils.Verify(info, utils.IdVerify); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	template, err := templateService.GetTaskTemplate(info.ID)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if template.TargetIds == nil || len(template.TargetIds) == 0 {
+		response.FailWithMessage("template target ids is null", c)
+		return
+	}
+	if template.ExecuteType != consts.ExecuteTypeDeploy {
+		response.FailWithMessage("template type is not download", c)
+		return
+	}
+	userID := int(utils.GetUserID(c))
+	task := taskMdl.Task{
+		TemplateId: int(info.ID),
+	}
+	if taskNew, err := taskPool.TPool.AddTask(task, userID, 0); err != nil {
+		global.GVA_LOG.Error("添加失败!", zap.Any("err", err))
+		response.FailWithMessage("添加失败", c)
+	} else {
+		response.OkWithDetailed(templateRes.TaskResponse{
+			Task: taskNew,
+		}, "添加成功", c)
+	}
+}

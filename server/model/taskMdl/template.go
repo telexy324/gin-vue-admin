@@ -20,15 +20,17 @@ type TaskTemplate struct {
 	LastTaskId      int                             `json:"lastTaskId" gorm:"column:last_task_id"`           // 最后一次task id
 	SysUser         string                          `json:"sysUser" gorm:"column:sys_user"`                  // 执行用户
 	SystemId        int                             `json:"systemId" gorm:"column:system_id"`                // 所属系统
-	ExecuteType     int                             `json:"executeType" gorm:"column:execute_type"`          // 模板类型 1 普通 2 日志提取
+	ExecuteType     int                             `json:"executeType" gorm:"column:execute_type"`          // 模板类型 1 普通 2 日志提取 3 程序包上传
 	LogPath         string                          `json:"logPath" gorm:"column:log_path"`                  // 日志位置
 	ScriptHash      string                          `json:"scriptHash" gorm:"column:script_hash"`            // 脚本哈希
-	LogOutput       int                             `json:"logOutput" gorm:"column:log_output"`              // 日志位置
-	LogDst          string                          `json:"logDst" gorm:"column:log_dst"`                    // 日志位置
-	DstServerId     int                             `json:"dstServerId" gorm:"column:dst_server_id"`         // 日志位置
-	SecretId        int                             `json:"secretId" gorm:"column:secret_id"`                // 日志位置
-	ShellType       int                             `json:"shellType" gorm:"column:shell_type"`              // 日志位置
-	ShellVars       string                          `json:"shellVars" gorm:"column:shell_vars"`              // 日志位置
+	LogOutput       int                             `json:"logOutput" gorm:"column:log_output"`              // 日志下载方式 1 直接 2 上传服务器
+	LogDst          string                          `json:"logDst" gorm:"column:log_dst"`                    // 日志服务器上传位置
+	DstServerId     int                             `json:"dstServerId" gorm:"column:dst_server_id"`         // 日志服务器id
+	SecretId        int                             `json:"secretId" gorm:"column:secret_id"`                // 日志服务器密码
+	ShellType       int                             `json:"shellType" gorm:"column:shell_type"`              // shell类型
+	ShellVars       string                          `json:"shellVars" gorm:"column:shell_vars"`              // shell参数
+	DeployPath      string                          `json:"deployPath" gorm:"column:deploy_path"`            // 服务器上传位置
+	DownloadSource  string                          `json:"downloadSource" gorm:"column:download_source"`    // 日志服务器下载位置
 	TargetIds       []int                           `json:"targetIds" gorm:"-"`
 	TargetServers   []application.ApplicationServer `json:"targetServers" gorm:"-"`
 	LastTask        Task                            `json:"lastTask" gorm:"-"`
