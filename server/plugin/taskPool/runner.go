@@ -871,10 +871,10 @@ func (t *TaskRunner) runDiscoverTask() (failedIPs []string) {
 		go func(w *sync.WaitGroup, s string, f chan string) {
 			defer w.Done()
 			var sshPort = consts.DiscoverSSHPort
-			sshClient, _ := common.FillSSHClient(s, "root", "", consts.DiscoverSSHPort)
+			sshClient, _ := common.FillSSHClient(s, t.task.SshUser, "", consts.DiscoverSSHPort)
 			err = sshClient.GenerateClient()
 			if err != nil {
-				sshClient, _ = common.FillSSHClient(s, "root", "", 22)
+				sshClient, _ = common.FillSSHClient(s, t.task.SshUser, "", 22)
 				if err = sshClient.GenerateClient(); err != nil {
 					return
 				}
@@ -886,6 +886,7 @@ func (t *TaskRunner) runDiscoverTask() (failedIPs []string) {
 				ManageIp: s,
 				SystemId: t.task.SystemId,
 				SshPort:  sshPort,
+				SshUser:  t.task.SshUser,
 			}
 			var output string
 			if newServer.Hostname, err = sshClient.CommandSingle("hostname"); err != nil {

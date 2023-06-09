@@ -323,6 +323,7 @@ func (p *TaskPool) AddTask(taskObj taskMdl.Task, userID int, setTaskId int) (new
 	//}
 
 	newTask, err = taskService.CreateTask(taskObj)
+	newTask.FileDownload, newTask.SystemId, newTask.SshUser = taskObj.FileDownload, taskObj.SystemId, taskObj.SshUser
 	if err != nil {
 		return
 	}

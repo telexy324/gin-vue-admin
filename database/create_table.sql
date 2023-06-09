@@ -13,6 +13,7 @@ CREATE TABLE `application_servers`
     `app_ids`      text COMMENT '部署应用ids',
     `ssh_port`     int(5) NOT NULL DEFAULT '0' COMMENT 'ssh端口',
     `display_name` varchar(100) NOT NULL DEFAULT '' COMMENT '展示名称',
+    `ssh_user`     varchar(50)  NOT NULL DEFAULT '' COMMENT 'ssh用户',
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
