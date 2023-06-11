@@ -67,12 +67,14 @@
 <!--              type="text"-->
 <!--              @click="runTask(scope.row)"-->
 <!--            >服务器发现</el-button>-->
-            <el-popover v-model:visible="sshUserVisible" placement="top" width="160">
+            <el-popover :ref="`popover-${scope.$index}`" placement="top" width="160">
               <p>请输入ssh用户</p>
               <div style="text-align: right; margin-top: 8px;">
                 <el-input v-model="sshUser" autocomplete="off" />
-                <el-button size="mini" type="text" @click="initSshUser()">取消</el-button>
-                <el-button size="mini" type="primary" @click="runTask(scope.row)">确定</el-button>
+                <div style="text-align: right; margin-top: 10px;">
+                  <el-button size="mini" type="text" @click="handleClose(scope.$index)">取消</el-button>
+                  <el-button size="mini" type="primary" @click="runTask(scope.row, scope.$index)">确定</el-button>
+                </div>
               </div>
               <template #reference>
                 <el-button icon="el-icon-caret-right" size="small" type="text">服务器发现</el-button>
@@ -361,18 +363,14 @@ export default {
         }
       })
     },
-    async runTask(row) {
+    async runTask(row, index) {
       const task = (await addTask({
         templateId: discoverServers,
         systemId: row.system.ID,
         sshUser: this.sshUser,
       })).data.task
-      this.initSshUser()
+      this.handleClose(index)
       this.showTaskLog(task)
-    },
-    initSshUser() {
-      this.sshUserVisible = false
-      this.sshUser = ''
     },
     showTaskLog(task) {
       emitter.emit('i-show-task', task)
@@ -419,6 +417,10 @@ export default {
         }
       })
       callback()
+    },
+    handleClose(index) {
+      this.$refs[`popover-${index}`].hide()
+      this.sshUser = ''
     }
   }
 }

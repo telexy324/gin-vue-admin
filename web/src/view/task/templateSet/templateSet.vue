@@ -100,7 +100,7 @@
             <el-col :span="10">
               <el-form-item
                 label="模板名"
-                :prop="'templates.' + index + '.ID'"
+                :prop="'templates.' + index + '.templateId'"
                 :rules="rules.templateId"
               >
                 <el-select v-model="item.templateId">

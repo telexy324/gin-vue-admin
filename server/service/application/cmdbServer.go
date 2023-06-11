@@ -525,7 +525,11 @@ func (cmdbServerService *CmdbServerService) CreateOrUpdateServer(server applicat
 	upDateMap["ssh_port"] = server.SshPort
 	upDateMap["display_name"] = oldServer.DisplayName
 	if !strings.Contains(oldServer.SshUser, server.SshUser) {
-		upDateMap["ssh_user"] = oldServer.SshUser + "," + server.SshUser
+		if len(oldServer.SshUser) > 0 {
+			upDateMap["ssh_user"] = oldServer.SshUser + "," + server.SshUser
+		} else {
+			upDateMap["ssh_user"] = server.SshUser
+		}
 	}
 	return db.Where("id = ?", oldServer.ID).Find(&application.ApplicationServer{}).Updates(upDateMap).Error
 }
