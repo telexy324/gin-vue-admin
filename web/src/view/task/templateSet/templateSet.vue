@@ -195,7 +195,10 @@ export default {
           { required: true, message: '请选择系统', trigger: 'blur' }
         ],
         templateId: [{ required: true, message: '请选择模板', trigger: 'blur' }],
-        seq: [{ required: true, message: '请输入执行顺序', trigger: 'blur' }],
+        seq: [
+          { required: true, message: '请输入执行顺序', trigger: 'blur' },
+          { validator: this.seqRule, trigger: 'blur' }
+        ],
       },
       path: path,
       drawer: false,
@@ -418,9 +421,10 @@ export default {
     },
     async setTemplateOptions() {
       this.searchInfo.executeType = 1
-      const res = await getTemplateList({ page: 1, pageSize: 99999, ...this.searchInfo })
-      this.systemTemplateOptions = res.data.list
-      console.log(this.systemTemplateOptions)
+      const res1 = await getTemplateList({ page: 1, pageSize: 99999, ...this.searchInfo })
+      this.searchInfo.executeType = 3
+      const res3 = await getTemplateList({ page: 1, pageSize: 99999, ...this.searchInfo })
+      this.systemTemplateOptions = [...res1.data.list, ...res3.data.list]
     },
     setSystemOptions(data) {
       this.systemOptions = data
@@ -470,6 +474,25 @@ export default {
       this.hasDelete = !!res.data.paths.some((item) => {
         return item.path === '/task/template/deleteSet'
       })
+    },
+    seqRule(rule, value, callback) {
+      const n = /^[0-9]*$/
+      if (!n.test(value)) {
+        callback(new Error('只能为数字'))
+      } else {
+        // this.form.templates.forEach(item => {
+        //   if (item.seq === value) {
+        //     callback(new Error('执行顺序不可重复'))
+        //   }
+        // })
+        const newListLength = new Set(this.form.templates.map(item => item.seq)).size
+        const listLength = this.form.templates.length
+        if (listLength > newListLength) {
+          callback(new Error('执行顺序不可重复'))
+        } else {
+          callback()
+        }
+      }
     }
   }
 }
