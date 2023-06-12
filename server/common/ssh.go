@@ -726,9 +726,10 @@ func (c *SSHClient) CommandBatch(commands []string, logger Logger, manageIP stri
 							break
 						} else if err != nil && err == io.EOF {
 							break
-						} else if r == []rune("\u0007")[0] {
-							through = true
 						}
+						//else if r == []rune("\u0007")[0] {
+						//	through = true
+						//}
 						raw = append(raw, r)
 					}
 					if through {

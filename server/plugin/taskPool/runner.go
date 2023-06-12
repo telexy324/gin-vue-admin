@@ -931,20 +931,22 @@ func (t *TaskRunner) runDiscoverTask() (failedIPs []string) {
 				global.GVA_LOG.Error("create new server failed", zap.Any("err", err))
 			}
 			t.Log("add or update server name " + newServer.Hostname + " manage ip " + newServer.ManageIp)
+			successChan <- true
 			return
 		}(wg, server, successChan)
 	}
 	wg.Wait()
 	close(successChan)
-	var successed bool
+	var succeed bool
 	for ip := range successChan {
 		if ip {
-			successed = true
+			succeed = true
 			break
 		}
 	}
-	if !successed {
+	if !succeed {
 		failedIPs = append(failedIPs, "localhost")
+		t.Log("find no server in "+taskSystem.Network, "localhost")
 	}
 	return
 }
