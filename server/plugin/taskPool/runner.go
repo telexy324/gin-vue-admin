@@ -864,11 +864,11 @@ func (t *TaskRunner) runDiscoverTask() (failedIPs []string) {
 	}
 	global.GVA_LOG.Info("run ", zap.Uint("task ID: ", t.task.ID))
 	wg := &sync.WaitGroup{}
-	failedChan := make(chan string, len(servers))
+	successChan := make(chan bool, len(servers))
 	t.clients = make([]*ssh.Client, 0, len(servers))
 	for _, server := range servers {
 		wg.Add(1)
-		go func(w *sync.WaitGroup, s string, f chan string) {
+		go func(w *sync.WaitGroup, s string, f chan bool) {
 			defer w.Done()
 			var sshPort = consts.DiscoverSSHPort
 			sshClient, _ := common.FillSSHClient(s, t.task.SshUser, "", consts.DiscoverSSHPort)
@@ -932,12 +932,19 @@ func (t *TaskRunner) runDiscoverTask() (failedIPs []string) {
 			}
 			t.Log("add or update server name " + newServer.Hostname + " manage ip " + newServer.ManageIp)
 			return
-		}(wg, server, failedChan)
+		}(wg, server, successChan)
 	}
 	wg.Wait()
-	close(failedChan)
-	for ip := range failedChan {
-		failedIPs = append(failedIPs, ip)
+	close(successChan)
+	var successed bool
+	for ip := range successChan {
+		if ip {
+			successed = true
+			break
+		}
+	}
+	if !successed {
+		failedIPs = append(failedIPs, "localhost")
 	}
 	return
 }

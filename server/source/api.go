@@ -166,7 +166,7 @@ var apis = []system.SysApi{
 	{global.GVA_MODEL{ID: 162, CreatedAt: time.Now(), UpdatedAt: time.Now()}, "/logUpload/getSecretList", "分页获取基础日志服务器密钥列表", "logUpload", "POST"},
 	{global.GVA_MODEL{ID: 163, CreatedAt: time.Now(), UpdatedAt: time.Now()}, "/task/template/uploadLogServer", "上传日志", "template", "POST"},
 	{global.GVA_MODEL{ID: 164, CreatedAt: time.Now(), UpdatedAt: time.Now()}, "/cmdb/getSystemServerIds", "根据系统id获取服务器id", "cmdb", "POST"},
-	{global.GVA_MODEL{ID: 163, CreatedAt: time.Now(), UpdatedAt: time.Now()}, "/task/template/deployServer", "分发程序", "template", "POST"},
+	{global.GVA_MODEL{ID: 165, CreatedAt: time.Now(), UpdatedAt: time.Now()}, "/task/template/deployServer", "分发程序", "template", "POST"},
 }
 
 // @author: [SliverHorn](https://github.com/SliverHorn)
