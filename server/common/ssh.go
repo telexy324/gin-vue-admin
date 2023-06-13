@@ -13,10 +13,12 @@ import (
 	"io"
 	"os"
 	"path"
-	"strings"
 	"sync"
 	"time"
+	"unicode/utf8"
 )
+
+const _hex = "0123456789abcdef"
 
 type SshService struct {
 }
@@ -709,40 +711,46 @@ func (c *SSHClient) CommandBatch(commands []string, logger Logger, manageIP stri
 				//	logger.Log(string(buffer.b.Next(last)), manageIP)
 				//}
 				if buffer.b.Len() != 0 {
-					//rawString := string(buffer.b.Bytes())
-					//raws := strings.Split(rawString, "\r\n")
-					//for _, raw := range raws {
-					//	if !(strings.Contains(raw, "Last login") || strings.Contains(raw, ` ~]# `)) {
-					//		logger.Log(string(buffer.b.Bytes()), manageIP)
-					//	}
-					//}
-					raw := make([]rune, 0)
-					var through bool
-					for {
-						r, _, err := buffer.b.ReadRune()
-						if err != nil && err != io.EOF {
-							global.GVA_LOG.Error("ssh read rune failed ", zap.Any("err ", err))
-							through = true
-							break
-						} else if err != nil && err == io.EOF {
-							break
-						}
-						//else if r == []rune("\u0007")[0] {
-						//	through = true
-						//}
-						raw = append(raw, r)
-					}
-					if through {
-						continue
-					}
-					rawStrings := strings.Split(string(raw), "\r\n")
-					for _, rs := range rawStrings {
-						if !(strings.Contains(rs, "Last login")) {
-							logger.Log(rs, manageIP)
-						}
-					}
-					buffer.b.Reset()
+					raw := buffer.b.Bytes()
+					processed := safeAddByteString(raw)
+					logger.Log(string(processed), manageIP)
 				}
+				buffer.b.Reset()
+				//if buffer.b.Len() != 0 {
+				//	//rawString := string(buffer.b.Bytes())
+				//	//raws := strings.Split(rawString, "\r\n")
+				//	//for _, raw := range raws {
+				//	//	if !(strings.Contains(raw, "Last login") || strings.Contains(raw, ` ~]# `)) {
+				//	//		logger.Log(string(buffer.b.Bytes()), manageIP)
+				//	//	}
+				//	//}
+				//	raw := make([]rune, 0)
+				//	var through bool
+				//	for {
+				//		r, _, err := buffer.b.ReadRune()
+				//		if err != nil && err != io.EOF {
+				//			global.GVA_LOG.Error("ssh read rune failed ", zap.Any("err ", err))
+				//			through = true
+				//			break
+				//		} else if err != nil && err == io.EOF {
+				//			break
+				//		}
+				//		//else if r == []rune("\u0007")[0] {
+				//		//	through = true
+				//		//}
+				//		raw = append(raw, r)
+				//	}
+				//	if through {
+				//		continue
+				//	}
+				//	rawStrings := strings.Split(string(raw), "\r\n")
+				//	for _, rs := range rawStrings {
+				//		if !(strings.Contains(rs, "Last login")) {
+				//			logger.Log(rs, manageIP)
+				//		}
+				//	}
+				//	buffer.b.Reset()
+				//}
 			case <-quitChan:
 				return
 			}
@@ -853,3 +861,69 @@ func (c *SSHClient) CommandBatch(commands []string, logger Logger, manageIP stri
 //	}
 //	return false
 //}
+
+func safeAddByteString(s []byte) (out []byte) {
+	out = make([]byte, 0, 8)
+	for i := 0; i < len(s); {
+		if tryAddRuneSelf(s[i], &out) {
+			i++
+			continue
+		}
+		r, size := utf8.DecodeRune(s[i:])
+		if tryAddRuneError(r, size, &out) {
+			i++
+			continue
+		}
+		out = append(out, s[i:i+size]...)
+		i += size
+	}
+	return out
+}
+
+func tryAddRuneSelf(b byte, out *[]byte) bool {
+	if b >= utf8.RuneSelf {
+		return false
+	}
+	if 0x20 <= b && b != '\\' && b != '"' {
+		appendByte(b, out)
+		return true
+	}
+	switch b {
+	case '\\', '"':
+		appendByte('\\', out)
+		appendByte(b, out)
+	case '\n':
+		appendByte('\\', out)
+		appendByte('n', out)
+	case '\r':
+		appendByte('\\', out)
+		appendByte('r', out)
+	case '\t':
+		appendByte('\\', out)
+		appendByte('t', out)
+	default:
+		// Encode bytes < 0x20, except for the escape sequences above.
+		appendString(`\u00`, out)
+		appendByte(_hex[b>>4], out)
+		appendByte(_hex[b&0xF], out)
+	}
+	return true
+}
+
+func tryAddRuneError(r rune, size int, out *[]byte) bool {
+	if r == utf8.RuneError && size == 1 {
+		appendString(`\ufffd`, out)
+		return true
+	}
+	return false
+}
+
+// AppendByte writes a single byte to the Buffer.
+func appendByte(v byte, out *[]byte) {
+	*out = append(*out, v)
+}
+
+// AppendString writes a string to the Buffer.
+func appendString(s string, out *[]byte) {
+	*out = append(*out, s...)
+}
