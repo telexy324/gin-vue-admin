@@ -722,19 +722,19 @@ func (c *SSHClient) CommandBatch(commands []string, logger Logger, manageIP stri
 					raws := strings.Split(rawString, "\r\n")
 					for _, rs := range raws {
 						str := rs
-						before, after, has := strings.Cut(str, ` ~]# `)
+						before, after, has := strings.Cut(str, `]# `)
 						if has {
 							str = after
 						} else {
 							str = before
 						}
-						before1, after1, has1 := strings.Cut(str, ` ~]$ `)
+						before1, after1, has1 := strings.Cut(str, `]$ `)
 						if has1 {
 							str = after1
 						} else {
 							str = before1
 						}
-						before2, after2, has2 := strings.Cut(str, ` ~]% `)
+						before2, after2, has2 := strings.Cut(str, `]% `)
 						if has2 {
 							str = after2
 						} else {

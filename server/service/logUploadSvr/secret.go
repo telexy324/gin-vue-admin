@@ -20,7 +20,7 @@ type SecretService struct {
 //@return: error
 
 func (secretService *SecretService) AddSecret(secret logUploadMdl.Secret) error {
-	if !errors.Is(global.GVA_DB.Where("name = ?", secret.Name).First(&logUploadMdl.Secret{}).Error, gorm.ErrRecordNotFound) {
+	if !errors.Is(global.GVA_DB.Where("name = ? and server_id = ?", secret.Name, secret.ServerId).First(&logUploadMdl.Secret{}).Error, gorm.ErrRecordNotFound) {
 		return errors.New("存在重复name，请修改name")
 	}
 	return global.GVA_DB.Create(&secret).Error
