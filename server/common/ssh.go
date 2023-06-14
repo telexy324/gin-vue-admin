@@ -13,9 +13,9 @@ import (
 	"io"
 	"os"
 	"path"
+	"strings"
 	"sync"
 	"time"
-	"unicode/utf8"
 )
 
 const _hex = "0123456789abcdef"
@@ -710,10 +710,40 @@ func (c *SSHClient) CommandBatch(commands []string, logger Logger, manageIP stri
 				//	last = buffer.b.Len()
 				//	logger.Log(string(buffer.b.Next(last)), manageIP)
 				//}
+				//if buffer.b.Len() != 0 {
+				//	raw := buffer.b.Bytes()
+				//	global.GVA_LOG.Info(string(raw), zap.ByteString("", raw))
+				//	processed := safeAddByteString(raw)
+				//	logger.Log(string(processed), manageIP)
+				//}
+				//buffer.b.Reset()
 				if buffer.b.Len() != 0 {
-					raw := buffer.b.Bytes()
-					processed := safeAddByteString(raw)
-					logger.Log(string(processed), manageIP)
+					rawString := string(buffer.b.Bytes())
+					raws := strings.Split(rawString, "\r\n")
+					for _, rs := range raws {
+						str := rs
+						before, after, has := strings.Cut(str, ` ~]# `)
+						if has {
+							str = after
+						} else {
+							str = before
+						}
+						before1, after1, has1 := strings.Cut(str, ` ~]$ `)
+						if has1 {
+							str = after1
+						} else {
+							str = before1
+						}
+						before2, after2, has2 := strings.Cut(str, ` ~]% `)
+						if has2 {
+							str = after2
+						} else {
+							str = before2
+						}
+						if !(strings.Contains(str, "Last login") || strings.Contains(str, "logout") || len(str) <= 0) {
+							logger.Log(str, manageIP)
+						}
+					}
 				}
 				buffer.b.Reset()
 				//if buffer.b.Len() != 0 {
@@ -862,68 +892,68 @@ func (c *SSHClient) CommandBatch(commands []string, logger Logger, manageIP stri
 //	return false
 //}
 
-func safeAddByteString(s []byte) (out []byte) {
-	out = make([]byte, 0, 8)
-	for i := 0; i < len(s); {
-		if tryAddRuneSelf(s[i], &out) {
-			i++
-			continue
-		}
-		r, size := utf8.DecodeRune(s[i:])
-		if tryAddRuneError(r, size, &out) {
-			i++
-			continue
-		}
-		out = append(out, s[i:i+size]...)
-		i += size
-	}
-	return out
-}
-
-func tryAddRuneSelf(b byte, out *[]byte) bool {
-	if b >= utf8.RuneSelf {
-		return false
-	}
-	if 0x20 <= b && b != '\\' && b != '"' {
-		appendByte(b, out)
-		return true
-	}
-	switch b {
-	case '\\', '"':
-		appendByte('\\', out)
-		appendByte(b, out)
-	case '\n':
-		appendByte('\\', out)
-		appendByte('n', out)
-	case '\r':
-		appendByte('\\', out)
-		appendByte('r', out)
-	case '\t':
-		appendByte('\\', out)
-		appendByte('t', out)
-	default:
-		// Encode bytes < 0x20, except for the escape sequences above.
-		appendString(`\u00`, out)
-		appendByte(_hex[b>>4], out)
-		appendByte(_hex[b&0xF], out)
-	}
-	return true
-}
-
-func tryAddRuneError(r rune, size int, out *[]byte) bool {
-	if r == utf8.RuneError && size == 1 {
-		appendString(`\ufffd`, out)
-		return true
-	}
-	return false
-}
-
-// AppendByte writes a single byte to the Buffer.
-func appendByte(v byte, out *[]byte) {
-	*out = append(*out, v)
-}
-
-// AppendString writes a string to the Buffer.
-func appendString(s string, out *[]byte) {
-	*out = append(*out, s...)
-}
+//func safeAddByteString(s []byte) (out []byte) {
+//	out = make([]byte, 0, 8)
+//	for i := 0; i < len(s); {
+//		if tryAddRuneSelf(s[i], &out) {
+//			i++
+//			continue
+//		}
+//		r, size := utf8.DecodeRune(s[i:])
+//		if tryAddRuneError(r, size, &out) {
+//			i++
+//			continue
+//		}
+//		out = append(out, s[i:i+size]...)
+//		i += size
+//	}
+//	return out
+//}
+//
+//func tryAddRuneSelf(b byte, out *[]byte) bool {
+//	if b >= utf8.RuneSelf {
+//		return false
+//	}
+//	if 0x20 <= b && b != '\\' && b != '"' {
+//		appendByte(b, out)
+//		return true
+//	}
+//	switch b {
+//	case '\\', '"':
+//		appendByte('\\', out)
+//		appendByte(b, out)
+//	case '\n':
+//		appendByte('\\', out)
+//		appendByte('n', out)
+//	case '\r':
+//		appendByte('\\', out)
+//		appendByte('r', out)
+//	case '\t':
+//		appendByte('\\', out)
+//		appendByte('t', out)
+//	default:
+//		// Encode bytes < 0x20, except for the escape sequences above.
+//		appendString(`\u00`, out)
+//		appendByte(_hex[b>>4], out)
+//		appendByte(_hex[b&0xF], out)
+//	}
+//	return true
+//}
+//
+//func tryAddRuneError(r rune, size int, out *[]byte) bool {
+//	if r == utf8.RuneError && size == 1 {
+//		appendString(`\ufffd`, out)
+//		return true
+//	}
+//	return false
+//}
+//
+//// AppendByte writes a single byte to the Buffer.
+//func appendByte(v byte, out *[]byte) {
+//	*out = append(*out, v)
+//}
+//
+//// AppendString writes a string to the Buffer.
+//func appendString(s string, out *[]byte) {
+//	*out = append(*out, s...)
+//}
