@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/acarl005/stripansi"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/gorilla/websocket"
 	"github.com/pkg/sftp"
@@ -13,7 +14,6 @@ import (
 	"io"
 	"os"
 	"path"
-	"strings"
 	"sync"
 	"time"
 )
@@ -719,35 +719,8 @@ func (c *SSHClient) CommandBatch(commands []string, logger Logger, manageIP stri
 				//buffer.b.Reset()
 				if buffer.b.Len() != 0 {
 					rawString := string(buffer.b.Bytes())
-					raws := strings.Split(rawString, "\r\n")
-					for _, rs := range raws {
-						str := rs
-						before, after, has := strings.Cut(str, `]# `)
-						if has {
-							str = after
-						} else {
-							str = before
-						}
-						before1, after1, has1 := strings.Cut(str, `]$ `)
-						if has1 {
-							str = after1
-						} else {
-							str = before1
-						}
-						before2, after2, has2 := strings.Cut(str, `]% `)
-						if has2 {
-							str = after2
-						} else {
-							str = before2
-						}
-						if !(strings.Contains(str, "Last login") || strings.Contains(str, "logout") ||
-							strings.Contains(str, "Authorized users only. All activities may be monitored and reported.") ||
-							strings.Contains(str, "Web console: https:") ||
-							strings.Contains(str, "上一次登录") || strings.Contains(str, "注销") || strings.Contains(str, "登出") ||
-							len(str) <= 0) {
-							logger.Log(str, manageIP)
-						}
-					}
+					cleanMsg := stripansi.Strip(rawString)
+					logger.Log(cleanMsg, manageIP)
 				}
 				buffer.b.Reset()
 				//if buffer.b.Len() != 0 {
