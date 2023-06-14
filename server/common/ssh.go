@@ -740,7 +740,11 @@ func (c *SSHClient) CommandBatch(commands []string, logger Logger, manageIP stri
 						} else {
 							str = before2
 						}
-						if !(strings.Contains(str, "Last login") || strings.Contains(str, "logout") || len(str) <= 0) {
+						if !(strings.Contains(str, "Last login") || strings.Contains(str, "logout") ||
+							strings.Contains(str, "Authorized users only. All activities may be monitored and reported.") ||
+							strings.Contains(str, "Web console: https:") ||
+							strings.Contains(str, "上一次登录") || strings.Contains(str, "注销") || strings.Contains(str, "登出") ||
+							len(str) <= 0) {
 							logger.Log(str, manageIP)
 						}
 					}
