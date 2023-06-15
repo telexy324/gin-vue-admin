@@ -620,7 +620,7 @@ func (t *TaskRunner) runTask() (failedIPs []string) {
 			//	return
 			//}
 			if t.template.Mode == consts.Command {
-				commands := strings.Split(t.template.Command, "\n")
+				//commands := strings.Split(t.template.Command, "\n")
 				failed := false
 				//for _, command := range commands {
 				//	err = sshClient.Commands(command, t, s.ManageIp)
@@ -631,7 +631,15 @@ func (t *TaskRunner) runTask() (failedIPs []string) {
 				//	}
 				//	time.Sleep(time.Microsecond * 500)
 				//}
-				err = sshClient.CommandBatch(commands, t, s.ManageIp)
+				//err = sshClient.CommandBatch(commands, t, s.ManageIp)
+				//if err != nil {
+				//	global.GVA_LOG.Error("run task failed on exec command: ", zap.Uint("task ID: ", t.task.ID), zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
+				//} else {
+				//	failed = true
+				//}
+				//failed := false
+				commands := strings.Replace(t.template.Command, "\n", " && ", -1)
+				err = sshClient.Commands(commands, t, s.ManageIp)
 				if err != nil {
 					global.GVA_LOG.Error("run task failed on exec command: ", zap.Uint("task ID: ", t.task.ID), zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
 				} else {
