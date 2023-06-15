@@ -59,7 +59,7 @@
             <div>{{ filterExecuteType(scope.row.executeType) }}</div>
           </template>
         </el-table-column>
-        <el-table-column align="left" fixed="right" label="操作" width="250">
+        <el-table-column align="left" fixed="right" label="操作" width="300">
           <template #default="scope">
             <el-button
               icon="el-icon-edit"
@@ -88,6 +88,19 @@
               :disabled="scope.row.mode!==2"
               @click="uploadScript(scope.row)"
             >上传脚本</el-button>
+            <el-popover :ref="`popover-${scope.$index}`" placement="top" width="160">
+              <p>请输入模版名</p>
+              <div style="text-align: right; margin-top: 8px;">
+                <el-input v-model="newName" autocomplete="off" />
+                <div style="text-align: right; margin-top: 10px;">
+                  <el-button size="mini" type="text" @click="handleClose(scope.$index)">取消</el-button>
+                  <el-button size="mini" type="primary" @click="copyTemplate(scope.row, scope.$index)">确定</el-button>
+                </div>
+              </div>
+              <template #reference>
+                <el-button icon="el-icon-copy-document" size="small" type="text">复制</el-button>
+              </template>
+            </el-popover>
           </template>
         </el-table-column>
       </el-table>
@@ -394,22 +407,22 @@ const path = import.meta.env.VITE_BASE_API
 // 获取列表内容封装在mixins内部  getTableData方法 初始化已封装完成 条件搜索时候 请把条件安好后台定制的结构体字段 放到 this.searchInfo 中即可实现条件搜索
 
 import {
-  getTemplateList,
-  deleteTemplate,
-  getTemplateById,
   addTemplate,
-  updateTemplate,
   checkScript,
+  deleteTemplate,
   deleteTemplateByIds,
-  getFileList,
-  downloadFile,
-  uploadLogServer,
   deployServer,
+  downloadFile,
+  getFileList,
+  getTemplateById,
+  getTemplateList,
+  updateTemplate,
+  uploadLogServer,
 } from '@/api/template'
 import { addTask } from '@/api/task'
 import { getAdminSystems, getSystemServerIds } from '@/api/cmdb'
 import { getPolicyPathByAuthorityId } from '@/api/casbin'
-import { getServerList, getSecretList } from '@/api/logUpload'
+import { getSecretList, getServerList } from '@/api/logUpload'
 import infoList from '@/mixins/infoList'
 import { toSQLLine } from '@/utils/stringFun'
 import warningBar from '@/components/warningBar/warningBar.vue'
@@ -561,6 +574,7 @@ export default {
       dialogDeployFormVisible: false,
       dialogDeployTitle: '新增程序上传模板',
       deployType: '',
+      newName: '',
     }
   },
   computed: {
@@ -1016,7 +1030,7 @@ export default {
     },
     initLogForm() {
       this.$refs.templateLogForm.resetFields()
-      this.form = {
+      this.logForm = {
         ID: '',
         name: '',
         description: '',
@@ -1167,13 +1181,13 @@ export default {
     },
     initDeployForm() {
       this.$refs.templateDeployForm.resetFields()
-      this.form = {
+      this.deployForm = {
         ID: '',
         name: '',
         description: '',
         sysUser: '',
         targetIds: [],
-        executeType: 2,
+        executeType: 3,
         systemId: '',
         deployPath: '',
         downloadSource: '',
@@ -1256,6 +1270,95 @@ export default {
       this.dialogDeployFormVisible = false
       this.logServerOptions = []
       this.logSecretOptions = []
+    },
+    handleClose(index) {
+      this.$refs[`popover-${index}`].hide()
+      this.newName = ''
+    },
+    async copyTemplate(row, index) {
+      const res = (await getTemplateById({ id: row.ID }))
+      if (res.data.taskTemplate.executeType === 2) {
+        this.logForm = res.data.taskTemplate
+        this.logForm.name = this.newName
+        this.logForm.ID = 0
+        this.logForm.lastTaskId = 0
+        const res1 = await addTemplate(this.logForm)
+        if (res1.code === 0) {
+          this.$message({
+            type: 'success',
+            message: '复制成功',
+            showClose: true
+          })
+        }
+        this.handleClose(index)
+        this.getTableData()
+        this.logForm = {
+          ID: '',
+          name: '',
+          description: '',
+          logPath: '',
+          sysUser: '',
+          targetIds: [],
+          executeType: 1,
+        }
+      } else if (res.data.taskTemplate.executeType === 3) {
+        this.deployForm = res.data.taskTemplate
+        this.deployForm.name = this.newName
+        this.deployForm.ID = 0
+        this.deployForm.lastTaskId = 0
+        const res1 = await addTemplate(this.deployForm)
+        if (res1.code === 0) {
+          this.$message({
+            type: 'success',
+            message: '复制成功',
+            showClose: true
+          })
+        }
+        this.handleClose(index)
+        this.getTableData()
+        this.deployForm = {
+          ID: '',
+          name: '',
+          description: '',
+          sysUser: '',
+          targetIds: [],
+          executeType: 3,
+          systemId: '',
+          deployPath: '',
+          downloadSource: '',
+          dstServerId: '',
+          secretId: ''
+        }
+      } else {
+        this.form = res.data.taskTemplate
+        this.form.name = this.newName
+        this.form.ID = 0
+        this.form.lastTaskId = 0
+        const res1 = await addTemplate(this.form)
+        if (res1.code === 0) {
+          this.$message({
+            type: 'success',
+            message: '复制成功',
+            showClose: true
+          })
+        }
+        this.handleClose(index)
+        this.getTableData()
+        this.form = {
+          ID: '',
+          name: '',
+          description: '',
+          mode: '',
+          command: '',
+          scriptPath: '',
+          sysUser: '',
+          targetIds: [],
+          detail: false,
+          executeType: 1,
+          shellType: '',
+          shellVars: '',
+        }
+      }
     },
   }
 }

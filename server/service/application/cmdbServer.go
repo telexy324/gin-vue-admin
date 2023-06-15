@@ -35,8 +35,8 @@ var CmdbServerServiceApp = new(CmdbServerService)
 //@return: error
 
 func (cmdbServerService *CmdbServerService) AddServer(server request2.AddServer) error {
-	if !errors.Is(global.GVA_DB.Where("hostname = ?", server.Hostname).First(&application.ApplicationServer{}).Error, gorm.ErrRecordNotFound) {
-		return errors.New("存在重复hostname，请修改name")
+	if !errors.Is(global.GVA_DB.Where("display_name = ?", server.DisplayName).First(&application.ApplicationServer{}).Error, gorm.ErrRecordNotFound) {
+		return errors.New("存在重复展示名，请修改name")
 	}
 	if len(server.Apps) > 0 {
 		if js, err := json.Marshal(server.Apps); err != nil {

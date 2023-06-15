@@ -28,6 +28,9 @@ type TaskTemplatesService struct {
 var TaskTemplatesServiceApp = new(TaskTemplatesService)
 
 func (templateService *TaskTemplatesService) CreateTaskTemplate(template taskMdl.TaskTemplate) (taskMdl.TaskTemplate, error) {
+	if !errors.Is(global.GVA_DB.Where("name = ?", template.Name).First(&taskMdl.TaskTemplate{}).Error, gorm.ErrRecordNotFound) {
+		return template, errors.New("存在name，请修改name")
+	}
 	targetServersJson, err := json.Marshal(template.TargetIds)
 	if err != nil {
 		return template, err
@@ -65,6 +68,12 @@ func (templateService *TaskTemplatesService) UpdateTaskTemplate(template taskMdl
 
 	err := global.GVA_DB.Transaction(func(tx *gorm.DB) error {
 		db := tx.Where("id = ?", template.ID).Find(&oldTaskTemplate)
+		if oldTaskTemplate.Name != template.Name {
+			if !errors.Is(tx.Where("id <> ? AND name = ?", template.ID, template.Name).First(&taskMdl.TaskTemplate{}).Error, gorm.ErrRecordNotFound) {
+				global.GVA_LOG.Debug("存在相同name修改失败")
+				return errors.New("存在相同name修改失败")
+			}
+		}
 		txErr := db.Updates(upDateMap).Error
 		if txErr != nil {
 			global.GVA_LOG.Debug(txErr.Error())

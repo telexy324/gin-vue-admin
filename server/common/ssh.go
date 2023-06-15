@@ -208,7 +208,7 @@ func (w *singleWriter) Write(p []byte) (int, error) {
 }
 
 func (c *SSHClient) Commands(command string, logger Logger, manageIP string) (err error) {
-	logger.Log(command, manageIP)
+	// logger.Log(command, manageIP)
 	session, err := c.Client.NewSession()
 	if err != nil {
 		logger.Log("ssh open session failed")
@@ -684,7 +684,7 @@ func (c *SSHClient) CommandBatch(commands []string, logger Logger, manageIP stri
 		ssh.TTY_OP_OSPEED: 14400, // output speed = 14.4kbaud
 	}
 	// Request pseudo terminal
-	if err = session.RequestPty("xterm", 150, 35, modes); err != nil {
+	if err = session.RequestPty("xterm", 40, 80, modes); err != nil {
 		global.GVA_LOG.Error("ssh request pty failed ", zap.Any("err ", err))
 		logger.Log("ssh request pty failed")
 		return
@@ -765,7 +765,7 @@ func (c *SSHClient) CommandBatch(commands []string, logger Logger, manageIP stri
 	}()
 	go func() {
 		for _, command := range commands {
-			logger.Log(command, manageIP)
+			// logger.Log(command, manageIP)
 			if _, err = stdinP.Write([]byte(command + "\n")); err != nil {
 				global.GVA_LOG.Error("cmd bytes write to ssh.stdin pipe failed", zap.Any("err ", err))
 			}
