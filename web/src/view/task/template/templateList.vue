@@ -33,7 +33,7 @@
           type="selection"
           width="55"
         />
-        <el-table-column align="left" label="模版名" min-width="60" prop="name" sortable="custom" />
+        <el-table-column align="left" label="模版名" min-width="150" prop="name" sortable="custom" />
         <el-table-column align="left" label="最近执行状态" min-width="150" prop="lastTask.status" sortable="custom">
           <template v-slot="scope">
             <TaskStatus :status="scope.row.lastTask.status" />
@@ -365,12 +365,12 @@
             :clearable="false"
           />
         </el-form-item>
-        <el-form-item label="程序包上传位置" prop="deployPath">
-          <el-input v-model="deployForm.deployPath" autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="源文件位置" prop="downloadSource">
-          <el-input v-model="deployForm.downloadSource" autocomplete="off" />
-        </el-form-item>
+<!--        <el-form-item label="程序包上传位置" prop="deployPath">-->
+<!--          <el-input v-model="deployForm.deployPath" autocomplete="off" />-->
+<!--        </el-form-item>-->
+<!--        <el-form-item label="源文件位置" prop="downloadSource">-->
+<!--          <el-input v-model="deployForm.downloadSource" autocomplete="off" />-->
+<!--        </el-form-item>-->
         <el-row>
           <el-col :span="12">
             <el-form-item label="ftp/sftp服务器" prop="dstServerId">
@@ -387,9 +387,37 @@
             </el-form-item>
           </el-col>
         </el-row>
+        <div v-for="(item, index) in deployForm.taskDeployInfos" :key="index">
+          <el-row>
+            <el-col :span="10">
+              <el-form-item
+                label="程序包上传位置"
+                :prop="'taskDeployInfos.' + index + '.deployPath'"
+                :rules="deployRules.deployPath"
+              >
+                <el-input v-model="item.deployPath" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="10">
+              <el-form-item
+                label="源文件位置"
+                :prop="'taskDeployInfos.' + index + '.downloadSource'"
+                :rules="deployRules.downloadSource"
+              >
+                <el-input v-model="item.downloadSource" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="2">
+              <el-form-item>
+                <i class="el-icon-delete" @click="deleteItem(item, index)" />
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </div>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
+          <el-button size="small" type="warning" :disabled="setDisabled" @click="addItem">增加</el-button>
           <el-button size="small" @click="closeDeployDialog">取 消</el-button>
           <el-button size="small" type="primary" @click="enterDeployDialog">确 定</el-button>
         </div>
@@ -559,7 +587,9 @@ export default {
         deployPath: '',
         downloadSource: '',
         dstServerId: '',
-        secretId: ''
+        secretId: '',
+        deployInfos: '',
+        taskDeployInfos: [],
       },
       deployRules: {
         name: [{ required: true, message: '请输入模板名', trigger: 'blur' }],
@@ -1359,6 +1389,15 @@ export default {
           shellVars: '',
         }
       }
+    },
+    deleteItem(item, index) {
+      this.deployForm.taskDeployInfos.splice(index, 1)
+    },
+    addItem() {
+      this.deployForm.deployInfos.push({
+        deployPath: '',
+        downloadSource: ''
+      })
     },
   }
 }

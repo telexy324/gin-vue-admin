@@ -173,8 +173,7 @@ create table `application_task_templates`
     `secret_id`       int          NOT NULL DEFAULT '0',
     `shell_type`      int          NOT NULL DEFAULT '0' COMMENT '1 sh 2 bash',
     `shell_vars`      varchar(255) NOT NULL DEFAULT '',
-    `deploy_path`     varchar(255) NOT NULL DEFAULT '',
-    `download_source` varchar(255) NOT NULL DEFAULT '',
+    `deploy_infos`    text,
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

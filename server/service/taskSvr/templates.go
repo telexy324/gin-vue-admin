@@ -35,19 +35,30 @@ func (templateService *TaskTemplatesService) CreateTaskTemplate(template taskMdl
 	if err != nil {
 		return template, err
 	}
-	s := string(targetServersJson)
-	template.TargetServerIds = s
+	template.TargetServerIds = string(targetServersJson)
+	deployJson, err := json.Marshal(template.TaskDeployInfos)
+	if err != nil {
+		return template, err
+	}
+	template.DeployInfos = string(deployJson)
 	err = global.GVA_DB.Create(&template).Error
 	return template, err
 }
 
 func (templateService *TaskTemplatesService) UpdateTaskTemplate(template taskMdl.TaskTemplate) error {
 	var oldTaskTemplate taskMdl.TaskTemplate
-	targetServersJson, _ := json.Marshal(template.TargetIds)
+	targetServersJson, err := json.Marshal(template.TargetIds)
+	if err != nil {
+		return err
+	}
+	deployJson, err := json.Marshal(template.TaskDeployInfos)
+	if err != nil {
+		return err
+	}
 	upDateMap := make(map[string]interface{})
 	upDateMap["name"] = template.Name
 	upDateMap["description"] = template.Description
-	upDateMap["target_server_ids"] = targetServersJson
+	upDateMap["target_server_ids"] = string(targetServersJson)
 	upDateMap["mode"] = template.Mode
 	upDateMap["command"] = template.Command
 	upDateMap["script_path"] = template.ScriptPath
@@ -63,10 +74,9 @@ func (templateService *TaskTemplatesService) UpdateTaskTemplate(template taskMdl
 	upDateMap["secret_id"] = template.SecretId
 	upDateMap["shell_type"] = template.ShellType
 	upDateMap["shell_vars"] = template.ShellVars
-	upDateMap["deploy_path"] = template.DeployPath
-	upDateMap["download_source"] = template.DownloadSource
+	upDateMap["deploy_infos"] = string(deployJson)
 
-	err := global.GVA_DB.Transaction(func(tx *gorm.DB) error {
+	err = global.GVA_DB.Transaction(func(tx *gorm.DB) error {
 		db := tx.Where("id = ?", template.ID).Find(&oldTaskTemplate)
 		if oldTaskTemplate.Name != template.Name {
 			if !errors.Is(tx.Where("id <> ? AND name = ?", template.ID, template.Name).First(&taskMdl.TaskTemplate{}).Error, gorm.ErrRecordNotFound) {

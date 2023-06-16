@@ -29,8 +29,8 @@ type TaskTemplate struct {
 	SecretId        int                             `json:"secretId" gorm:"column:secret_id"`                // 日志服务器密码
 	ShellType       int                             `json:"shellType" gorm:"column:shell_type"`              // shell类型
 	ShellVars       string                          `json:"shellVars" gorm:"column:shell_vars"`              // shell参数
-	DeployPath      string                          `json:"deployPath" gorm:"column:deploy_path"`            // 服务器上传位置
-	DownloadSource  string                          `json:"downloadSource" gorm:"column:download_source"`    // 日志服务器下载位置
+	DeployInfos     string                          `json:"deployInfos" gorm:"column:deploy_infos"`          // 服务器上传位置
+	TaskDeployInfos []TaskDeployInfo                `json:"taskDeployInfos" gorm:"-"`
 	TargetIds       []int                           `json:"targetIds" gorm:"-"`
 	TargetServers   []application.ApplicationServer `json:"targetServers" gorm:"-"`
 	LastTask        Task                            `json:"lastTask" gorm:"-"`
@@ -78,6 +78,14 @@ func (m *TaskTemplate) AfterFind(tx *gorm.DB) (err error) {
 			global.GVA_LOG.Error("转换失败", zap.Any("err", err))
 			return
 		}
+	}
+	infos := make([]TaskDeployInfo, 0)
+	if m.DeployInfos != "" {
+		if err = json.Unmarshal([]byte(m.DeployInfos), &infos); err != nil {
+			global.GVA_LOG.Error("转换失败", zap.Any("err", err))
+			return
+		}
+		m.TaskDeployInfos = infos
 	}
 	return nil
 }
@@ -165,4 +173,9 @@ func (m *SetTask) AfterFind(tx *gorm.DB) (err error) {
 		}
 	}
 	return nil
+}
+
+type TaskDeployInfo struct {
+	DeployPath     string `json:"deployPath"`     // 服务器上传位置
+	DownloadSource string `json:"downloadSource"` // 日志服务器下载位置
 }
