@@ -389,22 +389,24 @@
         </el-row>
         <div v-for="(item, index) in deployForm.taskDeployInfos" :key="index">
           <el-row>
-            <el-col :span="10">
+            <el-col :span="18">
               <el-form-item
-                label="程序包上传位置"
+                :label="'程序包上传位置' + index"
                 :prop="'taskDeployInfos.' + index + '.deployPath'"
                 :rules="deployRules.deployPath"
               >
-                <el-input v-model="item.deployPath" />
+                <el-input v-model="item.deployPath" placeholder="全路径，需要包含文件名" />
               </el-form-item>
             </el-col>
-            <el-col :span="10">
+          </el-row>
+          <el-row>
+            <el-col :span="18">
               <el-form-item
-                label="源文件位置"
+                :label="'源文件位置' + index"
                 :prop="'taskDeployInfos.' + index + '.downloadSource'"
                 :rules="deployRules.downloadSource"
               >
-                <el-input v-model="item.downloadSource" />
+                <el-input v-model="item.downloadSource" placeholder="只能单文件，全路径，不可为文件夹" />
               </el-form-item>
             </el-col>
             <el-col :span="2">
@@ -417,7 +419,7 @@
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button size="small" type="warning" :disabled="setDisabled" @click="addItem">增加</el-button>
+          <el-button size="small" type="warning" @click="addItem">增加上传</el-button>
           <el-button size="small" @click="closeDeployDialog">取 消</el-button>
           <el-button size="small" type="primary" @click="enterDeployDialog">确 定</el-button>
         </div>
@@ -584,8 +586,6 @@ export default {
         targetIds: [],
         executeType: 3,
         systemId: '',
-        deployPath: '',
-        downloadSource: '',
         dstServerId: '',
         secretId: '',
         deployInfos: '',
@@ -1219,10 +1219,9 @@ export default {
         targetIds: [],
         executeType: 3,
         systemId: '',
-        deployPath: '',
-        downloadSource: '',
         dstServerId: '',
-        secretId: ''
+        secretId: '',
+        taskDeployInfos: [],
       }
     },
     async openDeployDialog(type) {
@@ -1394,7 +1393,7 @@ export default {
       this.deployForm.taskDeployInfos.splice(index, 1)
     },
     addItem() {
-      this.deployForm.deployInfos.push({
+      this.deployForm.taskDeployInfos.push({
         deployPath: '',
         downloadSource: ''
       })
