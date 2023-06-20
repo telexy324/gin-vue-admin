@@ -162,6 +162,12 @@
             :clearable="true"
           />
         </el-form-item>
+        <el-form-item v-if="isCommand" label="交互执行" prop="interactive">
+          <el-select v-model="form.interactive" style="width:100%" placeholder="推荐非交互式，交互式用于切换用户，进入客户端等（推荐使用脚本），易出现乱码及冗余信息" :rows="5">
+            <el-option :value="0" label="非交互（推荐）" />
+            <el-option :value="1" label="交互（执行切换用户，进入客户端等命令，易出现乱码及冗余信息）" />
+          </el-select>
+        </el-form-item>
         <el-form-item v-if="isCommand" label="命令" prop="command">
           <el-input v-model="form.command" autocomplete="off" type="textarea" :rows="10" />
         </el-form-item>
@@ -496,6 +502,7 @@ export default {
         executeType: 1,
         shellType: '',
         shellVars: '',
+        interactive: '',
       },
       type: '',
       rules: {
@@ -509,6 +516,7 @@ export default {
         command: [{ required: true, message: '请输入命令', trigger: 'blur' }],
         scriptPath: [{ required: true, message: '请输入脚本位置', trigger: 'blur' }],
         scriptType: [{ required: true, message: '请选择shell方式', trigger: 'blur' }],
+        interactive: [{ required: true, message: '请选择执命令执行方式', trigger: 'blur' }],
       },
       path: path,
       isCommand: true,
@@ -677,6 +685,7 @@ export default {
         executeType: 1,
         shellType: '',
         shellVars: '',
+        interactive: '',
       }
     },
     closeDialog() {

@@ -34,3 +34,8 @@ const (
 	TaskTemplateDiscoverServers         = 99999999
 	TaskTemplateGatherServerInformation = 99999998
 )
+
+const (
+	NonInteractive = iota
+	Interactive
+)

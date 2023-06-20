@@ -30,6 +30,7 @@ type TaskTemplate struct {
 	ShellType       int                             `json:"shellType" gorm:"column:shell_type"`              // shell类型
 	ShellVars       string                          `json:"shellVars" gorm:"column:shell_vars"`              // shell参数
 	DeployInfos     string                          `json:"deployInfos" gorm:"column:deploy_infos"`          // 服务器上传位置
+	Interactive     int                             `json:"interactive" gorm:"column:interactive"`           // 执行方式 1 命令 2 脚本
 	TaskDeployInfos []TaskDeployInfo                `json:"taskDeployInfos" gorm:"-"`
 	TargetIds       []int                           `json:"targetIds" gorm:"-"`
 	TargetServers   []application.ApplicationServer `json:"targetServers" gorm:"-"`

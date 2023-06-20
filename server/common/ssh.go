@@ -719,7 +719,9 @@ func (c *SSHClient) CommandBatch(commands []string, logger Logger, manageIP stri
 				//buffer.b.Reset()
 				if buffer.b.Len() != 0 {
 					rawString := string(buffer.b.Bytes())
+					//global.GVA_LOG.Info("", zap.ByteString("raw", buffer.b.Bytes()))
 					cleanMsg := stripansi.Strip(rawString)
+					//global.GVA_LOG.Info("", zap.String("clean message", cleanMsg))
 					logger.Log(cleanMsg, manageIP)
 				}
 				buffer.b.Reset()

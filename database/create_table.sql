@@ -174,6 +174,7 @@ create table `application_task_templates`
     `shell_type`      int          NOT NULL DEFAULT '0' COMMENT '1 sh 2 bash',
     `shell_vars`      varchar(255) NOT NULL DEFAULT '',
     `deploy_infos`    text,
+    `interactive`     tinyint(2) NOT NULL DEFAULT '0' COMMENT '交互执行 0 非交互 1 交互',
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

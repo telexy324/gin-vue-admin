@@ -620,8 +620,26 @@ func (t *TaskRunner) runTask() (failedIPs []string) {
 			//	return
 			//}
 			if t.template.Mode == consts.Command {
-				//commands := strings.Split(t.template.Command, "\n")
 				failed := false
+				if t.template.Interactive == consts.Interactive {
+					commands := strings.Split(t.template.Command, "\n")
+					err = sshClient.CommandBatch(commands, t, s.ManageIp)
+					if err != nil {
+						global.GVA_LOG.Error("run task failed on exec command: ", zap.Uint("task ID: ", t.task.ID), zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
+					} else {
+						failed = true
+					}
+				} else {
+					commands := strings.Replace(t.template.Command, "\n", " && ", -1)
+					err = sshClient.Commands(commands, t, s.ManageIp)
+					if err != nil {
+						global.GVA_LOG.Error("run task failed on exec command: ", zap.Uint("task ID: ", t.task.ID), zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
+					} else {
+						failed = true
+					}
+				}
+				//commands := strings.Split(t.template.Command, "\n")
+				//failed := false
 				//for _, command := range commands {
 				//	err = sshClient.Commands(command, t, s.ManageIp)
 				//	if err != nil {
@@ -637,14 +655,15 @@ func (t *TaskRunner) runTask() (failedIPs []string) {
 				//} else {
 				//	failed = true
 				//}
+				//
 				//failed := false
-				commands := strings.Replace(t.template.Command, "\n", " && ", -1)
-				err = sshClient.Commands(commands, t, s.ManageIp)
-				if err != nil {
-					global.GVA_LOG.Error("run task failed on exec command: ", zap.Uint("task ID: ", t.task.ID), zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
-				} else {
-					failed = true
-				}
+				//commands := strings.Replace(t.template.Command, "\n", " && ", -1)
+				//err = sshClient.Commands(commands, t, s.ManageIp)
+				//if err != nil {
+				//	global.GVA_LOG.Error("run task failed on exec command: ", zap.Uint("task ID: ", t.task.ID), zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
+				//} else {
+				//	failed = true
+				//}
 				if !failed {
 					f <- s.ManageIp
 				}
