@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/acarl005/stripansi"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/gorilla/websocket"
 	"github.com/pkg/sftp"
@@ -14,11 +13,16 @@ import (
 	"io"
 	"os"
 	"path"
+	"regexp"
 	"sync"
 	"time"
 )
 
 const _hex = "0123456789abcdef"
+
+const ansi = "[\u001B\u009B][[\\]()#;?]*(?:(?:(?:[a-zA-Z\\d]*(?:;[a-zA-Z\\d@~:]*)*)?\u0007)|(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PRZcf-ntqry=><~]))"
+
+var re = regexp.MustCompile(ansi)
 
 type SshService struct {
 }
@@ -679,7 +683,7 @@ func (c *SSHClient) CommandBatch(commands []string, logger Logger, manageIP stri
 	session.Stderr = buffer
 
 	modes := ssh.TerminalModes{
-		ssh.ECHO:          0,     // disable echo
+		ssh.ECHO:          1,     // disable echo
 		ssh.TTY_OP_ISPEED: 14400, // input speed = 14.4kbaud
 		ssh.TTY_OP_OSPEED: 14400, // output speed = 14.4kbaud
 	}
@@ -720,8 +724,7 @@ func (c *SSHClient) CommandBatch(commands []string, logger Logger, manageIP stri
 				if buffer.b.Len() != 0 {
 					rawString := string(buffer.b.Bytes())
 					//global.GVA_LOG.Info("", zap.ByteString("raw", buffer.b.Bytes()))
-					cleanMsg := stripansi.Strip(rawString)
-					//global.GVA_LOG.Info("", zap.String("clean message", cleanMsg))
+					cleanMsg := re.ReplaceAllString(rawString, "")
 					logger.Log(cleanMsg, manageIP)
 				}
 				buffer.b.Reset()
