@@ -133,6 +133,7 @@
                 filterable
                 allow-create
                 default-first-option
+                @blur="onTypeBlur($event)"
               >
                 <el-option v-for="(item, index) in currentSystem.sshUsers" :key="index" :value="item" :label="item" />
               </el-select>
@@ -241,7 +242,15 @@
           </el-col>
           <el-col :span="12">
             <el-form-item label="执行用户" prop="sysUser">
-              <el-input v-model="logForm.sysUser" autocomplete="off" />
+              <el-select
+                v-model="logForm.sysUser"
+                filterable
+                allow-create
+                default-first-option
+                @blur="onTypeBlur($event)"
+              >
+                <el-option v-for="(item, index) in currentSystem.sshUsers" :key="index" :value="item" :label="item" />
+              </el-select>
             </el-form-item>
           </el-col>
         </el-row>
@@ -356,7 +365,15 @@
           </el-col>
           <el-col :span="12">
             <el-form-item label="执行用户" prop="sysUser">
-              <el-input v-model="deployForm.sysUser" autocomplete="off" />
+              <el-select
+                v-model="deployForm.sysUser"
+                filterable
+                allow-create
+                default-first-option
+                @blur="onTypeBlur($event)"
+              >
+                <el-option v-for="(item, index) in currentSystem.sshUsers" :key="index" :value="item" :label="item" />
+              </el-select>
             </el-form-item>
           </el-col>
         </el-row>
@@ -721,6 +738,7 @@ export default {
     },
     async editTemplate(row) {
       const res = await getTemplateById({ id: row.ID })
+      this.setCurrentSystem(res.data.taskTemplate.systemId)
       if (res.data.taskTemplate.executeType === 2) {
         const temp = res.data.taskTemplate
         this.logForm = temp
@@ -1229,10 +1247,12 @@ export default {
     changeSystemId(selectValue) {
       this.form.targetIds = []
       this.setServerOptions(selectValue)
+      this.setCurrentSystem(selectValue)
+    },
+    setCurrentSystem(systemId) {
       this.currentSystem = this.systemOptions.filter(item => {
-        return item.ID === selectValue
-      })
-      console.log(this.currentSystem)
+        return item.ID === systemId
+      })[0]
     },
     initDeployForm() {
       this.$refs.templateDeployForm.resetFields()
@@ -1423,6 +1443,11 @@ export default {
         deployPath: '',
         downloadSource: ''
       })
+    },
+    onTypeBlur(e) {
+      if ((e.target.value.trim() !== '')) {
+        this.form.sysUser = e.target.value
+      }
     },
   }
 }
