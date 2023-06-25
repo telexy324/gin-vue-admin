@@ -169,7 +169,9 @@ export default {
       form: {
         name: '',
         adminIds: [],
-        network: ''
+        network: '',
+        sshUser: '',
+        sshUsers: []
       },
       type: '',
       rules: {
@@ -248,7 +250,9 @@ export default {
       this.form = {
         name: '',
         adminIds: [],
-        network: ''
+        network: '',
+        sshUser: '',
+        sshUsers: []
       }
     },
     closeDialog() {

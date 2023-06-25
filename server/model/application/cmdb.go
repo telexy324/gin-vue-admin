@@ -19,7 +19,6 @@ type ApplicationServer struct {
 	Apps         []App  `json:"apps" gorm:"-"`                           // 安装应用列表
 	SshPort      int    `json:"sshPort" gorm:"column:ssh_port"`          // ssh端口、
 	DisplayName  string `json:"displayName" gorm:"column:display_name"`  // 展示名
-	SshUser      string `json:"sshUser" gorm:"column:ssh_user"`          // ssh用户表
 }
 
 func (m *ApplicationServer) AfterFind(tx *gorm.DB) (err error) {
@@ -74,9 +73,23 @@ func (m *SystemRelation) TableName() string {
 
 type ApplicationSystem struct {
 	global.GVA_MODEL
-	Name     string `json:"name" gorm:"column:name"`         // 系统名
-	Position int    `json:"position" gorm:"column:position"` // 系统位置
-	Network  string `json:"network" gorm:"column:network"`   // 系统位置
+	Name     string   `json:"name" gorm:"column:name"`         // 系统名
+	Position int      `json:"position" gorm:"column:position"` // 系统位置
+	Network  string   `json:"network" gorm:"column:network"`   // 系统位置
+	SshUser  string   `json:"sshUser" gorm:"column:ssh_user"`  // 系统位置
+	SshUsers []string `json:"sshUsers" gorm:"-"`
+}
+
+func (m *ApplicationSystem) AfterFind(tx *gorm.DB) (err error) {
+	users := make([]string, 0)
+	if m.SshUser != "" {
+		if err = json.Unmarshal([]byte(m.SshUser), &users); err != nil {
+			global.GVA_LOG.Error("转换失败", zap.Any("err", err))
+			return
+		}
+		m.SshUsers = users
+	}
+	return nil
 }
 
 type ApplicationSystemAdmin struct {

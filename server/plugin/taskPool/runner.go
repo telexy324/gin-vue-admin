@@ -11,6 +11,7 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/consts"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/application"
+	appReq "github.com/flipped-aurora/gin-vue-admin/server/model/application/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/system"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl"
@@ -1044,7 +1045,6 @@ func (t *TaskRunner) runDiscoverTask() (failedIPs []string) {
 				ManageIp: s,
 				SystemId: t.task.SystemId,
 				SshPort:  sshPort,
-				SshUser:  t.task.SshUser,
 			}
 			var output string
 			if newServer.Hostname, err = sshClient.CommandSingle("hostname"); err != nil {
@@ -1099,6 +1099,16 @@ func (t *TaskRunner) runDiscoverTask() (failedIPs []string) {
 	for ip := range successChan {
 		if ip {
 			succeed = true
+			if e, sys, _, _ := applicationService.CmdbSystemService.GetSystemById(float64(t.task.SystemId)); e != nil {
+				global.GVA_LOG.Error("get system error,", zap.Any("", e))
+			} else {
+				sys.SshUsers = append(sys.SshUsers, t.task.SshUser)
+				if e = applicationService.CmdbSystemService.UpdateSystem(appReq.AddSystem{
+					ApplicationSystem: sys,
+				}); e != nil {
+					global.GVA_LOG.Error("update system error,", zap.Any("", e))
+				}
+			}
 			break
 		}
 	}

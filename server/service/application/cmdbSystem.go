@@ -1,6 +1,7 @@
 package application
 
 import (
+	"encoding/json"
 	"errors"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/application"
@@ -130,9 +131,14 @@ func (cmdbSystemService *CmdbSystemService) DeleteSystemByIds(ids request.IdsReq
 func (cmdbSystemService *CmdbSystemService) UpdateSystem(addSystemRequest request2.AddSystem) (err error) {
 	var oldSystem application.ApplicationSystem
 	upDateMap := make(map[string]interface{})
+	userJson, err := json.Marshal(addSystemRequest.SshUsers)
+	if err != nil {
+		return err
+	}
 	upDateMap["name"] = addSystemRequest.Name
 	upDateMap["position"] = addSystemRequest.Position
 	upDateMap["network"] = addSystemRequest.Network
+	upDateMap["ssh_user"] = userJson
 
 	err = global.GVA_DB.Transaction(func(tx *gorm.DB) error {
 		db := tx.Where("id = ?", addSystemRequest.ID).Find(&oldSystem)

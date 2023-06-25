@@ -98,7 +98,6 @@ func (cmdbServerService *CmdbServerService) UpdateServer(server request2.UpdateS
 	upDateMap["architecture"] = server.Architecture
 	upDateMap["ssh_port"] = server.SshPort
 	upDateMap["display_name"] = server.DisplayName
-	upDateMap["ssh_user"] = server.SshUser
 
 	err = global.GVA_DB.Transaction(func(tx *gorm.DB) error {
 		db := tx.Where("id = ?", server.ID).Find(&oldServer)
@@ -524,12 +523,5 @@ func (cmdbServerService *CmdbServerService) CreateOrUpdateServer(server applicat
 	upDateMap["architecture"] = server.Architecture
 	upDateMap["ssh_port"] = server.SshPort
 	upDateMap["display_name"] = oldServer.DisplayName
-	if !strings.Contains(oldServer.SshUser, server.SshUser) {
-		if len(oldServer.SshUser) > 0 {
-			upDateMap["ssh_user"] = oldServer.SshUser + "," + server.SshUser
-		} else {
-			upDateMap["ssh_user"] = server.SshUser
-		}
-	}
 	return db.Where("id = ?", oldServer.ID).Find(&application.ApplicationServer{}).Updates(upDateMap).Error
 }

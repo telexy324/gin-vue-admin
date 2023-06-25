@@ -128,7 +128,14 @@
           </el-col>
           <el-col :span="12">
             <el-form-item label="执行用户" prop="sysUser">
-              <el-input v-model="form.sysUser" autocomplete="off" />
+              <el-select
+                v-model="form.sysUser"
+                filterable
+                allow-create
+                default-first-option
+              >
+                <el-option v-for="(item, index) in currentSystem.sshUsers" :key="index" :value="item" :label="item" />
+              </el-select>
             </el-form-item>
           </el-col>
         </el-row>
@@ -613,6 +620,7 @@ export default {
       dialogDeployTitle: '新增程序上传模板',
       deployType: '',
       newName: '',
+      currentSystem: ''
     }
   },
   computed: {
@@ -692,6 +700,7 @@ export default {
       this.initForm()
       this.dialogFormVisible = false
       this.serverOptions = []
+      this.currentSystem = ''
     },
     openDialog(type) {
       switch (type) {
@@ -912,6 +921,7 @@ export default {
       this.initScriptForm()
       this.dialogFormVisibleScript = false
       this.uploadingDisable = false
+      this.currentSystem = ''
     },
     handleRemove(file, fileList) {
       if (!fileList.length) {
@@ -1066,6 +1076,7 @@ export default {
       this.initLogForm()
       this.dialogLogFormVisible = false
       this.serverOptions = []
+      this.currentSystem = ''
     },
     initLogForm() {
       this.$refs.templateLogForm.resetFields()
@@ -1160,6 +1171,7 @@ export default {
       this.fileNames = []
       this.currentTemplate = ''
       this.dialogFormVisibleDownload = false
+      this.currentSystem = ''
     },
     async downLoadFile(index) {
       const item = this.fNames[index]
@@ -1217,6 +1229,10 @@ export default {
     changeSystemId(selectValue) {
       this.form.targetIds = []
       this.setServerOptions(selectValue)
+      this.currentSystem = this.systemOptions.filter(item => {
+        return item.ID === selectValue
+      })
+      console.log(this.currentSystem)
     },
     initDeployForm() {
       this.$refs.templateDeployForm.resetFields()
@@ -1308,6 +1324,7 @@ export default {
       this.dialogDeployFormVisible = false
       this.logServerOptions = []
       this.logSecretOptions = []
+      this.currentSystem = ''
     },
     handleClose(index) {
       this.$refs[`popover-${index}`].hide()
