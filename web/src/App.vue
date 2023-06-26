@@ -16,11 +16,11 @@
       :visiable="!!task"
       @close="onTaskLogDialogClosed"
     />
-    <ScriptView
-      v-if="scriptDialog"
-      :script="script"
-      @close="onScriptLogDialogClosed"
-    />
+<!--    <ScriptView-->
+<!--      v-if="scriptDialog"-->
+<!--      :script="script"-->
+<!--      @close="onScriptLogDialogClosed"-->
+<!--    />-->
 <!--    </el-dialog>-->
     <router-view />
   </div>
@@ -36,7 +36,7 @@ import { getTemplateById } from '@/api/template'
 import { emitter } from '@/utils/bus'
 // import { CircleCloseFilled } from '@element-plus/icons-vue'
 import TaskLogView from '@/components/task/TaskLogView.vue'
-import ScriptView from '@/components/task/ScriptView.vue'
+// import ScriptView from '@/components/task/ScriptView.vue'
 import socket from '@/socket'
 
 export default {
@@ -44,7 +44,7 @@ export default {
   components: {
     // CircleCloseFilled,
     TaskLogView,
-    ScriptView
+    // ScriptView
   },
   data() {
     return {
@@ -79,14 +79,14 @@ export default {
       this.isGetData = true
       // this.taskLogDialog = true
     })
-    emitter.on('i-show-script', (e) => {
-      if (!socket.isRunning()) {
-        socket.start()
-      }
-      this.script = e
-      console.log(e)
-      this.scriptDialog = true
-    })
+    // emitter.on('i-show-script', (e) => {
+    //   if (!socket.isRunning()) {
+    //     socket.start()
+    //   }
+    //   this.script = e
+    //   console.log(e)
+    //   this.scriptDialog = true
+    // })
   },
   methods: {
     async onTaskLogDialogClosed() {

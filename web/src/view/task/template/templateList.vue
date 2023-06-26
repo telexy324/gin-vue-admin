@@ -15,7 +15,7 @@
       <div class="gva-btn-list">
         <el-button size="mini" type="primary" icon="el-icon-plus" :disabled="!hasCreate" @click="openDialog('addTemplate')">新增</el-button>
         <el-button size="mini" type="primary" icon="el-icon-plus" :disabled="!hasCreate" @click="openLogDialog('addLogTemplate')">新增日志提取</el-button>
-        <el-button size="mini" type="primary" icon="el-icon-plus" :disabled="!hasCreate" @click="openDeployDialog('addDeployTemplate')">新增程序上传</el-button>
+        <el-button size="mini" type="primary" icon="el-icon-plus" :disabled="!hasCreate" @click="openDeployDialog('addDeployTemplate')">新增上传</el-button>
         <el-popover v-model:visible="deleteVisible" placement="top" width="160">
           <p>确定要删除吗？</p>
           <div style="text-align: right; margin-top: 8px;">
@@ -81,13 +81,13 @@
               type="text"
               @click="runTask(scope.row)"
             >构建</el-button>
-            <el-button
-              icon="el-icon-edit"
-              size="small"
-              type="text"
-              :disabled="scope.row.mode!==2"
-              @click="uploadScript(scope.row)"
-            >上传脚本</el-button>
+<!--            <el-button-->
+<!--              icon="el-icon-edit"-->
+<!--              size="small"-->
+<!--              type="text"-->
+<!--              :disabled="scope.row.mode!==2"-->
+<!--              @click="uploadScript(scope.row)"-->
+<!--            >上传脚本</el-button>-->
             <el-popover :ref="`popover-${scope.$index}`" placement="top" width="160">
               <p>请输入模版名</p>
               <div style="text-align: right; margin-top: 8px;">
@@ -144,14 +144,14 @@
           <el-input v-model="form.description" autocomplete="off" type="textarea" />
         </el-form-item>
         <el-row>
-          <el-col :span="12">
-            <el-form-item label="执行方式" prop="mode">
-              <el-select v-model="form.mode" style="width:100%" @change="commandChange">
-                <el-option :value="1" label="命令" />
-                <el-option :value="2" label="脚本" />
-              </el-select>
-            </el-form-item>
-          </el-col>
+<!--          <el-col :span="12">-->
+<!--            <el-form-item label="执行方式" prop="mode">-->
+<!--              <el-select v-model="form.mode" style="width:100%" @change="commandChange">-->
+<!--                <el-option :value="1" label="命令" />-->
+<!--                <el-option :value="2" label="脚本" />-->
+<!--              </el-select>-->
+<!--            </el-form-item>-->
+<!--          </el-col>-->
           <el-col :span="12">
             <el-form-item label="所属系统" prop="systemId">
               <el-select v-model="form.systemId" @change="changeSystemId">
@@ -179,35 +179,35 @@
         <el-form-item v-if="isCommand" label="命令" prop="command">
           <el-input v-model="form.command" autocomplete="off" type="textarea" :rows="10" />
         </el-form-item>
-        <el-form-item v-if="isScript" label="脚本位置" prop="scriptPath">
-          <el-input v-model="form.scriptPath" autocomplete="off" />
-        </el-form-item>
-        <el-row>
-          <el-col :span="6">
-            <el-form-item v-if="isScript">
-              <el-button size="small" type="primary" @click="checkScript">检查脚本</el-button>
-            </el-form-item>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item v-if="isScript" label="脚本内容">
-              <el-switch v-model="form.detail" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="6">
-            <el-form-item v-if="isScript" label="shell方式" prop="scriptType">
-              <el-select v-model="form.shellType">
-                <el-option v-for="val in shellTypeOptions" :key="val.key" :value="val.key" :label="val.value" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="18">
-            <el-form-item v-if="isScript" label="脚本参数" prop="scriptVars">
-              <el-input v-model="form.shellVars" autocomplete="off" />
-            </el-form-item>
-          </el-col>
-        </el-row>
+<!--        <el-form-item v-if="isScript" label="脚本位置" prop="scriptPath">-->
+<!--          <el-input v-model="form.scriptPath" autocomplete="off" />-->
+<!--        </el-form-item>-->
+<!--        <el-row>-->
+<!--          <el-col :span="6">-->
+<!--            <el-form-item v-if="isScript">-->
+<!--              <el-button size="small" type="primary" @click="checkScript">检查脚本</el-button>-->
+<!--            </el-form-item>-->
+<!--          </el-col>-->
+<!--          <el-col :span="6">-->
+<!--            <el-form-item v-if="isScript" label="脚本内容">-->
+<!--              <el-switch v-model="form.detail" />-->
+<!--            </el-form-item>-->
+<!--          </el-col>-->
+<!--        </el-row>-->
+<!--        <el-row>-->
+<!--          <el-col :span="6">-->
+<!--            <el-form-item v-if="isScript" label="shell方式" prop="scriptType">-->
+<!--              <el-select v-model="form.shellType">-->
+<!--                <el-option v-for="val in shellTypeOptions" :key="val.key" :value="val.key" :label="val.value" />-->
+<!--              </el-select>-->
+<!--            </el-form-item>-->
+<!--          </el-col>-->
+<!--          <el-col :span="18">-->
+<!--            <el-form-item v-if="isScript" label="脚本参数" prop="scriptVars">-->
+<!--              <el-input v-model="form.shellVars" autocomplete="off" />-->
+<!--            </el-form-item>-->
+<!--          </el-col>-->
+<!--        </el-row>-->
 <!--        <el-form-item v-if="isScript">-->
 <!--          <el-upload-->
 <!--            ref="upload"-->
@@ -308,38 +308,38 @@
       </template>
     </el-dialog>
 
-    <el-dialog v-model="dialogFormVisibleScript" :before-close="closeScriptDialog" title="上传模板">
-      <el-form ref="scriptForm" :model="scriptForm" :rules="rules" label-width="80px">
-        <el-form-item label="脚本位置" prop="scriptPath">
-          <el-input v-model="scriptForm.scriptPath" autocomplete="off" :disabled="true" />
-        </el-form-item>
-        <el-form-item>
-          <el-upload
-            ref="upload"
-            action=""
-            class="upload-demo"
-            :http-request="httpRequest"
-            :multiple="false"
-            :limit="1"
-            :auto-upload="false"
-            :file-list="fileList"
-          >
-            <el-button size="small" type="primary">选择脚本</el-button>
-          </el-upload>
-          <el-progress v-if="uploading" class="progress" :percentage="progressPercent" />
-          <div v-for="(item, index) in scriptForm.items" :key="index">
-            {{ item.manageIp }}
-            <el-progress v-if="uploadingServer" class="progress-server" :percentage="100" :status="item.status" :indeterminate="item.indeterminate" :duration="2" />
-          </div>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button size="small" @click="closeScriptDialog">取 消</el-button>
-          <el-button :disabled="uploadingDisable" size="small" type="primary" @click="submitUpload">确 定</el-button>
-        </div>
-      </template>
-    </el-dialog>
+<!--    <el-dialog v-model="dialogFormVisibleScript" :before-close="closeScriptDialog" title="上传模板">-->
+<!--      <el-form ref="scriptForm" :model="scriptForm" :rules="rules" label-width="80px">-->
+<!--        <el-form-item label="脚本位置" prop="scriptPath">-->
+<!--          <el-input v-model="scriptForm.scriptPath" autocomplete="off" :disabled="true" />-->
+<!--        </el-form-item>-->
+<!--        <el-form-item>-->
+<!--          <el-upload-->
+<!--            ref="upload"-->
+<!--            action=""-->
+<!--            class="upload-demo"-->
+<!--            :http-request="httpRequest"-->
+<!--            :multiple="false"-->
+<!--            :limit="1"-->
+<!--            :auto-upload="false"-->
+<!--            :file-list="fileList"-->
+<!--          >-->
+<!--            <el-button size="small" type="primary">选择脚本</el-button>-->
+<!--          </el-upload>-->
+<!--          <el-progress v-if="uploading" class="progress" :percentage="progressPercent" />-->
+<!--          <div v-for="(item, index) in scriptForm.items" :key="index">-->
+<!--            {{ item.manageIp }}-->
+<!--            <el-progress v-if="uploadingServer" class="progress-server" :percentage="100" :status="item.status" :indeterminate="item.indeterminate" :duration="2" />-->
+<!--          </div>-->
+<!--        </el-form-item>-->
+<!--      </el-form>-->
+<!--      <template #footer>-->
+<!--        <div class="dialog-footer">-->
+<!--          <el-button size="small" @click="closeScriptDialog">取 消</el-button>-->
+<!--          <el-button :disabled="uploadingDisable" size="small" type="primary" @click="submitUpload">确 定</el-button>-->
+<!--        </div>-->
+<!--      </template>-->
+<!--    </el-dialog>-->
 
     <el-dialog v-model="dialogFormVisibleDownload" :before-close="closeDownloadDialog" title="文件列表">
       <ul class="file-name">
@@ -468,7 +468,7 @@ const path = import.meta.env.VITE_BASE_API
 
 import {
   addTemplate,
-  checkScript,
+  // checkScript,
   deleteTemplate,
   deleteTemplateByIds,
   deployServer,
@@ -488,10 +488,10 @@ import { toSQLLine } from '@/utils/stringFun'
 import warningBar from '@/components/warningBar/warningBar.vue'
 import { emitter } from '@/utils/bus'
 import TaskStatus from '@/components/task/TaskStatus.vue'
-import { ElMessage } from 'element-plus'
+// import { ElMessage } from 'element-plus'
 import { mapGetters } from 'vuex'
 // import service from '@/utils/request'
-import Axios from 'axios'
+// import Axios from 'axios'
 import socket from '@/socket'
 import Systems from '@/components/task/systems.vue'
 
@@ -728,7 +728,7 @@ export default {
         case 'edit':
           this.dialogTitle = '编辑任务模板'
           this.canCheck = true
-          this.commandChange(this.form.mode)
+          // this.commandChange(this.form.mode)
           break
         default:
           break
@@ -868,208 +868,208 @@ export default {
     showTaskLog(task) {
       emitter.emit('i-show-task', task)
     },
-    commandChange(selectValue) {
-      if (selectValue === 1) {
-        this.isCommand = true
-        this.isScript = false
-      } else {
-        this.isCommand = false
-        this.isScript = true
-      }
-    },
-    async checkScript() {
-      const res = (await checkScript({
-        ID: this.form.ID,
-        detail: this.form.detail
-      }))
-      if (res.code !== 0) {
-        ElMessage({
-          showClose: true,
-          message: '检查脚本失败',
-          type: 'error'
-        })
-        return
-      }
-      if (res.data.failedIps.length > 0) {
-        const msg = '以下服务器脚本不存在' + res.data.failedIps
-        ElMessage({
-          showClose: true,
-          message: msg,
-          type: 'error'
-        })
-        return
-      }
-      if (!this.form.detail) {
-        ElMessage({
-          showClose: true,
-          message: '检查成功',
-          type: 'success'
-        })
-      } else {
-        this.closeDialog()
-        this.showScript(res.data.script)
-      }
-    },
-    showScript(s) {
-      emitter.emit('i-show-script', s)
-    },
-    async uploadScript(row) {
-      const res = await getTemplateById({ id: row.ID })
-      this.scriptForm = res.data.taskTemplate
-      this.scriptForm.items = []
-      for (let i = 0; i < res.data.taskTemplate.targetServers.length; i++) {
-        const item = { ID: res.data.taskTemplate.targetServers[i].ID, manageIp: res.data.taskTemplate.targetServers[i].manageIp, status: 'warning', indeterminate: 'true' }
-        this.scriptForm.items.push(item)
-      }
-      this.dialogFormVisibleScript = true
-    },
-    initScriptForm() {
-      this.$refs.scriptForm.resetFields()
-      this.scriptForm = {
-        ID: '',
-        scriptPath: '',
-        file: '',
-        items: [],
-      }
-    },
-    closeScriptDialog() {
-      this.progressPercent = 0
-      this.uploading = false
-      this.uploadingServer = false
-      this.initScriptForm()
-      this.dialogFormVisibleScript = false
-      this.uploadingDisable = false
-      this.currentSystem = ''
-    },
-    handleRemove(file, fileList) {
-      if (!fileList.length) {
-        this.hasFile = false
-      }
-      this.scriptForm.file = null
-    },
-    handleChange(file, fileList) {
-      if (fileList.length >= 2) {
-        return
-      }
-      if (fileList.length === 1) {
-        this.hasFile = true
-      }
-      this.scriptForm.file = file
-    },
-    submitUpload() {
-      this.$refs.scriptForm.validate(valid => {
-        if (valid) {
-          this.$refs.upload.submit()
-          this.uploading = true
-        }
-      })
-      this.uploadingDisable = true
-    },
-    httpRequest(param) {
-      this.progressPercent = 0
-      const fd = new FormData()
-      fd.append('file', param.file)
-      fd.append('scriptPath', this.scriptForm.scriptPath)
-      fd.append('ID', this.scriptForm.ID)
-      // console.log(this.token)
-      // console.log(this.userInfo)
-      // const res = await service({
-      //   url: '/task/template/uploadScript',
-      //   method: 'post',
-      //   // headers: { 'Content-Type': 'multipart/form-data', 'x-token': this.token, 'x-user-id': this.user.ID },
-      //   formData: fd
-      // })
-      // console.log(res.code)
-      // if (res.code === 0) {
-      //   this.$message({
-      //     type: 'success',
-      //     message: res.msg
-      //   })
-      // }
-      // console.log('hahaha')
-      // const config = {
-      //   headers: {
-      //     'Content-Type': 'multipart/form-data',
-      //     'x-token': this.token,
-      //     'x-user-id': this.user.ID,
-      //   },
-      //   timeout: 99999,
-      // }
-      Axios.post(import.meta.env.VITE_BASE_API + '/task/template/uploadScript', fd, {
-        headers: {
-          // 'Content-Type': 'multipart/form-data',
-          'x-token': this.token,
-          // 'x-user-id': this.user.ID,
-        },
-        // headers: { 'Content-Type': 'multipart/form-data', 'x-token': this.token, 'x-user-id': this.user.ID },
-        timeout: 999999,
-        onUploadProgress: (progressEvent) => {
-          this.progressPercent = Math.floor((progressEvent.loaded * 100) / progressEvent.total)
-          if (this.progressPercent >= 100) {
-            this.uploadingServer = true
-          }
-        },
-      }).then(response => {
-        if (response.data.code === 0 || response.headers.success === 'true') {
-          let message = '上传成功'
-          if (response.data.data.failedIps.length > 0) {
-            message = '上传部分成功, 失败的服务器: ' + response.data.data.failedIps.toString()
-          }
-          ElMessage({
-            showClose: true,
-            message: message,
-            type: 'success'
-          })
-          this.closeScriptDialog()
-        } else {
-          ElMessage({
-            showClose: true,
-            message: response.data.msg,
-            type: 'error'
-          })
-        }
-      }).catch(err => {
-        ElMessage({
-          showClose: true,
-          message: err,
-          type: 'error'
-        })
-      })
-    },
-    onWebsocketDataReceived(data) {
-      if (data.templateID !== this.scriptForm.ID) {
-        return
-      }
-      if (data.type !== 'uploadScript') {
-        return
-      }
-      for (let i = 0; i < this.scriptForm.items.length; i++) {
-        if (this.scriptForm.items[i].ID === data.ID) {
-          switch (data.status) {
-            case 'success':
-              this.scriptForm.items[i].status = 'success'
-              this.scriptForm.items[i].indeterminate = this.uploadingStatus
-              break
-            case 'exception':
-              this.scriptForm.items[i].status = 'exception'
-              this.scriptForm.items[i].indeterminate = this.uploadingStatus
-              break
-            default:
-              break
-          }
-        }
-      }
-      if (this.scriptForm.items.every((item) => {
-        return item.status === 'success'
-      })) {
-        ElMessage({
-          showClose: true,
-          message: '上传成功',
-          type: 'success'
-        })
-        this.closeScriptDialog()
-      }
-    },
+    // commandChange(selectValue) {
+    //   if (selectValue === 1) {
+    //     this.isCommand = true
+    //     this.isScript = false
+    //   } else {
+    //     this.isCommand = false
+    //     this.isScript = true
+    //   }
+    // },
+    // async checkScript() {
+    //   const res = (await checkScript({
+    //     ID: this.form.ID,
+    //     detail: this.form.detail
+    //   }))
+    //   if (res.code !== 0) {
+    //     ElMessage({
+    //       showClose: true,
+    //       message: '检查脚本失败',
+    //       type: 'error'
+    //     })
+    //     return
+    //   }
+    //   if (res.data.failedIps.length > 0) {
+    //     const msg = '以下服务器脚本不存在' + res.data.failedIps
+    //     ElMessage({
+    //       showClose: true,
+    //       message: msg,
+    //       type: 'error'
+    //     })
+    //     return
+    //   }
+    //   if (!this.form.detail) {
+    //     ElMessage({
+    //       showClose: true,
+    //       message: '检查成功',
+    //       type: 'success'
+    //     })
+    //   } else {
+    //     this.closeDialog()
+    //     this.showScript(res.data.script)
+    //   }
+    // },
+    // showScript(s) {
+    //   emitter.emit('i-show-script', s)
+    // },
+    // async uploadScript(row) {
+    //   const res = await getTemplateById({ id: row.ID })
+    //   this.scriptForm = res.data.taskTemplate
+    //   this.scriptForm.items = []
+    //   for (let i = 0; i < res.data.taskTemplate.targetServers.length; i++) {
+    //     const item = { ID: res.data.taskTemplate.targetServers[i].ID, manageIp: res.data.taskTemplate.targetServers[i].manageIp, status: 'warning', indeterminate: 'true' }
+    //     this.scriptForm.items.push(item)
+    //   }
+    //   this.dialogFormVisibleScript = true
+    // },
+    // initScriptForm() {
+    //   this.$refs.scriptForm.resetFields()
+    //   this.scriptForm = {
+    //     ID: '',
+    //     scriptPath: '',
+    //     file: '',
+    //     items: [],
+    //   }
+    // },
+    // closeScriptDialog() {
+    //   this.progressPercent = 0
+    //   this.uploading = false
+    //   this.uploadingServer = false
+    //   this.initScriptForm()
+    //   this.dialogFormVisibleScript = false
+    //   this.uploadingDisable = false
+    //   this.currentSystem = ''
+    // },
+    // handleRemove(file, fileList) {
+    //   if (!fileList.length) {
+    //     this.hasFile = false
+    //   }
+    //   this.scriptForm.file = null
+    // },
+    // handleChange(file, fileList) {
+    //   if (fileList.length >= 2) {
+    //     return
+    //   }
+    //   if (fileList.length === 1) {
+    //     this.hasFile = true
+    //   }
+    //   this.scriptForm.file = file
+    // },
+    // submitUpload() {
+    //   this.$refs.scriptForm.validate(valid => {
+    //     if (valid) {
+    //       this.$refs.upload.submit()
+    //       this.uploading = true
+    //     }
+    //   })
+    //   this.uploadingDisable = true
+    // },
+    // httpRequest(param) {
+    //   this.progressPercent = 0
+    //   const fd = new FormData()
+    //   fd.append('file', param.file)
+    //   fd.append('scriptPath', this.scriptForm.scriptPath)
+    //   fd.append('ID', this.scriptForm.ID)
+    //   // console.log(this.token)
+    //   // console.log(this.userInfo)
+    //   // const res = await service({
+    //   //   url: '/task/template/uploadScript',
+    //   //   method: 'post',
+    //   //   // headers: { 'Content-Type': 'multipart/form-data', 'x-token': this.token, 'x-user-id': this.user.ID },
+    //   //   formData: fd
+    //   // })
+    //   // console.log(res.code)
+    //   // if (res.code === 0) {
+    //   //   this.$message({
+    //   //     type: 'success',
+    //   //     message: res.msg
+    //   //   })
+    //   // }
+    //   // console.log('hahaha')
+    //   // const config = {
+    //   //   headers: {
+    //   //     'Content-Type': 'multipart/form-data',
+    //   //     'x-token': this.token,
+    //   //     'x-user-id': this.user.ID,
+    //   //   },
+    //   //   timeout: 99999,
+    //   // }
+    //   Axios.post(import.meta.env.VITE_BASE_API + '/task/template/uploadScript', fd, {
+    //     headers: {
+    //       // 'Content-Type': 'multipart/form-data',
+    //       'x-token': this.token,
+    //       // 'x-user-id': this.user.ID,
+    //     },
+    //     // headers: { 'Content-Type': 'multipart/form-data', 'x-token': this.token, 'x-user-id': this.user.ID },
+    //     timeout: 999999,
+    //     onUploadProgress: (progressEvent) => {
+    //       this.progressPercent = Math.floor((progressEvent.loaded * 100) / progressEvent.total)
+    //       if (this.progressPercent >= 100) {
+    //         this.uploadingServer = true
+    //       }
+    //     },
+    //   }).then(response => {
+    //     if (response.data.code === 0 || response.headers.success === 'true') {
+    //       let message = '上传成功'
+    //       if (response.data.data.failedIps.length > 0) {
+    //         message = '上传部分成功, 失败的服务器: ' + response.data.data.failedIps.toString()
+    //       }
+    //       ElMessage({
+    //         showClose: true,
+    //         message: message,
+    //         type: 'success'
+    //       })
+    //       this.closeScriptDialog()
+    //     } else {
+    //       ElMessage({
+    //         showClose: true,
+    //         message: response.data.msg,
+    //         type: 'error'
+    //       })
+    //     }
+    //   }).catch(err => {
+    //     ElMessage({
+    //       showClose: true,
+    //       message: err,
+    //       type: 'error'
+    //     })
+    //   })
+    // },
+    // onWebsocketDataReceived(data) {
+    //   if (data.templateID !== this.scriptForm.ID) {
+    //     return
+    //   }
+    //   if (data.type !== 'uploadScript') {
+    //     return
+    //   }
+    //   for (let i = 0; i < this.scriptForm.items.length; i++) {
+    //     if (this.scriptForm.items[i].ID === data.ID) {
+    //       switch (data.status) {
+    //         case 'success':
+    //           this.scriptForm.items[i].status = 'success'
+    //           this.scriptForm.items[i].indeterminate = this.uploadingStatus
+    //           break
+    //         case 'exception':
+    //           this.scriptForm.items[i].status = 'exception'
+    //           this.scriptForm.items[i].indeterminate = this.uploadingStatus
+    //           break
+    //         default:
+    //           break
+    //       }
+    //     }
+    //   }
+    //   if (this.scriptForm.items.every((item) => {
+    //     return item.status === 'success'
+    //   })) {
+    //     ElMessage({
+    //       showClose: true,
+    //       message: '上传成功',
+    //       type: 'success'
+    //     })
+    //     this.closeScriptDialog()
+    //   }
+    // },
     openDrawer() {
       this.drawer = true
     },
