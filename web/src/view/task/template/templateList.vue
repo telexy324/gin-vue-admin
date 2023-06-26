@@ -655,7 +655,7 @@ export default {
     ...mapGetters('user', ['userInfo', 'token'])
   },
   async created() {
-    socket.addListener((data) => this.onWebsocketDataReceived(data))
+    // socket.addListener((data) => this.onWebsocketDataReceived(data))
     if (this.$route.params.systemIds) {
       this.searchInfo.systemIds = this.formRouterParam(this.$route.params.systemIds)
     }

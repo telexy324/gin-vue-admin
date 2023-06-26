@@ -41,7 +41,7 @@ type TaskOutput struct {
 	global.GVA_MODEL
 	TaskId     int       `json:"taskId" gorm:"column:task_id"`         // task id
 	RecordTime time.Time `json:"recordTime" gorm:"column:record_time"` // 记录时间
-	Output     string    `json:"output" gorm:"column:output"`          // 输出
+	Output     string    `json:"output" gorm:"column:output;type:text"`          // 输出
 	ManageIp   string    `json:"manageIp" gorm:"column:manage_ip"`     // 输出
 }
 
