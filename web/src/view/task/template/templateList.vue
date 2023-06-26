@@ -126,19 +126,6 @@
               <el-input v-model="form.name" autocomplete="off" />
             </el-form-item>
           </el-col>
-          <el-col :span="12">
-            <el-form-item label="执行用户" prop="sysUser">
-              <el-select
-                v-model="form.sysUser"
-                filterable
-                allow-create
-                default-first-option
-                @blur="onTypeBlur($event)"
-              >
-                <el-option v-for="(item, index) in currentSystem.sshUsers" :key="index" :value="item" :label="item" />
-              </el-select>
-            </el-form-item>
-          </el-col>
         </el-row>
         <el-form-item label="描述" prop="description">
           <el-input v-model="form.description" autocomplete="off" type="textarea" />
@@ -156,6 +143,20 @@
             <el-form-item label="所属系统" prop="systemId">
               <el-select v-model="form.systemId" @change="changeSystemId">
                 <el-option v-for="val in systemOptions" :key="val.ID" :value="val.ID" :label="val.name" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="执行用户" prop="sysUser">
+              <el-select
+                v-model="form.sysUser"
+                filterable
+                allow-create
+                default-first-option
+                placeholder="请先选择系统"
+                @blur="onTypeBlur($event)"
+              >
+                <el-option v-for="(item, index) in currentSystem.sshUsers" :key="index" :value="item" :label="item" />
               </el-select>
             </el-form-item>
           </el-col>
@@ -240,6 +241,18 @@
               <el-input v-model="logForm.name" autocomplete="off" />
             </el-form-item>
           </el-col>
+        </el-row>
+        <el-form-item label="描述" prop="description">
+          <el-input v-model="logForm.description" autocomplete="off" type="textarea" />
+        </el-form-item>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="所属系统" prop="systemId">
+              <el-select v-model="logForm.systemId" @change="changeSystemId">
+                <el-option v-for="val in systemOptions" :key="val.ID" :value="val.ID" :label="val.name" />
+              </el-select>
+            </el-form-item>
+          </el-col>
           <el-col :span="12">
             <el-form-item label="执行用户" prop="sysUser">
               <el-select
@@ -247,6 +260,7 @@
                 filterable
                 allow-create
                 default-first-option
+                placeholder="请先选择系统"
                 @blur="onTypeBlur($event)"
               >
                 <el-option v-for="(item, index) in currentSystem.sshUsers" :key="index" :value="item" :label="item" />
@@ -254,14 +268,6 @@
             </el-form-item>
           </el-col>
         </el-row>
-        <el-form-item label="描述" prop="description">
-          <el-input v-model="logForm.description" autocomplete="off" type="textarea" />
-        </el-form-item>
-        <el-form-item label="所属系统" prop="systemId">
-          <el-select v-model="logForm.systemId" @change="changeSystemId">
-            <el-option v-for="val in systemOptions" :key="val.ID" :value="val.ID" :label="val.name" />
-          </el-select>
-        </el-form-item>
         <el-form-item label="目标" prop="targetIds">
           <el-cascader
             v-model="logForm.targetIds"
@@ -363,6 +369,18 @@
               <el-input v-model="deployForm.name" autocomplete="off" />
             </el-form-item>
           </el-col>
+        </el-row>
+        <el-form-item label="描述" prop="description">
+          <el-input v-model="deployForm.description" autocomplete="off" type="textarea" />
+        </el-form-item>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="所属系统" prop="systemId">
+              <el-select v-model="deployForm.systemId" @change="changeSystemId">
+                <el-option v-for="val in systemOptions" :key="val.ID" :value="val.ID" :label="val.name" />
+              </el-select>
+            </el-form-item>
+          </el-col>
           <el-col :span="12">
             <el-form-item label="执行用户" prop="sysUser">
               <el-select
@@ -370,6 +388,7 @@
                 filterable
                 allow-create
                 default-first-option
+                placeholder="请先选择系统"
                 @blur="onTypeBlur($event)"
               >
                 <el-option v-for="(item, index) in currentSystem.sshUsers" :key="index" :value="item" :label="item" />
@@ -377,14 +396,6 @@
             </el-form-item>
           </el-col>
         </el-row>
-        <el-form-item label="描述" prop="description">
-          <el-input v-model="deployForm.description" autocomplete="off" type="textarea" />
-        </el-form-item>
-        <el-form-item label="所属系统" prop="systemId">
-          <el-select v-model="deployForm.systemId" @change="changeSystemId">
-            <el-option v-for="val in systemOptions" :key="val.ID" :value="val.ID" :label="val.name" />
-          </el-select>
-        </el-form-item>
         <el-form-item label="目标" prop="targetIds">
           <el-cascader
             v-model="deployForm.targetIds"
@@ -1232,6 +1243,8 @@ export default {
           return '普通'
         case 2:
           return '日志提取'
+        case 3:
+          return '上传'
         default:
           return ''
       }
