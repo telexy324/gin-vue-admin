@@ -109,14 +109,14 @@ CREATE TABLE `application_system_relations`
 
 create table `application_task_schedules`
 (
-    `id`               bigint UNSIGNED NOT NULL AUTO_INCREMENT,
-    `created_at`       datetime(0) NULL DEFAULT NULL,
-    `updated_at`       datetime(0) NULL DEFAULT NULL,
-    `deleted_at`       datetime(0) NULL DEFAULT NULL,
-    `template_id`      bigint UNSIGNED NOT NULL DEFAULT '0',
-    `cron_format`      varchar(255) not null,
-    `last_commit_hash` varchar(40)  NOT NULL DEFAULT '',
-    `valid`            tinyint(2) NOT NULL DEFAULT '0' COMMENT '0 禁用 1 启用',
+    `id`          bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+    `created_at`  datetime(0) NULL DEFAULT NULL,
+    `updated_at`  datetime(0) NULL DEFAULT NULL,
+    `deleted_at`  datetime(0) NULL DEFAULT NULL,
+    `template_id` bigint UNSIGNED NOT NULL DEFAULT '0',
+    `cron_format` varchar(255) not null,
+--     `last_commit_hash` varchar(40)  NOT NULL DEFAULT '',
+    `valid`       tinyint(2) NOT NULL DEFAULT '0' COMMENT '0 禁用 1 启用',
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -132,8 +132,8 @@ create table `application_tasks`
     `begin_time`     datetime(0) NULL DEFAULT NULL,
     `end_time`       datetime(0) NULL DEFAULT NULL,
     `set_task_id`    bigint UNSIGNED NOT NULL DEFAULT '0',
-    `file_download`  varchar(255) NOT NULL DEFAULT '',
-    `system_id`      bigint UNSIGNED NOT NULL DEFAULT '0',
+--     `file_download`  varchar(255) NOT NULL DEFAULT '',
+--     `system_id`      bigint UNSIGNED NOT NULL DEFAULT '0',
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -172,7 +172,7 @@ create table `application_task_templates`
     `log_dst`         varchar(255) NOT NULL DEFAULT '',
     `dst_server_id`   int          NOT NULL DEFAULT '0',
     `secret_id`       int          NOT NULL DEFAULT '0',
-    `shell_type`      int          NOT NULL DEFAULT '0' COMMENT '1 sh 2 bash',
+    `shell_type`      tinyint(2) NOT NULL DEFAULT '0' COMMENT '1 sh 2 bash',
     `shell_vars`      varchar(255) NOT NULL DEFAULT '',
     `deploy_infos`    text,
     `interactive`     tinyint(2) NOT NULL DEFAULT '0' COMMENT '交互执行 0 非交互 1 交互',

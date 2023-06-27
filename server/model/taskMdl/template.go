@@ -11,26 +11,26 @@ import (
 
 type TaskTemplate struct {
 	global.GVA_MODEL
-	Name            string                          `json:"name" gorm:"column:name"`                         // task名称
-	Description     string                          `json:"description" gorm:"column:description"`           // task描述
-	TargetServerIds string                          `json:"targetServerIds" gorm:"column:target_server_ids"` // 关联服务器id
-	Mode            int                             `json:"mode" gorm:"column:mode"`                         // 执行方式 1 命令 2 脚本
-	Command         string                          `json:"command" gorm:"column:command"`                   // 命令
-	ScriptPath      string                          `json:"scriptPath" gorm:"column:script_path"`            // 脚本位置
-	LastTaskId      int                             `json:"lastTaskId" gorm:"column:last_task_id"`           // 最后一次task id
-	SysUser         string                          `json:"sysUser" gorm:"column:sys_user"`                  // 执行用户
-	SystemId        int                             `json:"systemId" gorm:"column:system_id"`                // 所属系统
-	ExecuteType     int                             `json:"executeType" gorm:"column:execute_type"`          // 模板类型 1 普通 2 日志提取 3 程序包上传
-	LogPath         string                          `json:"logPath" gorm:"column:log_path"`                  // 日志位置
-	ScriptHash      string                          `json:"scriptHash" gorm:"column:script_hash"`            // 脚本哈希
-	LogOutput       int                             `json:"logOutput" gorm:"column:log_output"`              // 日志下载方式 1 直接 2 上传服务器
-	LogDst          string                          `json:"logDst" gorm:"column:log_dst"`                    // 日志服务器上传位置
-	DstServerId     int                             `json:"dstServerId" gorm:"column:dst_server_id"`         // 日志服务器id
-	SecretId        int                             `json:"secretId" gorm:"column:secret_id"`                // 日志服务器密码
-	ShellType       int                             `json:"shellType" gorm:"column:shell_type"`              // shell类型
-	ShellVars       string                          `json:"shellVars" gorm:"column:shell_vars"`              // shell参数
-	DeployInfos     string                          `json:"deployInfos" gorm:"column:deploy_infos"`          // 服务器上传位置
-	Interactive     int                             `json:"interactive" gorm:"column:interactive"`           // 执行方式 1 命令 2 脚本
+	Name            string                          `json:"name" gorm:"type:varchar(100);not null;default:'';column:name"`              // task名称
+	Description     string                          `json:"description" gorm:"type:text;column:description"`                            // task描述
+	TargetServerIds string                          `json:"targetServerIds" gorm:"type:text;column:target_server_ids"`                  // 关联服务器id
+	Mode            int                             `json:"mode" gorm:"type:tinyint(2);not null;default:0;column:mode"`                 // 执行方式 1 命令 2 脚本
+	Command         string                          `json:"command" gorm:"type:text;column:command"`                                    // 命令
+	ScriptPath      string                          `json:"scriptPath" gorm:"type:varchar(255);not null;default:'';column:script_path"` // 脚本位置
+	LastTaskId      int                             `json:"lastTaskId" gorm:"type:bigint;not null;default:0;column:last_task_id"`       // 最后一次task id
+	SysUser         string                          `json:"sysUser" gorm:"type:varchar(30);not null;default:'';column:sys_user"`        // 执行用户
+	SystemId        int                             `json:"systemId" gorm:"type:bigint;not null;default:0;column:system_id"`            // 所属系统
+	ExecuteType     int                             `json:"executeType" gorm:"type:tinyint(2);not null;default:0;column:execute_type"`  // 模板类型 1 普通 2 日志提取 3 程序包上传
+	LogPath         string                          `json:"logPath" gorm:"type:varchar(255);not null;default:'';column:log_path"`       // 日志位置
+	ScriptHash      string                          `json:"scriptHash" gorm:"type:varchar(32);not null;default:'';column:script_hash"`  // 脚本哈希
+	LogOutput       int                             `json:"logOutput" gorm:"type:tinyint(2);not null;default:0;column:log_output"`      // 日志下载方式 1 直接 2 上传服务器
+	LogDst          string                          `json:"logDst" gorm:"type:varchar(255);not null;default:'';column:log_dst"`         // 日志服务器上传位置
+	DstServerId     int                             `json:"dstServerId" gorm:"type:bigint;not null;default:0;column:dst_server_id"`     // 日志服务器id
+	SecretId        int                             `json:"secretId" gorm:"type:bigint;not null;default:0;column:secret_id"`            // 日志服务器密码
+	ShellType       int                             `json:"shellType" gorm:"type:tinyint(2);not null;default:0;column:shell_type"`      // shell类型
+	ShellVars       string                          `json:"shellVars" gorm:"type:varchar(255);not null;default:'';column:shell_vars"`   // shell参数
+	DeployInfos     string                          `json:"deployInfos" gorm:"type:text;column:deploy_infos"`                           // 服务器上传位置
+	Interactive     int                             `json:"interactive" gorm:"type:tinyint(2);not null;default:0;column:interactive"`   // 执行方式 1 命令 2 脚本
 	TaskDeployInfos []TaskDeployInfo                `json:"taskDeployInfos" gorm:"-"`
 	TargetIds       []int                           `json:"targetIds" gorm:"-"`
 	TargetServers   []application.ApplicationServer `json:"targetServers" gorm:"-"`
@@ -93,8 +93,8 @@ func (m *TaskTemplate) AfterFind(tx *gorm.DB) (err error) {
 
 type TaskTemplateSet struct {
 	global.GVA_MODEL
-	SystemId int    `json:"systemId" gorm:"column:system_id" ` // 系统名称
-	Name     string `json:"name" gorm:"column:name"`           // 模板集名称
+	SystemId int    `json:"systemId" gorm:"type:bigint;not null;default:0;column:system_id" ` // 系统名称
+	Name     string `json:"name" gorm:"type:varchar(100);not null;default:'';column:name"`    // 模板集名称
 }
 
 func (m *TaskTemplateSet) TableName() string {
@@ -103,9 +103,9 @@ func (m *TaskTemplateSet) TableName() string {
 
 type TaskTemplateSetTemplate struct {
 	global.GVA_MODEL
-	TemplateId int `json:"templateId" gorm:"column:template_id"` // task id
-	SetId      int `json:"setId" gorm:"column:set_id"`           // task id
-	Seq        int `json:"seq" gorm:"column:seq"`                // 排序
+	TemplateId int `json:"templateId" gorm:"type:bigint;not null;default:0;column:template_id"` // task id
+	SetId      int `json:"setId" gorm:"type:bigint;not null;default:0;column:set_id"`           // task id
+	Seq        int `json:"seq" gorm:"type:int(4);not null;default:0;column:seq"`                // 排序
 }
 
 func (m *TaskTemplateSetTemplate) TableName() string {
@@ -119,13 +119,13 @@ type TaskTemplateWithSeq struct {
 
 type SetTask struct {
 	global.GVA_MODEL
-	SetId           int                   `json:"setId" gorm:"column:set_id"`                 // task id
-	SystemUserId    int                   `json:"systemUserId" gorm:"column:system_user_id" ` // 执行人
-	CurrentTaskId   int                   `json:"currentTaskId" gorm:"column:current_task_id" `
-	TotalSteps      int                   `json:"totalSteps" gorm:"column:total_steps" `
-	CurrentStep     int                   `json:"currentStep" gorm:"column:current_step" `
-	TemplatesString string                `json:"templatesString" gorm:"column:templates_string"` // 关联服务器id
-	TasksString     string                `json:"tasksString" gorm:"column:tasks_string"`         // 关联服务器id
+	SetId           int                   `json:"setId" gorm:"type:bigint;not null;default:0;column:set_id"`                 // task id
+	SystemUserId    int                   `json:"systemUserId" gorm:"type:bigint;not null;default:0;column:system_user_id" ` // 执行人
+	CurrentTaskId   int                   `json:"currentTaskId" gorm:"type:bigint;not null;default:0;column:current_task_id" `
+	TotalSteps      int                   `json:"totalSteps" gorm:"type:int(4);not null;default:0;column:total_steps" `
+	CurrentStep     int                   `json:"currentStep" gorm:"type:int(4);not null;default:0;column:current_step" `
+	TemplatesString string                `json:"templatesString" gorm:"type:text;column:templates_string"` // 关联服务器id
+	TasksString     string                `json:"tasksString" gorm:"type:text;column:tasks_string"`         // 关联服务器id
 	Templates       []TaskTemplateWithSeq `json:"templates" gorm:"-"`
 	Tasks           []Task                `json:"tasks" gorm:"-"`
 }
