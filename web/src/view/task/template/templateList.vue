@@ -712,7 +712,7 @@ export default {
         ID: '',
         name: '',
         description: '',
-        mode: '',
+        mode: 1,
         command: '',
         scriptPath: '',
         sysUser: '',
