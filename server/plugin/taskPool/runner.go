@@ -1103,11 +1103,20 @@ func (t *TaskRunner) runDiscoverTask() (failedIPs []string) {
 			if e, sys, _, _ := applicationService.CmdbSystemService.GetSystemById(float64(t.task.SystemId)); e != nil {
 				global.GVA_LOG.Error("get system error,", zap.Any("", e))
 			} else {
-				sys.SshUsers = append(sys.SshUsers, t.task.SshUser)
-				if e = applicationService.CmdbSystemService.UpdateSystem(appReq.AddSystem{
-					ApplicationSystem: sys,
-				}); e != nil {
-					global.GVA_LOG.Error("update system error,", zap.Any("", e))
+				needAppend := true
+				for _, u := range sys.SshUsers {
+					if u == t.task.SshUser {
+						needAppend = false
+						break
+					}
+				}
+				if needAppend {
+					sys.SshUsers = append(sys.SshUsers, t.task.SshUser)
+					if e = applicationService.CmdbSystemService.UpdateSystem(appReq.AddSystem{
+						ApplicationSystem: sys,
+					}); e != nil {
+						global.GVA_LOG.Error("update system error,", zap.Any("", e))
+					}
 				}
 			}
 			break

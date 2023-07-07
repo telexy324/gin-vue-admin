@@ -537,7 +537,7 @@ export default {
         executeType: 1,
         shellType: '',
         shellVars: '',
-        interactive: '',
+        interactive: 0,
       },
       type: '',
       rules: {
@@ -721,7 +721,7 @@ export default {
         executeType: 1,
         shellType: '',
         shellVars: '',
-        interactive: '',
+        interactive: 0,
       }
     },
     closeDialog() {
