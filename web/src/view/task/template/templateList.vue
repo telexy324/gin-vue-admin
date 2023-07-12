@@ -503,7 +503,7 @@ import TaskStatus from '@/components/task/TaskStatus.vue'
 import { mapGetters } from 'vuex'
 // import service from '@/utils/request'
 // import Axios from 'axios'
-import socket from '@/socket'
+// import socket from '@/socket'
 import Systems from '@/components/task/systems.vue'
 
 export default {
