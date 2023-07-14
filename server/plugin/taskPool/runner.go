@@ -1048,10 +1048,15 @@ func (t *TaskRunner) runDiscoverTask() (failedIPs []string) {
 				SshPort:  sshPort,
 			}
 			var output string
-			if newServer.Hostname, err = sshClient.CommandSingle("hostname"); err != nil {
+			if output, err = sshClient.CommandSingle("hostname"); err != nil {
 				global.GVA_LOG.Error("get hostname failed", zap.Any("err", err))
 			} else {
-				newServer.Hostname = strings.Trim(newServer.Hostname, "\n")
+				lines := strings.Split(output, "\n") // discard error message from ssh login
+				if len(lines) <= 1 {
+					global.GVA_LOG.Error("get hostname failed")
+				} else {
+					newServer.Hostname = lines[len(lines)-2]
+				}
 			}
 			if output, err = sshClient.CommandSingle("uname -a"); err != nil {
 				global.GVA_LOG.Error("get architecture failed", zap.Any("err", err))
