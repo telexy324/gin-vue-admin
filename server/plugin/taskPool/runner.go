@@ -632,7 +632,7 @@ func (t *TaskRunner) runTask() (failedIPs []string) {
 					}
 				} else {
 					commands := strings.Replace(t.template.Command, "\n", " && ", -1)
-					commands = "source /etc/profile && source ~/.bashrc && " + commands
+					commands = "source /etc/profile && source ~/.bash_profile && source ~/.bashrc && " + commands
 					err = sshClient.Commands(commands, t, s.ManageIp)
 					if err != nil {
 						global.GVA_LOG.Error("run task failed on exec command: ", zap.Uint("task ID: ", t.task.ID), zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
