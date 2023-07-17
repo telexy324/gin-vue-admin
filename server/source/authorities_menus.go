@@ -73,6 +73,7 @@ var authorityMenus = []AuthorityMenus{
 	{"9528", 15},
 	{"9528", 16},
 	{"9528", 17},
+	{"9527", 1},
 	{"9527", 23},
 	{"9527", 26},
 	{"9527", 27},
@@ -88,6 +89,7 @@ var authorityMenus = []AuthorityMenus{
 	{"9527", 44},
 	{"9527", 45},
 	{"9527", 46},
+	{"9529", 1},
 	{"9529", 23},
 	{"9529", 26},
 	{"9529", 27},
@@ -103,8 +105,8 @@ var authorityMenus = []AuthorityMenus{
 	{"9529", 44},
 }
 
-//@author: [SliverHorn](https://github.com/SliverHorn)
-//@description: sys_authority_menus 表数据初始化
+// @author: [SliverHorn](https://github.com/SliverHorn)
+// @description: sys_authority_menus 表数据初始化
 func (a *authoritiesMenus) Init() error {
 	return global.GVA_DB.Table("sys_authority_menus").Transaction(func(tx *gorm.DB) error {
 		if tx.Where("sys_authority_authority_id IN ('888', '8881', '9528', '9527', '9529')").Find(&[]AuthorityMenus{}).RowsAffected == 84 {
