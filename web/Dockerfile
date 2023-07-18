@@ -1,9 +1,11 @@
 FROM node:16.20.0
 
 WORKDIR /gva_web/
-COPY . .
 
+COPY package.json package-lock.json .
 RUN npm install
+
+COPY . .
 RUN npm run build
 
 FROM nginx:1.24-alpine
