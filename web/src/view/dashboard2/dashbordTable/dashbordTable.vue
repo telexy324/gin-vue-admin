@@ -1,7 +1,7 @@
 <template>
   <div class="commit-table">
     <div class="commit-table-title">
-      更新日志
+      公告
     </div>
     <div class="log">
       <div v-for="(item,key) in dataTimeline" :key="key" class="log-item">
@@ -14,35 +14,35 @@
 </template>
 
 <script>
-import { Commits } from '@/api/github'
-import { formatTimeToStr } from '@/utils/date.js'
+// import { Commits } from '@/api/github'
+// import { formatTimeToStr } from '@/utils/date.js'
 export default {
   data() {
     return {
       loading: true,
-      dataTimeline: [],
+      dataTimeline: [{ message: '欢迎使用', from: '2023-07-01' }],
     }
   },
-  created() {
-    this.loadCommits()
-  },
-  methods: {
-    loadCommits() {
-      Commits(0).then(({ data }) => {
-        this.loading = false
-        data.forEach((element, index) => {
-          if (element.commit.message && index < 10) {
-            this.dataTimeline.push({
-              from: formatTimeToStr(element.commit.author.date, 'yyyy-MM-dd'),
-              title: element.commit.author.name,
-              showDayAndMonth: true,
-              message: element.commit.message,
-            })
-          }
-        })
-      })
-    },
-  }
+  // created() {
+  //   this.loadCommits()
+  // },
+  // methods: {
+  //   loadCommits() {
+  //     Commits(0).then(({ data }) => {
+  //       this.loading = false
+  //       data.forEach((element, index) => {
+  //         if (element.commit.message && index < 10) {
+  //           this.dataTimeline.push({
+  //             from: formatTimeToStr(element.commit.author.date, 'yyyy-MM-dd'),
+  //             title: element.commit.author.name,
+  //             showDayAndMonth: true,
+  //             message: element.commit.message,
+  //           })
+  //         }
+  //       })
+  //     })
+  //   },
+  // }
 }
 </script>
 <style lang="scss" scoped>
