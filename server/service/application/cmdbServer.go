@@ -160,7 +160,19 @@ func (cmdbServerService *CmdbServerService) GetServerList(info request2.ServerSe
 	if err != nil {
 		return
 	}
-	err = db.Limit(limit).Offset(offset).Find(&serverList).Error
+	// err = db.Limit(limit).Offset(offset).Find(&serverList).Error
+	db = db.Limit(limit).Offset(offset)
+	if info.OrderKey != "" {
+		var OrderStr string
+		if info.Desc {
+			OrderStr = info.OrderKey + " desc"
+		} else {
+			OrderStr = info.OrderKey
+		}
+		err = db.Order(OrderStr).Find(&serverList).Error
+	} else {
+		err = db.Order("system_id, manage_ip").Find(&serverList).Error
+	}
 	return err, serverList, total
 }
 
@@ -170,7 +182,7 @@ func (cmdbServerService *CmdbServerService) GetServerList(info request2.ServerSe
 // @return: err error, serverList []application.ApplicationServer
 func (cmdbServerService *CmdbServerService) GetSystemServers(systemId float64) (err error, serverList []application.ApplicationServer) {
 	db := global.GVA_DB.Model(&application.ApplicationServer{})
-	err = db.Where("system_id = ?", systemId).Find(&serverList).Error
+	err = db.Where("system_id = ?", systemId).Order("manage_ip").Find(&serverList).Error
 	return
 }
 

@@ -4,6 +4,7 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/scheduleMdl"
+	scheduleReq "github.com/flipped-aurora/gin-vue-admin/server/model/scheduleMdl/request"
 	"gorm.io/gorm"
 )
 
@@ -78,7 +79,7 @@ func (scheduleService *ScheduleService) SetScheduleCommitHash(scheduleID int, ha
 	return scheduleService.SetScheduleLastCommitHash(scheduleID, hash)
 }
 
-func (scheduleService *ScheduleService) GetScheduleList(templateID int, info request.PageInfo) (err error, list interface{}, total int64) {
+func (scheduleService *ScheduleService) GetScheduleList(templateID int, info scheduleReq.GetScheduleByTemplateId) (err error, list interface{}, total int64) {
 	limit := info.PageSize
 	offset := info.PageSize * (info.Page - 1)
 	db := global.GVA_DB.Model(&scheduleMdl.Schedule{})
@@ -86,10 +87,22 @@ func (scheduleService *ScheduleService) GetScheduleList(templateID int, info req
 	if err != nil {
 		return
 	}
-	var Schedules []scheduleMdl.Schedule
+	var schedules []scheduleMdl.Schedule
 	if templateID > 0 {
 		db = db.Find("where template_id = ?", templateID)
 	}
-	err = db.Limit(limit).Offset(offset).Find(&Schedules).Error
-	return err, Schedules, total
+	//err = db.Limit(limit).Offset(offset).Find(&schedules).Error
+	db = db.Limit(limit).Offset(offset)
+	if info.OrderKey != "" {
+		var OrderStr string
+		if info.Desc {
+			OrderStr = info.OrderKey + " desc"
+		} else {
+			OrderStr = info.OrderKey
+		}
+		err = db.Order(OrderStr).Find(&schedules).Error
+	} else {
+		err = db.Order("id").Find(&schedules).Error
+	}
+	return err, schedules, total
 }

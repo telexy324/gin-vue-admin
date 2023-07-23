@@ -114,7 +114,19 @@ func (templateService *TaskTemplatesService) GetTaskTemplates(info request2.Task
 	if err != nil {
 		return
 	}
-	err = db.Limit(limit).Offset(offset).Find(&templates).Error
+	//err = db.Limit(limit).Offset(offset).Find(&templates).Error
+	db = db.Limit(limit).Offset(offset)
+	if info.OrderKey != "" {
+		var OrderStr string
+		if info.Desc {
+			OrderStr = info.OrderKey + " desc"
+		} else {
+			OrderStr = info.OrderKey
+		}
+		err = db.Order(OrderStr).Find(&templates).Error
+	} else {
+		err = db.Order("id").Find(&templates).Error
+	}
 	if err != nil {
 		return
 	}
@@ -518,7 +530,19 @@ func (templateService *TaskTemplatesService) GetSetList(info request2.TaskTempla
 	if err != nil {
 		return
 	}
-	err = db.Limit(limit).Offset(offset).Find(&setList).Error
+	//err = db.Limit(limit).Offset(offset).Find(&setList).Error
+	db = db.Limit(limit).Offset(offset)
+	if info.OrderKey != "" {
+		var OrderStr string
+		if info.Desc {
+			OrderStr = info.OrderKey + " desc"
+		} else {
+			OrderStr = info.OrderKey
+		}
+		err = db.Order(OrderStr).Find(&setList).Error
+	} else {
+		err = db.Order("id").Find(&setList).Error
+	}
 
 	setInfoList := make([]response.TaskTemplateSetResponse, 0, len(setList))
 	for _, set := range setList {
@@ -620,7 +644,19 @@ func (templateService *TaskTemplatesService) GetSetTaskList(info request2.SetTas
 	if err != nil {
 		return
 	}
-	err = db.Limit(limit).Offset(offset).Find(&setTaskList).Error
+	//err = db.Limit(limit).Offset(offset).Find(&setTaskList).Error
+	db = db.Limit(limit).Offset(offset)
+	if info.OrderKey != "" {
+		var OrderStr string
+		if info.Desc {
+			OrderStr = info.OrderKey + " desc"
+		} else {
+			OrderStr = info.OrderKey
+		}
+		err = db.Order(OrderStr).Find(&setTaskList).Error
+	} else {
+		err = db.Order("id").Find(&setTaskList).Error
+	}
 
 	return err, setTaskList, total
 }

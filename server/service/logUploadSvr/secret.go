@@ -115,6 +115,18 @@ func (secretService *SecretService) GetSecretList(info request2.SecretSearch) (e
 	if err != nil {
 		return
 	}
-	err = db.Limit(limit).Offset(offset).Find(&secretList).Error
+	//err = db.Limit(limit).Offset(offset).Find(&secretList).Error
+	db = db.Limit(limit).Offset(offset)
+	if info.OrderKey != "" {
+		var OrderStr string
+		if info.Desc {
+			OrderStr = info.OrderKey + " desc"
+		} else {
+			OrderStr = info.OrderKey
+		}
+		err = db.Order(OrderStr).Find(&secretList).Error
+	} else {
+		err = db.Order("server_id").Find(&secretList).Error
+	}
 	return err, secretList, total
 }

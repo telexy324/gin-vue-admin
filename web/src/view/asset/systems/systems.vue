@@ -31,7 +31,7 @@
           width="55"
         />
 <!--        <el-table-column align="left" label="id" min-width="60" prop="system.ID" sortable="custom" />-->
-        <el-table-column align="left" label="系统名" min-width="150" prop="system.name" sortable="custom" />
+        <el-table-column align="left" label="系统名" min-width="150" prop="system.name" />
         <el-table-column align="left" fixed="right" label="操作" width="400">
           <template #default="scope">
             <el-button

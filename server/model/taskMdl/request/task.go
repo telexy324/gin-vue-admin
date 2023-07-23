@@ -19,6 +19,8 @@ type GetTaskByTemplateId struct {
 	request.PageInfo
 	SortInverted bool
 	SortBy       string
+	OrderKey     string `json:"orderKey"` // 排序
+	Desc         bool   `json:"desc"`     // 排序方式:升序false(默认)|降序true
 }
 
 // Find by id and project_id structure
@@ -32,7 +34,9 @@ type GetTaskOutputsByTaskId struct {
 type TaskTemplateSearch struct {
 	taskMdl.TaskTemplate
 	request.PageInfo
-	SystemIDs []int `json:"systemIds"`
+	OrderKey  string `json:"orderKey"` // 排序
+	Desc      bool   `json:"desc"`     // 排序方式:升序false(默认)|降序true
+	SystemIDs []int  `json:"systemIds"`
 }
 
 type AddTaskTemplate struct {
@@ -50,9 +54,13 @@ type UpdateTaskTemplate struct {
 type TaskTemplateSetSearch struct {
 	taskMdl.TaskTemplateSet
 	request.PageInfo
+	OrderKey string `json:"orderKey"` // 排序
+	Desc     bool   `json:"desc"`     // 排序方式:升序false(默认)|降序true
 }
 
 type SetTaskSearch struct {
 	taskMdl.SetTask
 	request.PageInfo
+	OrderKey string `json:"orderKey"` // 排序
+	Desc     bool   `json:"desc"`     // 排序方式:升序false(默认)|降序true
 }

@@ -215,7 +215,7 @@ func (a *ScheduleApi) GetTemplateScheduleList(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err, list, total := scheduleService.GetScheduleList(int(pageInfo.TemplateId), pageInfo.PageInfo); err != nil {
+	if err, list, total := scheduleService.GetScheduleList(int(pageInfo.TemplateId), pageInfo); err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 		response.FailWithMessage("获取失败", c)
 	} else {

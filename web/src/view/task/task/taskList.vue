@@ -6,7 +6,7 @@
 <!--          type="selection"-->
 <!--          width="55"-->
 <!--        />-->
-        <el-table-column align="left" label="id" min-width="60" sortable="custom">
+        <el-table-column align="left" label="id" min-width="60" prop="id" sortable="custom">
           <template v-slot="scope">
             <el-button
               type="text"
@@ -21,7 +21,7 @@
             <div>{{ filterTemplateName(scope.row.templateId) }}</div>
           </template>
         </el-table-column>
-        <el-table-column align="left" label="状态" min-width="150" sortable="custom">
+        <el-table-column align="left" label="状态" min-width="150">
           <template v-slot="scope">
             <TaskStatus :status="scope.row.status" />
           </template>

@@ -117,6 +117,18 @@ func (serverService *ServerService) GetServerList(info request2.ServerSearch) (e
 	if err != nil {
 		return
 	}
-	err = db.Limit(limit).Offset(offset).Find(&serverList).Error
+	//err = db.Limit(limit).Offset(offset).Find(&serverList).Error
+	db = db.Limit(limit).Offset(offset)
+	if info.OrderKey != "" {
+		var OrderStr string
+		if info.Desc {
+			OrderStr = info.OrderKey + " desc"
+		} else {
+			OrderStr = info.OrderKey
+		}
+		err = db.Order(OrderStr).Find(&serverList).Error
+	} else {
+		err = db.Order("manage_ip").Find(&serverList).Error
+	}
 	return err, serverList, total
 }

@@ -2,7 +2,7 @@
   <div>
     <div class="gva-table-box">
       <el-table :data="tableData" @sort-change="sortChange">
-        <el-table-column align="left" label="id" min-width="60" sortable="custom">
+        <el-table-column align="left" label="id" min-width="60" prop="id" sortable="custom">
           <template v-slot="scope">
             <el-button
               type="text"
@@ -11,7 +11,7 @@
             >#{{ scope.row.ID }}</el-button>
           </template>
         </el-table-column>
-        <el-table-column align="left" label="状态" min-width="150" sortable="custom">
+        <el-table-column align="left" label="状态" min-width="150" >
           <template v-slot="scope">
             <TaskStatus :status="getCurrentStatus(scope.row)" />
           </template>
@@ -21,7 +21,7 @@
             <div>{{ filterUserName(scope.row.systemUserId) }}</div>
           </template>
         </el-table-column>
-        <el-table-column align="left" label="当前任务ID" min-width="150" sortable="custom">
+        <el-table-column align="left" label="当前任务ID" min-width="150" >
           <template v-slot="scope">
             <el-button
               type="text"
@@ -32,8 +32,8 @@
             <!--            <a @click="showTaskLog(scope.row)">{{ scope.row.ID }}</a>-->
           </template>
         </el-table-column>
-        <el-table-column align="left" label="当前步骤" min-width="150" prop="currentStep" sortable="custom" />
-        <el-table-column align="left" label="总步骤" min-width="150" prop="totalSteps" sortable="custom" />
+        <el-table-column align="left" label="当前步骤" min-width="150" prop="currentStep" />
+        <el-table-column align="left" label="总步骤" min-width="150" prop="totalSteps" />
       </el-table>
       <div class="gva-pagination">
         <el-pagination

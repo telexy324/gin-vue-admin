@@ -34,12 +34,12 @@
           width="55"
         />
         <el-table-column align="left" label="模版名" min-width="150" prop="name" sortable="custom" />
-        <el-table-column align="left" label="最近执行状态" min-width="150" prop="lastTask.status" sortable="custom">
+        <el-table-column align="left" label="最近执行状态" min-width="150" prop="lastTask.status">
           <template v-slot="scope">
             <TaskStatus :status="scope.row.lastTask.status" />
           </template>
         </el-table-column>
-        <el-table-column align="left" label="最近任务" min-width="100" sortable="custom">
+        <el-table-column align="left" label="最近任务" min-width="100" >
           <template v-slot="scope">
             <el-button
               type="text"
