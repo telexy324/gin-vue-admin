@@ -80,9 +80,9 @@
 <!--            <img src="@/assets/video.png" class="link-icon" />-->
 <!--          </a>-->
 <!--        </div>-->
-        <div class="copyright">
-          Copyright &copy; {{ curYear }} 💖 flipped-aurora
-        </div>
+<!--        <div class="copyright">-->
+<!--          Copyright &copy; {{ curYear }} 💖 flipped-aurora-->
+<!--        </div>-->
       </div>
     </div>
   </div>
