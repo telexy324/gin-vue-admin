@@ -1116,7 +1116,7 @@ export default {
         logPath: '',
         sysUser: '',
         targetIds: [],
-        executeType: 1,
+        executeType: 2,
       }
     },
     async openLogDialog(type) {
@@ -1149,6 +1149,10 @@ export default {
             case 'addLogTemplate':
               {
                 this.logForm.ID = 0
+                if (this.logForm.logOutput === 1) {
+                  this.logForm.dstServerId = 0
+                  this.logForm.secretId = 0
+                }
                 const _targetId = this.logForm.targetIds
                 this.logForm.targetIds = [_targetId]
                 const res = await addTemplate(this.logForm)
