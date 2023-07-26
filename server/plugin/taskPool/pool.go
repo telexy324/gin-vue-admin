@@ -2,6 +2,7 @@ package taskPool
 
 import (
 	"database/sql"
+	"encoding/json"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl"
 	"go.uber.org/zap"
@@ -297,6 +298,10 @@ func (p *TaskPool) AddTask(taskObj taskMdl.Task, userID int, setTaskId int) (new
 		Valid: true,
 	}
 	taskObj.SetTaskId = setTaskId
+	if len(taskObj.CommandVars) > 0 {
+		vars, _ := json.Marshal(taskObj.CommandVars)
+		taskObj.CommandVar = string(vars)
+	}
 
 	//tpl, err := taskService.GetTaskTemplate(float64(taskObj.TemplateId))
 	//if err != nil {

@@ -180,6 +180,9 @@
         <el-form-item v-if="isCommand" label="命令" prop="command">
           <el-input v-model="form.command" autocomplete="off" type="textarea" :rows="10" />
         </el-form-item>
+        <el-form-item label="参数个数" prop="commandVarNumbers">
+          <el-input v-model="form.commandVarNumbers" autocomplete="off" />
+        </el-form-item>
 <!--        <el-form-item v-if="isScript" label="脚本位置" prop="scriptPath">-->
 <!--          <el-input v-model="form.scriptPath" autocomplete="off" />-->
 <!--        </el-form-item>-->
@@ -538,6 +541,7 @@ export default {
         shellType: '',
         shellVars: '',
         interactive: 0,
+        commandVarNumbers: 0,
       },
       type: '',
       rules: {
@@ -552,6 +556,10 @@ export default {
         scriptPath: [{ required: true, message: '请输入脚本位置', trigger: 'blur' }],
         scriptType: [{ required: true, message: '请选择shell方式', trigger: 'blur' }],
         interactive: [{ required: true, message: '请选择执命令执行方式', trigger: 'blur' }],
+        commandVarNumbers: [
+          { required: true, message: '请输入命令参数个数,0为无参', trigger: 'blur' },
+          { validator: this.isNum, trigger: 'blur' }
+        ],
       },
       path: path,
       isCommand: true,
@@ -722,6 +730,7 @@ export default {
         shellType: '',
         shellVars: '',
         interactive: 0,
+        commandVarNumbers: 0,
       }
     },
     closeDialog() {
@@ -1466,6 +1475,14 @@ export default {
         this.form.sysUser = e.target.value
       }
     },
+    isNum(rule, value, callback) {
+      const n = /^[0-9]*$/
+      if (!n.test(value)) {
+        callback(new Error('只能为数字'))
+      } else {
+        callback()
+      }
+    }
   }
 }
 </script>

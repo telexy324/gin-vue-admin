@@ -39,3 +39,5 @@ const (
 	NonInteractive = iota
 	Interactive
 )
+
+const Replacer = "${}"
