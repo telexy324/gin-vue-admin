@@ -469,6 +469,26 @@
         </div>
       </template>
     </el-dialog>
+    <el-dialog v-model="CommandVarFormVisible" :before-close="closeCommandVarForm" :title="dialogTitle">
+      <warning-bar title="请输入任务参数" />
+      <el-form ref="CommandVarForm" :model="commandVarForm" :rules="commandVarRules" label-width="80px">
+        <div v-for="(item, index) in commandVarForm.vars" :key="index">
+          <el-form-item
+            label="序号"
+            :prop="'templates.' + index + '.seq'"
+            :rules="rules.seq"
+          >
+            <el-input v-model.number="item.seq" />
+          </el-form-item>
+        </div>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button size="small" @click="closeDialog">取 消</el-button>
+          <el-button size="small" type="primary" :disabled="form.templates.length === 0" @click="enterDialog">确 定</el-button>
+        </div>
+      </template>
+    </el-dialog>
     <el-drawer v-if="drawer" v-model="drawer" :with-header="false" size="40%" title="请选择系统">
       <Systems ref="systems" :keys="searchInfo.systemIds" @checked="getCheckedTemplates" />
     </el-drawer>
@@ -656,7 +676,18 @@ export default {
       dialogDeployTitle: '新增程序上传模板',
       deployType: '',
       newName: '',
-      currentSystem: ''
+      currentSystem: '',
+      taskVars: [],
+      CommandVarFormVisible: false,
+      commandVarForm: {
+        vars: [],
+      },
+      commandVarFormRules: {
+        vars: [
+          { required: true, message: '请输入人物参数', trigger: 'blur' },
+          { validator: this.seqRule, trigger: 'blur' }
+        ],
+      },
     }
   },
   computed: {
