@@ -5906,6 +5906,44 @@ var doc = `{
                 }
             }
         },
+        "/task/template/deployServer": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Template"
+                ],
+                "summary": "上传日志服务器",
+                "parameters": [
+                    {
+                        "description": "id,文件路径",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.DownLoadFileRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\":true,\"data\":{},\"msg\":\"更新成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/task/template/downloadFile": {
             "get": {
                 "security": [
@@ -6848,6 +6886,10 @@ var doc = `{
                     "description": "创建时间",
                     "type": "string"
                 },
+                "displayName": {
+                    "description": "展示名",
+                    "type": "string"
+                },
                 "hostname": {
                     "description": "主机名",
                     "type": "string"
@@ -6869,7 +6911,7 @@ var doc = `{
                     "type": "string"
                 },
                 "sshPort": {
-                    "description": "ssh端口",
+                    "description": "ssh端口、",
                     "type": "integer"
                 },
                 "systemId": {
@@ -6897,9 +6939,23 @@ var doc = `{
                     "description": "系统名",
                     "type": "string"
                 },
+                "network": {
+                    "description": "系统位置",
+                    "type": "string"
+                },
                 "position": {
                     "description": "系统位置",
                     "type": "integer"
+                },
+                "sshUser": {
+                    "description": "系统位置",
+                    "type": "string"
+                },
+                "sshUsers": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "updatedAt": {
                     "description": "更新时间",
@@ -7691,9 +7747,23 @@ var doc = `{
                     "description": "系统名",
                     "type": "string"
                 },
+                "network": {
+                    "description": "系统位置",
+                    "type": "string"
+                },
                 "position": {
                     "description": "系统位置",
                     "type": "integer"
+                },
+                "sshUser": {
+                    "description": "系统位置",
+                    "type": "string"
+                },
+                "sshUsers": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "systemAdmin": {
                     "type": "array",
@@ -7843,9 +7913,17 @@ var doc = `{
         "request.GetScheduleByTemplateId": {
             "type": "object",
             "properties": {
+                "desc": {
+                    "description": "排序方式:升序false(默认)|降序true",
+                    "type": "boolean"
+                },
                 "id": {
                     "description": "主键ID",
                     "type": "number"
+                },
+                "orderKey": {
+                    "description": "排序",
+                    "type": "string"
                 },
                 "page": {
                     "description": "页码",
@@ -7870,9 +7948,17 @@ var doc = `{
         "request.GetTaskByTemplateId": {
             "type": "object",
             "properties": {
+                "desc": {
+                    "description": "排序方式:升序false(默认)|降序true",
+                    "type": "boolean"
+                },
                 "id": {
                     "description": "主键ID",
                     "type": "number"
+                },
+                "orderKey": {
+                    "description": "排序",
+                    "type": "string"
                 },
                 "page": {
                     "description": "页码",
@@ -8642,6 +8728,17 @@ var doc = `{
                     "description": "开始时间",
                     "type": "string"
                 },
+                "commandVar": {
+                    "description": "结束时间",
+                    "type": "string"
+                },
+                "commandVars": {
+                    "description": "结束时间",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "createdAt": {
                     "description": "创建时间",
                     "type": "string"
@@ -8651,7 +8748,7 @@ var doc = `{
                     "type": "string"
                 },
                 "fileDownload": {
-                    "description": "结束时间",
+                    "description": "FileDownload string       ` + "`" + `json:\"fileDownload\" gorm:\"column:file_download\"` + "`" + `                // 结束时间\nSystemId     int          ` + "`" + `json:\"systemId\" gorm:\"column:system_id\"` + "`" + `                        // 结束时间\nSshUser      string       ` + "`" + `json:\"sshUser\" gorm:\"column:ssh_user\"` + "`" + `                          // 结束时间",
                     "type": "string"
                 },
                 "id": {
@@ -8662,9 +8759,17 @@ var doc = `{
                     "description": "结束时间",
                     "type": "integer"
                 },
+                "sshUser": {
+                    "description": "结束时间",
+                    "type": "string"
+                },
                 "status": {
                     "description": "状态",
                     "type": "string"
+                },
+                "systemId": {
+                    "description": "结束时间",
+                    "type": "integer"
                 },
                 "systemUserId": {
                     "description": "执行人",
@@ -8680,6 +8785,19 @@ var doc = `{
                 }
             }
         },
+        "taskMdl.TaskDeployInfo": {
+            "type": "object",
+            "properties": {
+                "deployPath": {
+                    "description": "服务器上传位置",
+                    "type": "string"
+                },
+                "downloadSource": {
+                    "description": "日志服务器下载位置",
+                    "type": "string"
+                }
+            }
+        },
         "taskMdl.TaskTemplate": {
             "type": "object",
             "properties": {
@@ -8687,8 +8805,16 @@ var doc = `{
                     "description": "命令",
                     "type": "string"
                 },
+                "commandVarNumbers": {
+                    "description": "命令参数个数",
+                    "type": "integer"
+                },
                 "createdAt": {
                     "description": "创建时间",
+                    "type": "string"
+                },
+                "deployInfos": {
+                    "description": "服务器上传位置",
                     "type": "string"
                 },
                 "description": {
@@ -8696,15 +8822,19 @@ var doc = `{
                     "type": "string"
                 },
                 "dstServerId": {
-                    "description": "日志位置",
+                    "description": "日志服务器id",
                     "type": "integer"
                 },
                 "executeType": {
-                    "description": "模板类型 1 普通 2 日志提取",
+                    "description": "模板类型 1 普通 2 日志提取 3 程序包上传",
                     "type": "integer"
                 },
                 "id": {
                     "description": "主键ID",
+                    "type": "integer"
+                },
+                "interactive": {
+                    "description": "执行方式 1 命令 2 脚本",
                     "type": "integer"
                 },
                 "lastTask": {
@@ -8715,11 +8845,11 @@ var doc = `{
                     "type": "integer"
                 },
                 "logDst": {
-                    "description": "日志位置",
+                    "description": "日志服务器上传位置",
                     "type": "string"
                 },
                 "logOutput": {
-                    "description": "日志位置",
+                    "description": "日志下载方式 1 直接 2 上传服务器",
                     "type": "integer"
                 },
                 "logPath": {
@@ -8749,15 +8879,15 @@ var doc = `{
                     "$ref": "#/definitions/logUploadMdl.Secret"
                 },
                 "secretId": {
-                    "description": "日志位置",
+                    "description": "日志服务器密码",
                     "type": "integer"
                 },
                 "shellType": {
-                    "description": "日志位置",
+                    "description": "shell类型",
                     "type": "integer"
                 },
                 "shellVars": {
-                    "description": "日志位置",
+                    "description": "shell参数",
                     "type": "string"
                 },
                 "sysUser": {
@@ -8782,6 +8912,12 @@ var doc = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/application.ApplicationServer"
+                    }
+                },
+                "taskDeployInfos": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/taskMdl.TaskDeployInfo"
                     }
                 },
                 "updatedAt": {

@@ -181,7 +181,7 @@
           <el-input v-model="form.command" autocomplete="off" type="textarea" :rows="10" />
         </el-form-item>
         <el-form-item label="参数个数" prop="commandVarNumbers">
-          <el-input v-model="form.commandVarNumbers" autocomplete="off" />
+          <el-input v-model.number="form.commandVarNumbers" autocomplete="off" />
         </el-form-item>
 <!--        <el-form-item v-if="isScript" label="脚本位置" prop="scriptPath">-->
 <!--          <el-input v-model="form.scriptPath" autocomplete="off" />-->
@@ -469,23 +469,23 @@
         </div>
       </template>
     </el-dialog>
-    <el-dialog v-model="CommandVarFormVisible" :before-close="closeCommandVarForm" :title="dialogTitle">
+    <el-dialog v-model="CommandVarFormVisible" :before-close="closeCommandVarsDialog" :title="dialogTitle">
       <warning-bar title="请输入任务参数" />
       <el-form ref="CommandVarForm" :model="commandVarForm" :rules="commandVarRules" label-width="80px">
         <div v-for="(item, index) in commandVarForm.vars" :key="index">
           <el-form-item
-            label="序号"
-            :prop="'templates.' + index + '.seq'"
-            :rules="rules.seq"
+            :label="'参数' + index"
+            :prop="'vars.' + index"
+            :rules="commandVarRules.vars"
           >
-            <el-input v-model.number="item.seq" />
+            <el-input v-model="commandVarForm.vars[index]" />
           </el-form-item>
         </div>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button size="small" @click="closeDialog">取 消</el-button>
-          <el-button size="small" type="primary" :disabled="form.templates.length === 0" @click="enterDialog">确 定</el-button>
+          <el-button size="small" @click="closeCommandVarsDialog">取 消</el-button>
+          <el-button size="small" type="primary" @click="enterCommandVarsDialog">确 定</el-button>
         </div>
       </template>
     </el-dialog>
@@ -682,12 +682,12 @@ export default {
       commandVarForm: {
         vars: [],
       },
-      commandVarFormRules: {
+      commandVarRules: {
         vars: [
-          { required: true, message: '请输入人物参数', trigger: 'blur' },
-          { validator: this.seqRule, trigger: 'blur' }
+          { required: true, message: '请输入任务参数', trigger: 'blur' },
         ],
       },
+      runningTemplateId: '',
     }
   },
   computed: {
@@ -909,11 +909,19 @@ export default {
         console.log(task.ID)
         this.showTaskLog(task)
       } else {
-        const task = (await addTask({
-          templateId: row.ID
-        })).data.task
-        console.log(task.ID)
-        this.showTaskLog(task)
+        if (row.commandVarNumbers > 0) {
+          for (let i = 0; i < row.commandVarNumbers; i++) {
+            this.commandVarForm.vars.push('')
+          }
+          this.runningTemplateId = row.ID
+          this.CommandVarFormVisible = true
+        } else {
+          const task = (await addTask({
+            templateId: row.ID
+          })).data.task
+          console.log(task.ID)
+          this.showTaskLog(task)
+        }
       }
     },
     showTaskLog(task) {
@@ -1513,7 +1521,29 @@ export default {
       } else {
         callback()
       }
-    }
+    },
+    initCommandVarsForm() {
+      this.commandVarForm = {
+        vars: [],
+      }
+    },
+    async enterCommandVarsDialog() {
+      this.$refs.CommandVarForm.validate(async valid => {
+        if (valid) {
+          const task = (await addTask({
+            templateId: this.runningTemplateId,
+            commandVars: this.commandVarForm.vars
+          })).data.task
+          this.closeCommandVarsDialog()
+          this.showTaskLog(task)
+        }
+      })
+    },
+    closeCommandVarsDialog() {
+      this.CommandVarFormVisible = false
+      this.initCommandVarsForm()
+      this.runningTemplateId = ''
+    },
   }
 }
 </script>

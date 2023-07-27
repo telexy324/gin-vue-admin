@@ -581,21 +581,25 @@ func (t *TaskRunner) runTask() (failedIPs []string) {
 	wg := &sync.WaitGroup{}
 	failedChan := make(chan string, len(servers))
 	t.clients = make([]*ssh.Client, 0, len(servers))
-	formatedCommand := t.template.Command
+	formattedCommand := t.template.Command
 	if t.template.Mode == consts.Command && t.template.CommandVarNumbers > 0 {
+		formattedCommand = ""
 		commandPieces := strings.Split(t.template.Command, consts.Replacer)
 		if len(commandPieces) != t.template.CommandVarNumbers+1 {
 			global.GVA_LOG.Error("command vars mismatch ", zap.Int("require ", t.template.CommandVarNumbers), zap.Int(" get ", len(commandPieces)-1))
-			failedChan <- "localhost"
+			failedIPs = append(failedIPs, "localhost")
 			return
 		}
 		if len(t.task.CommandVars) != t.template.CommandVarNumbers {
 			global.GVA_LOG.Error("command vars mismatch ", zap.Int("require ", t.template.CommandVarNumbers), zap.Int(" get ", len(t.task.CommandVars)))
-			failedChan <- "localhost"
+			failedIPs = append(failedIPs, "localhost")
 			return
 		}
 		for i, commandPiece := range commandPieces {
-			formatedCommand = formatedCommand + commandPiece + t.task.CommandVars[i]
+			if i == len(commandPieces)-1 {
+				break
+			}
+			formattedCommand = formattedCommand + commandPiece + t.task.CommandVars[i]
 		}
 	}
 	for _, server := range servers {
@@ -640,7 +644,7 @@ func (t *TaskRunner) runTask() (failedIPs []string) {
 			if t.template.Mode == consts.Command {
 				failed := false
 				if t.template.Interactive == consts.Interactive {
-					commands := strings.Split(t.template.Command, "\n")
+					commands := strings.Split(formattedCommand, "\n")
 					err = sshClient.CommandBatch(commands, t, s.ManageIp)
 					if err != nil {
 						global.GVA_LOG.Error("run task failed on exec command: ", zap.Uint("task ID: ", t.task.ID), zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
@@ -648,7 +652,7 @@ func (t *TaskRunner) runTask() (failedIPs []string) {
 						failed = true
 					}
 				} else {
-					commands := strings.Replace(t.template.Command, "\n", " && ", -1)
+					commands := strings.Replace(formattedCommand, "\n", " && ", -1)
 					commands = "source /etc/profile && source ~/.bash_profile && source ~/.bashrc && " + commands
 					err = sshClient.Commands(commands, t, s.ManageIp)
 					if err != nil {

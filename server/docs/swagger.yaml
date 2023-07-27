@@ -61,6 +61,9 @@ definitions:
       createdAt:
         description: 创建时间
         type: string
+      displayName:
+        description: 展示名
+        type: string
       hostname:
         description: 主机名
         type: string
@@ -77,7 +80,7 @@ definitions:
         description: 系统版本
         type: string
       sshPort:
-        description: ssh端口
+        description: ssh端口、
         type: integer
       systemId:
         description: 所属系统id
@@ -97,9 +100,19 @@ definitions:
       name:
         description: 系统名
         type: string
+      network:
+        description: 系统位置
+        type: string
       position:
         description: 系统位置
         type: integer
+      sshUser:
+        description: 系统位置
+        type: string
+      sshUsers:
+        items:
+          type: string
+        type: array
       updatedAt:
         description: 更新时间
         type: string
@@ -658,9 +671,19 @@ definitions:
       name:
         description: 系统名
         type: string
+      network:
+        description: 系统位置
+        type: string
       position:
         description: 系统位置
         type: integer
+      sshUser:
+        description: 系统位置
+        type: string
+      sshUsers:
+        items:
+          type: string
+        type: array
       systemAdmin:
         items:
           $ref: '#/definitions/application.ApplicationSystemAdmin'
@@ -761,9 +784,15 @@ definitions:
     type: object
   request.GetScheduleByTemplateId:
     properties:
+      desc:
+        description: 排序方式:升序false(默认)|降序true
+        type: boolean
       id:
         description: 主键ID
         type: number
+      orderKey:
+        description: 排序
+        type: string
       page:
         description: 页码
         type: integer
@@ -780,9 +809,15 @@ definitions:
     type: object
   request.GetTaskByTemplateId:
     properties:
+      desc:
+        description: 排序方式:升序false(默认)|降序true
+        type: boolean
       id:
         description: 主键ID
         type: number
+      orderKey:
+        description: 排序
+        type: string
       page:
         description: 页码
         type: integer
@@ -1330,6 +1365,14 @@ definitions:
       beginTime:
         description: 开始时间
         type: string
+      commandVar:
+        description: 结束时间
+        type: string
+      commandVars:
+        description: 结束时间
+        items:
+          type: string
+        type: array
       createdAt:
         description: 创建时间
         type: string
@@ -1337,7 +1380,10 @@ definitions:
         description: 结束时间
         type: string
       fileDownload:
-        description: 结束时间
+        description: |-
+          FileDownload string       `json:"fileDownload" gorm:"column:file_download"`                // 结束时间
+          SystemId     int          `json:"systemId" gorm:"column:system_id"`                        // 结束时间
+          SshUser      string       `json:"sshUser" gorm:"column:ssh_user"`                          // 结束时间
         type: string
       id:
         description: 主键ID
@@ -1345,9 +1391,15 @@ definitions:
       setTaskId:
         description: 结束时间
         type: integer
+      sshUser:
+        description: 结束时间
+        type: string
       status:
         description: 状态
         type: string
+      systemId:
+        description: 结束时间
+        type: integer
       systemUserId:
         description: 执行人
         type: integer
@@ -1358,25 +1410,43 @@ definitions:
         description: 更新时间
         type: string
     type: object
+  taskMdl.TaskDeployInfo:
+    properties:
+      deployPath:
+        description: 服务器上传位置
+        type: string
+      downloadSource:
+        description: 日志服务器下载位置
+        type: string
+    type: object
   taskMdl.TaskTemplate:
     properties:
       command:
         description: 命令
         type: string
+      commandVarNumbers:
+        description: 命令参数个数
+        type: integer
       createdAt:
         description: 创建时间
+        type: string
+      deployInfos:
+        description: 服务器上传位置
         type: string
       description:
         description: task描述
         type: string
       dstServerId:
-        description: 日志位置
+        description: 日志服务器id
         type: integer
       executeType:
-        description: 模板类型 1 普通 2 日志提取
+        description: 模板类型 1 普通 2 日志提取 3 程序包上传
         type: integer
       id:
         description: 主键ID
+        type: integer
+      interactive:
+        description: 执行方式 1 命令 2 脚本
         type: integer
       lastTask:
         $ref: '#/definitions/taskMdl.Task'
@@ -1384,10 +1454,10 @@ definitions:
         description: 最后一次task id
         type: integer
       logDst:
-        description: 日志位置
+        description: 日志服务器上传位置
         type: string
       logOutput:
-        description: 日志位置
+        description: 日志下载方式 1 直接 2 上传服务器
         type: integer
       logPath:
         description: 日志位置
@@ -1409,13 +1479,13 @@ definitions:
       secret:
         $ref: '#/definitions/logUploadMdl.Secret'
       secretId:
-        description: 日志位置
+        description: 日志服务器密码
         type: integer
       shellType:
-        description: 日志位置
+        description: shell类型
         type: integer
       shellVars:
-        description: 日志位置
+        description: shell参数
         type: string
       sysUser:
         description: 执行用户
@@ -1433,6 +1503,10 @@ definitions:
       targetServers:
         items:
           $ref: '#/definitions/application.ApplicationServer'
+        type: array
+      taskDeployInfos:
+        items:
+          $ref: '#/definitions/taskMdl.TaskDeployInfo'
         type: array
       updatedAt:
         description: 更新时间
@@ -5045,6 +5119,29 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: 批量删除Template
+      tags:
+      - Template
+  /task/template/deployServer:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: id,文件路径
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.DownLoadFileRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"更新成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 上传日志服务器
       tags:
       - Template
   /task/template/downloadFile:
