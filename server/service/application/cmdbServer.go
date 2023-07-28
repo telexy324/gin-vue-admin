@@ -514,7 +514,7 @@ func (cmdbServerService *CmdbServerService) CreateOrUpdateServer(server applicat
 	//}
 	var oldServer application.ApplicationServer
 	db := global.GVA_DB
-	err := db.Where("manage_ip = ?", server.ManageIp).First(&oldServer).Error
+	err := db.Where("manage_ip = ? and system_id = ?", server.ManageIp, server.SystemId).First(&oldServer).Error
 	if err != nil && err == gorm.ErrRecordNotFound {
 		if len(server.Apps) > 0 {
 			if js, err := json.Marshal(server.Apps); err != nil {

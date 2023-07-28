@@ -178,7 +178,7 @@
           </el-select>
         </el-form-item>
         <el-form-item v-if="isCommand" label="命令" prop="command">
-          <el-input v-model="form.command" autocomplete="off" type="textarea" :rows="10" />
+          <el-input v-model="form.command" autocomplete="off" type="textarea" placeholder="可配置参数占位符${}，配置个数需要与下面参数个数一致，按顺序替换" :rows="10" />
         </el-form-item>
         <el-form-item label="参数个数" prop="commandVarNumbers">
           <el-input v-model.number="form.commandVarNumbers" autocomplete="off" />

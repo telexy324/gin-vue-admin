@@ -165,6 +165,20 @@ func (a *CmdbServerApi) GetServerList(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
+	adminID := utils.GetUserID(c)
+	err, systemList := cmdbSystemService.GetAdminSystems(adminID)
+	if err != nil {
+		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
+		response.FailWithMessage("获取失败", c)
+		return
+	}
+	if len(pageInfo.SystemIDs) == 0 {
+		sysIds := make([]int, 0, len(systemList))
+		for _, system := range systemList {
+			sysIds = append(sysIds, int(system.ID))
+		}
+		pageInfo.SystemIDs = sysIds
+	}
 	if err, serverList, total := cmdbServerService.GetServerList(pageInfo); err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 		response.FailWithMessage("获取失败", c)
