@@ -352,8 +352,19 @@
 
     <el-dialog v-model="dialogFormVisibleDownload" :before-close="closeDownloadDialog" title="文件列表">
       <ul class="file-name">
-        <li v-for="(item,index) in fileNames" :key="index" @click="downLoadFile(index)">
-          <pre>{{ item }}</pre>
+        <li
+          v-show="!isTop"
+          style="text-decoration: underline"
+          class="file"
+          @click="showAboveDirectory"
+        >..</li>
+        <li
+          v-for="(item,index) in fileInfos"
+          :key="index"
+          :class="item.directory?'directory':'file'"
+          @click="processFile(item.directory, index)"
+        >
+          <pre>{{ item.fileName }}</pre>
         </li>
       </ul>
       <template #footer>
@@ -630,10 +641,12 @@ export default {
       dialogLogFormVisible: false,
       dialogLogTitle: '新增日志提取模板',
       logType: '',
-      fileNames: [],
+      fileInfos: [],
       fNames: [],
       currentTemplate: '',
       dialogFormVisibleDownload: false,
+      currentDirectory: '',
+      isTop: true,
       hasEdit: true,
       hasCreate: true,
       hasDelete: true,
@@ -891,17 +904,7 @@ export default {
     async runTask(row) {
       if (row.executeType === 2) {
         this.currentTemplate = row
-        const fileNames = (await getFileList({
-          ID: row.ID
-        })).data.fileNames
-        this.fileNames = fileNames.map((item) => {
-          const fields = item.split(' ')
-          const replacing = ' '.repeat(12 - fields[0].length)
-          this.fNames.push(fields[1])
-          return item.replace(' ', replacing)
-        })
-        console.log(this.fileNames)
-        this.showFileList()
+        await this.showFileList(row.logPath)
       } else if (row.executeType === 3) {
         const task = (await deployServer({
           ID: row.ID
@@ -1245,17 +1248,52 @@ export default {
         }
       })
     },
-    showFileList() {
+    async showFileList(path) {
+      const resp = (await getFileList({
+        ID: this.currentTemplate.ID,
+        directory: path,
+      })).data
+      this.isTop = resp.isTop
+      this.currentDirectory = resp.currentDirectory
+      this.fileInfos = resp.fileInfos.map((item) => {
+        if (!item.directory) {
+          const fields = item.fileName.split(' ')
+          // const replacing = ' '.repeat(12 - fields[0].length)
+          this.fNames.push(fields[0])
+          // return item.fileName.replace(' ', replacing)
+          return item
+        } else {
+          this.fNames.push(item.fileName)
+          return item
+        }
+      })
       this.dialogFormVisibleDownload = true
+    },
+    showAboveDirectory() {
+      const aboveDirectory = this.currentDirectory.slice(0, this.currentDirectory.slice(0, this.currentDirectory.lastIndexOf('/')).lastIndexOf('/'))
+      this.showFileList(aboveDirectory)
     },
     closeDownloadDialog() {
       this.fileNames = []
       this.currentTemplate = ''
       this.dialogFormVisibleDownload = false
       this.currentSystem = ''
+      this.currentDirectory = ''
+    },
+    processFile(directory, index) {
+      if (directory) {
+        this.fileNames = []
+        this.dialogFormVisibleDownload = false
+        const name = this.fNames[index]
+        this.fNames = []
+        this.showFileList(this.currentDirectory + name)
+      } else {
+        this.downLoadFile(index)
+      }
     },
     async downLoadFile(index) {
-      const item = this.fNames[index]
+      const item = this.currentDirectory + this.fNames[index]
+      const filename = this.fNames[index]
       const id = this.currentTemplate.ID
       const type = this.currentTemplate.logOutput
       this.closeDownloadDialog()
@@ -1268,7 +1306,7 @@ export default {
         this.dialogFormVisibleDownload = false
         this.showTaskLog(task)
       } else {
-        downloadFile(id, item)
+        downloadFile(id, item, filename)
       }
     },
     filterSystemName(value) {
@@ -1586,6 +1624,12 @@ export default {
     padding: 10px 0;
     font-size: 16px;
     font-weight: 400;
+    //color: #0154ff;
+  }
+  .directory {
+    color: #01ff80;
+  }
+  .file {
     color: #0154ff;
   }
   li:hover {

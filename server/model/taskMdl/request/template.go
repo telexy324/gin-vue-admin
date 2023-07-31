@@ -26,3 +26,8 @@ type DownLoadFileRequest struct {
 	ID   float64 `json:"id" form:"id"` // 主键ID
 	File string  `json:"file" form:"file"`
 }
+
+type FileListRequest struct {
+	ID        float64 `json:"id" form:"id"` // 主键ID
+	Directory string  `json:"directory" form:"directory"`
+}

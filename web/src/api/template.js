@@ -270,9 +270,9 @@ export const getFileList = (data) => {
 // @Produce  application/json
 // @Param checkScript Object
 // @Router /task/template/downloadFile [post]
-export const downloadFile = (id, fileName) => {
+export const downloadFile = (id, filePath, fileName) => {
   return service({
-    url: '/task/template/downloadFile?id=' + id + '&file=' + fileName,
+    url: '/task/template/downloadFile?id=' + id + '&file=' + filePath,
     method: 'get',
     responseType: 'blob'
   }).then((res) => {

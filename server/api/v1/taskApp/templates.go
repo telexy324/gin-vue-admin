@@ -735,13 +735,17 @@ func (a *TemplateApi) GetSetTaskList(c *gin.Context) {
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"更新成功"}"
 // @Router /task/template/getFileList [post]
 func (a *TemplateApi) GetFileList(c *gin.Context) {
-	var idInfo request.GetById
+	var idInfo templateReq.FileListRequest
 	if err := c.ShouldBindJSON(&idInfo); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
 	if err := utils.Verify(idInfo, utils.IdVerify); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err := utils.Verify(idInfo, utils.TaskFileListVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
@@ -767,13 +771,15 @@ func (a *TemplateApi) GetFileList(c *gin.Context) {
 		global.GVA_LOG.Error("create ssh client failed: ", zap.String("server IP: ", server.ManageIp), zap.Any("err", err))
 		return
 	}
-	fileNames, err := templateService.GetFileList(&sshClient, template)
+	fileInfos, isTop, err := templateService.GetFileList(&sshClient, template, idInfo.Directory)
 	if err != nil {
-		global.GVA_LOG.Error("check script failed", zap.Any("err", err))
-		response.FailWithMessage("check script failed", c)
+		global.GVA_LOG.Error("get file list failed", zap.Any("err", err))
+		response.FailWithMessage("get file list failed", c)
 	} else {
 		response.OkWithDetailed(templateRes.TemplateFileListResponse{
-			FileNames: fileNames,
+			FileInfos:        fileInfos,
+			IsTop:            isTop,
+			CurrentDirectory: strings.TrimRight(idInfo.Directory, "/") + "/",
 		}, "获取成功", c)
 	}
 }
@@ -810,6 +816,10 @@ func (a *TemplateApi) DownloadFile(c *gin.Context) {
 		response.FailWithMessage("template type is not download", c)
 		return
 	}
+	if !strings.Contains(info.File, template.LogPath) {
+		response.FailWithMessage("file not in log path", c)
+		return
+	}
 	err, server := cmdbServerService.GetServerById(float64(template.TargetIds[0]))
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
@@ -822,15 +832,14 @@ func (a *TemplateApi) DownloadFile(c *gin.Context) {
 		response.FailWithMessage("create ssh client failed", c)
 		return
 	}
-	filePath := "/" + strings.Trim(template.LogPath, "/") + "/"
-	fileBytes, err := sshClient.Download(filePath + info.File)
+	fileBytes, err := sshClient.Download(info.File)
 	if err != nil {
 		global.GVA_LOG.Error("download file failed", zap.Any("err", err))
 		response.FailWithMessage("download file failed", c)
 		return
 	}
+	c.Header("Content-Disposition", "attachment; filename="+info.File[strings.LastIndex(info.File, "/")+1:])
 	c.Header("Content-Type", "application/octet-stream")
-	c.Header("Content-Disposition", "attachment; filename="+info.File)
 	c.Header("Content-Transfer-Encoding", "binary")
 	c.Header("success", "true")
 	//fileBytes,err:=io.ReadAll(file)
@@ -884,11 +893,14 @@ func (a *TemplateApi) UploadLogServer(c *gin.Context) {
 		response.FailWithMessage("template type is not upload to log server", c)
 		return
 	}
-	filePath := "/" + strings.Trim(template.LogPath, "/") + "/"
+	if !strings.Contains(info.File, template.LogPath) {
+		response.FailWithMessage("file not in log path", c)
+		return
+	}
 	userID := int(utils.GetUserID(c))
 	task := taskMdl.Task{
 		TemplateId:   int(info.ID),
-		FileDownload: filePath + info.File,
+		FileDownload: info.File,
 	}
 	if taskNew, err := taskPool.TPool.AddTask(task, userID, 0); err != nil {
 		global.GVA_LOG.Error("添加失败!", zap.Any("err", err))

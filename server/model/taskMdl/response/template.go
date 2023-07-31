@@ -32,5 +32,12 @@ type TaskTemplateSetTemplateResponse struct {
 }
 
 type TemplateFileListResponse struct {
-	FileNames []string `json:"fileNames"`
+	IsTop            bool       `json:"isTop"`
+	FileInfos        []FileInfo `json:"fileInfos"`
+	CurrentDirectory string     `json:"currentDirectory"`
+}
+
+type FileInfo struct {
+	FileName  string `json:"fileName"`
+	Directory bool   `json:"directory"`
 }

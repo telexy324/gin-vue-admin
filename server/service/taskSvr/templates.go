@@ -662,14 +662,41 @@ func (templateService *TaskTemplatesService) GetSetTaskList(info request2.SetTas
 	return err, setTaskList, total
 }
 
-func (templateService *TaskTemplatesService) GetFileList(sshClient *common.SSHClient, template taskMdl.TaskTemplate) (fileNames []string, err error) {
-	var command string
-	command = `ls -lh ` + template.LogPath + ` | grep ^- | awk '{print $5 " " $9}'`
-	outputs, err := sshClient.CommandSingle(command)
+func (templateService *TaskTemplatesService) GetFileList(sshClient *common.SSHClient, template taskMdl.TaskTemplate, selectedDirectory string) (fileInfos []response.FileInfo, isTop bool, err error) {
+	selectedDirectory = strings.TrimRight(selectedDirectory, "/") + "/"
+	if !strings.Contains(selectedDirectory, template.LogPath) {
+		err = errors.New("directory not in log path")
+		return
+	}
+	commandFile := `ls -lh ` + selectedDirectory + ` | grep ^- | awk '{print $9 " " $5}'`
+	outputFile, err := sshClient.CommandSingle(commandFile)
 	if err != nil {
 		return
 	}
-	fileNames = strings.Split(outputs, "\n")
+	commandDirectory := `ls -lh ` + selectedDirectory + ` | grep ^d | awk '{print $9}'`
+	outputDirectory, err := sshClient.CommandSingle(commandDirectory)
+	if err != nil {
+		return
+	}
+	outputDirectory = strings.TrimRight(outputDirectory, "\n")
+	directories := strings.Split(outputDirectory, "\n")
+	for _, d := range directories {
+		fileInfos = append(fileInfos, response.FileInfo{
+			FileName:  d,
+			Directory: true,
+		})
+	}
+	outputFile = strings.TrimRight(outputFile, "\n")
+	fileNames := strings.Split(outputFile, "\n")
+	for _, f := range fileNames {
+		fileInfos = append(fileInfos, response.FileInfo{
+			FileName:  f,
+			Directory: false,
+		})
+	}
+	if len(selectedDirectory) <= len(template.LogPath) {
+		isTop = true
+	}
 	//files := strings.Split(outputs, "\n")
 	//for _, f := range files {
 	//	fields := strings.Split(f, " ")
