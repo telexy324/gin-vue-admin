@@ -678,21 +678,25 @@ func (templateService *TaskTemplatesService) GetFileList(sshClient *common.SSHCl
 	if err != nil {
 		return
 	}
-	outputDirectory = strings.TrimRight(outputDirectory, "\n")
-	directories := strings.Split(outputDirectory, "\n")
-	for _, d := range directories {
-		fileInfos = append(fileInfos, response.FileInfo{
-			FileName:  d,
-			Directory: true,
-		})
+	if outputDirectory != "" {
+		outputDirectory = strings.TrimRight(outputDirectory, "\n")
+		directories := strings.Split(outputDirectory, "\n")
+		for _, d := range directories {
+			fileInfos = append(fileInfos, response.FileInfo{
+				FileName:  d,
+				Directory: true,
+			})
+		}
 	}
-	outputFile = strings.TrimRight(outputFile, "\n")
-	fileNames := strings.Split(outputFile, "\n")
-	for _, f := range fileNames {
-		fileInfos = append(fileInfos, response.FileInfo{
-			FileName:  f,
-			Directory: false,
-		})
+	if outputFile != "" {
+		outputFile = strings.TrimRight(outputFile, "\n")
+		fileNames := strings.Split(outputFile, "\n")
+		for _, f := range fileNames {
+			fileInfos = append(fileInfos, response.FileInfo{
+				FileName:  f,
+				Directory: false,
+			})
+		}
 	}
 	if len(selectedDirectory) <= len(template.LogPath) {
 		isTop = true

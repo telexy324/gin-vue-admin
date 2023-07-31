@@ -1271,18 +1271,18 @@ export default {
     },
     showAboveDirectory() {
       const aboveDirectory = this.currentDirectory.slice(0, this.currentDirectory.slice(0, this.currentDirectory.lastIndexOf('/')).lastIndexOf('/'))
+      this.fNames = []
       this.showFileList(aboveDirectory)
     },
     closeDownloadDialog() {
-      this.fileNames = []
       this.currentTemplate = ''
       this.dialogFormVisibleDownload = false
       this.currentSystem = ''
       this.currentDirectory = ''
+      this.fNames = []
     },
     processFile(directory, index) {
       if (directory) {
-        this.fileNames = []
         this.dialogFormVisibleDownload = false
         const name = this.fNames[index]
         this.fNames = []
