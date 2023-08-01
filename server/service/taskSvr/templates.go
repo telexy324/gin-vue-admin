@@ -698,7 +698,7 @@ func (templateService *TaskTemplatesService) GetFileList(sshClient *common.SSHCl
 			})
 		}
 	}
-	if len(selectedDirectory) <= len(template.LogPath) {
+	if len(selectedDirectory) <= len(strings.TrimRight(template.LogPath, "/")+"/") {
 		isTop = true
 	}
 	//files := strings.Split(outputs, "\n")
