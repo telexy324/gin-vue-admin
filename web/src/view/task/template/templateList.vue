@@ -511,6 +511,15 @@
         </div>
       </template>
     </el-dialog>
+    <el-dialog v-model="confirmVisible" :before-close="closeConfirm" title="请确认">
+      即将运行: {{ pendingTemplate.name }}
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button size="small" @click="closeConfirm">取 消</el-button>
+          <el-button size="small" type="primary" @click="enterConfirm">确 定</el-button>
+        </div>
+      </template>
+    </el-dialog>
     <el-drawer v-if="drawer" v-model="drawer" :with-header="false" size="40%" title="请选择系统">
       <Systems ref="systems" :keys="searchInfo.systemIds" @checked="getCheckedTemplates" />
     </el-drawer>
@@ -719,6 +728,9 @@ export default {
         ],
       },
       runningTemplateId: '',
+      confirmVisible: false,
+      pendingTemplate: '',
+      confirmed: false,
     }
   },
   computed: {
@@ -921,6 +933,12 @@ export default {
     },
     async runTask(row) {
       if (row.executeType === 2 && row.logSelect === 2) {
+        if (!this.confirmed) {
+          this.pendingTemplate = row
+          this.confirmVisible = true
+          return
+        }
+        this.confirmed = false
         if (row.type === 2) {
           const task = (await uploadLogServer({
             ID: row.ID,
@@ -935,10 +953,15 @@ export default {
         this.currentTemplate = row
         await this.showFileList(row.logPath)
       } else if (row.executeType === 3) {
+        if (!this.confirmed) {
+          this.pendingTemplate = row
+          this.confirmVisible = true
+          return
+        }
+        this.confirmed = false
         const task = (await deployServer({
           ID: row.ID
         })).data.task
-        console.log(task.ID)
         this.showTaskLog(task)
       } else {
         if (row.commandVarNumbers > 0) {
@@ -948,10 +971,15 @@ export default {
           this.runningTemplateId = row.ID
           this.CommandVarFormVisible = true
         } else {
+          if (!this.confirmed) {
+            this.pendingTemplate = row
+            this.confirmVisible = true
+            return
+          }
+          this.confirmed = false
           const task = (await addTask({
             templateId: row.ID
           })).data.task
-          console.log(task.ID)
           this.showTaskLog(task)
         }
       }
@@ -1620,6 +1648,17 @@ export default {
       } else {
         callback()
       }
+    },
+    enterConfirm() {
+      this.confirmVisible = false
+      const row = this.pendingTemplate
+      this.pendingTemplate = ''
+      this.confirmed = true
+      this.runTask(row)
+    },
+    closeConfirm() {
+      this.confirmVisible = false
+      this.pendingTemplate = ''
     },
   }
 }
