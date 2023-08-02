@@ -178,6 +178,7 @@ create table `application_task_templates`
     `deploy_infos`        text,
     `interactive`         tinyint(2) NOT NULL DEFAULT '0' COMMENT '交互执行 0 非交互 1 交互',
     `command_var_numbers` int          NOT NULL DEFAULT '0',
+    `log_select`          tinyint(2) NOT NULL DEFAULT '0' COMMENT '日志选择 1 可选 2 不可选',
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

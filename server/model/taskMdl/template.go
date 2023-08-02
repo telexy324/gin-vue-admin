@@ -32,6 +32,7 @@ type TaskTemplate struct {
 	DeployInfos       string                          `json:"deployInfos" gorm:"type:text;column:deploy_infos"`                                   // 服务器上传位置
 	Interactive       int                             `json:"interactive" gorm:"type:tinyint(2);not null;default:0;column:interactive"`           // 执行方式 1 命令 2 脚本
 	CommandVarNumbers int                             `json:"commandVarNumbers" gorm:"type:int(5);not null;default:0;column:command_var_numbers"` // 命令参数个数
+	LogSelect         int                             `json:"logSelect" gorm:"type:tinyint(2);not null;default:0;column:log_select"`              // 日志目录可选择 1 可 2 不可
 	TaskDeployInfos   []TaskDeployInfo                `json:"taskDeployInfos" gorm:"-"`
 	TargetIds         []int                           `json:"targetIds" gorm:"-"`
 	TargetServers     []application.ApplicationServer `json:"targetServers" gorm:"-"`

@@ -284,11 +284,22 @@
         <el-form-item label="日志文件夹位置" prop="logPath">
           <el-input v-model="logForm.logPath" autocomplete="off" />
         </el-form-item>
-        <el-form-item label="执行方式" prop="logOutput">
-          <el-select v-model="logForm.logOutput" @change="logOutputChange">
-            <el-option v-for="val in logOutputOptions" :key="val.ID" :value="val.ID" :label="val.name" />
-          </el-select>
-        </el-form-item>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="执行方式" prop="logOutput">
+              <el-select v-model="logForm.logOutput" @change="logOutputChange">
+                <el-option v-for="val in logOutputOptions" :key="val.ID" :value="val.ID" :label="val.name" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="是否目录" prop="logSelect">
+              <el-select v-model="logForm.logSelect">
+                <el-option v-for="val in logSelectOptions" :key="val.ID" :value="val.ID" :label="val.name" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
         <el-form-item v-if="!downloadDirectly" label="上传位置" prop="logDst">
           <el-input v-model="logForm.logDst" autocomplete="off" />
         </el-form-item>
@@ -623,12 +634,14 @@ export default {
         logOutput: '',
         logDst: '',
         dstServerId: '',
-        secretId: ''
+        secretId: '',
+        logSelect: ''
       },
       logRules: {
         name: [{ required: true, message: '请输入模板名', trigger: 'blur' }],
         logPath: [
-          { required: true, message: '请输入日志文件夹路径', trigger: 'blur' }
+          { required: true, message: '请输入日志文件夹路径', trigger: 'blur' },
+          { validator: this.logPathEnding, trigger: 'blur' }
         ],
         sysUser: [{ required: true, message: '请输入执行用户', trigger: 'blur' }],
         systemId: [{ required: true, message: '请选择所属系统', trigger: 'blur' }],
@@ -637,6 +650,7 @@ export default {
         logDst: [{ required: true, message: '请输入上传位置', trigger: 'blur' }],
         dstServerId: [{ required: true, message: '请选择日志服务器', trigger: 'blur' }],
         secretId: [{ required: true, message: '请选择上传用户', trigger: 'blur' }],
+        logSelect: [{ required: true, message: '请选择是否可切换目录', trigger: 'blur' }],
       },
       dialogLogFormVisible: false,
       dialogLogTitle: '新增日志提取模板',
@@ -658,6 +672,10 @@ export default {
       logServerOptions: [],
       logSecretOptions: [],
       logSecretOptionsFiltered: [],
+      logSelectOptions: [
+        { ID: 1, name: '目录' },
+        { ID: 2, name: '具体文件' }
+      ],
       shellTypeOptions: [
         { 'key': 1, 'value': 'sh' },
         { 'key': 2, 'value': 'bash' },
@@ -902,7 +920,18 @@ export default {
       this.serverOptions = res.data
     },
     async runTask(row) {
-      if (row.executeType === 2) {
+      if (row.executeType === 2 && row.logSelect === 2) {
+        if (row.type === 2) {
+          const task = (await uploadLogServer({
+            ID: row.ID,
+          })).data.task
+          this.dialogFormVisibleDownload = false
+          this.showTaskLog(task)
+        } else {
+          const fileName = row.logPath.split('/')
+          downloadFile(row.ID, row.logPath, fileName[fileName.length - 1])
+        }
+      } else if (row.executeType === 2) {
         this.currentTemplate = row
         await this.showFileList(row.logPath)
       } else if (row.executeType === 3) {
@@ -1168,6 +1197,7 @@ export default {
         sysUser: '',
         targetIds: [],
         executeType: 2,
+        logSelect: '',
       }
     },
     async openLogDialog(type) {
@@ -1302,7 +1332,6 @@ export default {
           ID: id,
           file: item,
         })).data.task
-        console.log(task.ID)
         this.dialogFormVisibleDownload = false
         this.showTaskLog(task)
       } else {
@@ -1340,6 +1369,9 @@ export default {
       }
     },
     logOutputChange(selectValue) {
+      selectValue === 1 ? this.downloadDirectly = true : this.downloadDirectly = false
+    },
+    logSelectChange(selectValue) {
       selectValue === 1 ? this.downloadDirectly = true : this.downloadDirectly = false
     },
     changeServerId(selectValue) {
@@ -1581,6 +1613,13 @@ export default {
       this.CommandVarFormVisible = false
       this.initCommandVarsForm()
       this.runningTemplateId = ''
+    },
+    logPathEnding(rule, value, callback) {
+      if (value.slice(-1) === '/' && this.logForm.logSelect === 2) {
+        callback(new Error('不可为目录'))
+      } else {
+        callback()
+      }
     },
   }
 }
