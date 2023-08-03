@@ -281,7 +281,7 @@
             :clearable="false"
           />
         </el-form-item>
-        <el-form-item label="日志文件夹位置" prop="logPath">
+        <el-form-item label="日志位置" prop="logPath">
           <el-input v-model="logForm.logPath" autocomplete="off" />
         </el-form-item>
         <el-row>
@@ -939,9 +939,10 @@ export default {
           return
         }
         this.confirmed = false
-        if (row.type === 2) {
+        if (row.logOutput === 2) {
           const task = (await uploadLogServer({
             ID: row.ID,
+            file: row.logPath,
           })).data.task
           this.dialogFormVisibleDownload = false
           this.showTaskLog(task)
