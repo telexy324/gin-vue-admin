@@ -6,7 +6,6 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/utils"
 	"os"
 	"path/filepath"
-	"runtime/debug"
 	"time"
 
 	"github.com/songzhibin97/gkit/cache/local_cache"
@@ -17,17 +16,24 @@ import (
 	"github.com/spf13/viper"
 )
 
+var (
+	buildTime      = "2023-01-01T00:00:00"
+	currentVersion = "first commit"
+)
+
 func Viper(path ...string) *viper.Viper {
 	var config string
-	info, _ := debug.ReadBuildInfo()
+	//info, _ := debug.ReadBuildInfo()
 	if len(path) == 0 {
 		flag.StringVar(&config, "c", "", "choose config file.")
 		version := flag.Bool("v", false, "building info.")
 		flag.Parse()
 		if *version {
-			for _, setting := range info.Settings {
-				fmt.Println(setting)
-			}
+			//for _, setting := range info.Settings {
+			//	fmt.Println(setting)
+			//}
+			fmt.Println("build time:", buildTime)
+			fmt.Println("version:  ", currentVersion)
 			return nil
 		} else {
 			if config == "" { // 优先级: 命令行 > 环境变量 > 默认值

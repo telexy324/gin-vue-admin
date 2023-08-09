@@ -3,12 +3,15 @@ FROM golang:1.19-alpine as builder
 WORKDIR /go/src/github.com/flipped-aurora/gin-vue-admin/server
 COPY . .
 
+ARG CURRENTVERSION
 RUN go env -w GO111MODULE=on
 RUN go env -w GOPROXY=https://goproxy.io,direct
 RUN go env -w CGO_ENABLED=0
 RUN go env
 RUN go mod tidy
-RUN go build -o server .
+RUN go build -ldflags="-X 'github.com/flipped-aurora/gin-vue-admin/server/core.buildTime=$(date '+%Y-%m-%dT%H:%M:%S')' \
+    -X 'github.com/flipped-aurora/gin-vue-admin/server/core.currentVersion=$CURRENTVERSION' \
+    " -o server .
 
 FROM alpine:latest
 LABEL MAINTAINER="SliverHorn@sliver_horn@qq.com"
