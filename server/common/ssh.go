@@ -14,6 +14,7 @@ import (
 	"os"
 	"path"
 	"regexp"
+	"strings"
 	"sync"
 	"time"
 )
@@ -939,3 +940,39 @@ func (c *SSHClient) CommandBatch(commands []string, logger Logger, manageIP stri
 //func appendString(s string, out *[]byte) {
 //	*out = append(*out, s...)
 //}
+
+func (c *SSHClient) CommandScript(command string, logger Logger, manageIP string, interpreter string) (err error) {
+	session, err := c.Client.NewSession()
+	if err != nil {
+		logger.Log("ssh open session failed")
+		return
+	}
+	session.Stdin = strings.NewReader(command)
+	var buffer singleWriter
+	session.Stdout = &buffer
+	session.Stderr = &buffer
+	quitChan := make(chan bool)
+	go func() {
+		tick := time.NewTicker(time.Millisecond * time.Duration(100))
+		defer tick.Stop()
+		var last = 0
+		for {
+			select {
+			case <-tick.C:
+				if buffer.b.Len() != 0 {
+					last = buffer.b.Len()
+					logger.Log(string(buffer.b.Next(last)), manageIP)
+				}
+			case <-quitChan:
+				return
+			}
+		}
+	}()
+	err = session.Run(interpreter)
+	if err != nil {
+		global.GVA_LOG.Error("ws cmd bytes write to ssh.stdin pipe failed", zap.Any("err ", err))
+	}
+	time.Sleep(time.Millisecond * time.Duration(250))
+	quitChan <- true
+	return
+}

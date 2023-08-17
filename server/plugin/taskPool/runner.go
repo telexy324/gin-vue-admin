@@ -691,18 +691,28 @@ func (t *TaskRunner) runTask() (failedIPs []string) {
 					f <- s.ManageIp
 				}
 			} else {
-				//command := "sh " + t.template.ScriptPath
-				var shellType = "sh "
-				if t.template.ShellType == consts.ShellTypeSh {
-					shellType = "sh "
-				} else if t.template.ShellType == consts.ShellTypeBash {
-					shellType = "bash "
+				////command := "sh " + t.template.ScriptPath
+				//var shellType = "sh "
+				//if t.template.ShellType == consts.ShellTypeSh {
+				//	shellType = "sh "
+				//} else if t.template.ShellType == consts.ShellTypeBash {
+				//	shellType = "bash "
+				//}
+				//command := shellType + strings.Trim(t.template.ScriptPath, " ")
+				//if len(strings.Trim(t.template.ShellVars, " ")) > 0 {
+				//	command = command + " " + strings.Trim(t.template.ShellVars, " ")
+				//}
+				//err = sshClient.Commands(command, t, s.ManageIp)
+				//if err != nil {
+				//	global.GVA_LOG.Error("run task failed on exec command: ", zap.Uint("task ID: ", t.task.ID), zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
+				//	f <- s.ManageIp
+				//	return
+				//}
+				var shellType = "bash -ex"
+				if t.template.ShellType == consts.ShellTypeBash {
+					shellType = "bash -e"
 				}
-				command := shellType + strings.Trim(t.template.ScriptPath, " ")
-				if len(strings.Trim(t.template.ShellVars, " ")) > 0 {
-					command = command + " " + strings.Trim(t.template.ShellVars, " ")
-				}
-				err = sshClient.Commands(command, t, s.ManageIp)
+				err = sshClient.CommandScript(formattedCommand, t, s.ManageIp, shellType)
 				if err != nil {
 					global.GVA_LOG.Error("run task failed on exec command: ", zap.Uint("task ID: ", t.task.ID), zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
 					f <- s.ManageIp

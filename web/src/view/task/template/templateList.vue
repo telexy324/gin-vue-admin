@@ -126,6 +126,14 @@
               <el-input v-model="form.name" autocomplete="off" />
             </el-form-item>
           </el-col>
+          <el-col :span="12">
+            <el-form-item label="执行方式" prop="mode">
+              <el-select v-model="form.mode" style="width:100%" @change="commandChange">
+                <el-option :value="1" label="命令" />
+                <el-option :value="2" label="脚本" />
+              </el-select>
+            </el-form-item>
+          </el-col>
         </el-row>
         <el-form-item label="描述" prop="description">
           <el-input v-model="form.description" autocomplete="off" type="textarea" />
@@ -180,8 +188,16 @@
         <el-form-item v-if="isCommand" label="命令" prop="command">
           <el-input v-model="form.command" autocomplete="off" type="textarea" placeholder="可配置参数占位符${}，配置个数需要与下面参数个数一致，按顺序替换" :rows="10" />
         </el-form-item>
-        <el-form-item label="参数个数" prop="commandVarNumbers">
+        <el-form-item v-if="isCommand" label="参数个数" prop="commandVarNumbers">
           <el-input v-model.number="form.commandVarNumbers" autocomplete="off" />
+        </el-form-item>
+        <el-form-item v-if="isScript" label="shell方式" prop="shellType">
+          <el-select v-model="form.shellType">
+            <el-option v-for="val in shellTypeOptions" :key="val.key" :value="val.key" :label="val.value" />
+          </el-select>
+        </el-form-item>
+        <el-form-item v-if="isScript" label="脚本" prop="command">
+          <el-input v-model="form.command" autocomplete="off" type="textarea" :rows="10" />
         </el-form-item>
 <!--        <el-form-item v-if="isScript" label="脚本位置" prop="scriptPath">-->
 <!--          <el-input v-model="form.scriptPath" autocomplete="off" />-->
@@ -605,7 +621,7 @@ export default {
         targetIds: [{ required: true, message: '请选择目标', trigger: 'blur' }],
         command: [{ required: true, message: '请输入命令', trigger: 'blur' }],
         scriptPath: [{ required: true, message: '请输入脚本位置', trigger: 'blur' }],
-        scriptType: [{ required: true, message: '请选择shell方式', trigger: 'blur' }],
+        shellType: [{ required: true, message: '请选择shell方式', trigger: 'blur' }],
         interactive: [{ required: true, message: '请选择执命令执行方式', trigger: 'blur' }],
         commandVarNumbers: [
           { required: true, message: '请输入命令参数个数,0为无参', trigger: 'blur' },
@@ -812,6 +828,8 @@ export default {
       this.dialogFormVisible = false
       this.serverOptions = []
       this.currentSystem = ''
+      this.isCommand = true
+      this.isScript = false
     },
     openDialog(type) {
       switch (type) {
@@ -847,6 +865,7 @@ export default {
         await this.openDeployDialog('edit')
       } else {
         this.form = res.data.taskTemplate
+        this.commandChange(this.form.shellType)
         await this.setServerOptions(this.form.systemId)
         this.openDialog('edit')
       }
@@ -988,15 +1007,15 @@ export default {
     showTaskLog(task) {
       emitter.emit('i-show-task', task)
     },
-    // commandChange(selectValue) {
-    //   if (selectValue === 1) {
-    //     this.isCommand = true
-    //     this.isScript = false
-    //   } else {
-    //     this.isCommand = false
-    //     this.isScript = true
-    //   }
-    // },
+    commandChange(selectValue) {
+      if (selectValue === 1) {
+        this.isCommand = true
+        this.isScript = false
+      } else {
+        this.isCommand = false
+        this.isScript = true
+      }
+    },
     // async checkScript() {
     //   const res = (await checkScript({
     //     ID: this.form.ID,
