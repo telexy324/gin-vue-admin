@@ -708,9 +708,9 @@ func (t *TaskRunner) runTask() (failedIPs []string) {
 				//	f <- s.ManageIp
 				//	return
 				//}
-				var shellType = "bash -ex"
+				var shellType = "bash -e"
 				if t.template.ShellType == consts.ShellTypeBash {
-					shellType = "bash -e"
+					shellType = "bash"
 				}
 				err = sshClient.CommandScript(formattedCommand, t, s.ManageIp, shellType)
 				if err != nil {

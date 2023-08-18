@@ -865,7 +865,7 @@ export default {
         await this.openDeployDialog('edit')
       } else {
         this.form = res.data.taskTemplate
-        this.commandChange(this.form.shellType)
+        this.commandChange(this.form.mode)
         await this.setServerOptions(this.form.systemId)
         this.openDialog('edit')
       }
