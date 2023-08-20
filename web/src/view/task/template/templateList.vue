@@ -199,6 +199,9 @@
         <el-form-item v-if="isScript" label="脚本" prop="command">
           <el-input v-model="form.command" autocomplete="off" type="textarea" :rows="10" />
         </el-form-item>
+        <el-form-item v-if="isScript" label="参数个数" prop="commandVarNumbers">
+          <el-input v-model.number="form.commandVarNumbers" autocomplete="off" />
+        </el-form-item>
 <!--        <el-form-item v-if="isScript" label="脚本位置" prop="scriptPath">-->
 <!--          <el-input v-model="form.scriptPath" autocomplete="off" />-->
 <!--        </el-form-item>-->
