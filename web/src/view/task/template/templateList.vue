@@ -126,14 +126,14 @@
               <el-input v-model="form.name" autocomplete="off" />
             </el-form-item>
           </el-col>
-          <el-col :span="12">
-            <el-form-item label="执行方式" prop="mode">
-              <el-select v-model="form.mode" style="width:100%" @change="commandChange">
-                <el-option :value="1" label="命令" />
-                <el-option :value="2" label="脚本" />
-              </el-select>
-            </el-form-item>
-          </el-col>
+<!--          <el-col :span="12">-->
+<!--            <el-form-item label="执行方式" prop="mode">-->
+<!--              <el-select v-model="form.mode" style="width:100%" @change="commandChange">-->
+<!--                <el-option :value="1" label="命令" />-->
+<!--                <el-option :value="2" label="脚本" />-->
+<!--              </el-select>-->
+<!--            </el-form-item>-->
+<!--          </el-col>-->
         </el-row>
         <el-form-item label="描述" prop="description">
           <el-input v-model="form.description" autocomplete="off" type="textarea" />
@@ -179,19 +179,19 @@
             :clearable="true"
           />
         </el-form-item>
-        <el-form-item v-if="isCommand" label="交互执行" prop="interactive">
-          <el-select v-model="form.interactive" style="width:100%" placeholder="推荐非交互式，交互式用于切换用户，进入客户端等（推荐使用脚本），易出现乱码及冗余信息" :rows="5">
-            <el-option :value="0" label="非交互（推荐）" />
-            <el-option :value="1" label="交互（执行切换用户，进入客户端等命令，易出现乱码及冗余信息）" />
-          </el-select>
-        </el-form-item>
-        <el-form-item v-if="isCommand" label="命令" prop="command">
-          <el-input v-model="form.command" autocomplete="off" type="textarea" placeholder="可配置参数占位符${}，配置个数需要与下面参数个数一致，按顺序替换" :rows="10" />
-        </el-form-item>
-        <el-form-item v-if="isCommand" label="参数个数" prop="commandVarNumbers">
-          <el-input v-model.number="form.commandVarNumbers" autocomplete="off" />
-        </el-form-item>
-        <el-form-item v-if="isScript" label="shell方式" prop="shellType">
+<!--        <el-form-item v-if="isCommand" label="交互执行" prop="interactive">-->
+<!--          <el-select v-model="form.interactive" style="width:100%" placeholder="推荐非交互式，交互式用于切换用户，进入客户端等（推荐使用脚本），易出现乱码及冗余信息" :rows="5">-->
+<!--            <el-option :value="0" label="非交互（推荐）" />-->
+<!--            <el-option :value="1" label="交互（执行切换用户，进入客户端等命令，易出现乱码及冗余信息）" />-->
+<!--          </el-select>-->
+<!--        </el-form-item>-->
+<!--        <el-form-item v-if="isCommand" label="命令" prop="command">-->
+<!--          <el-input v-model="form.command" autocomplete="off" type="textarea" placeholder="可配置参数占位符${}，配置个数需要与下面参数个数一致，按顺序替换" :rows="10" />-->
+<!--        </el-form-item>-->
+<!--        <el-form-item v-if="isCommand" label="参数个数" prop="commandVarNumbers">-->
+<!--          <el-input v-model.number="form.commandVarNumbers" autocomplete="off" />-->
+<!--        </el-form-item>-->
+        <el-form-item v-if="isScript" label="方式" prop="shellType">
           <el-select v-model="form.shellType">
             <el-option v-for="val in shellTypeOptions" :key="val.key" :value="val.key" :label="val.value" />
           </el-select>
@@ -600,7 +600,7 @@ export default {
         ID: '',
         name: '',
         description: '',
-        mode: 1,
+        mode: 2,
         command: '',
         scriptPath: '',
         sysUser: '',
@@ -632,8 +632,8 @@ export default {
         ],
       },
       path: path,
-      isCommand: true,
-      isScript: false,
+      isCommand: false,
+      isScript: true,
       canCheck: false,
       dialogFormVisibleScript: false,
       scriptForm: {
@@ -707,6 +707,7 @@ export default {
       shellTypeOptions: [
         { 'key': 1, 'value': 'sh' },
         { 'key': 2, 'value': 'bash' },
+        { 'key': 3, 'value': 'python' },
       ],
       deployForm: {
         ID: '',
@@ -831,8 +832,8 @@ export default {
       this.dialogFormVisible = false
       this.serverOptions = []
       this.currentSystem = ''
-      this.isCommand = true
-      this.isScript = false
+      this.isCommand = false
+      this.isScript = true
     },
     openDialog(type) {
       switch (type) {
@@ -868,7 +869,7 @@ export default {
         await this.openDeployDialog('edit')
       } else {
         this.form = res.data.taskTemplate
-        this.commandChange(this.form.mode)
+        // this.commandChange(this.form.mode)
         await this.setServerOptions(this.form.systemId)
         this.openDialog('edit')
       }

@@ -711,6 +711,8 @@ func (t *TaskRunner) runTask() (failedIPs []string) {
 				var shellType = "bash -se"
 				if t.template.ShellType == consts.ShellTypeBash {
 					shellType = "bash -s"
+				} else if t.template.ShellType == consts.ShellTypePython {
+					shellType = "python"
 				}
 				if len(t.task.CommandVars) > 0 {
 					for _, v := range t.task.CommandVars {

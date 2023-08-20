@@ -28,6 +28,7 @@ const (
 const (
 	ShellTypeSh = iota + 1
 	ShellTypeBash
+	ShellTypePython
 )
 
 const (
