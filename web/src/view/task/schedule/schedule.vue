@@ -128,14 +128,12 @@
           <el-input v-model="form.cronFormat" autocomplete="off" />
         </el-form-item>
         <el-row>
-          <el-col :span="6">
+          <el-col :span="12">
             <el-form-item>
               <el-button size="small" type="primary" @click="checkCronFormat">检查Schedule格式</el-button>
             </el-form-item>
           </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="6">
+          <el-col :span="12">
             <el-form-item label="启用">
               <el-switch
                 v-model="form.valid"
