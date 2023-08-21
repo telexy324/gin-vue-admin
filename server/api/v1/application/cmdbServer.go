@@ -229,12 +229,14 @@ func (a *CmdbServerApi) GetSystemServers(c *gin.Context) {
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
 // @Router /cmdb/getAllServerIds [get]
 func (a *CmdbServerApi) GetAllServerIds(c *gin.Context) {
+	adminID := utils.GetUserID(c)
 	err, systemList, _ := cmdbSystemService.GetSystemList(request2.SystemSearch{
 		PageInfo: request.PageInfo{
 			Page:     1,
 			PageSize: 99999,
 		},
-	})
+	},
+		adminID)
 	if err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 		response.FailWithMessage("获取失败", c)

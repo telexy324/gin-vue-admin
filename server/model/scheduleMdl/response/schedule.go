@@ -10,4 +10,5 @@ type SchedulesResponse struct {
 
 type ScheduleResponse struct {
 	Schedule scheduleMdl.Schedule `json:"schedule"`
+	SystemId int                  `json:"systemId"`
 }

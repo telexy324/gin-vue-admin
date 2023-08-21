@@ -283,7 +283,7 @@ func (cmdbSystemService *CmdbSystemService) GetSystemById(id float64) (err error
 //@description: 获取系统分页
 //@return: err error, list interface{}, total int64
 
-func (cmdbSystemService *CmdbSystemService) GetSystemList(info request2.SystemSearch) (err error, list interface{}, total int64) {
+func (cmdbSystemService *CmdbSystemService) GetSystemList(info request2.SystemSearch, adminID uint) (err error, list interface{}, total int64) {
 	limit := info.PageSize
 	offset := info.PageSize * (info.Page - 1)
 	var systemList []application.ApplicationSystem
@@ -318,8 +318,15 @@ func (cmdbSystemService *CmdbSystemService) GetSystemList(info request2.SystemSe
 		if err = global.GVA_DB.Where("system_id = ?", system.ID).Find(&admins).Error; err != nil {
 			return
 		}
+		var hasSystem bool
 		for _, admin := range admins {
+			if admin.AdminId == int(adminID) {
+				hasSystem = true
+			}
 			adminIds = append(adminIds, int(admin.ID))
+		}
+		if !hasSystem {
+			continue
 		}
 		systemInfoList = append(systemInfoList, applicationRes.ApplicationSystemResponse{
 			System:   system,

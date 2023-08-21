@@ -176,7 +176,8 @@ func (a *CmdbSystemApi) GetSystemList(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err, systemList, total := cmdbSystemService.GetSystemList(pageInfo); err != nil {
+	adminID := utils.GetUserID(c)
+	if err, systemList, total := cmdbSystemService.GetSystemList(pageInfo, adminID); err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 		response.FailWithMessage("获取失败", c)
 	} else {

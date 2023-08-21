@@ -7,6 +7,8 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/model/scheduleMdl"
 	scheduleReq "github.com/flipped-aurora/gin-vue-admin/server/model/scheduleMdl/request"
 	scheduleRes "github.com/flipped-aurora/gin-vue-admin/server/model/scheduleMdl/response"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl"
+	templateReq "github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl/request"
 	schedules "github.com/flipped-aurora/gin-vue-admin/server/plugin/schedulePool"
 	"github.com/flipped-aurora/gin-vue-admin/server/utils"
 	"github.com/gin-gonic/gin"
@@ -190,9 +192,15 @@ func (a *ScheduleApi) GetScheduleById(c *gin.Context) {
 		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 		response.FailWithMessage("获取失败", c)
 	} else {
-		response.OkWithDetailed(scheduleRes.ScheduleResponse{
-			Schedule: schedule,
-		}, "获取成功", c)
+		if template, err := templateService.GetTaskTemplate(float64(schedule.TemplateID)); err != nil {
+			global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
+			response.FailWithMessage("获取失败", c)
+		} else {
+			response.OkWithDetailed(scheduleRes.ScheduleResponse{
+				Schedule: schedule,
+				SystemId: template.SystemId,
+			}, "获取成功", c)
+		}
 	}
 }
 
@@ -201,11 +209,11 @@ func (a *ScheduleApi) GetScheduleById(c *gin.Context) {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body request.GetScheduleByTemplateId true "页码, 每页大小"
+// @Param data body request.GetScheduleList true "页码, 每页大小"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
 // @Router /task/schedule/getTemplateScheduleList [post]
 func (a *ScheduleApi) GetTemplateScheduleList(c *gin.Context) {
-	var pageInfo scheduleReq.GetScheduleByTemplateId
+	var pageInfo scheduleReq.GetScheduleList
 	if err := c.ShouldBindJSON(&pageInfo); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
@@ -215,12 +223,50 @@ func (a *ScheduleApi) GetTemplateScheduleList(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err, list, total := scheduleService.GetScheduleList(int(pageInfo.TemplateId), pageInfo); err != nil {
+	adminID := utils.GetUserID(c)
+	err, adminSystems := cmdbSystemService.GetAdminSystems(adminID)
+	if err != nil {
+		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
+		response.FailWithMessage("获取失败", c)
+	}
+	if len(pageInfo.SystemIDs) > 0 {
+		copedIDs := make([]int, 0, 8)
+		for _, adminSystem := range adminSystems {
+			for _, id := range pageInfo.SystemIDs {
+				if id == int(adminSystem.ID) {
+					copedIDs = append(copedIDs, id)
+					continue
+				}
+			}
+		}
+		pageInfo.SystemIDs = copedIDs
+	} else {
+		for _, adminSystem := range adminSystems {
+			pageInfo.SystemIDs = append(pageInfo.SystemIDs, int(adminSystem.ID))
+		}
+	}
+	err, list, tot := templateService.GetTaskTemplates(templateReq.TaskTemplateSearch{
+		PageInfo: request.PageInfo{
+			Page:     1,
+			PageSize: 99999,
+		},
+		SystemIDs: pageInfo.SystemIDs,
+	})
+	if err != nil {
+		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
+		response.FailWithMessage("获取失败", c)
+	}
+	templateIDs := make([]int, 0, tot)
+	templates := list.([]taskMdl.TaskTemplate)
+	for _, template := range templates {
+		templateIDs = append(templateIDs, int(template.ID))
+	}
+	if err, schedules, total := scheduleService.GetScheduleList(pageInfo, templateIDs); err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 		response.FailWithMessage("获取失败", c)
 	} else {
 		response.OkWithDetailed(response.PageResult{
-			List:     list,
+			List:     schedules,
 			Total:    total,
 			Page:     pageInfo.Page,
 			PageSize: pageInfo.PageSize,

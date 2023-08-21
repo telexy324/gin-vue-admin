@@ -47,8 +47,8 @@ func (scheduleService *ScheduleService) UpdateSchedule(schedule scheduleMdl.Sche
 	return err
 }
 
-func (scheduleService *ScheduleService) GetSchedule(scheduleID float64) (template scheduleMdl.Schedule, err error) {
-	err = global.GVA_DB.Where("id =?", scheduleID).First(&template).Error
+func (scheduleService *ScheduleService) GetSchedule(scheduleID float64) (schedule scheduleMdl.Schedule, err error) {
+	err = global.GVA_DB.Where("id =?", scheduleID).First(&schedule).Error
 	return
 }
 
@@ -79,7 +79,7 @@ func (scheduleService *ScheduleService) SetScheduleCommitHash(scheduleID int, ha
 	return scheduleService.SetScheduleLastCommitHash(scheduleID, hash)
 }
 
-func (scheduleService *ScheduleService) GetScheduleList(templateID int, info scheduleReq.GetScheduleByTemplateId) (err error, list interface{}, total int64) {
+func (scheduleService *ScheduleService) GetScheduleList(info scheduleReq.GetScheduleList, templateIDs []int) (err error, list interface{}, total int64) {
 	limit := info.PageSize
 	offset := info.PageSize * (info.Page - 1)
 	db := global.GVA_DB.Model(&scheduleMdl.Schedule{})
@@ -88,9 +88,7 @@ func (scheduleService *ScheduleService) GetScheduleList(templateID int, info sch
 		return
 	}
 	var schedules []scheduleMdl.Schedule
-	if templateID > 0 {
-		db = db.Find("where template_id = ?", templateID)
-	}
+	db = db.Where("template_id in ?", templateIDs)
 	//err = db.Limit(limit).Offset(offset).Find(&schedules).Error
 	db = db.Limit(limit).Offset(offset)
 	if info.OrderKey != "" {

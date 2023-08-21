@@ -24,6 +24,7 @@
             <el-button icon="el-icon-delete" size="mini" :disabled="!schedules.length || !hasDelete" style="margin-left: 10px;">删除</el-button>
           </template>
         </el-popover>
+        <el-button class="excel-btn" size="mini" type="success" icon="el-icon-download" @click="openDrawer()">选择系统</el-button>
       </div>
       <el-table :data="tableData" @sort-change="sortChange" @selection-change="handleSelectionChange">
         <el-table-column
@@ -84,20 +85,45 @@
     <el-dialog v-model="dialogFormVisible" :before-close="closeDialog" :title="dialogTitle">
       <warning-bar title="新增定时任务，可预先检查时间格式，类似crontab" />
       <el-form ref="scheduleForm" :model="form" :rules="rules" label-width="120px">
-        <el-form-item label="模版名" prop="templateId">
-          <el-select
-            v-model="form.templateId"
-            placeholder="Select"
-            style="width: 240px"
-          >
-            <el-option
-              v-for="item in templateOptions"
-              :key="item.ID"
-              :label="item.name"
-              :value="item.ID"
-            />
-          </el-select>
-        </el-form-item>
+<!--        <el-form-item label="模版名" prop="templateId">-->
+<!--          <el-select-->
+<!--            v-model="form.templateId"-->
+<!--            placeholder="Select"-->
+<!--            style="width: 240px"-->
+<!--          >-->
+<!--            <el-option-->
+<!--              v-for="item in templateOptions"-->
+<!--              :key="item.ID"-->
+<!--              :label="item.name"-->
+<!--              :value="item.ID"-->
+<!--            />-->
+<!--          </el-select>-->
+<!--        </el-form-item>-->
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="所属系统" prop="systemId">
+              <el-select v-model="form.systemId" @change="changeSystemId">
+                <el-option v-for="val in systemOptions" :key="val.ID" :value="val.ID" :label="val.name" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="模版名" prop="templateId">
+              <el-select
+                v-model="form.templateId"
+                placeholder="Select"
+                style="width: 240px"
+              >
+                <el-option
+                  v-for="item in templateTempOptions"
+                  :key="item.ID"
+                  :label="item.name"
+                  :value="item.ID"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
         <el-form-item label="cronFormat" prop="cronFormat">
           <el-input v-model="form.cronFormat" autocomplete="off" />
         </el-form-item>
@@ -127,6 +153,9 @@
         </div>
       </template>
     </el-dialog>
+    <el-drawer v-if="drawer" v-model="drawer" :with-header="false" size="40%" title="请选择系统">
+      <Systems ref="systems" :keys="searchInfo.systemIds" @checked="getCheckedSchedules" />
+    </el-drawer>
   </div>
 </template>
 
@@ -147,16 +176,19 @@ import {
 import {
   getTemplateList
 } from '@/api/template'
+import { getAdminSystems } from '@/api/cmdb'
 import { getPolicyPathByAuthorityId } from '@/api/casbin'
 import infoList from '@/mixins/infoList'
 import { toSQLLine } from '@/utils/stringFun'
 import warningBar from '@/components/warningBar/warningBar.vue'
 import { mapGetters } from 'vuex'
+import Systems from '@/components/task/systems.vue'
 
 export default {
   name: 'Schedule',
   components: {
-    warningBar
+    warningBar,
+    Systems
   },
   mixins: [infoList],
   data() {
@@ -170,6 +202,7 @@ export default {
         templateId: '',
         cronFormat: '',
         valid: 0,
+        systemId: '',
       },
       type: '',
       rules: {
@@ -181,6 +214,9 @@ export default {
       hasEdit: true,
       hasCreate: true,
       hasDelete: true,
+      drawer: false,
+      systemOptions: [],
+      templateTempOptions: [],
     }
   },
   computed: {
@@ -188,11 +224,8 @@ export default {
   },
   async created() {
     await this.getTableData()
-    const res = await getTemplateList({
-      page: 1,
-      pageSize: 99999
-    })
-    this.setOptions(res.data.list)
+    await this.setSystemOptions()
+    await this.setAllTemplateOptions()
   },
   mounted() {
     this.authorities()
@@ -240,11 +273,13 @@ export default {
         templateId: '',
         cronFormat: '',
         valid: 0,
+        systemId: '',
       }
     },
     closeDialog() {
       this.initForm()
       this.dialogFormVisible = false
+      this.templateTempOptions = []
     },
     openDialog(type) {
       switch (type) {
@@ -263,6 +298,7 @@ export default {
     async editSchedule(row) {
       const res = await getScheduleById({ id: row.ID })
       this.form = res.data.schedule
+      this.form.systemId = res.data.systemId
       this.openDialog('edit')
     },
     async deleteSchedule(row) {
@@ -369,6 +405,42 @@ export default {
       this.hasDelete = !!res.data.paths.some((item) => {
         return item.path === '/task/schedule/deleteSchedule'
       })
+    },
+    openDrawer() {
+      this.drawer = true
+    },
+    getCheckedSchedules(checkArr) {
+      const systemIDs = []
+      checkArr.forEach(item => {
+        systemIDs.push(Number(item.ID))
+      })
+      this.searchInfo.systemIds = systemIDs
+      this.getTableData()
+      this.drawer = false
+    },
+    async setSystemOptions() {
+      const res = await getAdminSystems()
+      this.systemOptions = res.data.systems
+    },
+    async setAllTemplateOptions() {
+      const res = await getTemplateList({
+        page: 1,
+        pageSize: 99999,
+      })
+      this.setOptions(res.data.list)
+    },
+    changeSystemId(selectValue) {
+      this.setTemplateOptions(selectValue)
+    },
+    async setTemplateOptions(selectValue) {
+      const systemIDs = []
+      systemIDs.push(selectValue)
+      const res = await getTemplateList({
+        page: 1,
+        pageSize: 99999,
+        systemIds: systemIDs,
+      })
+      this.templateTempOptions = res.data.list
     },
   }
 }
