@@ -299,6 +299,7 @@ export default {
       const res = await getScheduleById({ id: row.ID })
       this.form = res.data.schedule
       this.form.systemId = res.data.systemId
+      await this.setTemplateOptions(this.form.systemId)
       this.openDialog('edit')
     },
     async deleteSchedule(row) {
