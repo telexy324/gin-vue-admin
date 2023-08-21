@@ -113,6 +113,7 @@
                 v-model="form.templateId"
                 placeholder="Select"
                 style="width: 240px"
+                @change="changeTemplateId"
               >
                 <el-option
                   v-for="item in templateTempOptions"
@@ -143,6 +144,15 @@
             </el-form-item>
           </el-col>
         </el-row>
+        <div v-for="(item, index) in form.commandVars" :key="index">
+          <el-form-item
+            :label="'参数' + index"
+            :prop="'commandVars.' + index"
+            :rules="rules.commandVars"
+          >
+            <el-input v-model="form.commandVars[index]" />
+          </el-form-item>
+        </div>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
@@ -201,11 +211,15 @@ export default {
         cronFormat: '',
         valid: 0,
         systemId: '',
+        commandVars: [],
       },
       type: '',
       rules: {
         templateId: [{ required: true, message: '请关联模板', trigger: 'blur' }],
         cronFormat: [{ required: true, message: '请输入定时任务', trigger: 'blur' }],
+        commandVars: [
+          { required: true, message: '请输入任务参数', trigger: 'blur' },
+        ],
       },
       path: path,
       templateOptions: [],
@@ -272,6 +286,7 @@ export default {
         cronFormat: '',
         valid: 0,
         systemId: '',
+        commandVars: [],
       }
     },
     closeDialog() {
@@ -440,6 +455,12 @@ export default {
         systemIds: systemIDs,
       })
       this.templateTempOptions = res.data.list
+    },
+    changeTemplateId(selectValue) {
+      this.form.commandVars = []
+      for (let i = 0; i < this.templateTempOptions.find(item => item.ID === selectValue).commandVarNumbers; i++) {
+        this.form.commandVars.push('')
+      }
     },
   }
 }

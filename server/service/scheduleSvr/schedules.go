@@ -1,6 +1,7 @@
 package scheduleSvr
 
 import (
+	"encoding/json"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/scheduleMdl"
@@ -14,6 +15,10 @@ type ScheduleService struct {
 var scheduleServiceApp = new(ScheduleService)
 
 func (scheduleService *ScheduleService) CreateSchedule(schedule scheduleMdl.Schedule) (scheduleMdl.Schedule, error) {
+	if len(schedule.CommandVars) > 0 {
+		vars, _ := json.Marshal(schedule.CommandVars)
+		schedule.CommandVar = string(vars)
+	}
 	err := global.GVA_DB.Create(&schedule).Error
 	return schedule, err
 }
@@ -34,6 +39,11 @@ func (scheduleService *ScheduleService) UpdateSchedule(schedule scheduleMdl.Sche
 	upDateMap["template_id"] = schedule.TemplateID
 	upDateMap["cron_format"] = schedule.CronFormat
 	upDateMap["valid"] = schedule.Valid
+	if len(schedule.CommandVars) > 0 {
+		vars, _ := json.Marshal(schedule.CommandVars)
+		schedule.CommandVar = string(vars)
+	}
+	upDateMap["command_var"] = schedule.CommandVar
 
 	err := global.GVA_DB.Transaction(func(tx *gorm.DB) error {
 		db := tx.Where("id = ?", schedule.ID).Find(&oldSchedule)

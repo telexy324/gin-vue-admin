@@ -117,6 +117,7 @@ create table `application_task_schedules`
     `cron_format` varchar(255) not null,
 --     `last_commit_hash` varchar(40)  NOT NULL DEFAULT '',
     `valid`       tinyint(2) NOT NULL DEFAULT '0' COMMENT '0 禁用 1 启用',
+    `command_var` text,
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
