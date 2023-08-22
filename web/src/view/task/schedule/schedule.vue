@@ -112,7 +112,6 @@
               <el-select
                 v-model="form.templateId"
                 placeholder="Select"
-                style="width: 240px"
                 @change="changeTemplateId"
               >
                 <el-option

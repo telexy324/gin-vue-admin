@@ -24,7 +24,8 @@ func (r ScheduleRunner) Run() {
 	}
 
 	_, err = r.pool.taskPool.AddTask(taskMdl.Task{
-		TemplateId: schedule.TemplateID,
+		TemplateId:  schedule.TemplateID,
+		CommandVars: schedule.CommandVars,
 	}, 999999, 0)
 
 	if err != nil {
