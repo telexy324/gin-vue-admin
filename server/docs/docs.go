@@ -5474,7 +5474,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/request.GetScheduleByTemplateId"
+                            "$ref": "#/definitions/request.GetScheduleList"
                         }
                     }
                 ],
@@ -7881,6 +7881,20 @@ var doc = `{
                 "id": {
                     "description": "主键ID",
                     "type": "number"
+                },
+                "page": {
+                    "description": "页码",
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "description": "每页大小",
+                    "type": "integer"
+                },
+                "sortBy": {
+                    "type": "string"
+                },
+                "sortInverted": {
+                    "type": "boolean"
                 }
             }
         },
@@ -7910,16 +7924,32 @@ var doc = `{
                 }
             }
         },
-        "request.GetScheduleByTemplateId": {
+        "request.GetScheduleList": {
             "type": "object",
             "properties": {
+                "commandVar": {
+                    "type": "string"
+                },
+                "commandVars": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "createdAt": {
+                    "description": "创建时间",
+                    "type": "string"
+                },
+                "cronFormat": {
+                    "type": "string"
+                },
                 "desc": {
                     "description": "排序方式:升序false(默认)|降序true",
                     "type": "boolean"
                 },
                 "id": {
                     "description": "主键ID",
-                    "type": "number"
+                    "type": "integer"
                 },
                 "orderKey": {
                     "description": "排序",
@@ -7939,9 +7969,22 @@ var doc = `{
                 "sortInverted": {
                     "type": "boolean"
                 },
+                "systemIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
                 "templateId": {
-                    "description": "ProjectId  float64 ` + "`" + `json:\"projectId\" form:\"projectId\"` + "`" + `",
-                    "type": "number"
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "description": "更新时间",
+                    "type": "string"
+                },
+                "valid": {
+                    "description": "LastCommitHash *string ` + "`" + `gorm:\"column:last_commit_hash\" json:\"-\"` + "`" + `",
+                    "type": "integer"
                 }
             }
         },
@@ -8213,6 +8256,15 @@ var doc = `{
         "scheduleMdl.Schedule": {
             "type": "object",
             "properties": {
+                "commandVar": {
+                    "type": "string"
+                },
+                "commandVars": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "createdAt": {
                     "description": "创建时间",
                     "type": "string"
@@ -8855,6 +8907,10 @@ var doc = `{
                 "logPath": {
                     "description": "日志位置",
                     "type": "string"
+                },
+                "logSelect": {
+                    "description": "日志目录可选择 1 可 2 不可",
+                    "type": "integer"
                 },
                 "logUploadServer": {
                     "$ref": "#/definitions/logUploadMdl.Server"

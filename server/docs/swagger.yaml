@@ -763,6 +763,16 @@ definitions:
       id:
         description: 主键ID
         type: number
+      page:
+        description: 页码
+        type: integer
+      pageSize:
+        description: 每页大小
+        type: integer
+      sortBy:
+        type: string
+      sortInverted:
+        type: boolean
     type: object
   request.GetByProjectId:
     properties:
@@ -782,14 +792,25 @@ definitions:
       sortInverted:
         type: boolean
     type: object
-  request.GetScheduleByTemplateId:
+  request.GetScheduleList:
     properties:
+      commandVar:
+        type: string
+      commandVars:
+        items:
+          type: string
+        type: array
+      createdAt:
+        description: 创建时间
+        type: string
+      cronFormat:
+        type: string
       desc:
         description: 排序方式:升序false(默认)|降序true
         type: boolean
       id:
         description: 主键ID
-        type: number
+        type: integer
       orderKey:
         description: 排序
         type: string
@@ -803,9 +824,18 @@ definitions:
         type: string
       sortInverted:
         type: boolean
+      systemIds:
+        items:
+          type: integer
+        type: array
       templateId:
-        description: ProjectId  float64 `json:"projectId" form:"projectId"`
-        type: number
+        type: integer
+      updatedAt:
+        description: 更新时间
+        type: string
+      valid:
+        description: LastCommitHash *string `gorm:"column:last_commit_hash" json:"-"`
+        type: integer
     type: object
   request.GetTaskByTemplateId:
     properties:
@@ -994,6 +1024,12 @@ definitions:
     type: object
   scheduleMdl.Schedule:
     properties:
+      commandVar:
+        type: string
+      commandVars:
+        items:
+          type: string
+        type: array
       createdAt:
         description: 创建时间
         type: string
@@ -1462,6 +1498,9 @@ definitions:
       logPath:
         description: 日志位置
         type: string
+      logSelect:
+        description: 日志目录可选择 1 可 2 不可
+        type: integer
       logUploadServer:
         $ref: '#/definitions/logUploadMdl.Server'
       mode:
@@ -4855,7 +4894,7 @@ paths:
         name: data
         required: true
         schema:
-          $ref: '#/definitions/request.GetScheduleByTemplateId'
+          $ref: '#/definitions/request.GetScheduleList'
       produces:
       - application/json
       responses:

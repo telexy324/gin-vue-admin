@@ -99,6 +99,11 @@ export default {
     })
     this.setUserOptions(resUser.data.list)
   },
+  mounted() {
+    emitter.on('i-close-task', () => {
+      this.getTableData()
+    })
+  },
   methods: {
     async onDelete() {
       const ids = this.tasks.map(item => item.ID)

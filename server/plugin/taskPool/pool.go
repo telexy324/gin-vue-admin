@@ -69,7 +69,7 @@ func (p *TaskPool) GetTask(id int) (task *TaskRunner) {
 
 // nolint: gocyclo
 func (p *TaskPool) Run() {
-	ticker := time.NewTicker(5 * time.Second)
+	ticker := time.NewTicker(1 * time.Second)
 
 	defer func() {
 		close(p.resourceLocker)
@@ -123,7 +123,7 @@ func (p *TaskPool) Run() {
 			global.GVA_LOG.Info(msg)
 			task.updateStatus()
 
-		case <-ticker.C: // timer 5 seconds
+		case <-ticker.C: // timer 1 seconds
 			if len(p.queue) == 0 {
 				continue
 			}
@@ -142,11 +142,11 @@ func (p *TaskPool) Run() {
 				continue
 			}
 			global.GVA_LOG.Info("Set resource locker with ", zap.Uint("TaskRunner ", t.task.ID))
-			p.resourceLocker <- &resourceLock{lock: true, holder: t}
-			if !t.prepared {
-				go t.prepareRun()
-				continue
-			}
+			//p.resourceLocker <- &resourceLock{lock: true, holder: t}
+			//if !t.prepared {
+			//	go t.prepareRun()
+			//	continue
+			//}
 			go t.run()
 			p.queue = p.queue[1:]
 			global.GVA_LOG.Info("Task removed from queue ", zap.Uint("Task ID ", t.task.ID))

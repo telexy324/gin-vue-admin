@@ -70,7 +70,6 @@ export default {
       if (!socket.isRunning()) {
         socket.start()
       }
-      console.log(e)
       this.task = (await getTaskById({ ID: e.ID })).data.task
       if (!(e.templateId >= discoverServers - 100)) {
         this.template = (await getTemplateById({ ID: e.templateId })).data.template

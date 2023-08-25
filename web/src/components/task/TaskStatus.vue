@@ -3,6 +3,7 @@
     v-if="status"
     :key="status"
     :type="getStatusColor(status)"
+    :color="getColor(status)"
     class="mx-1"
     effect="dark"
     round
@@ -62,6 +63,17 @@ export default {
           return 'warning'
         default:
           throw new Error(`Unknown task status ${status}`)
+      }
+    },
+
+    getColor(status) {
+      switch (status) {
+        case TaskStatus.WAITING:
+          return '#85C1E9'
+        case TaskStatus.STOPPED:
+          return '#D35400'
+        default:
+          return ''
       }
     },
   },
