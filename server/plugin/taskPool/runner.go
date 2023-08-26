@@ -223,9 +223,9 @@ func (t *TaskRunner) prepareRun() {
 
 func (t *TaskRunner) run() {
 	defer func() {
-		//global.GVA_LOG.Info("Stopped running TaskRunner ", zap.Uint("task ID ", t.task.ID))
-		//global.GVA_LOG.Info("Release resource locker with TaskRunner ", zap.Uint("task ID ", t.task.ID))
-		//t.pool.resourceLocker <- &resourceLock{lock: false, holder: t}
+		global.GVA_LOG.Info("Stopped running TaskRunner ", zap.Uint("task ID ", t.task.ID))
+		global.GVA_LOG.Info("Release resource locker with TaskRunner ", zap.Uint("task ID ", t.task.ID))
+		t.pool.resourceLocker <- &resourceLock{lock: false, holder: t}
 
 		t.task.EndTime = sql.NullTime{
 			Time:  time.Now(),

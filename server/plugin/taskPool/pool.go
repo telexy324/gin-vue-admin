@@ -33,7 +33,7 @@ type TaskPool struct {
 	// register channel used to put tasks to queue.
 	register chan *TaskRunner
 
-	activeTask map[int]*TaskRunner
+	//activeTask map[int]*TaskRunner
 
 	// runningTasks contains tasks with status TaskRunningStatus.
 	runningTasks map[int]*TaskRunner
@@ -86,17 +86,17 @@ func (p *TaskPool) Run() {
 					panic("Trying to lock an already locked resource!")
 				}
 
-				p.activeTask[int(t.task.ID)] = t
+				//p.activeTask[int(t.task.ID)] = t
 				p.runningTasks[int(t.task.ID)] = t
 				continue
 			}
 
-			if p.activeTask != nil && p.activeTask[int(t.task.ID)] != nil {
-				delete(p.activeTask, int(t.task.ID))
-				//if len(p.activeTask) == 0 {
-				//	delete(p.activeProj, t.task.ProjectID)
-				//}
-			}
+			//if p.activeTask != nil && p.activeTask[int(t.task.ID)] != nil {
+			//	delete(p.activeTask, int(t.task.ID))
+			//if len(p.activeTask) == 0 {
+			//	delete(p.activeProj, t.task.ProjectID)
+			//}
+			//}
 
 			delete(p.runningTasks, int(t.task.ID))
 		}
@@ -141,8 +141,8 @@ func (p *TaskPool) Run() {
 				p.queue = append(p.queue[1:], t)
 				continue
 			}
-			global.GVA_LOG.Info("Set resource locker with ", zap.Uint("TaskRunner ", t.task.ID))
-			//p.resourceLocker <- &resourceLock{lock: true, holder: t}
+			//global.GVA_LOG.Info("Set resource locker with ", zap.Uint("TaskRunner ", t.task.ID))
+			p.resourceLocker <- &resourceLock{lock: true, holder: t}
 			//if !t.prepared {
 			//	go t.prepareRun()
 			//	continue
@@ -160,15 +160,15 @@ func (p *TaskPool) blocks(t *TaskRunner) bool {
 		return true
 	}
 
-	if p.activeTask == nil || len(p.activeTask) == 0 {
-		return false
-	}
-
-	for _, r := range p.activeTask {
-		if int(r.template.ID) == t.task.TemplateId {
-			return true
-		}
-	}
+	//if p.activeTask == nil || len(p.activeTask) == 0 {
+	//	return false
+	//}
+	//
+	//for _, r := range p.activeTask {
+	//	if int(r.template.ID) == t.task.TemplateId {
+	//		return true
+	//	}
+	//}
 
 	//proj, err := p.store.GetProject(t.task.ProjectID)
 	//
@@ -178,14 +178,22 @@ func (p *TaskPool) blocks(t *TaskRunner) bool {
 	//}
 	//
 	//return proj.MaxParallelTasks > 0 && len(p.activeProj[t.task.ProjectID]) >= proj.MaxParallelTasks
+	//return false
+
+	//for _, r := range p.runningTasks {
+	//	if int(r.template.ID) == t.task.TemplateId {
+	//		return true
+	//	}
+	//}
+
 	return false
 }
 
 func CreateTaskPool() TaskPool {
 	TPool = TaskPool{
-		queue:          make([]*TaskRunner, 0), // queue of waiting tasks
-		register:       make(chan *TaskRunner), // add TaskRunner to queue
-		activeTask:     make(map[int]*TaskRunner),
+		queue:    make([]*TaskRunner, 0), // queue of waiting tasks
+		register: make(chan *TaskRunner), // add TaskRunner to queue
+		//activeTask:     make(map[int]*TaskRunner),
 		runningTasks:   make(map[int]*TaskRunner),   // working tasks
 		logger:         make(chan logRecord, 10000), // store log records to database
 		resourceLocker: make(chan *resourceLock),

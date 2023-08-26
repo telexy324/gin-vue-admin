@@ -70,8 +70,8 @@ export default {
       switch (status) {
         case TaskStatus.WAITING:
           return '#85C1E9'
-        case TaskStatus.STOPPED:
-          return '#D35400'
+        case TaskStatus.STOPPING:
+          return '#F58F62'
         default:
           return ''
       }
