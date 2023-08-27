@@ -69,6 +69,7 @@ import { toSQLLine } from '@/utils/stringFun'
 import { emitter } from '@/utils/bus'
 import TaskStatus from '@/components/task/TaskStatus.vue'
 import { formatTimeToStr } from '@/utils/date'
+import socket from '@/socket'
 
 export default {
   name: 'TaskList',
@@ -98,6 +99,7 @@ export default {
       pageSize: 99999
     })
     this.setUserOptions(resUser.data.list)
+    socket.addListener((data) => this.onWebsocketDataReceived(data))
   },
   mounted() {
     emitter.on('i-close-task', () => {
@@ -163,6 +165,15 @@ export default {
       }
       const rowLabel = this.userOptions.filter(item => item.ID === value)
       return rowLabel && rowLabel[0] && rowLabel[0].userName
+    },
+    onWebsocketDataReceived(data) {
+      this.tableData.forEach((value, index, array) => {
+        if (data.taskId === value.ID && data.type === 'update') {
+          array[index].status = data.status
+          array[index].beginTime = data.beginTime
+          array[index].endTime = data.endTime
+        }
+      })
     },
   }
 }
