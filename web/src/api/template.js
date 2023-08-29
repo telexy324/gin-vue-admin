@@ -1,5 +1,5 @@
 import service from '@/utils/request'
-import download from "../utils/download";
+import download from '../utils/download'
 
 // @Summary 获取template列表
 // @Produce  application/json

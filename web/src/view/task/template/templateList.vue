@@ -98,7 +98,12 @@
                 </div>
               </div>
               <template #reference>
-                <el-button icon="el-icon-copy-document" size="small" type="text">复制</el-button>
+                <el-button
+                  icon="el-icon-copy-document"
+                  size="small"
+                  type="text"
+                  :disabled="!hasCreate"
+                >复制</el-button>
               </template>
             </el-popover>
           </template>

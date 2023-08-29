@@ -368,6 +368,7 @@ var carbines = []gormadapter.CasbinRule{
 	{PType: "p", V0: "9529", V1: "/task/template/getFileList", V2: "POST"},
 	{PType: "p", V0: "9529", V1: "/task/template/downloadFile", V2: "GET"},
 	{PType: "p", V0: "9529", V1: "/task/template/uploadLogServer", V2: "POST"},
+	{PType: "p", V0: "9529", V1: "/task/template/processSetTask", V2: "POST"},
 	{PType: "p", V0: "9529", V1: "/task/schedule/getScheduleById", V2: "POST"},
 	{PType: "p", V0: "9529", V1: "/task/schedule/getTemplateScheduleList", V2: "POST"},
 	{PType: "p", V0: "9529", V1: "/logUpload/getServerById", V2: "POST"},

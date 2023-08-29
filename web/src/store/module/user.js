@@ -72,6 +72,7 @@ export const user = {
         //     router.push({ path: redirect })
         // } else {
         router.push({ name: getters['userInfo'].authority.defaultRouter })
+        window.location.reload()
         // }
         return true
       }
