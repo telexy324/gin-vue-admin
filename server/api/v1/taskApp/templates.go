@@ -653,6 +653,11 @@ func (a *TemplateApi) ProcessSetTask(c *gin.Context) {
 		return
 	}
 	userID := int(utils.GetUserID(c))
+	if setTask.SystemUserId != userID {
+		global.GVA_LOG.Error("非创建人!", zap.Any("err", err))
+		response.FailWithMessage("非创建人!", c)
+		return
+	}
 	var task taskMdl.Task
 	task.TemplateId = int(setTask.Templates[setTask.CurrentStep].ID)
 	newTask, err := taskPool.TPool.AddTask(task, userID, int(setTask.ID))
