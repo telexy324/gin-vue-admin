@@ -18,19 +18,19 @@
                 <li>
                   <i class="el-icon-user" />{{ userInfo.nickName }}
                 </li>
-                <el-tooltip class="item" effect="light" content="北京反转极光科技有限公司-技术部-前端事业群" placement="top">
+                <el-tooltip class="item" effect="light" content="中国农业发展银行-信息科技部-运维中心" placement="top">
                   <li>
-                    <i class="el-icon-data-analysis" />北京反转极光科技有限公司-技术部-前端事业群
+                    <i class="el-icon-data-analysis" />中国农业发展银行-信息科技部-运维中心
                   </li>
                 </el-tooltip>
                 <li>
-                  <i class="el-icon-video-camera-solid" />中国·北京市·朝阳区
+                  <i class="el-icon-video-camera-solid" />中国·北京市·丰台区
                 </li>
-                <el-tooltip class="item" effect="light" content="GoLang/JavaScript/Vue/Gorm" placement="top">
-                  <li>
-                    <i class="el-icon-medal-1" />GoLang/JavaScript/Vue/Gorm
-                  </li>
-                </el-tooltip>
+<!--                <el-tooltip class="item" effect="light" content="GoLang/JavaScript/Vue/Gorm" placement="top">-->
+<!--                  <li>-->
+<!--                    <i class="el-icon-medal-1" />GoLang/JavaScript/Vue/Gorm-->
+<!--                  </li>-->
+<!--                </el-tooltip>-->
 
               </ul>
             </div>
@@ -42,27 +42,27 @@
           <el-tabs v-model="activeName" @tab-click="handleClick">
             <el-tab-pane label="账号绑定" name="second">
               <ul>
-                <li>
-                  <p class="title">密保手机</p>
-                  <p class="desc">
-                    已绑定手机:1245678910
-                    <a href="javascript:void(0)">立即修改</a>
-                  </p>
-                </li>
-                <li>
-                  <p class="title">密保邮箱</p>
-                  <p class="desc">
-                    已绑定邮箱：gin-vue-admin@google.com.cn
-                    <a href="javascript:void(0)">立即修改</a>
-                  </p>
-                </li>
-                <li>
-                  <p class="title">密保问题</p>
-                  <p class="desc">
-                    未设置密保问题
-                    <a href="javascript:void(0)">去设置</a>
-                  </p>
-                </li>
+<!--                <li>-->
+<!--                  <p class="title">密保手机</p>-->
+<!--                  <p class="desc">-->
+<!--                    已绑定手机:1245678910-->
+<!--                    <a href="javascript:void(0)">立即修改</a>-->
+<!--                  </p>-->
+<!--                </li>-->
+<!--                <li>-->
+<!--                  <p class="title">密保邮箱</p>-->
+<!--                  <p class="desc">-->
+<!--                    已绑定邮箱：gin-vue-admin@google.com.cn-->
+<!--                    <a href="javascript:void(0)">立即修改</a>-->
+<!--                  </p>-->
+<!--                </li>-->
+<!--                <li>-->
+<!--                  <p class="title">密保问题</p>-->
+<!--                  <p class="desc">-->
+<!--                    未设置密保问题-->
+<!--                    <a href="javascript:void(0)">去设置</a>-->
+<!--                  </p>-->
+<!--                </li>-->
                 <li>
                   <p class="title">修改密码</p>
                   <p class="desc">
