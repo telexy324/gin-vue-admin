@@ -153,9 +153,7 @@ func (cmdbServerService *CmdbServerService) GetServerList(info request2.ServerSe
 		manageIp := strings.Trim(info.ManageIp, " ")
 		db = db.Where("`manage_ip` LIKE ?", "%"+manageIp+"%")
 	}
-	if len(info.SystemIDs) > 0 {
-		db = db.Where("`system_id` IN ?", info.SystemIDs)
-	}
+	db = db.Where("`system_id` IN ?", info.SystemIDs)
 	err = db.Count(&total).Error
 	if err != nil {
 		return
