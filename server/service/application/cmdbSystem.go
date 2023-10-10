@@ -334,7 +334,7 @@ func (cmdbSystemService *CmdbSystemService) GetSystemList(info request2.SystemSe
 			AdminIds: adminIds,
 		})
 	}
-	return err, systemInfoList, total
+	return err, systemInfoList, int64(len(systemInfoList))
 }
 
 // @author: [telexy324](https://github.com/telexy324)
