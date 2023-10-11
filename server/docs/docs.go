@@ -6310,7 +6310,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/request.GetById"
+                            "$ref": "#/definitions/request.ProcessTaskRequest"
                         }
                     }
                 ],
@@ -7881,20 +7881,6 @@ var doc = `{
                 "id": {
                     "description": "主键ID",
                     "type": "number"
-                },
-                "page": {
-                    "description": "页码",
-                    "type": "integer"
-                },
-                "pageSize": {
-                    "description": "每页大小",
-                    "type": "integer"
-                },
-                "sortBy": {
-                    "type": "string"
-                },
-                "sortInverted": {
-                    "type": "boolean"
                 }
             }
         },
@@ -8094,6 +8080,22 @@ var doc = `{
                 "pageSize": {
                     "description": "每页大小",
                     "type": "integer"
+                }
+            }
+        },
+        "request.ProcessTaskRequest": {
+            "type": "object",
+            "properties": {
+                "commandVars": {
+                    "description": "结束时间",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "id": {
+                    "description": "主键ID",
+                    "type": "number"
                 }
             }
         },
