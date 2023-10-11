@@ -3,23 +3,25 @@
     <div class="clearflex">
       <el-button class="fl-right" size="mini" type="primary" @click="checked">确 定</el-button>
     </div>
-    <el-tree
-      ref="systemTree"
-      :data="systemTreeData"
-      :props="systemDefaultProps"
-      default-expand-all
-      :default-checked-keys="keys"
-      highlight-current
-      node-key="ID"
-      show-checkbox
-      @check="nodeChange"
-    >
-      <template #default="{ node }">
-        <span class="custom-tree-node">
-          <span>{{ node.label }}</span>
-        </span>
-      </template>
-    </el-tree>
+    <el-scrollbar style="height:100%">
+      <el-tree
+        ref="systemTree"
+        :data="systemTreeData"
+        :props="systemDefaultProps"
+        default-expand-all
+        :default-checked-keys="keys"
+        highlight-current
+        node-key="ID"
+        show-checkbox
+        @check="nodeChange"
+      >
+        <template #default="{ node }">
+          <span class="custom-tree-node">
+            <span>{{ node.label }}</span>
+          </span>
+        </template>
+      </el-tree>
+    </el-scrollbar>
   </div>
 </template>
 
