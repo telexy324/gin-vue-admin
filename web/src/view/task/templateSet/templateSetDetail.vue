@@ -9,6 +9,35 @@
         <el-step v-for="item in steps" :key="item.seq" :title="item.name" :status="getStatus(item.seq)" @click.enter="show(item.seq)"/>
       </el-steps>
     </div>
+    <el-dialog v-model="CommandVarFormVisible" :before-close="closeCommandVarsDialog" :title="dialogTitle">
+      <warning-bar title="请输入任务参数" />
+      <el-form ref="CommandVarForm" :model="commandVarForm" :rules="commandVarRules" label-width="80px">
+        <div v-for="(item, index) in commandVarForm.vars" :key="index">
+          <el-form-item
+            :label="'参数' + index"
+            :prop="'vars.' + index"
+            :rules="commandVarRules.vars"
+          >
+            <el-input v-model="commandVarForm.vars[index]" />
+          </el-form-item>
+        </div>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button size="small" @click="closeCommandVarsDialog">取 消</el-button>
+          <el-button size="small" type="primary" @click="enterCommandVarsDialog">确 定</el-button>
+        </div>
+      </template>
+    </el-dialog>
+    <el-dialog v-model="confirmVisible" :before-close="closeConfirm" title="请确认">
+      即将运行: {{ setTask.templates[setTask.currentStep].name }}
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button size="small" @click="closeConfirm">取 消</el-button>
+          <el-button size="small" type="primary" @click="enterConfirm">确 定</el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -24,9 +53,12 @@ import {
   getSetTaskById
 } from '@/api/template'
 import { emitter } from '@/utils/bus'
+import warningBar from '@/components/warningBar/warningBar.vue'
+import { addTask } from '@/api/task'
 
 export default {
   name: 'TemplateSetDetail',
+  components: { warningBar },
   data() {
     return {
       setTaskId: '',
@@ -36,6 +68,20 @@ export default {
       setTask: '',
       // taskStatus: '',
       disabled: false,
+      currentSystem: '',
+      taskVars: [],
+      CommandVarFormVisible: false,
+      commandVarForm: {
+        vars: [],
+      },
+      commandVarRules: {
+        vars: [
+          { required: true, message: '请输入任务参数', trigger: 'blur' },
+        ],
+      },
+      runningTemplateId: '',
+      confirmVisible: false,
+      confirmed: false,
     }
   },
   async created() {
@@ -61,11 +107,23 @@ export default {
       }
     },
     async processSetTask() {
-      const task = (await processSetTask({
-        ID: this.setTask.ID,
-      })).data.task
-      console.log(task.ID)
-      this.showTaskLog(task)
+      if (this.setTask.templates[this.setTask.currentStep].commandVarNumbers > 0) {
+        for (let i = 0; i < this.setTask.templates[this.setTask.currentStep].commandVarNumbers; i++) {
+          this.commandVarForm.vars.push('')
+        }
+        this.runningTemplateId = this.setTask.templates[this.setTask.currentStep].ID
+        this.CommandVarFormVisible = true
+      } else {
+        if (!this.confirmed) {
+          this.confirmVisible = true
+          return
+        }
+        this.confirmed = false
+        const task = (await processSetTask({
+          ID: this.setTask.ID,
+        })).data.task
+        this.showTaskLog(task)
+      }
     },
     showTaskLog(task) {
       emitter.emit('i-show-task', task)
@@ -95,7 +153,38 @@ export default {
     },
     show(seq) {
       this.showTaskLog(this.setTask.tasks[seq])
-    }
+    },
+    initCommandVarsForm() {
+      this.commandVarForm = {
+        vars: [],
+      }
+    },
+    async enterCommandVarsDialog() {
+      this.$refs.CommandVarForm.validate(async valid => {
+        if (valid) {
+          const task = (await processSetTask({
+            ID: this.setTask.ID,
+            commandVars: this.commandVarForm.vars
+          })).data.task
+          this.closeCommandVarsDialog()
+          this.showTaskLog(task)
+        }
+      })
+    },
+    closeCommandVarsDialog() {
+      this.CommandVarFormVisible = false
+      this.initCommandVarsForm()
+      this.runningTemplateId = ''
+    },
+    enterConfirm() {
+      this.confirmVisible = false
+      this.confirmed = true
+      this.processSetTask()
+    },
+    closeConfirm() {
+      this.confirmVisible = false
+      this.pendingTemplate = ''
+    },
   }
 }
 </script>

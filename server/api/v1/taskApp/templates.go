@@ -622,21 +622,21 @@ func (a *TemplateApi) AddSetTask(c *gin.Context) {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body request.GetById true "模板集id"
+// @Param data body templateReq.ProcessTaskRequest true "模板集id"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"更新成功"}"
 // @Router /task/template/processSetTask [post]
 func (a *TemplateApi) ProcessSetTask(c *gin.Context) {
-	var idInfo request.GetById
-	if err := c.ShouldBindJSON(&idInfo); err != nil {
+	var processTaskRequest templateReq.ProcessTaskRequest
+	if err := c.ShouldBindJSON(&processTaskRequest); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err := utils.Verify(idInfo, utils.IdVerify); err != nil {
+	if err := utils.Verify(processTaskRequest, utils.IdVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	err, setTask := templateService.GetSetTaskById(idInfo.ID)
+	err, setTask := templateService.GetSetTaskById(processTaskRequest.ID)
 	if err != nil {
 		global.GVA_LOG.Error("更新失败!", zap.Any("err", err))
 		response.FailWithMessage("更新失败", c)
@@ -660,6 +660,7 @@ func (a *TemplateApi) ProcessSetTask(c *gin.Context) {
 	}
 	var task taskMdl.Task
 	task.TemplateId = int(setTask.Templates[setTask.CurrentStep].ID)
+	task.CommandVars = processTaskRequest.CommandVars
 	newTask, err := taskPool.TPool.AddTask(task, userID, int(setTask.ID))
 	if err != nil {
 		global.GVA_LOG.Error("添加任务失败!", zap.Any("err", err))

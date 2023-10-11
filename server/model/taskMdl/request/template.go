@@ -31,3 +31,8 @@ type FileListRequest struct {
 	ID        float64 `json:"id" form:"id"` // 主键ID
 	Directory string  `json:"directory" form:"directory"`
 }
+
+type ProcessTaskRequest struct {
+	ID          float64  `json:"id" form:"id"`                   // 主键ID
+	CommandVars []string `json:"commandVars" form:"commandVars"` // 结束时间
+}
