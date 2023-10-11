@@ -65,7 +65,6 @@
               icon="el-icon-edit"
               size="small"
               type="text"
-              :disabled="!hasEdit"
               @click="editTemplate(scope.row)"
             >编辑</el-button>
             <el-button
@@ -254,7 +253,7 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button size="small" @click="closeDialog">取 消</el-button>
-          <el-button size="small" type="primary" @click="enterDialog">确 定</el-button>
+          <el-button size="small" type="primary" :disabled="!hasEdit" @click="enterDialog">确 定</el-button>
         </div>
       </template>
     </el-dialog>
@@ -347,7 +346,7 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button size="small" @click="closeLogDialog">取 消</el-button>
-          <el-button size="small" type="primary" @click="enterLogDialog">确 定</el-button>
+          <el-button size="small" type="primary" :disabled="!hasEdit" @click="enterLogDialog">确 定</el-button>
         </div>
       </template>
     </el-dialog>
@@ -511,7 +510,7 @@
         <div class="dialog-footer">
           <el-button size="small" type="warning" @click="addItem">增加上传</el-button>
           <el-button size="small" @click="closeDeployDialog">取 消</el-button>
-          <el-button size="small" type="primary" @click="enterDeployDialog">确 定</el-button>
+          <el-button size="small" type="primary" :disabled="!hasEdit" @click="enterDeployDialog">确 定</el-button>
         </div>
       </template>
     </el-dialog>
