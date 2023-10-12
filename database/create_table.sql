@@ -269,3 +269,18 @@ CREATE TABLE `application_upload_secrets`
     `password`   varchar(100) NOT NULL DEFAULT '' COMMENT '密码',
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE `application_operation_records`
+(
+    `id`            bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+    `created_at`    datetime(0) NULL DEFAULT NULL,
+    `updated_at`    datetime(0) NULL DEFAULT NULL,
+    `deleted_at`    datetime(0) NULL DEFAULT NULL,
+    `ip`            varchar(191) NOT NULL DEFAULT '' COMMENT '请求ip',
+    `action`        varchar(191) NOT NULL DEFAULT '' COMMENT '动作',
+    `status`        bigint       NOT NULL DEFAULT '0' COMMENT '请求状态',
+    `error_message` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '错误信息',
+    `detail`        text,
+    `user_id`       bigint UNSIGNED NULL DEFAULT NULL COMMENT '用户id',
+    PRIMARY KEY (`id`) USING BTREE,
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
