@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"bytes"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/utils"
 	"io/ioutil"
 	"net/http"
@@ -16,6 +17,8 @@ import (
 )
 
 var operationRecordService = service.ServiceGroupApp.SystemServiceGroup.OperationRecordService
+var apiService = service.ServiceGroupApp.SystemServiceGroup.ApiService
+var applicationRecordService = service.ServiceGroupApp.ApplicationServiceGroup.ApplicationRecordService
 
 func OperationRecord() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -95,4 +98,26 @@ type responseBodyWriter struct {
 func (r responseBodyWriter) Write(b []byte) (int, error) {
 	r.body.Write(b)
 	return r.ResponseWriter.Write(b)
+}
+
+func getDetail(path string, userId int) (detail string) {
+	err,list,total:=apiService.GetAPIInfoList(system.SysApi{
+		Path:        path,
+	},request.PageInfo{
+		Page:     1,
+		PageSize: 99999,
+	},"",false)
+	apis:=list.([]system.SysApi)
+	if err!=nil {
+		global.GVA_LOG.Error("get api error",zap.Any("err", err))
+		return
+	} else if total == 0 || len(apis) == 0 {
+		global.GVA_LOG.Error("get no api")
+		return
+	}
+	api:=apis[0]
+	switch api {
+	case :
+		
+	}
 }

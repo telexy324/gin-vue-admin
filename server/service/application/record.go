@@ -2,9 +2,9 @@ package application
 
 import (
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/application"
+	applicationReq "github.com/flipped-aurora/gin-vue-admin/server/model/application/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/system"
-	systemReq "github.com/flipped-aurora/gin-vue-admin/server/model/system/request"
 )
 
 //@author: [granty1](https://github.com/granty1)
@@ -16,7 +16,7 @@ import (
 type ApplicationRecordService struct {
 }
 
-func (applicationRecordService *ApplicationRecordService) CreateApplicationRecord(applicationRecord system.SysOperationRecord) (err error) {
+func (applicationRecordService *ApplicationRecordService) CreateApplicationRecord(applicationRecord application.ApplicationRecord) (err error) {
 	err = global.GVA_DB.Create(&applicationRecord).Error
 	return err
 }
@@ -29,7 +29,7 @@ func (applicationRecordService *ApplicationRecordService) CreateApplicationRecor
 //@return: err error
 
 func (applicationRecordService *ApplicationRecordService) DeleteApplicationRecordByIds(ids request.IdsReq) (err error) {
-	err = global.GVA_DB.Delete(&[]system.SysOperationRecord{}, "id in (?)", ids.Ids).Error
+	err = global.GVA_DB.Delete(&[]application.ApplicationRecord{}, "id in (?)", ids.Ids).Error
 	return err
 }
 
@@ -39,7 +39,7 @@ func (applicationRecordService *ApplicationRecordService) DeleteApplicationRecor
 //@param: sysOperationRecord model.SysOperationRecord
 //@return: err error
 
-func (applicationRecordService *ApplicationRecordService) DeleteApplicationRecord(applicationRecord system.SysOperationRecord) (err error) {
+func (applicationRecordService *ApplicationRecordService) DeleteApplicationRecord(applicationRecord application.ApplicationRecord) (err error) {
 	err = global.GVA_DB.Delete(&applicationRecord).Error
 	return err
 }
@@ -50,7 +50,7 @@ func (applicationRecordService *ApplicationRecordService) DeleteApplicationRecor
 //@param: id uint
 //@return: err error, sysOperationRecord model.SysOperationRecord
 
-func (applicationRecordService *ApplicationRecordService) GetApplicationRecord(id uint) (err error, applicationRecord system.SysOperationRecord) {
+func (applicationRecordService *ApplicationRecordService) GetApplicationRecord(id uint) (err error, applicationRecord application.ApplicationRecord) {
 	err = global.GVA_DB.Where("id = ?", id).First(&applicationRecord).Error
 	return
 }
@@ -62,12 +62,12 @@ func (applicationRecordService *ApplicationRecordService) GetApplicationRecord(i
 //@param: info systemReq.SysOperationRecordSearch
 //@return: err error, list interface{}, total int64
 
-func (applicationRecordService *ApplicationRecordService) GetApplicationRecordInfoList(info systemReq.SysOperationRecordSearch) (err error, list interface{}, total int64) {
+func (applicationRecordService *ApplicationRecordService) GetApplicationRecordInfoList(info applicationReq.ApplicationRecordSearch) (err error, list interface{}, total int64) {
 	limit := info.PageSize
 	offset := info.PageSize * (info.Page - 1)
 	// 创建db
-	db := global.GVA_DB.Model(&system.SysOperationRecord{})
-	var sysOperationRecords []system.SysOperationRecord
+	db := global.GVA_DB.Model(&application.ApplicationRecord{})
+	var sysOperationRecords []application.ApplicationRecord
 	// 如果有条件搜索 下方会自动创建搜索语句
 	if info.Method != "" {
 		db = db.Where("method = ?", info.Method)
