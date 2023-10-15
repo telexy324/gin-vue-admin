@@ -69,11 +69,11 @@ func (applicationRecordService *ApplicationRecordService) GetApplicationRecordIn
 	db := global.GVA_DB.Model(&application.ApplicationRecord{})
 	var sysOperationRecords []application.ApplicationRecord
 	// 如果有条件搜索 下方会自动创建搜索语句
-	if info.Method != "" {
-		db = db.Where("method = ?", info.Method)
+	if info.UserID != 0 {
+		db = db.Where("method = ?", info.UserID)
 	}
-	if info.Path != "" {
-		db = db.Where("path LIKE ?", "%"+info.Path+"%")
+	if info.Action != "" {
+		db = db.Where("path LIKE ?", "%"+info.Action+"%")
 	}
 	if info.Status != 0 {
 		db = db.Where("status = ?", info.Status)

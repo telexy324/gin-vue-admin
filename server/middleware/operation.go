@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"bytes"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
+	"github.com/flipped-aurora/gin-vue-admin/server/plugin/recordPool"
 	"github.com/flipped-aurora/gin-vue-admin/server/utils"
 	"io/ioutil"
 	"net/http"
@@ -80,13 +80,15 @@ func OperationRecord() gin.HandlerFunc {
 		record.ErrorMessage = c.Errors.ByType(gin.ErrorTypePrivate).String()
 		record.Status = c.Writer.Status()
 		record.Latency = latency
+		respBody := writer.body
 		if c.Request.URL.Path != "/task/template/downloadFile" && c.Request.URL.Path != "/task/template/checkScript" {
-			record.Resp = writer.body.String()
+			record.Resp = respBody.String()
 		}
 
 		if err := operationRecordService.CreateSysOperationRecord(record); err != nil {
 			global.GVA_LOG.Error("create operation record error:", zap.Any("err", err))
 		}
+		recordPool.RPool.AddRecord(userId, c.ClientIP(), c.Request.Method, body, respBody.Bytes())
 	}
 }
 
@@ -98,26 +100,4 @@ type responseBodyWriter struct {
 func (r responseBodyWriter) Write(b []byte) (int, error) {
 	r.body.Write(b)
 	return r.ResponseWriter.Write(b)
-}
-
-func getDetail(path string, userId int) (detail string) {
-	err,list,total:=apiService.GetAPIInfoList(system.SysApi{
-		Path:        path,
-	},request.PageInfo{
-		Page:     1,
-		PageSize: 99999,
-	},"",false)
-	apis:=list.([]system.SysApi)
-	if err!=nil {
-		global.GVA_LOG.Error("get api error",zap.Any("err", err))
-		return
-	} else if total == 0 || len(apis) == 0 {
-		global.GVA_LOG.Error("get no api")
-		return
-	}
-	api:=apis[0]
-	switch api {
-	case :
-		
-	}
 }

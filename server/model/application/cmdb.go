@@ -5,6 +5,7 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
+	"time"
 )
 
 type ApplicationServer struct {
@@ -124,10 +125,11 @@ type ApplicationSystemEditRelation struct {
 
 type ApplicationRecord struct {
 	global.GVA_MODEL
-	Ip           string `json:"ip" form:"ip" gorm:"column:ip;comment:请求ip"`                                  // 请求ip
-	Action       string `json:"action" form:"action" gorm:"column:action;comment:请求路径"`                      // 请求路径
-	Status       int    `json:"status" form:"status" gorm:"column:status;comment:请求状态"`                      // 请求状态
-	ErrorMessage string `json:"error_message" form:"error_message" gorm:"column:error_message;comment:错误信息"` // 错误信息
-	Detail       string `json:"detail" form:"detail" gorm:"type:text;column:detail;comment:请求Body"`          // 请求Body
-	UserID       int    `json:"user_id" form:"user_id" gorm:"column:user_id;comment:用户id"`                   // 用户id
+	Ip           string    `json:"ip" form:"ip" gorm:"column:ip;comment:请求ip"`                                  // 请求ip
+	Action       string    `json:"action" form:"action" gorm:"column:action;comment:请求路径"`                      // 请求路径
+	Status       int       `json:"status" form:"status" gorm:"column:status;comment:请求状态"`                      // 请求状态
+	ErrorMessage string    `json:"error_message" form:"error_message" gorm:"column:error_message;comment:错误信息"` // 错误信息
+	Detail       string    `json:"detail" form:"detail" gorm:"type:text;column:detail;comment:请求Body"`          // 请求Body
+	UserID       int       `json:"user_id" form:"user_id" gorm:"column:user_id;comment:用户id"`                   // 用户id
+	LogTime      time.Time `json:"log_time" form:"log_time" gorm:"column:log_time;comment:记录时间"`                // 用户id
 }
