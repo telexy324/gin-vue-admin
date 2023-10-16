@@ -88,7 +88,7 @@ func OperationRecord() gin.HandlerFunc {
 		if err := operationRecordService.CreateSysOperationRecord(record); err != nil {
 			global.GVA_LOG.Error("create operation record error:", zap.Any("err", err))
 		}
-		recordPool.RPool.AddRecord(userId, c.ClientIP(), c.Request.Method, body, respBody.Bytes())
+		recordPool.RPool.AddRecord(userId, c.ClientIP(), c.Request.RequestURI, body, respBody.Bytes())
 	}
 }
 

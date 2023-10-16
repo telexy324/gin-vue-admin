@@ -270,7 +270,7 @@ CREATE TABLE `application_upload_secrets`
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE `application_operation_records`
+CREATE TABLE `application_records`
 (
     `id`            bigint UNSIGNED NOT NULL AUTO_INCREMENT,
     `created_at`    datetime(0) NULL DEFAULT NULL,
@@ -282,5 +282,6 @@ CREATE TABLE `application_operation_records`
     `error_message` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '错误信息',
     `detail`        text,
     `user_id`       bigint UNSIGNED NULL DEFAULT NULL COMMENT '用户id',
-    PRIMARY KEY (`id`) USING BTREE,
+    `log_time`      datetime     not null,
+    PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

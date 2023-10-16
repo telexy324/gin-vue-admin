@@ -70,7 +70,7 @@ func (r *RecordPool) AddRecord(userID int, ip, action string, req, resp []byte) 
 	common := "用户 " + user.Username + " "
 	idReq := request.GetById{}
 	idsReq := request.IdsReq{}
-	pageReq := request.PageInfo{}
+	//pageReq := request.PageInfo{}
 	commonResp := response.Response{}
 
 	switch action {
@@ -87,6 +87,8 @@ func (r *RecordPool) AddRecord(userID int, ip, action string, req, resp []byte) 
 			return
 		}
 		l.Detail = common + "增加服务器 " + addServerReq.Hostname + " IP " + addServerReq.ManageIp
+		l.Status = commonResp.Code
+		l.ErrorMessage = commonResp.Msg
 	case "/cmdb/deleteServer":
 		if err = json.Unmarshal(req, &idReq); err != nil {
 			global.GVA_LOG.Error("get delete server req failed", zap.Any("err", err))
@@ -97,6 +99,8 @@ func (r *RecordPool) AddRecord(userID int, ip, action string, req, resp []byte) 
 			return
 		}
 		l.Detail = common + "删除服务器 " + "ID " + strconv.Itoa(int(idReq.ID))
+		l.Status = commonResp.Code
+		l.ErrorMessage = commonResp.Msg
 	case "/cmdb/deleteServerByIds":
 		if err = json.Unmarshal(req, &idsReq); err != nil {
 			global.GVA_LOG.Error("get delete servers req failed", zap.Any("err", err))
@@ -106,7 +110,14 @@ func (r *RecordPool) AddRecord(userID int, ip, action string, req, resp []byte) 
 			global.GVA_LOG.Error("get delete servers resp failed", zap.Any("err", err))
 			return
 		}
-		l.Detail = common + "批量删除服务器 " + "IDs " + idsReq.Ids
+		ids, err := json.Marshal(idsReq.Ids)
+		if err != nil {
+			global.GVA_LOG.Error("get ids req failed", zap.Any("err", err))
+			return
+		}
+		l.Detail = common + "批量删除服务器 " + "IDs " + string(ids)
+		l.Status = commonResp.Code
+		l.ErrorMessage = commonResp.Msg
 	case "/cmdb/updateServer":
 		l.Detail = common + "登陆"
 	case "/cmdb/addSystem":
@@ -179,6 +190,8 @@ func (r *RecordPool) AddRecord(userID int, ip, action string, req, resp []byte) 
 		l.Detail = common + "登陆"
 	case "/task/template/deployServer":
 		l.Detail = common + "登陆"
+	default:
+		return
 	}
 
 	r.logger <- l
