@@ -7,6 +7,9 @@ import (
 	applicationReq "github.com/flipped-aurora/gin-vue-admin/server/model/application/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/response"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl"
+	taskReq "github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl/request"
+	taskRes "github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl/response"
 	"go.uber.org/zap"
 	"strconv"
 	"time"
@@ -119,46 +122,284 @@ func (r *RecordPool) AddRecord(userID int, ip, action string, req, resp []byte) 
 		l.Status = commonResp.Code
 		l.ErrorMessage = commonResp.Msg
 	case "/cmdb/updateServer":
-		l.Detail = common + "登陆"
+		updateServerReq := applicationReq.UpdateServer{}
+		if err = json.Unmarshal(req, &updateServerReq); err != nil {
+			global.GVA_LOG.Error("get update server req failed", zap.Any("err", err))
+			return
+		}
+		if err = json.Unmarshal(resp, &commonResp); err != nil {
+			global.GVA_LOG.Error("get update server resp failed", zap.Any("err", err))
+			return
+		}
+		l.Detail = common + "修改服务器 " + "ID " + strconv.Itoa(int(idReq.ID))
+		l.Status = commonResp.Code
+		l.ErrorMessage = commonResp.Msg
 	case "/cmdb/addSystem":
-		l.Detail = common + "登陆"
+		addSystemReq := applicationReq.AddSystem{}
+		if err = json.Unmarshal(req, &addSystemReq); err != nil {
+			global.GVA_LOG.Error("get add system req failed", zap.Any("err", err))
+			return
+		}
+		if err = json.Unmarshal(resp, &commonResp); err != nil {
+			global.GVA_LOG.Error("get add system resp failed", zap.Any("err", err))
+			return
+		}
+		l.Detail = common + "增加系统 " + addSystemReq.Name
+		l.Status = commonResp.Code
+		l.ErrorMessage = commonResp.Msg
 	case "/cmdb/deleteSystem":
-		l.Detail = common + "登陆"
+		if err = json.Unmarshal(req, &idReq); err != nil {
+			global.GVA_LOG.Error("get delete system req failed", zap.Any("err", err))
+			return
+		}
+		if err = json.Unmarshal(resp, &commonResp); err != nil {
+			global.GVA_LOG.Error("get delete system resp failed", zap.Any("err", err))
+			return
+		}
+		l.Detail = common + "删除系统 " + "ID " + strconv.Itoa(int(idReq.ID))
+		l.Status = commonResp.Code
+		l.ErrorMessage = commonResp.Msg
 	case "/cmdb/deleteSystemByIds":
-		l.Detail = common + "登陆"
+		if err = json.Unmarshal(req, &idsReq); err != nil {
+			global.GVA_LOG.Error("get delete systems req failed", zap.Any("err", err))
+			return
+		}
+		if err = json.Unmarshal(resp, &commonResp); err != nil {
+			global.GVA_LOG.Error("get delete systems resp failed", zap.Any("err", err))
+			return
+		}
+		ids, err := json.Marshal(idsReq.Ids)
+		if err != nil {
+			global.GVA_LOG.Error("get ids req failed", zap.Any("err", err))
+			return
+		}
+		l.Detail = common + "批量删除系统 " + "IDs " + string(ids)
+		l.Status = commonResp.Code
+		l.ErrorMessage = commonResp.Msg
 	case "/cmdb/updateSystem":
-		l.Detail = common + "登陆"
+		updateSystemReq := applicationReq.AddSystem{}
+		if err = json.Unmarshal(req, &updateSystemReq); err != nil {
+			global.GVA_LOG.Error("get update system req failed", zap.Any("err", err))
+			return
+		}
+		if err = json.Unmarshal(resp, &commonResp); err != nil {
+			global.GVA_LOG.Error("get update system resp failed", zap.Any("err", err))
+			return
+		}
+		l.Detail = common + "修改系统 " + "ID " + strconv.Itoa(int(idReq.ID))
+		l.Status = commonResp.Code
+		l.ErrorMessage = commonResp.Msg
 	case "/cmdb/system/addEditRelation":
-		l.Detail = common + "登陆"
+		addSystemEditRelationReq := application.ApplicationSystemEditRelation{}
+		if err = json.Unmarshal(req, &addSystemEditRelationReq); err != nil {
+			global.GVA_LOG.Error("get add system relation req failed", zap.Any("err", err))
+			return
+		}
+		if err = json.Unmarshal(resp, &commonResp); err != nil {
+			global.GVA_LOG.Error("get add system relation resp failed", zap.Any("err", err))
+			return
+		}
+		l.Detail = common + "增加系统关系图, 系统ID " + strconv.Itoa(addSystemEditRelationReq.SystemId)
+		l.Status = commonResp.Code
+		l.ErrorMessage = commonResp.Msg
 	case "/cmdb/system/deleteEditRelation":
-		l.Detail = common + "登陆"
+		if err = json.Unmarshal(req, &idReq); err != nil {
+			global.GVA_LOG.Error("get delete system relation req failed", zap.Any("err", err))
+			return
+		}
+		if err = json.Unmarshal(resp, &commonResp); err != nil {
+			global.GVA_LOG.Error("get delete system relation resp failed", zap.Any("err", err))
+			return
+		}
+		l.Detail = common + "删除系统关系图 " + "系统ID " + strconv.Itoa(int(idReq.ID))
+		l.Status = commonResp.Code
+		l.ErrorMessage = commonResp.Msg
 	case "/cmdb/system/updateEditRelation":
-		l.Detail = common + "登陆"
+		updateSystemEditRelationReq := application.ApplicationSystemEditRelation{}
+		if err = json.Unmarshal(req, &updateSystemEditRelationReq); err != nil {
+			global.GVA_LOG.Error("get update system relation req failed", zap.Any("err", err))
+			return
+		}
+		if err = json.Unmarshal(resp, &commonResp); err != nil {
+			global.GVA_LOG.Error("get update system relation resp failed", zap.Any("err", err))
+			return
+		}
+		l.Detail = common + "修改系统关系图 " + "系统ID " + strconv.Itoa(updateSystemEditRelationReq.SystemId)
+		l.Status = commonResp.Code
+		l.ErrorMessage = commonResp.Msg
 	case "/task/addTask":
-		l.Detail = common + "登陆"
+		addTaskReq := taskMdl.Task{}
+		if err = json.Unmarshal(req, &addTaskReq); err != nil {
+			global.GVA_LOG.Error("get add task req failed", zap.Any("err", err))
+			return
+		}
+		if err = json.Unmarshal(resp, &commonResp); err != nil {
+			global.GVA_LOG.Error("get add task resp failed", zap.Any("err", err))
+			return
+		}
+		l.Detail = common + "新增任务 " + "系统ID " + strconv.Itoa(addTaskReq.SystemId) + "模板ID " + strconv.Itoa(addTaskReq.TemplateId)
+		l.Status = commonResp.Code
+		l.ErrorMessage = commonResp.Msg
 	case "/task/deleteTask":
-		l.Detail = common + "登陆"
+		if err = json.Unmarshal(req, &idReq); err != nil {
+			global.GVA_LOG.Error("get delete task req failed", zap.Any("err", err))
+			return
+		}
+		if err = json.Unmarshal(resp, &commonResp); err != nil {
+			global.GVA_LOG.Error("get delete task resp failed", zap.Any("err", err))
+			return
+		}
+		l.Detail = common + "删除任务 " + "ID " + strconv.Itoa(int(idReq.ID))
+		l.Status = commonResp.Code
+		l.ErrorMessage = commonResp.Msg
 	case "/task/stopTask":
-		l.Detail = common + "登陆"
+		if err = json.Unmarshal(req, &idReq); err != nil {
+			global.GVA_LOG.Error("get stop task req failed", zap.Any("err", err))
+			return
+		}
+		stopTaskResp := taskRes.StopTaskResponse{}
+		if err = json.Unmarshal(resp, &stopTaskResp); err != nil {
+			global.GVA_LOG.Error("get stop task resp failed", zap.Any("err", err))
+			return
+		}
+		if len(stopTaskResp.FailedIps) > 0 {
+			ips, err := json.Marshal(stopTaskResp.FailedIps)
+			if err != nil {
+				global.GVA_LOG.Error("get stop task failed ips failed", zap.Any("err", err))
+				return
+			}
+			l.Detail = common + "停止任务 " + "ID " + strconv.Itoa(int(idReq.ID)) + "失败节点 " + string(ips)
+		} else {
+			l.Detail = common + "停止任务 " + "ID " + strconv.Itoa(int(idReq.ID))
+		}
+		l.Status = commonResp.Code
+		l.ErrorMessage = commonResp.Msg
 	case "/task/template/addSet":
-		l.Detail = common + "登陆"
+		addSetReq := taskReq.AddSet{}
+		if err = json.Unmarshal(req, &addSetReq); err != nil {
+			global.GVA_LOG.Error("get add set req failed", zap.Any("err", err))
+			return
+		}
+		if err = json.Unmarshal(resp, &commonResp); err != nil {
+			global.GVA_LOG.Error("get add set resp failed", zap.Any("err", err))
+			return
+		}
+		l.Detail = common + "增加模板集 " + addSetReq.Name + "系统ID " + strconv.Itoa(addSetReq.SystemId)
+		l.Status = commonResp.Code
+		l.ErrorMessage = commonResp.Msg
 	case "/task/template/addSetTask":
-		l.Detail = common + "登陆"
+		addSetTaskReq := taskMdl.SetTask{}
+		if err = json.Unmarshal(req, &addSetTaskReq); err != nil {
+			global.GVA_LOG.Error("get add set task req failed", zap.Any("err", err))
+			return
+		}
+		if err = json.Unmarshal(resp, &commonResp); err != nil {
+			global.GVA_LOG.Error("get add set task resp failed", zap.Any("err", err))
+			return
+		}
+		l.Detail = common + "增加模板集任务集 " + "模板集ID " + strconv.Itoa(addSetTaskReq.SetId)
+		l.Status = commonResp.Code
+		l.ErrorMessage = commonResp.Msg
 	case "/task/template/addTemplate":
-		l.Detail = common + "登陆"
+		addTemplateReq := taskMdl.TaskTemplate{}
+		if err = json.Unmarshal(req, &addTemplateReq); err != nil {
+			global.GVA_LOG.Error("get add template req failed", zap.Any("err", err))
+			return
+		}
+		if err = json.Unmarshal(resp, &commonResp); err != nil {
+			global.GVA_LOG.Error("get add template resp failed", zap.Any("err", err))
+			return
+		}
+		l.Detail = common + "增加模板 " + addTemplateReq.Name + "系统ID " + strconv.Itoa(addTemplateReq.SystemId)
+		l.Status = commonResp.Code
+		l.ErrorMessage = commonResp.Msg
 	case "/task/template/deleteSet":
-		l.Detail = common + "登陆"
+		if err = json.Unmarshal(req, &idReq); err != nil {
+			global.GVA_LOG.Error("get delete set req failed", zap.Any("err", err))
+			return
+		}
+		if err = json.Unmarshal(resp, &commonResp); err != nil {
+			global.GVA_LOG.Error("get delete set resp failed", zap.Any("err", err))
+			return
+		}
+		l.Detail = common + "删除模板集 " + "ID " + strconv.Itoa(int(idReq.ID))
+		l.Status = commonResp.Code
+		l.ErrorMessage = commonResp.Msg
 	case "/task/template/deleteSetByIds":
-		l.Detail = common + "登陆"
+		if err = json.Unmarshal(req, &idsReq); err != nil {
+			global.GVA_LOG.Error("get delete sets req failed", zap.Any("err", err))
+			return
+		}
+		if err = json.Unmarshal(resp, &commonResp); err != nil {
+			global.GVA_LOG.Error("get delete sets resp failed", zap.Any("err", err))
+			return
+		}
+		ids, err := json.Marshal(idsReq.Ids)
+		if err != nil {
+			global.GVA_LOG.Error("get ids req failed", zap.Any("err", err))
+			return
+		}
+		l.Detail = common + "批量删除模板集 " + "IDs " + string(ids)
+		l.Status = commonResp.Code
+		l.ErrorMessage = commonResp.Msg
 	case "/task/template/deleteTemplate":
-		l.Detail = common + "登陆"
+		if err = json.Unmarshal(req, &idReq); err != nil {
+			global.GVA_LOG.Error("get delete template req failed", zap.Any("err", err))
+			return
+		}
+		if err = json.Unmarshal(resp, &commonResp); err != nil {
+			global.GVA_LOG.Error("get delete template resp failed", zap.Any("err", err))
+			return
+		}
+		l.Detail = common + "删除模板 " + "ID " + strconv.Itoa(int(idReq.ID))
+		l.Status = commonResp.Code
+		l.ErrorMessage = commonResp.Msg
 	case "/task/template/deleteTemplateByIds":
-		l.Detail = common + "登陆"
+		if err = json.Unmarshal(req, &idsReq); err != nil {
+			global.GVA_LOG.Error("get delete templates req failed", zap.Any("err", err))
+			return
+		}
+		if err = json.Unmarshal(resp, &commonResp); err != nil {
+			global.GVA_LOG.Error("get delete templates resp failed", zap.Any("err", err))
+			return
+		}
+		ids, err := json.Marshal(idsReq.Ids)
+		if err != nil {
+			global.GVA_LOG.Error("get ids req failed", zap.Any("err", err))
+			return
+		}
+		l.Detail = common + "批量删除模板 " + "IDs " + string(ids)
+		l.Status = commonResp.Code
+		l.ErrorMessage = commonResp.Msg
 	case "/task/template/processSetTask":
 		l.Detail = common + "登陆"
 	case "/task/template/updateSet":
-		l.Detail = common + "登陆"
+		updateSetReq := taskReq.AddSet{}
+		if err = json.Unmarshal(req, &idReq); err != nil {
+			global.GVA_LOG.Error("get update set req failed", zap.Any("err", err))
+			return
+		}
+		if err = json.Unmarshal(resp, &commonResp); err != nil {
+			global.GVA_LOG.Error("get update set resp failed", zap.Any("err", err))
+			return
+		}
+		l.Detail = common + "修改模板集 " + "ID " + strconv.Itoa(int(updateSetReq.ID))
+		l.Status = commonResp.Code
+		l.ErrorMessage = commonResp.Msg
 	case "/task/template/updateTemplate":
+		updateTemplateReq := taskMdl.TaskTemplate{}
+		if err = json.Unmarshal(req, &updateTemplateReq); err != nil {
+			global.GVA_LOG.Error("get update template req failed", zap.Any("err", err))
+			return
+		}
+		if err = json.Unmarshal(resp, &commonResp); err != nil {
+			global.GVA_LOG.Error("get update template resp failed", zap.Any("err", err))
+			return
+		}
+		l.Detail = common + "修改模板 " + "ID " + strconv.Itoa(int(updateTemplateReq.ID))
+		l.Status = commonResp.Code
+		l.ErrorMessage = commonResp.Msg
+	case "/task/schedule/addSchedule":
 		l.Detail = common + "登陆"
 	case "/task/schedule/deleteSchedule":
 		l.Detail = common + "登陆"
