@@ -372,7 +372,19 @@ func (r *RecordPool) AddRecord(userID int, ip, action string, req, resp []byte) 
 		l.Status = commonResp.Code
 		l.ErrorMessage = commonResp.Msg
 	case "/task/template/processSetTask":
-		l.Detail = common + "登陆"
+		processTaskReq := taskReq.ProcessTaskRequest{}
+		if err = json.Unmarshal(req, &processTaskReq); err != nil {
+			global.GVA_LOG.Error("get process task req failed", zap.Any("err", err))
+			return
+		}
+		processTaskResp := taskRes.TaskResponse{}
+		if err = json.Unmarshal(resp, &processTaskResp); err != nil {
+			global.GVA_LOG.Error("get stop task resp failed", zap.Any("err", err))
+			return
+		}
+		l.Detail = common + "执行模板集下一模板 " + "模板集ID " + strconv.Itoa(int(processTaskReq.ID)) + " 下一模板ID " + strconv.Itoa(processTaskResp.Task.TemplateId)
+		l.Status = commonResp.Code
+		l.ErrorMessage = commonResp.Msg
 	case "/task/template/updateSet":
 		updateSetReq := taskReq.AddSet{}
 		if err = json.Unmarshal(req, &idReq); err != nil {
