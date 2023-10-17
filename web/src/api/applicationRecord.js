@@ -1,4 +1,5 @@
 import service from '@/utils/request'
+import download from "@/utils/download";
 
 // @Tags ApplicationRecord
 // @Summary 删除ApplicationRecord
@@ -45,5 +46,20 @@ export const getApplicationRecordList = (params) => {
     url: '/cmdb/getApplicationRecordList',
     method: 'get',
     params
+  })
+}
+
+// @Summary 下载文件
+// @Produce  application/json
+// @Param checkScript Object
+// @Router /task/template/downloadFile [post]
+export const exportApplicationRecord = (data) => {
+  return service({
+    url: '/cmdb/exportApplicationRecord',
+    method: 'post',
+    data,
+    responseType: 'blob'
+  }).then((res) => {
+    download(res)
   })
 }

@@ -128,7 +128,7 @@ func (s *ApplicationRecordApi) GetApplicationRecordList(c *gin.Context) {
 // @Param data body request2.ExcelInfo true "导出Excel文件信息"
 // @Success 200
 // @Router /cmdb/exportApplicationRecord [post]
-func (e *CmdbServerApi) ExportApplicationRecord(c *gin.Context) {
+func (s *ApplicationRecordApi) ExportApplicationRecord(c *gin.Context) {
 	var IDS request.IdsReq
 	_ = c.ShouldBindJSON(&IDS)
 	//filePath := global.GVA_CONFIG.Excel.Dir + excelInfo.FileName

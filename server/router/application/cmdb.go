@@ -89,6 +89,7 @@ func (s *CmdbRouter) InitCmdbRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 	{
 		cmdbRouter.GET("findApplicationRecord", authorityApplicationRecordApi.FindApplicationRecord)       // 获取操作记录树
 		cmdbRouter.GET("getApplicationRecordList", authorityApplicationRecordApi.GetApplicationRecordList) // 分页获取操作记录
+		cmdbRouter.POST("exportApplicationRecord", authorityApplicationRecordApi.ExportApplicationRecord)  // 获取管理员
 	}
 	return cmdbRouter
 }

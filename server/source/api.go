@@ -172,6 +172,7 @@ var apis = []system.SysApi{
 	{global.GVA_MODEL{ID: 168, CreatedAt: time.Now(), UpdatedAt: time.Now()}, "/cmdb/findApplicationRecord", "根据ID获取操作记录", "applicationRecord", "GET"},
 	{global.GVA_MODEL{ID: 169, CreatedAt: time.Now(), UpdatedAt: time.Now()}, "/cmdb/getApplicationRecordList", "获取操作记录列表", "applicationRecord", "GET"},
 	{global.GVA_MODEL{ID: 170, CreatedAt: time.Now(), UpdatedAt: time.Now()}, "/cmdb/deleteApplicationRecordByIds", "批量删除操作记录", "applicationRecord", "POST"},
+	{global.GVA_MODEL{ID: 171, CreatedAt: time.Now(), UpdatedAt: time.Now()}, "/cmdb/exportApplicationRecord", "下载操作记录", "applicationRecord", "GET"},
 }
 
 // @author: [SliverHorn](https://github.com/SliverHorn)

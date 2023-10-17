@@ -24,6 +24,7 @@
             <el-button icon="el-icon-delete" size="mini" style="margin-left: 10px;" :disabled="!multipleSelection.length">删除</el-button>
           </template>
         </el-popover>
+        <el-button size="mini" style="margin-left: 10px;" type="success" icon="el-icon-download" @click="downLoadFile">导出</el-button>
       </div>
       <el-table
         ref="multipleTable"
@@ -87,7 +88,8 @@
 import {
   deleteApplicationRecord,
   getApplicationRecordList,
-  deleteApplicationRecordByIds
+  deleteApplicationRecordByIds,
+  exportApplicationRecord
 } from '@/api/applicationRecord' // 此处请自行替换地址
 import infoList from '@/mixins/infoList'
 
@@ -180,7 +182,15 @@ export default {
         default:
           throw new Error(`Unknown code status ${status}`)
       }
-    }
+    },
+    downLoadFile() {
+      const ids = []
+      this.multipleSelection &&
+      this.multipleSelection.forEach(item => {
+        ids.push(item.ID)
+      })
+      exportApplicationRecord(ids)
+    },
   }
 }
 </script>
