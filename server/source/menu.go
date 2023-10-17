@@ -53,10 +53,11 @@ var menus = []system.SysBaseMenu{
 	{GVA_MODEL: global.GVA_MODEL{ID: 44, CreatedAt: time.Now(), UpdatedAt: time.Now()}, MenuLevel: 0, Hidden: true, ParentId: "35", Path: "templateSetDetail/:setTaskId", Name: "templateSetDetail", Component: "view/task/templateSet/templateSetDetail.vue", Sort: 99, Meta: system.Meta{Title: "模板集详情", Icon: "notebook-2"}},
 	{GVA_MODEL: global.GVA_MODEL{ID: 45, CreatedAt: time.Now(), UpdatedAt: time.Now()}, MenuLevel: 0, Hidden: false, ParentId: "26", Path: "logUploadServer", Name: "logUploadServer", Component: "view/asset/logUpload/logUploadServer.vue", Sort: 3, Meta: system.Meta{Title: "日志服务器管理", Icon: "potato-strips"}},
 	{GVA_MODEL: global.GVA_MODEL{ID: 46, CreatedAt: time.Now(), UpdatedAt: time.Now()}, MenuLevel: 0, Hidden: false, ParentId: "26", Path: "logUploadSecret", Name: "logUploadSecret", Component: "view/asset/logUpload/logUploadSecret.vue", Sort: 4, Meta: system.Meta{Title: "日志服务器密钥", Icon: "lock"}},
+	{GVA_MODEL: global.GVA_MODEL{ID: 47, CreatedAt: time.Now(), UpdatedAt: time.Now()}, MenuLevel: 0, Hidden: false, ParentId: "3", Path: "applicationRecord", Name: "applicationRecord", Component: "view/superAdmin/applicationRecord/applicationRecord.vue", Sort: 7, Meta: system.Meta{Title: "操作记录", Icon: "truck"}},
 }
 
-//@author: [SliverHorn](https://github.com/SliverHorn)
-//@description: sys_base_menus 表数据初始化
+// @author: [SliverHorn](https://github.com/SliverHorn)
+// @description: sys_base_menus 表数据初始化
 func (m *menu) Init() error {
 	return global.GVA_DB.Transaction(func(tx *gorm.DB) error {
 		if tx.Where("id IN ?", []int{1, 25}).Find(&[]system.SysBaseMenu{}).RowsAffected == 2 {

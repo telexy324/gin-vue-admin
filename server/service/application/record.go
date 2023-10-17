@@ -67,7 +67,7 @@ func (applicationRecordService *ApplicationRecordService) GetApplicationRecordIn
 	offset := info.PageSize * (info.Page - 1)
 	// 创建db
 	db := global.GVA_DB.Model(&application.ApplicationRecord{})
-	var sysOperationRecords []application.ApplicationRecord
+	var applicationRecords []application.ApplicationRecord
 	// 如果有条件搜索 下方会自动创建搜索语句
 	if info.UserID != 0 {
 		db = db.Where("method = ?", info.UserID)
@@ -82,6 +82,6 @@ func (applicationRecordService *ApplicationRecordService) GetApplicationRecordIn
 	if err != nil {
 		return
 	}
-	err = db.Order("id desc").Limit(limit).Offset(offset).Preload("User").Find(&sysOperationRecords).Error
-	return err, sysOperationRecords, total
+	err = db.Order("id desc").Limit(limit).Offset(offset).Preload("User").Find(&applicationRecords).Error
+	return err, applicationRecords, total
 }

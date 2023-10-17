@@ -79,5 +79,16 @@ func (s *CmdbRouter) InitCmdbRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 		cmdbRouter.POST("getAdminList", authorityStaffApi.GetAdminList)         // 分页获取管理员列表
 		cmdbRouter.POST("getDepartmentAll", authorityStaffApi.GetDepartmentAll) // 获取所有部门
 	}
+
+	var authorityApplicationRecordApi = v1.ApiGroupApp.ApplicationApiGroup.ApplicationRecordApi
+	{
+		cmdbRouter.POST("createApplicationRecord", authorityApplicationRecordApi.CreateApplicationRecord)           // 新增操作记录
+		cmdbRouter.POST("deleteApplicationRecord", authorityApplicationRecordApi.DeleteApplicationRecord)           // 删除操作记录
+		cmdbRouter.POST("deleteApplicationRecordByIds", authorityApplicationRecordApi.DeleteApplicationRecordByIds) // 删除操作记录
+	}
+	{
+		cmdbRouter.GET("findApplicationRecord", authorityApplicationRecordApi.FindApplicationRecord)       // 获取操作记录树
+		cmdbRouter.GET("getApplicationRecordList", authorityApplicationRecordApi.GetApplicationRecordList) // 分页获取操作记录
+	}
 	return cmdbRouter
 }

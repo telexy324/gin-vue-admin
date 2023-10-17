@@ -167,6 +167,11 @@ var apis = []system.SysApi{
 	{global.GVA_MODEL{ID: 163, CreatedAt: time.Now(), UpdatedAt: time.Now()}, "/task/template/uploadLogServer", "上传日志", "template", "POST"},
 	{global.GVA_MODEL{ID: 164, CreatedAt: time.Now(), UpdatedAt: time.Now()}, "/cmdb/getSystemServerIds", "根据系统id获取服务器id", "cmdb", "POST"},
 	{global.GVA_MODEL{ID: 165, CreatedAt: time.Now(), UpdatedAt: time.Now()}, "/task/template/deployServer", "分发程序", "template", "POST"},
+	{global.GVA_MODEL{ID: 166, CreatedAt: time.Now(), UpdatedAt: time.Now()}, "/cmdb/createApplicationRecord", "新增操作记录", "applicationRecord", "POST"},
+	{global.GVA_MODEL{ID: 167, CreatedAt: time.Now(), UpdatedAt: time.Now()}, "/cmdb/deleteApplicationRecord", "删除操作记录", "applicationRecord", "POST"},
+	{global.GVA_MODEL{ID: 168, CreatedAt: time.Now(), UpdatedAt: time.Now()}, "/cmdb/findApplicationRecord", "根据ID获取操作记录", "applicationRecord", "GET"},
+	{global.GVA_MODEL{ID: 169, CreatedAt: time.Now(), UpdatedAt: time.Now()}, "/cmdb/getApplicationRecordList", "获取操作记录列表", "applicationRecord", "GET"},
+	{global.GVA_MODEL{ID: 170, CreatedAt: time.Now(), UpdatedAt: time.Now()}, "/cmdb/deleteApplicationRecordByIds", "批量删除操作记录", "applicationRecord", "POST"},
 }
 
 // @author: [SliverHorn](https://github.com/SliverHorn)
