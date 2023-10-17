@@ -9,6 +9,8 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/utils"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
+	"strconv"
+	"time"
 )
 
 type ApplicationRecordApi struct {
@@ -115,5 +117,35 @@ func (s *ApplicationRecordApi) GetApplicationRecordList(c *gin.Context) {
 			Page:     pageInfo.Page,
 			PageSize: pageInfo.PageSize,
 		}, "获取成功", c)
+	}
+}
+
+// @Tags ApplicationRecord
+// @Summary 导出Excel
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce  application/octet-stream
+// @Param data body request2.ExcelInfo true "导出Excel文件信息"
+// @Success 200
+// @Router /cmdb/exportApplicationRecord [post]
+func (e *CmdbServerApi) ExportApplicationRecord(c *gin.Context) {
+	var IDS request.IdsReq
+	_ = c.ShouldBindJSON(&IDS)
+	//filePath := global.GVA_CONFIG.Excel.Dir + excelInfo.FileName
+	buf, err := applicationRecordService.ParseInfoList2Excel(IDS.Ids)
+	if err != nil {
+		global.GVA_LOG.Error("转换Excel失败!", zap.Any("err", err))
+		response.FailWithMessage("转换Excel失败", c)
+		return
+	}
+	fileName := "logRecord" + strconv.Itoa(int(time.Now().UnixNano()))
+	c.Header("Content-Disposition", "attachment; filename="+fileName)
+	c.Header("Content-Type", "application/octet-stream")
+	c.Header("Content-Transfer-Encoding", "binary")
+	c.Header("success", "true")
+
+	if _, err = c.Writer.Write(buf.Bytes()); err != nil {
+		global.GVA_LOG.Error("下载文件失败!", zap.Any("err", err))
+		response.FailWithMessage("download file failed", c)
 	}
 }

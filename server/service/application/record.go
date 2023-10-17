@@ -1,10 +1,14 @@
 package application
 
 import (
+	"bytes"
+	"fmt"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/application"
 	applicationReq "github.com/flipped-aurora/gin-vue-admin/server/model/application/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
+	"github.com/xuri/excelize/v2"
+	"go.uber.org/zap"
 )
 
 //@author: [granty1](https://github.com/granty1)
@@ -84,4 +88,36 @@ func (applicationRecordService *ApplicationRecordService) GetApplicationRecordIn
 	}
 	err = db.Order("id desc").Limit(limit).Offset(offset).Preload("User").Find(&applicationRecords).Error
 	return err, applicationRecords, total
+}
+
+func (applicationRecordService *ApplicationRecordService) ParseInfoList2Excel(IDs []int) (*bytes.Buffer, error) {
+	excel := excelize.NewFile()
+	headers := []string{"操作人", "日期", "状态码", "请求IP", "请求路径", "详情", "错误信息"}
+	infoList := make([]application.ApplicationRecord, 0, len(IDs))
+	if err := global.GVA_DB.Preload("User").Find(&[]application.ApplicationRecord{}, "id in (?)", IDs).Error; err != nil {
+		return nil, err
+	}
+	err := excel.SetSheetRow("Sheet1", "A1", &headers)
+	if err != nil {
+		return nil, err
+	}
+	statusMap := make(map[int]string)
+	statusMap[0] = "成功"
+	statusMap[0] = "失败"
+	for i, record := range infoList {
+		axis := fmt.Sprintf("A%d", i+2)
+		err = excel.SetSheetRow("Sheet1", axis, &[]interface{}{
+			record.User.Username + "(" + record.User.NickName + ")",
+			record.LogTime,
+			statusMap[record.Status],
+			record.Ip,
+			record.Action,
+			record.Detail,
+			record.ErrorMessage,
+		})
+		if err != nil {
+			global.GVA_LOG.Error("转换Excel行失败", zap.Any("err", err))
+		}
+	}
+	return excel.WriteToBuffer()
 }
