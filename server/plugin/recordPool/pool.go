@@ -7,6 +7,8 @@ import (
 	applicationReq "github.com/flipped-aurora/gin-vue-admin/server/model/application/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/response"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/logUploadMdl"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/scheduleMdl"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl"
 	taskReq "github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl/request"
 	taskRes "github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl/response"
@@ -412,37 +414,209 @@ func (r *RecordPool) AddRecord(userID int, ip, action string, req, resp []byte) 
 		l.Status = commonResp.Code
 		l.ErrorMessage = commonResp.Msg
 	case "/task/schedule/addSchedule":
-		l.Detail = common + "登陆"
+		addScheduleReq := scheduleMdl.Schedule{}
+		if err = json.Unmarshal(req, &addScheduleReq); err != nil {
+			global.GVA_LOG.Error("get add schedule req failed", zap.Any("err", err))
+			return
+		}
+		if err = json.Unmarshal(resp, &commonResp); err != nil {
+			global.GVA_LOG.Error("get add schedule resp failed", zap.Any("err", err))
+			return
+		}
+		l.Detail = common + "增加定时任务 " + "模板ID " + strconv.Itoa(addScheduleReq.TemplateID)
+		l.Status = commonResp.Code
+		l.ErrorMessage = commonResp.Msg
 	case "/task/schedule/deleteSchedule":
-		l.Detail = common + "登陆"
+		if err = json.Unmarshal(req, &idReq); err != nil {
+			global.GVA_LOG.Error("get delete schedule req failed", zap.Any("err", err))
+			return
+		}
+		if err = json.Unmarshal(resp, &commonResp); err != nil {
+			global.GVA_LOG.Error("get delete schedule resp failed", zap.Any("err", err))
+			return
+		}
+		l.Detail = common + "删除定时任务 " + "ID " + strconv.Itoa(int(idReq.ID))
+		l.Status = commonResp.Code
+		l.ErrorMessage = commonResp.Msg
 	case "/task/schedule/deleteScheduleByIds":
-		l.Detail = common + "登陆"
+		if err = json.Unmarshal(req, &idsReq); err != nil {
+			global.GVA_LOG.Error("get delete schedules req failed", zap.Any("err", err))
+			return
+		}
+		if err = json.Unmarshal(resp, &commonResp); err != nil {
+			global.GVA_LOG.Error("get delete schedules resp failed", zap.Any("err", err))
+			return
+		}
+		ids, err := json.Marshal(idsReq.Ids)
+		if err != nil {
+			global.GVA_LOG.Error("get ids req failed", zap.Any("err", err))
+			return
+		}
+		l.Detail = common + "批量删除定时任务 " + "IDs " + string(ids)
+		l.Status = commonResp.Code
+		l.ErrorMessage = commonResp.Msg
 	case "/task/schedule/updateSchedule":
-		l.Detail = common + "登陆"
+		updateScheduleReq := scheduleMdl.Schedule{}
+		if err = json.Unmarshal(req, &updateScheduleReq); err != nil {
+			global.GVA_LOG.Error("get update schedule req failed", zap.Any("err", err))
+			return
+		}
+		if err = json.Unmarshal(resp, &commonResp); err != nil {
+			global.GVA_LOG.Error("get update schedule resp failed", zap.Any("err", err))
+			return
+		}
+		l.Detail = common + "修改定时任务 " + "ID " + strconv.Itoa(int(updateScheduleReq.ID))
+		l.Status = commonResp.Code
+		l.ErrorMessage = commonResp.Msg
 	case "/task/template/downloadFile":
-		l.Detail = common + "登陆"
-	case "/ssh/run":
-		l.Detail = common + "登陆"
+		downLoadFileReq := taskReq.DownLoadFileRequest{}
+		if err = json.Unmarshal(req, &downLoadFileReq); err != nil {
+			global.GVA_LOG.Error("get download file req failed", zap.Any("err", err))
+			return
+		}
+		if err = json.Unmarshal(resp, &commonResp); err != nil {
+			global.GVA_LOG.Error("get download file resp failed", zap.Any("err", err))
+			return
+		}
+		l.Detail = common + "下载文件 " + " " + downLoadFileReq.File
+		l.Status = commonResp.Code
+		l.ErrorMessage = commonResp.Msg
+	//case "/ssh/run":
 	case "/logUpload/addServer":
-		l.Detail = common + "登陆"
+		addServerReq := logUploadMdl.Server{}
+		if err = json.Unmarshal(req, &addServerReq); err != nil {
+			global.GVA_LOG.Error("get add log server req failed", zap.Any("err", err))
+			return
+		}
+		if err = json.Unmarshal(resp, &commonResp); err != nil {
+			global.GVA_LOG.Error("get add log server resp failed", zap.Any("err", err))
+			return
+		}
+		l.Detail = common + "增加日志服务器 " + addServerReq.Hostname
+		l.Status = commonResp.Code
+		l.ErrorMessage = commonResp.Msg
 	case "/logUpload/deleteServer":
-		l.Detail = common + "登陆"
+		if err = json.Unmarshal(req, &idReq); err != nil {
+			global.GVA_LOG.Error("get delete log server req failed", zap.Any("err", err))
+			return
+		}
+		if err = json.Unmarshal(resp, &commonResp); err != nil {
+			global.GVA_LOG.Error("get delete log server resp failed", zap.Any("err", err))
+			return
+		}
+		l.Detail = common + "删除日志服务器 " + "ID " + strconv.Itoa(int(idReq.ID))
+		l.Status = commonResp.Code
+		l.ErrorMessage = commonResp.Msg
 	case "/logUpload/deleteServerByIds":
-		l.Detail = common + "登陆"
+		if err = json.Unmarshal(req, &idsReq); err != nil {
+			global.GVA_LOG.Error("get delete log servers req failed", zap.Any("err", err))
+			return
+		}
+		if err = json.Unmarshal(resp, &commonResp); err != nil {
+			global.GVA_LOG.Error("get delete log servers resp failed", zap.Any("err", err))
+			return
+		}
+		ids, err := json.Marshal(idsReq.Ids)
+		if err != nil {
+			global.GVA_LOG.Error("get ids req failed", zap.Any("err", err))
+			return
+		}
+		l.Detail = common + "批量删除日志服务器 " + "IDs " + string(ids)
+		l.Status = commonResp.Code
+		l.ErrorMessage = commonResp.Msg
 	case "/logUpload/updateServer":
-		l.Detail = common + "登陆"
+		updateServerReq := logUploadMdl.Server{}
+		if err = json.Unmarshal(req, &updateServerReq); err != nil {
+			global.GVA_LOG.Error("get update log server req failed", zap.Any("err", err))
+			return
+		}
+		if err = json.Unmarshal(resp, &commonResp); err != nil {
+			global.GVA_LOG.Error("get update log server resp failed", zap.Any("err", err))
+			return
+		}
+		l.Detail = common + "修改日志服务器 " + "ID " + strconv.Itoa(int(updateServerReq.ID))
+		l.Status = commonResp.Code
+		l.ErrorMessage = commonResp.Msg
 	case "/logUpload/addSecret":
-		l.Detail = common + "登陆"
+		addSecretReq := logUploadMdl.Secret{}
+		if err = json.Unmarshal(req, &addSecretReq); err != nil {
+			global.GVA_LOG.Error("get add log secret req failed", zap.Any("err", err))
+			return
+		}
+		if err = json.Unmarshal(resp, &commonResp); err != nil {
+			global.GVA_LOG.Error("get add log secret resp failed", zap.Any("err", err))
+			return
+		}
+		l.Detail = common + "增加日志服务器密钥 " + "日志服务器ID " + strconv.Itoa(addSecretReq.ServerId)
+		l.Status = commonResp.Code
+		l.ErrorMessage = commonResp.Msg
 	case "/logUpload/deleteSecret":
-		l.Detail = common + "登陆"
+		if err = json.Unmarshal(req, &idReq); err != nil {
+			global.GVA_LOG.Error("get delete log secret req failed", zap.Any("err", err))
+			return
+		}
+		if err = json.Unmarshal(resp, &commonResp); err != nil {
+			global.GVA_LOG.Error("get delete log secret resp failed", zap.Any("err", err))
+			return
+		}
+		l.Detail = common + "删除日志服务器密钥 " + "ID " + strconv.Itoa(int(idReq.ID))
+		l.Status = commonResp.Code
+		l.ErrorMessage = commonResp.Msg
 	case "/logUpload/deleteSecretByIds":
-		l.Detail = common + "登陆"
+		if err = json.Unmarshal(req, &idsReq); err != nil {
+			global.GVA_LOG.Error("get delete log secrets req failed", zap.Any("err", err))
+			return
+		}
+		if err = json.Unmarshal(resp, &commonResp); err != nil {
+			global.GVA_LOG.Error("get delete log secrets resp failed", zap.Any("err", err))
+			return
+		}
+		ids, err := json.Marshal(idsReq.Ids)
+		if err != nil {
+			global.GVA_LOG.Error("get ids req failed", zap.Any("err", err))
+			return
+		}
+		l.Detail = common + "批量删除日志服务器密钥 " + "IDs " + string(ids)
+		l.Status = commonResp.Code
+		l.ErrorMessage = commonResp.Msg
 	case "/logUpload/updateSecret":
-		l.Detail = common + "登陆"
+		updateSecretReq := logUploadMdl.Secret{}
+		if err = json.Unmarshal(req, &updateSecretReq); err != nil {
+			global.GVA_LOG.Error("get update log secret req failed", zap.Any("err", err))
+			return
+		}
+		if err = json.Unmarshal(resp, &commonResp); err != nil {
+			global.GVA_LOG.Error("get update log secret resp failed", zap.Any("err", err))
+			return
+		}
+		l.Detail = common + "修改日志服务器密钥 " + "ID " + strconv.Itoa(int(updateSecretReq.ID))
+		l.Status = commonResp.Code
+		l.ErrorMessage = commonResp.Msg
 	case "/task/template/uploadLogServer":
-		l.Detail = common + "登陆"
+		uploadLogServerReq := taskReq.DownLoadFileRequest{}
+		if err = json.Unmarshal(req, &uploadLogServerReq); err != nil {
+			global.GVA_LOG.Error("get upload log server req failed", zap.Any("err", err))
+			return
+		}
+		if err = json.Unmarshal(resp, &commonResp); err != nil {
+			global.GVA_LOG.Error("get upload log server resp failed", zap.Any("err", err))
+			return
+		}
+		l.Detail = common + "上传日志服务器 " + " " + uploadLogServerReq.File
+		l.Status = commonResp.Code
+		l.ErrorMessage = commonResp.Msg
 	case "/task/template/deployServer":
-		l.Detail = common + "登陆"
+		if err = json.Unmarshal(req, &idReq); err != nil {
+			global.GVA_LOG.Error("get deploy server req failed", zap.Any("err", err))
+			return
+		}
+		if err = json.Unmarshal(resp, &commonResp); err != nil {
+			global.GVA_LOG.Error("get deploy server resp failed", zap.Any("err", err))
+			return
+		}
+		l.Detail = common + "上传文件 " + "模板ID " + strconv.Itoa(int(idReq.ID))
+		l.Status = commonResp.Code
+		l.ErrorMessage = commonResp.Msg
 	default:
 		return
 	}

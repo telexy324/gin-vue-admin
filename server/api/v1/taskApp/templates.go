@@ -1017,7 +1017,7 @@ func (a *TemplateApi) UploadLogServer(c *gin.Context) {
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"更新成功"}"
 // @Router /task/template/deployServer [post]
 func (a *TemplateApi) DeployServer(c *gin.Context) {
-	var info templateReq.GetById
+	var info request.GetById
 	if err := c.ShouldBindJSON(&info); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
