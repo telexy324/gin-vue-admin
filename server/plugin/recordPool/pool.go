@@ -9,6 +9,7 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/response"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/logUploadMdl"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/scheduleMdl"
+	systemReq "github.com/flipped-aurora/gin-vue-admin/server/model/system/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl"
 	taskReq "github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl/request"
 	taskRes "github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl/response"
@@ -80,7 +81,18 @@ func (r *RecordPool) AddRecord(userID int, ip, action string, req, resp []byte) 
 
 	switch action {
 	case "/base/login":
-		l.Detail = common + "登陆"
+		loginReq := systemReq.Login{}
+		if err = json.Unmarshal(req, &loginReq); err != nil {
+			global.GVA_LOG.Error("get login req failed", zap.Any("err", err))
+			return
+		}
+		if err = json.Unmarshal(resp, &commonResp); err != nil {
+			global.GVA_LOG.Error("get login resp failed", zap.Any("err", err))
+			return
+		}
+		l.Detail = common + "登录"
+		l.Status = commonResp.Code
+		l.ErrorMessage = commonResp.Msg
 	case "/cmdb/addServer":
 		addServerReq := applicationReq.AddServer{}
 		if err = json.Unmarshal(req, &addServerReq); err != nil {
