@@ -189,7 +189,8 @@ export default {
       this.multipleSelection.forEach(item => {
         ids.push(item.ID)
       })
-      exportApplicationRecord(ids)
+      const fileName = 'logRecord' + Math.round(new Date()) + '.xlsx'
+      exportApplicationRecord({ ids }, fileName)
     },
   }
 }

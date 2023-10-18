@@ -53,13 +53,13 @@ export const getApplicationRecordList = (params) => {
 // @Produce  application/json
 // @Param checkScript Object
 // @Router /task/template/downloadFile [post]
-export const exportApplicationRecord = (data) => {
+export const exportApplicationRecord = (data, fileName) => {
   return service({
     url: '/cmdb/exportApplicationRecord',
     method: 'post',
     data,
     responseType: 'blob'
   }).then((res) => {
-    download(res)
+    download(res, fileName)
   })
 }

@@ -94,7 +94,7 @@ func (applicationRecordService *ApplicationRecordService) ParseInfoList2Excel(ID
 	excel := excelize.NewFile()
 	headers := []string{"操作人", "日期", "状态码", "请求IP", "请求路径", "详情", "错误信息"}
 	infoList := make([]application.ApplicationRecord, 0, len(IDs))
-	if err := global.GVA_DB.Preload("User").Find(&[]application.ApplicationRecord{}, "id in (?)", IDs).Error; err != nil {
+	if err := global.GVA_DB.Preload("User").Find(&infoList, "id in (?)", IDs).Error; err != nil {
 		return nil, err
 	}
 	err := excel.SetSheetRow("Sheet1", "A1", &headers)
