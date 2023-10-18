@@ -283,20 +283,31 @@ func (cmdbSystemService *CmdbSystemService) GetSystemById(id float64) (err error
 //@description: 获取系统分页
 //@return: err error, list interface{}, total int64
 
-func (cmdbSystemService *CmdbSystemService) GetSystemList(info request2.SystemSearch, adminID uint) (err error, list interface{}, total int64) {
+func (cmdbSystemService *CmdbSystemService) GetSystemList(info request2.SystemSearch, adminID uint) (err error, list interface{}, total int) {
 	limit := info.PageSize
 	offset := info.PageSize * (info.Page - 1)
 	var systemList []application.ApplicationSystem
-	db := global.GVA_DB.Model(&application.ApplicationSystem{})
+	//db := global.GVA_DB.Model(&application.ApplicationSystem{})
+	//if info.Name != "" {
+	//	name := strings.Trim(info.Name, " ")
+	//	db = db.Where("`name` LIKE ?", "%"+name+"%")
+	//}
+	sqlRaw := `select a.* from application_systems a, application_system_sys_admins ass where a.id=ass.system_id and ass.admin_id = ?`
+	db := global.GVA_DB
 	if info.Name != "" {
-		name := strings.Trim(info.Name, " ")
-		db = db.Where("`name` LIKE ?", "%"+name+"%")
+		sqlRaw = sqlRaw + ` and a.name LIKE ?`
+		db = db.Raw(sqlRaw, adminID, "%"+strings.Trim(info.Name, " ")+"%")
+	} else {
+		db = db.Raw(sqlRaw, adminID)
 	}
-	err = db.Count(&total).Error
+	//err = db.Count(&total).Error
+	//if err != nil {
+	//	return
+	//}
+	err = db.Limit(limit).Offset(offset).Scan(&systemList).Error
 	if err != nil {
 		return
 	}
-	err = db.Limit(limit).Offset(offset).Find(&systemList).Error
 
 	systemInfoList := make([]applicationRes.ApplicationSystemResponse, 0, len(systemList))
 	for _, system := range systemList {
@@ -318,15 +329,8 @@ func (cmdbSystemService *CmdbSystemService) GetSystemList(info request2.SystemSe
 		if err = global.GVA_DB.Where("system_id = ?", system.ID).Find(&admins).Error; err != nil {
 			return
 		}
-		var hasSystem bool
 		for _, admin := range admins {
-			if admin.AdminId == int(adminID) {
-				hasSystem = true
-			}
 			adminIds = append(adminIds, int(admin.ID))
-		}
-		if !hasSystem {
-			continue
 		}
 		systemInfoList = append(systemInfoList, applicationRes.ApplicationSystemResponse{
 			System:   system,
@@ -334,8 +338,62 @@ func (cmdbSystemService *CmdbSystemService) GetSystemList(info request2.SystemSe
 			AdminIds: adminIds,
 		})
 	}
-	return err, systemInfoList, int64(len(systemInfoList))
+	return err, systemInfoList, len(systemList)
 }
+
+//func (cmdbSystemService *CmdbSystemService) GetSystemList(info request2.SystemSearch, adminID uint) (err error, list interface{}, total int64) {
+//	limit := info.PageSize
+//	offset := info.PageSize * (info.Page - 1)
+//	var systemList []application.ApplicationSystem
+//	db := global.GVA_DB.Model(&application.ApplicationSystem{})
+//	if info.Name != "" {
+//		name := strings.Trim(info.Name, " ")
+//		db = db.Where("`name` LIKE ?", "%"+name+"%")
+//	}
+//	err = db.Count(&total).Error
+//	if err != nil {
+//		return
+//	}
+//	err = db.Limit(limit).Offset(offset).Find(&systemList).Error
+//
+//	systemInfoList := make([]applicationRes.ApplicationSystemResponse, 0, len(systemList))
+//	for _, system := range systemList {
+//		sysAdmins := make([]application.ApplicationSystemAdmin, 0)
+//		adminInfos := make([]application.Admin, 0)
+//		admins := make([]application.ApplicationSystemSysAdmin, 0)
+//		adminIds := make([]int, 0)
+//		if err = global.GVA_DB.Where("system_id = ?", system.ID).Find(&sysAdmins).Error; err != nil {
+//			return
+//		}
+//		for _, sysAdmin := range sysAdmins {
+//			var adminInfo = application.Admin{}
+//			if err = global.GVA_DB.Where("id = ?", sysAdmin.AdminId).First(&adminInfo).Error; err != nil {
+//				return
+//			} else {
+//				adminInfos = append(adminInfos, adminInfo)
+//			}
+//		}
+//		if err = global.GVA_DB.Where("system_id = ?", system.ID).Find(&admins).Error; err != nil {
+//			return
+//		}
+//		var hasSystem bool
+//		for _, admin := range admins {
+//			if admin.AdminId == int(adminID) {
+//				hasSystem = true
+//			}
+//			adminIds = append(adminIds, int(admin.ID))
+//		}
+//		if !hasSystem {
+//			continue
+//		}
+//		systemInfoList = append(systemInfoList, applicationRes.ApplicationSystemResponse{
+//			System:   system,
+//			Admins:   adminInfos,
+//			AdminIds: adminIds,
+//		})
+//	}
+//	return err, systemInfoList, int64(len(systemInfoList))
+//}
 
 // @author: [telexy324](https://github.com/telexy324)
 // @function: GetSystemServers
