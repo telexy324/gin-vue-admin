@@ -49,8 +49,12 @@ func (cmdbSystemService *CmdbSystemService) AddSystem(addSystemRequest request2.
 				}
 			}
 		}
+		var hasAdmin bool
 		if addSystemRequest.AdminIds != nil && len(addSystemRequest.AdminIds) > 0 {
 			for _, id := range addSystemRequest.AdminIds {
+				if id == 1 {
+					hasAdmin = true
+				}
 				user := &system.SysUser{}
 				user.ID = uint(id)
 				if err = global.GVA_DB.Find(user).Error; err != nil {
@@ -64,6 +68,15 @@ func (cmdbSystemService *CmdbSystemService) AddSystem(addSystemRequest request2.
 				if err = global.GVA_DB.Create(&admin).Error; err != nil {
 					global.GVA_LOG.Error("添加管理员失败", zap.Any("err", err))
 				}
+			}
+		}
+		if !hasAdmin {
+			admin := &application.ApplicationSystemSysAdmin{
+				SystemId: int(addSystemRequest.ApplicationSystem.ID),
+				AdminId:  1,
+			}
+			if err = global.GVA_DB.Create(&admin).Error; err != nil {
+				global.GVA_LOG.Error("添加超级管理员失败", zap.Any("err", err))
 			}
 		}
 		return nil
@@ -235,6 +248,9 @@ func (cmdbSystemService *CmdbSystemService) UpdateSystem(addSystemRequest reques
 				}
 			}
 			for _, id := range toDel {
+				if id == 1 {
+					continue
+				}
 				admin := application.ApplicationSystemSysAdmin{}
 				if txErr = tx.Where("admin_id = ? and system_id = ?", id, addSystemRequest.ID).Find(&admin).Delete(&admin).Error; txErr != nil {
 					return txErr
@@ -292,19 +308,29 @@ func (cmdbSystemService *CmdbSystemService) GetSystemList(info request2.SystemSe
 	//	name := strings.Trim(info.Name, " ")
 	//	db = db.Where("`name` LIKE ?", "%"+name+"%")
 	//}
-	sqlRaw := `select a.* from application_systems a, application_system_sys_admins ass where a.id=ass.system_id and ass.admin_id = ?`
+	sqlRaw := `select a.* from application_systems a, application_system_sys_admins ass where a.id=ass.system_id and a.deleted_at IS NULL and ass.deleted_at IS NULL and ass.admin_id = ?`
 	db := global.GVA_DB
 	if info.Name != "" {
-		sqlRaw = sqlRaw + ` and a.name LIKE ?`
-		db = db.Raw(sqlRaw, adminID, "%"+strings.Trim(info.Name, " ")+"%")
+		sqlRaw = sqlRaw + ` and a.name LIKE ? LIMIT ? OFFSET ?`
+		db = db.Raw(sqlRaw, adminID, "%"+strings.Trim(info.Name, " ")+"%", limit, offset)
 	} else {
-		db = db.Raw(sqlRaw, adminID)
+		sqlRaw = sqlRaw + ` LIMIT ? OFFSET ?`
+		db = db.Raw(sqlRaw, adminID, limit, offset)
 	}
-	//err = db.Count(&total).Error
-	//if err != nil {
-	//	return
-	//}
-	err = db.Limit(limit).Offset(offset).Scan(&systemList).Error
+	err = db.Scan(&systemList).Error
+	if err != nil {
+		return
+	}
+
+	sqlCountRaw := `select count(*) from application_systems a, application_system_sys_admins ass where a.id=ass.system_id and a.deleted_at IS NULL and ass.deleted_at IS NULL and ass.admin_id = ?`
+	db = global.GVA_DB
+	if info.Name != "" {
+		sqlCountRaw = sqlCountRaw + ` and a.name LIKE ?`
+		db = db.Raw(sqlCountRaw, adminID, "%"+strings.Trim(info.Name, " ")+"%")
+	} else {
+		db = db.Raw(sqlCountRaw, adminID)
+	}
+	err = db.Scan(&total).Error
 	if err != nil {
 		return
 	}
@@ -338,7 +364,7 @@ func (cmdbSystemService *CmdbSystemService) GetSystemList(info request2.SystemSe
 			AdminIds: adminIds,
 		})
 	}
-	return err, systemInfoList, len(systemList)
+	return err, systemInfoList, total
 }
 
 //func (cmdbSystemService *CmdbSystemService) GetSystemList(info request2.SystemSearch, adminID uint) (err error, list interface{}, total int64) {

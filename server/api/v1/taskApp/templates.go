@@ -575,6 +575,28 @@ func (a *TemplateApi) GetSetList(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
+	adminID := utils.GetUserID(c)
+	err, adminSystems := cmdbSystemService.GetAdminSystems(adminID)
+	if err != nil {
+		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
+		response.FailWithMessage("获取失败", c)
+	}
+	if len(pageInfo.SystemIDs) > 0 {
+		copedIDs := make([]int, 0, 8)
+		for _, adminSystem := range adminSystems {
+			for _, id := range pageInfo.SystemIDs {
+				if id == int(adminSystem.ID) {
+					copedIDs = append(copedIDs, id)
+					continue
+				}
+			}
+		}
+		pageInfo.SystemIDs = copedIDs
+	} else {
+		for _, adminSystem := range adminSystems {
+			pageInfo.SystemIDs = append(pageInfo.SystemIDs, int(adminSystem.ID))
+		}
+	}
 	if err, systemList, total := templateService.GetSetList(pageInfo); err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 		response.FailWithMessage("获取失败", c)

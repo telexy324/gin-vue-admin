@@ -528,6 +528,9 @@ func (templateService *TaskTemplatesService) GetSetList(info request2.TaskTempla
 		name := strings.Trim(info.Name, " ")
 		db = db.Where("`name` LIKE ?", "%"+name+"%")
 	}
+	if len(info.SystemIDs) > 0 {
+		db = db.Where("`system_id` IN ?", info.SystemIDs)
+	}
 	err = db.Count(&total).Error
 	if err != nil {
 		return
