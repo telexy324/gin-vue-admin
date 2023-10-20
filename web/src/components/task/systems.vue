@@ -3,9 +3,10 @@
     <div class="clearflex">
       <el-button class="fl-right" size="mini" type="primary" @click="checked">确 定</el-button>
     </div>
-    <el-scrollbar style="height:100%">
+    <div style="overflow: auto; height: calc(100% - 30px);">
       <el-tree
         ref="systemTree"
+        style="display: inline-block;"
         :data="systemTreeData"
         :props="systemDefaultProps"
         default-expand-all
@@ -21,7 +22,7 @@
           </span>
         </template>
       </el-tree>
-    </el-scrollbar>
+    </div>
   </div>
 </template>
 
