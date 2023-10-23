@@ -3,7 +3,7 @@
     <div class="clearflex">
       <el-button class="fl-right" size="mini" type="primary" @click="checked">确 定</el-button>
     </div>
-    <div style="overflow: auto; height: calc(100% - 30px);">
+    <div style="overflow: auto; height: calc(100vh - 72px);">
       <el-tree
         ref="systemTree"
         style="display: inline-block;"
