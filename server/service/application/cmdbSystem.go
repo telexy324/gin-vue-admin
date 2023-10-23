@@ -111,8 +111,8 @@ func (cmdbSystemService *CmdbSystemService) DeleteSystem(id float64) (err error)
 	}
 	var editRelation application.ApplicationSystemEditRelation
 	err = global.GVA_DB.Where("system_id = ?", id).First(&editRelation).Delete(&editRelation).Error
-	if err != nil {
-		return err
+	if err != nil && err == gorm.ErrRecordNotFound {
+		return nil
 	}
 	return err
 }
