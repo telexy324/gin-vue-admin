@@ -103,7 +103,7 @@ func (applicationRecordService *ApplicationRecordService) ParseInfoList2Excel(ID
 	}
 	statusMap := make(map[int]string)
 	statusMap[0] = "成功"
-	statusMap[0] = "失败"
+	statusMap[7] = "失败"
 	for i, record := range infoList {
 		axis := fmt.Sprintf("A%d", i+2)
 		err = excel.SetSheetRow("Sheet1", axis, &[]interface{}{

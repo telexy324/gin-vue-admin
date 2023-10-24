@@ -251,7 +251,7 @@ func (r *RecordPool) AddRecord(userID int, ip, action string, req, resp []byte) 
 			global.GVA_LOG.Error("get add task resp failed", zap.Any("err", err))
 			return
 		}
-		l.Detail = common + "新增任务 " + "系统ID " + strconv.Itoa(addTaskReq.SystemId) + "模板ID " + strconv.Itoa(addTaskReq.TemplateId)
+		l.Detail = common + "新增任务 " + "模板ID " + strconv.Itoa(addTaskReq.TemplateId)
 		l.Status = commonResp.Code
 		l.ErrorMessage = commonResp.Msg
 	case "/task/deleteTask":
