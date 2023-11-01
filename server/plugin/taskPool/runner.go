@@ -752,12 +752,26 @@ func (t *TaskRunner) runTask() (failedIPs []string) {
 }
 
 func (t *TaskRunner) runUploadTask() (failedIPs []string) {
-	if t.template.TargetServers == nil || len(t.template.TargetServers) <= 0 {
+	//if t.template.TargetServers == nil || len(t.template.TargetServers) <= 0 {
+	//	global.GVA_LOG.Error("run task failed on nil target server: ", zap.Uint("task ID: ", t.task.ID))
+	//	return
+	//}
+	if t.task.TargetIds == nil || len(t.task.TargetIds) <= 0 {
+		global.GVA_LOG.Error("run task failed on nil target server: ", zap.Uint("task ID: ", t.task.ID))
+		return
+	}
+	var server application.ApplicationServer
+	for _, s := range t.template.TargetServers {
+		if int(s.ID) == t.task.TargetIds[0] {
+			server = s
+			break
+		}
+	}
+	if server.ID <= 0 {
 		global.GVA_LOG.Error("run task failed on nil target server: ", zap.Uint("task ID: ", t.task.ID))
 		return
 	}
 	global.GVA_LOG.Info("run ", zap.Uint("task ID: ", t.task.ID))
-	server := t.template.TargetServers[0]
 	sshClient, err := common.FillSSHClient(server.ManageIp, t.template.SysUser, "", server.SshPort)
 	if err != nil {
 		global.GVA_LOG.Error("run task failed on create ssh client: ", zap.Uint("task ID: ", t.task.ID), zap.String("server IP: ", server.ManageIp), zap.Any("err", err))

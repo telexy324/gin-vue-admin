@@ -300,7 +300,7 @@
             style="width:100%"
             :options="serverOptions"
             :show-all-levels="false"
-            :props="{ multiple:false,checkStrictly: false,label:'name',value:'ID',disabled:'disabled',emitPath:false}"
+            :props="{ multiple:true,checkStrictly: false,label:'name',value:'ID',disabled:'disabled',emitPath:false}"
             :clearable="false"
           />
         </el-form-item>
@@ -528,7 +528,7 @@
         </div>
         <el-form-item label="目标" prop="targetIds">
           <el-cascader
-            v-model="form.targetIds"
+            v-model="commandVarForm.targetIds"
             style="width:100%"
             :options="serverOptions"
             :show-all-levels="false"
@@ -541,15 +541,6 @@
         <div class="dialog-footer">
           <el-button size="small" @click="closeCommandVarsDialog">取 消</el-button>
           <el-button size="small" type="primary" @click="enterCommandVarsDialog">确 定</el-button>
-        </div>
-      </template>
-    </el-dialog>
-    <el-dialog v-model="confirmVisible" :before-close="closeConfirm" title="请确认">
-      即将运行: {{ pendingTemplate.name }}
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button size="small" @click="closeConfirm">取 消</el-button>
-          <el-button size="small" type="primary" @click="enterConfirm">确 定</el-button>
         </div>
       </template>
     </el-dialog>
@@ -755,6 +746,7 @@ export default {
       CommandVarFormVisible: false,
       commandVarForm: {
         vars: [],
+        targetIds: [],
       },
       commandVarRules: {
         vars: [
@@ -968,59 +960,68 @@ export default {
       })
       this.serverOptions = res.data
     },
+    // async runTask(row) {
+    //   if (row.executeType === 2 && row.logSelect === 2) {
+    //     if (!this.confirmed) {
+    //       this.pendingTemplate = row
+    //       this.confirmVisible = true
+    //       return
+    //     }
+    //     this.confirmed = false
+    //     if (row.logOutput === 2) {
+    //       const task = (await uploadLogServer({
+    //         ID: row.ID,
+    //         file: row.logPath,
+    //       })).data.task
+    //       this.dialogFormVisibleDownload = false
+    //       this.showTaskLog(task)
+    //     } else {
+    //       const fileName = row.logPath.split('/')
+    //       downloadFile(row.ID, row.logPath, fileName[fileName.length - 1])
+    //     }
+    //   } else if (row.executeType === 2) {
+    //     this.currentTemplate = row
+    //     await this.showFileList(row.logPath)
+    //   } else if (row.executeType === 3) {
+    //     if (!this.confirmed) {
+    //       this.pendingTemplate = row
+    //       this.confirmVisible = true
+    //       return
+    //     }
+    //     this.confirmed = false
+    //     const task = (await deployServer({
+    //       ID: row.ID
+    //     })).data.task
+    //     this.showTaskLog(task)
+    //   } else {
+    //     if (row.commandVarNumbers > 0) {
+    //       for (let i = 0; i < row.commandVarNumbers; i++) {
+    //         this.commandVarForm.vars.push('')
+    //       }
+    //       this.runningTemplateId = row.ID
+    //       this.CommandVarFormVisible = true
+    //     } else {
+    //       if (!this.confirmed) {
+    //         this.pendingTemplate = row
+    //         this.confirmVisible = true
+    //         return
+    //       }
+    //       this.confirmed = false
+    //       const task = (await addTask({
+    //         templateId: row.ID
+    //       })).data.task
+    //       this.showTaskLog(task)
+    //     }
+    //   }
+    // },
     async runTask(row) {
-      if (row.executeType === 2 && row.logSelect === 2) {
-        if (!this.confirmed) {
-          this.pendingTemplate = row
-          this.confirmVisible = true
-          return
-        }
-        this.confirmed = false
-        if (row.logOutput === 2) {
-          const task = (await uploadLogServer({
-            ID: row.ID,
-            file: row.logPath,
-          })).data.task
-          this.dialogFormVisibleDownload = false
-          this.showTaskLog(task)
-        } else {
-          const fileName = row.logPath.split('/')
-          downloadFile(row.ID, row.logPath, fileName[fileName.length - 1])
-        }
-      } else if (row.executeType === 2) {
-        this.currentTemplate = row
-        await this.showFileList(row.logPath)
-      } else if (row.executeType === 3) {
-        if (!this.confirmed) {
-          this.pendingTemplate = row
-          this.confirmVisible = true
-          return
-        }
-        this.confirmed = false
-        const task = (await deployServer({
-          ID: row.ID
-        })).data.task
-        this.showTaskLog(task)
-      } else {
-        if (row.commandVarNumbers > 0) {
-          for (let i = 0; i < row.commandVarNumbers; i++) {
-            this.commandVarForm.vars.push('')
-          }
-          this.runningTemplateId = row.ID
-          this.CommandVarFormVisible = true
-        } else {
-          if (!this.confirmed) {
-            this.pendingTemplate = row
-            this.confirmVisible = true
-            return
-          }
-          this.confirmed = false
-          const task = (await addTask({
-            templateId: row.ID
-          })).data.task
-          this.showTaskLog(task)
+      if (row.commandVarNumbers > 0) {
+        for (let i = 0; i < row.commandVarNumbers; i++) {
+          this.commandVarForm.vars.push('')
         }
       }
+      this.pendingTemplate = row
+      this.CommandVarFormVisible = true
     },
     showTaskLog(task) {
       emitter.emit('i-show-task', task)
@@ -1661,24 +1662,50 @@ export default {
     initCommandVarsForm() {
       this.commandVarForm = {
         vars: [],
+        targetIds: [],
       }
     },
     async enterCommandVarsDialog() {
       this.$refs.CommandVarForm.validate(async valid => {
         if (valid) {
-          const task = (await addTask({
-            templateId: this.runningTemplateId,
-            commandVars: this.commandVarForm.vars
-          })).data.task
-          this.closeCommandVarsDialog()
-          this.showTaskLog(task)
+          const row = this.pendingTemplate
+          if (row.executeType === 2 && row.logSelect === 2) {
+            if (row.logOutput === 2) {
+              const task = (await uploadLogServer({
+                ID: row.ID,
+                file: row.logPath,
+              })).data.task
+              this.dialogFormVisibleDownload = false
+              this.showTaskLog(task)
+            } else {
+              const fileName = row.logPath.split('/')
+              downloadFile(row.ID, row.logPath, fileName[fileName.length - 1])
+            }
+          } else if (row.executeType === 2) {
+            this.currentTemplate = row
+            this.closeCommandVarsDialog()
+            await this.showFileList(row.logPath)
+          } else if (row.executeType === 3) {
+            const task = (await deployServer({
+              ID: row.ID
+            })).data.task
+            this.closeCommandVarsDialog()
+            this.showTaskLog(task)
+          } else {
+            const task = (await addTask({
+              templateId: this.runningTemplateId,
+              commandVars: this.commandVarForm.vars
+            })).data.task
+            this.closeCommandVarsDialog()
+            this.showTaskLog(task)
+          }
         }
       })
     },
     closeCommandVarsDialog() {
       this.CommandVarFormVisible = false
       this.initCommandVarsForm()
-      this.runningTemplateId = ''
+      this.pendingTemplate = ''
     },
     logPathEnding(rule, value, callback) {
       if (value.slice(-1) === '/' && this.logForm.logSelect === 2) {

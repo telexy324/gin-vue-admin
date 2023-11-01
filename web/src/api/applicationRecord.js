@@ -1,5 +1,5 @@
 import service from '@/utils/request'
-import download from "@/utils/download";
+import download from '@/utils/download'
 
 // @Tags ApplicationRecord
 // @Summary 删除ApplicationRecord
