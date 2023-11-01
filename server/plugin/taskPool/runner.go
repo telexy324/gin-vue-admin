@@ -576,7 +576,15 @@ func (t *TaskRunner) populateDetails() error {
 //}
 
 func (t *TaskRunner) runTask() (failedIPs []string) {
-	servers := t.template.TargetServers
+	serversAll := t.template.TargetServers
+	serverMap := make(map[int]application.ApplicationServer, len(serversAll))
+	for _, server := range serversAll {
+		serverMap[int(server.ID)] = server
+	}
+	servers := make([]application.ApplicationServer, 0, len(t.task.TargetIds))
+	for _, id := range t.task.TargetIds {
+		servers = append(servers, serverMap[id])
+	}
 	global.GVA_LOG.Info("run ", zap.Uint("task ID: ", t.task.ID))
 	wg := &sync.WaitGroup{}
 	failedChan := make(chan string, len(servers))

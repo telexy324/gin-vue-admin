@@ -310,6 +310,8 @@ func (p *TaskPool) AddTask(taskObj taskMdl.Task, userID int, setTaskId int) (new
 		vars, _ := json.Marshal(taskObj.CommandVars)
 		taskObj.CommandVar = string(vars)
 	}
+	targets, _ := json.Marshal(taskObj.TargetIds)
+	taskObj.TargetId = string(targets)
 
 	//tpl, err := taskService.GetTaskTemplate(float64(taskObj.TemplateId))
 	//if err != nil {

@@ -526,6 +526,16 @@
             <el-input v-model="commandVarForm.vars[index]" />
           </el-form-item>
         </div>
+        <el-form-item label="目标" prop="targetIds">
+          <el-cascader
+            v-model="form.targetIds"
+            style="width:100%"
+            :options="serverOptions"
+            :show-all-levels="false"
+            :props="{ multiple:true,checkStrictly: false,label:'name',value:'ID',disabled:'disabled',emitPath:false}"
+            :clearable="true"
+          />
+        </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
