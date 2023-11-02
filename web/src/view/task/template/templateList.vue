@@ -530,7 +530,7 @@
           <el-cascader
             v-model="commandVarForm.targetIds"
             style="width:100%"
-            :options="serverOptions"
+            :options="checkedServerOptions"
             :show-all-levels="false"
             :props="{ multiple:true,checkStrictly: false,label:'name',value:'ID',disabled:'disabled',emitPath:false}"
             :clearable="true"
@@ -557,7 +557,6 @@ const path = import.meta.env.VITE_BASE_API
 
 import {
   addTemplate,
-  // checkScript,
   deleteTemplate,
   deleteTemplateByIds,
   deployServer,
@@ -600,6 +599,7 @@ export default {
       dialogTitle: '新增任务模板',
       templates: [],
       serverOptions: [],
+      checkedServerOptions: [],
       systemOptions: [],
       form: {
         ID: '',
@@ -960,6 +960,20 @@ export default {
       })
       this.serverOptions = res.data
     },
+    async setCheckedServerOptions(template) {
+      const res = await getSystemServerIds({
+        ID: template.systemId
+      })
+      const serverOptions = res.data
+      serverOptions[0].children = serverOptions[0].children.filter((item) => {
+        if (template.targetServerIds.includes(item.ID)) {
+          this.commandVarForm.targetIds.push(item.ID)
+          return true
+        }
+        return false
+      })
+      this.checkedServerOptions = serverOptions
+    },
     // async runTask(row) {
     //   if (row.executeType === 2 && row.logSelect === 2) {
     //     if (!this.confirmed) {
@@ -1015,6 +1029,7 @@ export default {
     //   }
     // },
     async runTask(row) {
+      await this.setCheckedServerOptions(row)
       if (row.commandVarNumbers > 0) {
         for (let i = 0; i < row.commandVarNumbers; i++) {
           this.commandVarForm.vars.push('')
