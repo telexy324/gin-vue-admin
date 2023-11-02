@@ -1708,7 +1708,7 @@ export default {
             this.showTaskLog(task)
           } else {
             const task = (await addTask({
-              templateId: this.runningTemplateId,
+              templateId: row.ID,
               commandVars: this.commandVarForm.vars
             })).data.task
             this.closeCommandVarsDialog()
