@@ -865,7 +865,7 @@ export default {
         const temp = res.data.taskTemplate
         this.logForm = temp
         await this.setServerOptions(temp.systemId)
-        this.logForm.targetIds = this.logForm.targetIds[0]
+        // this.logForm.targetIds = this.logForm.targetIds[0]
         temp.logOutput === 2 ? this.downloadDirectly = false : this.downloadDirectly = true
         await this.openLogDialog('edit')
       } else if (res.data.taskTemplate.executeType === 3) {
@@ -1316,8 +1316,8 @@ export default {
                   this.logForm.dstServerId = 0
                   this.logForm.secretId = 0
                 }
-                const _targetId = this.logForm.targetIds
-                this.logForm.targetIds = [_targetId]
+                // const _targetId = this.logForm.targetIds
+                // this.logForm.targetIds = [_targetId]
                 const res = await addTemplate(this.logForm)
                 if (res.code === 0) {
                   this.$message({
@@ -1332,8 +1332,8 @@ export default {
               break
             case 'edit':
               {
-                const _targetId = this.logForm.targetIds
-                this.logForm.targetIds = [_targetId]
+                // const _targetId = this.logForm.targetIds
+                // this.logForm.targetIds = [_targetId]
                 const res = await updateTemplate(this.logForm)
                 if (res.code === 0) {
                   this.$message({
