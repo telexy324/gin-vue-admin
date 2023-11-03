@@ -923,6 +923,15 @@ func (t *TaskRunner) runDeployTask() (failedIPs []string) {
 		manageIps = append(failedIPs, s.ManageIp)
 		manageIpString = manageIpString + " " + s.ManageIp
 	}
+	serversAll := t.template.TargetServers
+	serverMap := make(map[int]application.ApplicationServer, len(serversAll))
+	for _, server := range serversAll {
+		serverMap[int(server.ID)] = server
+	}
+	servers := make([]application.ApplicationServer, 0, len(t.task.TargetIds))
+	for _, id := range t.task.TargetIds {
+		servers = append(servers, serverMap[id])
+	}
 	if t.template.LogUploadServer.Mode == consts.LogServerModeFtp {
 		ftpClient, err := common.NewFtpClient(t.template.LogUploadServer.ManageIp, t.template.LogUploadServer.Port, t.template.Secret.Name, t.template.Secret.Password)
 		if err != nil {
@@ -939,12 +948,12 @@ func (t *TaskRunner) runDeployTask() (failedIPs []string) {
 				return
 			}
 			t.Log("download "+deployInfo.DownloadSource+" success", t.template.LogUploadServer.ManageIp)
-			if t.template.TargetServers == nil || len(t.template.TargetServers) <= 0 {
-				global.GVA_LOG.Error("run task failed on nil target server: ", zap.Uint("task ID: ", t.task.ID))
-				return
-			}
-			global.GVA_LOG.Info("run ", zap.Uint("task ID: ", t.task.ID))
-			servers := t.template.TargetServers
+			//if t.template.TargetServers == nil || len(t.template.TargetServers) <= 0 {
+			//	global.GVA_LOG.Error("run task failed on nil target server: ", zap.Uint("task ID: ", t.task.ID))
+			//	return
+			//}
+			//global.GVA_LOG.Info("run ", zap.Uint("task ID: ", t.task.ID))
+			//servers := t.template.TargetServers
 			wg := &sync.WaitGroup{}
 			failedChan := make(chan string, len(servers))
 			t.clients = make([]*ssh.Client, 0, len(servers))
@@ -999,12 +1008,12 @@ func (t *TaskRunner) runDeployTask() (failedIPs []string) {
 				return
 			}
 			t.Log("download "+deployInfo.DownloadSource+" success", t.template.LogUploadServer.ManageIp)
-			if t.template.TargetServers == nil || len(t.template.TargetServers) <= 0 {
-				global.GVA_LOG.Error("run task failed on nil target server: ", zap.Uint("task ID: ", t.task.ID))
-				return
-			}
-			global.GVA_LOG.Info("run ", zap.Uint("task ID: ", t.task.ID))
-			servers := t.template.TargetServers
+			//if t.template.TargetServers == nil || len(t.template.TargetServers) <= 0 {
+			//	global.GVA_LOG.Error("run task failed on nil target server: ", zap.Uint("task ID: ", t.task.ID))
+			//	return
+			//}
+			//global.GVA_LOG.Info("run ", zap.Uint("task ID: ", t.task.ID))
+			//servers := t.template.TargetServers
 			wg := &sync.WaitGroup{}
 			failedChan := make(chan string, len(servers))
 			t.clients = make([]*ssh.Client, 0, len(servers))

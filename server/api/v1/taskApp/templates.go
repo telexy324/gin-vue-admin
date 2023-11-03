@@ -810,7 +810,7 @@ func (a *TemplateApi) GetFileList(c *gin.Context) {
 	if template.ExecuteType != consts.ExecuteTypeDownload {
 		response.FailWithMessage("template type is not download", c)
 	}
-	err, server := cmdbServerService.GetServerById(float64(template.TargetIds[0]))
+	err, server := cmdbServerService.GetServerById(float64(idInfo.TargetIds[0]))
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -951,6 +951,7 @@ func (a *TemplateApi) UploadLogServer(c *gin.Context) {
 	task := taskMdl.Task{
 		TemplateId:   int(info.ID),
 		FileDownload: info.File,
+		TargetIds:    info.TargetIds,
 	}
 	if taskNew, err := taskPool.TPool.AddTask(task, userID, 0); err != nil {
 		global.GVA_LOG.Error("添加失败!", zap.Any("err", err))
@@ -1039,7 +1040,7 @@ func (a *TemplateApi) UploadLogServer(c *gin.Context) {
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"更新成功"}"
 // @Router /task/template/deployServer [post]
 func (a *TemplateApi) DeployServer(c *gin.Context) {
-	var info request.GetById
+	var info taskMdl.Task
 	if err := c.ShouldBindJSON(&info); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
@@ -1049,7 +1050,7 @@ func (a *TemplateApi) DeployServer(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	template, err := templateService.GetTaskTemplate(info.ID)
+	template, err := templateService.GetTaskTemplate(float64(info.TemplateId))
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -1063,10 +1064,7 @@ func (a *TemplateApi) DeployServer(c *gin.Context) {
 		return
 	}
 	userID := int(utils.GetUserID(c))
-	task := taskMdl.Task{
-		TemplateId: int(info.ID),
-	}
-	if taskNew, err := taskPool.TPool.AddTask(task, userID, 0); err != nil {
+	if taskNew, err := taskPool.TPool.AddTask(info, userID, 0); err != nil {
 		global.GVA_LOG.Error("添加失败!", zap.Any("err", err))
 		response.FailWithMessage("添加失败", c)
 	} else {

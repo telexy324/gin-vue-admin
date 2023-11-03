@@ -532,7 +532,7 @@
             style="width:100%"
             :options="checkedServerOptions"
             :show-all-levels="false"
-            :props="{ multiple:true,checkStrictly: false,label:'name',value:'ID',disabled:'disabled',emitPath:false}"
+            :props="{ multiple:pendingTemplate.executeType!==2,checkStrictly: false,label:'name',value:'ID',disabled:'disabled',emitPath:false}"
             :clearable="true"
           />
         </el-form-item>
@@ -965,13 +965,15 @@ export default {
         ID: template.systemId
       })
       const serverOptions = res.data
-      serverOptions[0].children = serverOptions[0].children.filter((item) => {
-        if (template.targetServerIds.includes(item.ID)) {
-          this.commandVarForm.targetIds.push(item.ID)
-          return true
-        }
-        return false
-      })
+      if (template.executeType !== 2) {
+        serverOptions[0].children = serverOptions[0].children.filter((item) => {
+          if (template.targetServerIds.includes(item.ID)) {
+            this.commandVarForm.targetIds.push(item.ID)
+            return true
+          }
+          return false
+        })
+      }
       this.checkedServerOptions = serverOptions
     },
     // async runTask(row) {
@@ -1689,6 +1691,7 @@ export default {
               const task = (await uploadLogServer({
                 ID: row.ID,
                 file: row.logPath,
+                targetIds: this.commandVarForm.targetIds
               })).data.task
               this.dialogFormVisibleDownload = false
               this.showTaskLog(task)
@@ -1702,7 +1705,8 @@ export default {
             await this.showFileList(row.logPath)
           } else if (row.executeType === 3) {
             const task = (await deployServer({
-              ID: row.ID
+              templateId: row.ID,
+              targetIds: this.commandVarForm.targetIds
             })).data.task
             this.closeCommandVarsDialog()
             this.showTaskLog(task)

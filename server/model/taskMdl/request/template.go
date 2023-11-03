@@ -23,13 +23,15 @@ type AddSet struct {
 }
 
 type DownLoadFileRequest struct {
-	ID   float64 `json:"id" form:"id"` // 主键ID
-	File string  `json:"file" form:"file"`
+	ID        float64 `json:"id" form:"id"` // 主键ID
+	File      string  `json:"file" form:"file"`
+	TargetIds []int   `json:"targetIds" form:"targetIds"`
 }
 
 type FileListRequest struct {
 	ID        float64 `json:"id" form:"id"` // 主键ID
 	Directory string  `json:"directory" form:"directory"`
+	TargetIds []int   `json:"targetIds" form:"targetIds"`
 }
 
 type ProcessTaskRequest struct {
