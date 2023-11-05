@@ -757,6 +757,7 @@ export default {
       confirmVisible: false,
       pendingTemplate: '',
       confirmed: false,
+      targetIds: '',
     }
   },
   computed: {
@@ -1366,6 +1367,7 @@ export default {
       const resp = (await getFileList({
         ID: this.currentTemplate.ID,
         directory: path,
+        targetId: this.targetIds,
       })).data
       this.isTop = resp.isTop
       this.currentDirectory = resp.currentDirectory
@@ -1394,6 +1396,7 @@ export default {
       this.currentSystem = ''
       this.currentDirectory = ''
       this.fNames = []
+      this.targetIds = ''
     },
     processFile(directory, index) {
       if (directory) {
@@ -1410,16 +1413,18 @@ export default {
       const filename = this.fNames[index]
       const id = this.currentTemplate.ID
       const type = this.currentTemplate.logOutput
+      const targetId = this.targetIds
       this.closeDownloadDialog()
       if (type === 2) {
         const task = (await uploadLogServer({
           ID: id,
           file: item,
+          targetId: targetId
         })).data.task
         this.dialogFormVisibleDownload = false
         this.showTaskLog(task)
       } else {
-        downloadFile(id, item, filename)
+        downloadFile(id, item, filename, targetId)
       }
     },
     filterSystemName(value) {
@@ -1691,16 +1696,17 @@ export default {
               const task = (await uploadLogServer({
                 ID: row.ID,
                 file: row.logPath,
-                targetIds: this.commandVarForm.targetIds
+                targetId: this.commandVarForm.targetIds
               })).data.task
               this.dialogFormVisibleDownload = false
               this.showTaskLog(task)
             } else {
               const fileName = row.logPath.split('/')
-              downloadFile(row.ID, row.logPath, fileName[fileName.length - 1])
+              downloadFile(row.ID, row.logPath, fileName[fileName.length - 1], this.commandVarForm.targetIds)
             }
           } else if (row.executeType === 2) {
             this.currentTemplate = row
+            this.targetId = this.commandVarForm.targetIds
             this.closeCommandVarsDialog()
             await this.showFileList(row.logPath)
           } else if (row.executeType === 3) {

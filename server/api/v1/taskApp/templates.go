@@ -683,6 +683,7 @@ func (a *TemplateApi) ProcessSetTask(c *gin.Context) {
 	var task taskMdl.Task
 	task.TemplateId = int(setTask.Templates[setTask.CurrentStep].ID)
 	task.CommandVars = processTaskRequest.CommandVars
+	task.TargetIds = processTaskRequest.TargetIds
 	newTask, err := taskPool.TPool.AddTask(task, userID, int(setTask.ID))
 	if err != nil {
 		global.GVA_LOG.Error("添加任务失败!", zap.Any("err", err))
@@ -804,13 +805,13 @@ func (a *TemplateApi) GetFileList(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if template.TargetIds == nil || len(template.TargetIds) == 0 {
-		response.FailWithMessage("template target ids is null", c)
-	}
+	//if template.TargetIds == nil || len(template.TargetIds) == 0 {
+	//	response.FailWithMessage("template target ids is null", c)
+	//}
 	if template.ExecuteType != consts.ExecuteTypeDownload {
 		response.FailWithMessage("template type is not download", c)
 	}
-	err, server := cmdbServerService.GetServerById(float64(idInfo.TargetIds[0]))
+	err, server := cmdbServerService.GetServerById(float64(idInfo.TargetId))
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -870,7 +871,7 @@ func (a *TemplateApi) DownloadFile(c *gin.Context) {
 		response.FailWithMessage("file not in log path", c)
 		return
 	}
-	err, server := cmdbServerService.GetServerById(float64(template.TargetIds[0]))
+	err, server := cmdbServerService.GetServerById(float64(info.TargetId))
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -951,7 +952,7 @@ func (a *TemplateApi) UploadLogServer(c *gin.Context) {
 	task := taskMdl.Task{
 		TemplateId:   int(info.ID),
 		FileDownload: info.File,
-		TargetIds:    info.TargetIds,
+		TargetIds:    []int{info.TargetId},
 	}
 	if taskNew, err := taskPool.TPool.AddTask(task, userID, 0); err != nil {
 		global.GVA_LOG.Error("添加失败!", zap.Any("err", err))

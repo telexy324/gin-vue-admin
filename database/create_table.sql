@@ -134,6 +134,7 @@ create table `application_tasks`
     `end_time`       datetime(0) NULL DEFAULT NULL,
     `set_task_id`    bigint UNSIGNED NOT NULL DEFAULT '0',
     `command_var`    text,
+    `target_id`      text,
 --     `file_download`  varchar(255) NOT NULL DEFAULT '',
 --     `system_id`      bigint UNSIGNED NOT NULL DEFAULT '0',
     PRIMARY KEY (`id`)

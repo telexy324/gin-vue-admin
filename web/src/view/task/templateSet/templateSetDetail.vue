@@ -21,20 +21,21 @@
             <el-input v-model="commandVarForm.vars[index]" />
           </el-form-item>
         </div>
+        <el-form-item label="目标" prop="targetIds">
+          <el-cascader
+            v-model="commandVarForm.targetIds"
+            style="width:100%"
+            :options="checkedServerOptions"
+            :show-all-levels="false"
+            :props="{ multiple:true,checkStrictly: false,label:'name',value:'ID',disabled:'disabled',emitPath:false}"
+            :clearable="true"
+          />
+        </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
           <el-button size="small" @click="closeCommandVarsDialog">取 消</el-button>
           <el-button size="small" type="primary" @click="enterCommandVarsDialog">确 定</el-button>
-        </div>
-      </template>
-    </el-dialog>
-    <el-dialog v-model="confirmVisible" :before-close="closeConfirm" title="请确认">
-      即将运行: {{ setTask.templates[setTask.currentStep].name }}
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button size="small" @click="closeConfirm">取 消</el-button>
-          <el-button size="small" type="primary" @click="enterConfirm">确 定</el-button>
         </div>
       </template>
     </el-dialog>
@@ -52,9 +53,9 @@ import {
   processSetTask,
   getSetTaskById
 } from '@/api/template'
+import { getSystemServerIds } from '@/api/cmdb'
 import { emitter } from '@/utils/bus'
 import warningBar from '@/components/warningBar/warningBar.vue'
-import { addTask } from '@/api/task'
 
 export default {
   name: 'TemplateSetDetail',
@@ -73,6 +74,7 @@ export default {
       CommandVarFormVisible: false,
       commandVarForm: {
         vars: [],
+        targetIds: [],
       },
       commandVarRules: {
         vars: [
@@ -82,6 +84,7 @@ export default {
       runningTemplateId: '',
       confirmVisible: false,
       confirmed: false,
+      checkedServerOptions: [],
     }
   },
   async created() {
@@ -107,22 +110,13 @@ export default {
       }
     },
     async processSetTask() {
+      await this.setCheckedServerOptions(this.setTask.templates[this.setTask.currentStep])
       if (this.setTask.templates[this.setTask.currentStep].commandVarNumbers > 0) {
         for (let i = 0; i < this.setTask.templates[this.setTask.currentStep].commandVarNumbers; i++) {
           this.commandVarForm.vars.push('')
         }
         this.runningTemplateId = this.setTask.templates[this.setTask.currentStep].ID
         this.CommandVarFormVisible = true
-      } else {
-        if (!this.confirmed) {
-          this.confirmVisible = true
-          return
-        }
-        this.confirmed = false
-        const task = (await processSetTask({
-          ID: this.setTask.ID,
-        })).data.task
-        this.showTaskLog(task)
       }
     },
     showTaskLog(task) {
@@ -157,6 +151,7 @@ export default {
     initCommandVarsForm() {
       this.commandVarForm = {
         vars: [],
+        targetIds: [],
       }
     },
     async enterCommandVarsDialog() {
@@ -164,7 +159,8 @@ export default {
         if (valid) {
           const task = (await processSetTask({
             ID: this.setTask.ID,
-            commandVars: this.commandVarForm.vars
+            commandVars: this.commandVarForm.vars,
+            targetIds: this.commandVarForm.targetIds,
           })).data.task
           this.closeCommandVarsDialog()
           this.showTaskLog(task)
@@ -184,6 +180,22 @@ export default {
     closeConfirm() {
       this.confirmVisible = false
       this.pendingTemplate = ''
+    },
+    async setCheckedServerOptions(template) {
+      const res = await getSystemServerIds({
+        ID: template.systemId
+      })
+      const serverOptions = res.data
+      if (template.executeType !== 2) {
+        serverOptions[0].children = serverOptions[0].children.filter((item) => {
+          if (template.targetServerIds.includes(item.ID)) {
+            this.commandVarForm.targetIds.push(item.ID)
+            return true
+          }
+          return false
+        })
+      }
+      this.checkedServerOptions = serverOptions
     },
   }
 }
