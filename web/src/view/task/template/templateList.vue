@@ -966,15 +966,15 @@ export default {
         ID: template.systemId
       })
       const serverOptions = res.data
-      if (template.executeType !== 2) {
-        serverOptions[0].children = serverOptions[0].children.filter((item) => {
-          if (template.targetServerIds.includes(item.ID)) {
+      serverOptions[0].children = serverOptions[0].children.filter((item) => {
+        if (template.targetServerIds.includes(item.ID)) {
+          if (template.executeType !== 2) {
             this.commandVarForm.targetIds.push(item.ID)
-            return true
           }
-          return false
-        })
-      }
+          return true
+        }
+        return false
+      })
       this.checkedServerOptions = serverOptions
     },
     // async runTask(row) {
@@ -1699,14 +1699,16 @@ export default {
                 targetId: this.commandVarForm.targetIds
               })).data.task
               this.dialogFormVisibleDownload = false
+              this.closeCommandVarsDialog()
               this.showTaskLog(task)
             } else {
               const fileName = row.logPath.split('/')
               downloadFile(row.ID, row.logPath, fileName[fileName.length - 1], this.commandVarForm.targetIds)
+              this.closeCommandVarsDialog()
             }
           } else if (row.executeType === 2) {
             this.currentTemplate = row
-            this.targetId = this.commandVarForm.targetIds
+            this.targetIds = this.commandVarForm.targetIds
             this.closeCommandVarsDialog()
             await this.showFileList(row.logPath)
           } else if (row.executeType === 3) {
