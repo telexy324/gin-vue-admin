@@ -9,7 +9,7 @@
         <el-step v-for="item in steps" :key="item.seq" :title="item.name" :status="getStatus(item.seq)" @click.enter="show(item.seq)"/>
       </el-steps>
     </div>
-    <el-dialog v-model="CommandVarFormVisible" :before-close="closeCommandVarsDialog" :title="dialogTitle">
+    <el-dialog v-model="CommandVarFormVisible" :before-close="closeCommandVarsDialog" title="参数">
       <warning-bar title="请输入任务参数" />
       <el-form ref="CommandVarForm" :model="commandVarForm" :rules="commandVarRules" label-width="80px">
         <div v-for="(item, index) in commandVarForm.vars" :key="index">
@@ -77,9 +77,8 @@ export default {
         targetIds: [],
       },
       commandVarRules: {
-        vars: [
-          { required: true, message: '请输入任务参数', trigger: 'blur' },
-        ],
+        vars: [{ required: true, message: '请输入任务参数', trigger: 'blur' }],
+        targetIds: [{ required: true, message: '请选择目标', trigger: 'blur' }],
       },
       runningTemplateId: '',
       confirmVisible: false,
