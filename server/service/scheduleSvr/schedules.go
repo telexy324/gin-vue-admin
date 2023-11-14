@@ -19,6 +19,10 @@ func (scheduleService *ScheduleService) CreateSchedule(schedule scheduleMdl.Sche
 		vars, _ := json.Marshal(schedule.CommandVars)
 		schedule.CommandVar = string(vars)
 	}
+	if len(schedule.TargetIds) > 0 {
+		targetIds, _ := json.Marshal(schedule.TargetIds)
+		schedule.TargetId = string(targetIds)
+	}
 	err := global.GVA_DB.Create(&schedule).Error
 	return schedule, err
 }
@@ -44,6 +48,11 @@ func (scheduleService *ScheduleService) UpdateSchedule(schedule scheduleMdl.Sche
 		schedule.CommandVar = string(vars)
 	}
 	upDateMap["command_var"] = schedule.CommandVar
+	if len(schedule.TargetIds) > 0 {
+		targetIds, _ := json.Marshal(schedule.TargetIds)
+		schedule.TargetId = string(targetIds)
+	}
+	upDateMap["target_id"] = schedule.TargetId
 
 	err := global.GVA_DB.Transaction(func(tx *gorm.DB) error {
 		db := tx.Where("id = ?", schedule.ID).Find(&oldSchedule)

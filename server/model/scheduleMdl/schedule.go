@@ -14,7 +14,9 @@ type Schedule struct {
 	// LastCommitHash *string `gorm:"column:last_commit_hash" json:"-"`
 	Valid       int      `gorm:"type:tinyint(2);not null;default:0;column:valid" json:"valid"`
 	CommandVar  string   `json:"commandVar" gorm:"type:text;column:command_var"`
+	TargetId    string   `json:"targetId" gorm:"type:text;column:target_id"`
 	CommandVars []string `json:"commandVars" gorm:"-"`
+	TargetIds   []int    `json:"targetIds" gorm:"-"` // 结束时间
 }
 
 func (m *Schedule) TableName() string {

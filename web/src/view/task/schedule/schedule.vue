@@ -143,6 +143,16 @@
             </el-form-item>
           </el-col>
         </el-row>
+        <el-form-item label="目标" prop="targetIds">
+          <el-cascader
+            v-model="form.targetIds"
+            style="width:100%"
+            :options="checkedServerOptions"
+            :show-all-levels="false"
+            :props="{ multiple:true,checkStrictly: false,label:'name',value:'ID',disabled:'disabled',emitPath:false}"
+            :clearable="true"
+          />
+        </el-form-item>
         <div v-for="(item, index) in form.commandVars" :key="index">
           <el-form-item
             :label="'参数' + index"
@@ -183,7 +193,7 @@ import {
 import {
   getTemplateList
 } from '@/api/template'
-import { getAdminSystems } from '@/api/cmdb'
+import { getAdminSystems, getSystemServerIds } from '@/api/cmdb'
 import { getPolicyPathByAuthorityId } from '@/api/casbin'
 import infoList from '@/mixins/infoList'
 import { toSQLLine } from '@/utils/stringFun'
@@ -211,6 +221,7 @@ export default {
         valid: 0,
         systemId: '',
         commandVars: [],
+        targetIds: [],
       },
       type: '',
       rules: {
@@ -228,6 +239,7 @@ export default {
       drawer: false,
       systemOptions: [],
       templateTempOptions: [],
+      checkedServerOptions: [],
     }
   },
   computed: {
@@ -460,6 +472,22 @@ export default {
       for (let i = 0; i < this.templateTempOptions.find(item => item.ID === selectValue).commandVarNumbers; i++) {
         this.form.commandVars.push('')
       }
+    },
+    async setCheckedServerOptions(template) {
+      const res = await getSystemServerIds({
+        ID: template.systemId
+      })
+      const serverOptions = res.data
+      serverOptions[0].children = serverOptions[0].children.filter((item) => {
+        if (template.targetServerIds.includes(item.ID)) {
+          if (template.executeType !== 2) {
+            this.commandVarForm.targetIds.push(item.ID)
+          }
+          return true
+        }
+        return false
+      })
+      this.checkedServerOptions = serverOptions
     },
   }
 }
