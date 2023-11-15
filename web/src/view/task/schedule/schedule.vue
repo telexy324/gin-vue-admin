@@ -298,6 +298,7 @@ export default {
         valid: 0,
         systemId: '',
         commandVars: [],
+        targetIds: [],
       }
     },
     closeDialog() {
@@ -467,11 +468,14 @@ export default {
       })
       this.templateTempOptions = res.data.list
     },
-    changeTemplateId(selectValue) {
+    async changeTemplateId(selectValue) {
       this.form.commandVars = []
-      for (let i = 0; i < this.templateTempOptions.find(item => item.ID === selectValue).commandVarNumbers; i++) {
+      const selectedTemplate = this.templateTempOptions.find(item => item.ID === selectValue)
+      for (let i = 0; i < selectedTemplate.commandVarNumbers; i++) {
         this.form.commandVars.push('')
       }
+      this.form.targetIds = []
+      await this.setCheckedServerOptions(selectedTemplate)
     },
     async setCheckedServerOptions(template) {
       const res = await getSystemServerIds({
@@ -481,7 +485,7 @@ export default {
       serverOptions[0].children = serverOptions[0].children.filter((item) => {
         if (template.targetServerIds.includes(item.ID)) {
           if (template.executeType !== 2) {
-            this.commandVarForm.targetIds.push(item.ID)
+            this.form.targetIds.push(item.ID)
           }
           return true
         }
