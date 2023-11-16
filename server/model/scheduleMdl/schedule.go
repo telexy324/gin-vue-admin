@@ -32,5 +32,13 @@ func (m *Schedule) AfterFind(tx *gorm.DB) (err error) {
 		}
 		m.CommandVars = commandVars
 	}
+	targetIds := make([]int, 0)
+	if m.TargetId != "" {
+		if err = json.Unmarshal([]byte(m.TargetId), &targetIds); err != nil {
+			global.GVA_LOG.Error("转换失败", zap.Any("err", err))
+			return
+		}
+		m.TargetIds = targetIds
+	}
 	return nil
 }
