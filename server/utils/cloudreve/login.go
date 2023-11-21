@@ -1,0 +1,113 @@
+package cloudreve
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"github.com/flipped-aurora/gin-vue-admin/server/global"
+	"io/ioutil"
+	"net/http"
+	"net/http/cookiejar"
+)
+
+type CloudreveClient struct {
+	Username   string
+	Password   string
+	HttpClient *http.Client
+	Policy     string
+	UserId     int
+}
+
+type RespStruct struct {
+	Code int      `json:"code"`
+	Data RespData `json:"data"`
+	Msg  string   `json:"msg"`
+}
+type RespData struct {
+	Policy Policy `json:"policy"`
+}
+type Policy struct {
+	ID string `json:"id"`
+}
+
+func NewCloudreveClient(username, password string) (c *CloudreveClient, err error) {
+	cookie, _ := cookiejar.New(nil)
+	httpClient := &http.Client{Jar: cookie}
+
+	c = &CloudreveClient{
+		Username:   username,
+		Password:   password,
+		HttpClient: httpClient,
+	}
+	body, _ := json.Marshal(map[string]string{"userName": username, "Password": password})
+	reqLogin, err := http.NewRequest("POST", global.GVA_CONFIG.Cloudreve.Address+"/user/session", bytes.NewReader(body))
+
+	if err != nil {
+		return nil, err
+	}
+
+	respLogin, err := c.HttpClient.Do(reqLogin)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		_ = respLogin.Body.Close()
+	}()
+
+	if respLogin.StatusCode != 200 {
+		return nil, fmt.Errorf("error http code %d", respLogin.StatusCode)
+	}
+
+	respLoginBody, err := ioutil.ReadAll(respLogin.Body)
+
+	if err != nil {
+		return nil, err
+	}
+
+	respCommon := &RespStruct{}
+	if err = json.Unmarshal(respLoginBody, respCommon); err != nil {
+		return nil, err
+	}
+	if respCommon.Code != 0 {
+		return nil, fmt.Errorf("error response code %d", respCommon.Code)
+	}
+
+	reqPolicy, err := http.NewRequest("GET", global.GVA_CONFIG.Cloudreve.Address+"/directory%2F", bytes.NewReader([]byte{}))
+
+	if err != nil {
+		return nil, err
+	}
+
+	respPolicy, err := c.HttpClient.Do(reqPolicy)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		_ = respPolicy.Body.Close()
+	}()
+
+	if respPolicy.StatusCode != 200 {
+		return nil, fmt.Errorf("error http code %d", respPolicy.StatusCode)
+	}
+
+	respPolicyBody, err := ioutil.ReadAll(respPolicy.Body)
+
+	if err != nil {
+		return nil, err
+	}
+
+	respPolicyStruct := &RespStruct{}
+
+	if err = json.Unmarshal(respPolicyBody, &respPolicyStruct); err != nil {
+		return nil, err
+	}
+	if respPolicyStruct.Code != 0 {
+		return nil, fmt.Errorf("error response code %d", respPolicyStruct.Code)
+	}
+	c.Policy = respPolicyStruct.Data.Policy.ID
+	return
+}

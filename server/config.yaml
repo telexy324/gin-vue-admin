@@ -101,3 +101,5 @@ zap:
 task:
   tmp_path: /tmp
   max_parallel_tasks: 8
+cloudreve:
+  address: http://188.4.32.12:44480/api/v3

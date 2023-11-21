@@ -20,4 +20,5 @@ type Server struct {
 	Excel      Excel      `mapstructure:"excel" json:"excel" yaml:"excel"`
 	Timer      Timer      `mapstructure:"timer" json:"timer" yaml:"timer"`
 	Task       Task       `mapstructure:"task" json:"task" yaml:"task"`
+	Cloudreve  Cloudreve  `mapstructure:"cloudreve" json:"cloudreve" yaml:"cloudreve"`
 }
