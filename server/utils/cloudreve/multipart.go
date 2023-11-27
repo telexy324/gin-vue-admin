@@ -87,16 +87,15 @@ func (c *CloudreveClient) Upload(file io.Reader, fileName string, fileSize int64
 		if err != nil {
 			return
 		}
-
 		//contentType := bodyWriter.FormDataContentType()
 		_ = bodyWriter.Close()
 
 		reqUpload, e := http.NewRequest("POST", global.GVA_CONFIG.Cloudreve.Address+"/file/upload/"+sessionId+"/"+strconv.Itoa(int(i)), bytes.NewReader(body))
-
 		if e != nil {
 			return e
 		}
 
+		reqUpload.Header.Add("Content-Length", strconv.Itoa(int(n)))
 		respUpload, e := c.HttpClient.Do(reqUpload)
 
 		if e != nil {
