@@ -79,7 +79,11 @@ func (c *CloudreveClient) Upload(file io.Reader, fileName string, fileSize int64
 
 		fileWriter, _ := bodyWriter.CreateFormFile("files", fileName)
 
-		_, err = io.CopyN(fileWriter, file, respSession.Data.ChunkSize)
+		n := respSession.Data.ChunkSize
+		if i == fileSize/respSession.Data.ChunkSize {
+			n = fileSize % respSession.Data.ChunkSize
+		}
+		_, err = io.CopyN(fileWriter, file, n)
 		if err != nil {
 			return
 		}
@@ -87,7 +91,7 @@ func (c *CloudreveClient) Upload(file io.Reader, fileName string, fileSize int64
 		//contentType := bodyWriter.FormDataContentType()
 		_ = bodyWriter.Close()
 
-		reqUpload, e := http.NewRequest("POST", global.GVA_CONFIG.Cloudreve.Address+"/"+sessionId+"/"+strconv.Itoa(int(i)), bytes.NewReader(body))
+		reqUpload, e := http.NewRequest("POST", global.GVA_CONFIG.Cloudreve.Address+"/file/upload/"+sessionId+"/"+strconv.Itoa(int(i)), bytes.NewReader(body))
 
 		if e != nil {
 			return e
@@ -101,6 +105,19 @@ func (c *CloudreveClient) Upload(file io.Reader, fileName string, fileSize int64
 
 		if respUpload.StatusCode != 200 {
 			return fmt.Errorf("error http code %d", respUpload.StatusCode)
+		}
+		respUploadBody, e := ioutil.ReadAll(respUpload.Body)
+
+		if e != nil {
+			return e
+		}
+
+		respUploadStruct := &RespSessionStruct{}
+		if err = json.Unmarshal(respUploadBody, respUploadStruct); err != nil {
+			return err
+		}
+		if respUploadStruct.Code != 0 {
+			return fmt.Errorf("error response code %d", respUploadStruct.Code)
 		}
 		_ = respUpload.Body.Close()
 	}
