@@ -940,7 +940,7 @@ func (a *TemplateApi) UploadLogServer(c *gin.Context) {
 		response.FailWithMessage("template type is not download", c)
 		return
 	}
-	if template.LogOutput != consts.LogOutputTypeUpload {
+	if template.LogOutput != consts.LogOutputTypeUpload && template.LogOutput != consts.LogOutputTypeNetDisk {
 		response.FailWithMessage("template type is not upload to log server", c)
 		return
 	}
@@ -950,9 +950,11 @@ func (a *TemplateApi) UploadLogServer(c *gin.Context) {
 	}
 	userID := int(utils.GetUserID(c))
 	task := taskMdl.Task{
-		TemplateId:   int(info.ID),
-		FileDownload: info.File,
-		TargetIds:    []int{info.TargetId},
+		TemplateId:      int(info.ID),
+		FileDownload:    info.File,
+		TargetIds:       []int{info.TargetId},
+		NetDiskUser:     info.NetDiskUser,
+		NetDiskPassword: info.NetDiskPassword,
 	}
 	if taskNew, err := taskPool.TPool.AddTask(task, userID, 0); err != nil {
 		global.GVA_LOG.Error("添加失败!", zap.Any("err", err))

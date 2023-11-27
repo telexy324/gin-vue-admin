@@ -5,9 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
+	"io"
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -18,25 +20,28 @@ type RespSessionStruct struct {
 }
 type Session struct {
 	SessionID string `json:"sessionID"`
-	ChunkSize int    `json:"chunkSize"`
+	ChunkSize int64  `json:"chunkSize"`
 	Expires   int    `json:"expires"`
 }
 
-func (c *CloudreveClient) Upload(file *multipart.FileHeader) (err error) {
-	body, _ := json.Marshal(map[string]interface{}{
+func (c *CloudreveClient) Upload(file io.Reader, fileName string, fileSize int64) (err error) {
+	body, err := json.Marshal(map[string]interface{}{
 		"path":          "/",
-		"size":          file.Size,
-		"name":          file.Filename,
+		"size":          fileSize,
+		"name":          fileName,
 		"policy_id":     c.Policy,
-		"last_modified": time.UnixMilli,
+		"last_modified": time.Now().UnixMilli(),
 		//"mime_type":
 	})
-	req, err := http.NewRequest("POST", global.GVA_CONFIG.Cloudreve.Address+"/file/upload", bytes.NewReader(body))
+	if err != nil {
+		return
+	}
+	req, err := http.NewRequest("PUT", global.GVA_CONFIG.Cloudreve.Address+"/file/upload", bytes.NewReader(body))
 
 	if err != nil {
 		return
 	}
-
+	//req.Header.Add("Content-Type", "application/json")
 	resp, err := c.HttpClient.Do(req)
 
 	if err != nil {
@@ -57,47 +62,47 @@ func (c *CloudreveClient) Upload(file *multipart.FileHeader) (err error) {
 		return
 	}
 
-	respCommon := &RespSessionStruct{}
-	if err = json.Unmarshal(respBody, respCommon); err != nil {
+	respSession := &RespSessionStruct{}
+	if err = json.Unmarshal(respBody, respSession); err != nil {
 		return err
 	}
-	if respCommon.Code != 0 {
-		return fmt.Errorf("error response code %d", respCommon.Code)
+	if respSession.Code != 0 {
+		return fmt.Errorf("error response code %d", respSession.Code)
 	}
 
-	sessionId := respCommon.Data.SessionID
-	reqUpload, err := http.NewRequest("POST", global.GVA_CONFIG.Cloudreve.Address+"/"+sessionId+"/0", bytes.NewReader(body))
+	sessionId := respSession.Data.SessionID
 
-	if err != nil {
-		return
-	}
+	var i int64
+	for i = 0; i < fileSize/respSession.Data.ChunkSize+1; i++ {
+		bodyBuffer := &bytes.Buffer{}
+		bodyWriter := multipart.NewWriter(bodyBuffer)
 
-	respUpload, err := c.HttpClient.Do(reqUpload)
+		fileWriter, _ := bodyWriter.CreateFormFile("files", fileName)
 
-	if err != nil {
-		return
-	}
+		_, err = io.CopyN(fileWriter, file, respSession.Data.ChunkSize)
+		if err != nil {
+			return
+		}
 
-	defer func() {
+		//contentType := bodyWriter.FormDataContentType()
+		_ = bodyWriter.Close()
+
+		reqUpload, e := http.NewRequest("POST", global.GVA_CONFIG.Cloudreve.Address+"/"+sessionId+"/"+strconv.Itoa(int(i)), bytes.NewReader(body))
+
+		if e != nil {
+			return e
+		}
+
+		respUpload, e := c.HttpClient.Do(reqUpload)
+
+		if e != nil {
+			return e
+		}
+
+		if respUpload.StatusCode != 200 {
+			return fmt.Errorf("error http code %d", respUpload.StatusCode)
+		}
 		_ = respUpload.Body.Close()
-	}()
-
-	if respUpload.StatusCode != 200 {
-		return fmt.Errorf("error http code %d", respUpload.StatusCode)
-	}
-
-	respUploadBody, err := ioutil.ReadAll(respUpload.Body)
-
-	if err != nil {
-		return
-	}
-
-	respCommon = &RespSessionStruct{}
-	if err = json.Unmarshal(respUploadBody, respCommon); err != nil {
-		return err
-	}
-	if respCommon.Code != 0 {
-		return fmt.Errorf("error response code %d", respCommon.Code)
 	}
 	return nil
 }

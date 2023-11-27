@@ -16,6 +16,7 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/model/system"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl"
 	"github.com/flipped-aurora/gin-vue-admin/server/utils"
+	"github.com/flipped-aurora/gin-vue-admin/server/utils/cloudreve"
 	"github.com/jlaffaye/ftp"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/ssh"
@@ -787,47 +788,63 @@ func (t *TaskRunner) runUploadTask() (failedIPs []string) {
 	defer sshClient.Client.Close()
 	t.clients = append(t.clients, sshClient.Client)
 	//filePath := "/" + strings.Trim(t.template.LogPath, "/") + "/"
-	fileReader, err := sshClient.DownloadReader(t.task.FileDownload)
+	fileReader, fileName, fileSize, err := sshClient.DownloadReader(t.task.FileDownload)
 	if err != nil {
 		global.GVA_LOG.Error("run task failed on download file failed", zap.Any("err", err))
 		failedIPs = append(failedIPs, server.ManageIp)
 		return
 	}
 	t.Log("download "+t.task.FileDownload+" success", server.ManageIp)
-	filePathUpload := "/" + strings.Trim(t.template.LogDst, "/") + "/"
-	paths := strings.Split(t.task.FileDownload, "/")
-	fileUpload := filePathUpload + paths[len(paths)-1]
-	if t.template.LogUploadServer.Mode == consts.LogServerModeFtp {
-		ftpClient, err := common.NewFtpClient(t.template.LogUploadServer.ManageIp, t.template.LogUploadServer.Port, t.template.Secret.Name, t.template.Secret.Password)
-		if err != nil {
-			global.GVA_LOG.Error("create ftp client failed", zap.Any("err", err))
+
+	if t.template.LogOutput == consts.LogOutputTypeUpload {
+		filePathUpload := "/" + strings.Trim(t.template.LogDst, "/") + "/"
+		paths := strings.Split(t.task.FileDownload, "/")
+		fileUpload := filePathUpload + paths[len(paths)-1]
+		if t.template.LogUploadServer.Mode == consts.LogServerModeFtp {
+			ftpClient, err := common.NewFtpClient(t.template.LogUploadServer.ManageIp, t.template.LogUploadServer.Port, t.template.Secret.Name, t.template.Secret.Password)
+			if err != nil {
+				global.GVA_LOG.Error("create ftp client failed", zap.Any("err", err))
+				failedIPs = append(failedIPs, server.ManageIp)
+				return
+			}
+			defer ftpClient.Conn.Quit()
+			t.ftpConn = append(t.ftpConn, ftpClient.Conn)
+			if err = ftpClient.Upload(fileUpload, fileReader); err != nil {
+				global.GVA_LOG.Error("upload via ftp failed", zap.Any("err", err))
+				failedIPs = append(failedIPs, server.ManageIp)
+				return
+			}
+		} else if t.template.LogUploadServer.Mode == consts.LogServerModeSSH {
+			sshClientUpload, err := common.FillSSHClient(t.template.LogUploadServer.ManageIp, t.template.Secret.Name, t.template.Secret.Password, t.template.LogUploadServer.Port)
+			err = sshClientUpload.GenerateClient()
+			if err != nil {
+				global.GVA_LOG.Error("create ssh client failed: ", zap.String("server IP: ", server.ManageIp), zap.Any("err", err))
+				failedIPs = append(failedIPs, server.ManageIp)
+				return
+			}
+			defer sshClientUpload.Client.Close()
+			t.clients = append(t.clients, sshClientUpload.Client)
+			if err = sshClientUpload.Upload(fileReader, fileUpload); err != nil {
+				global.GVA_LOG.Error("upload via sftp failed", zap.Any("err", err))
+				failedIPs = append(failedIPs, server.ManageIp)
+				return
+			}
+		}
+		t.Log("upload "+fileUpload+" success", t.template.LogUploadServer.ManageIp)
+	} else {
+		c, e := cloudreve.NewCloudreveClient(t.task.NetDiskUser, t.task.NetDiskPassword)
+		if e != nil {
+			global.GVA_LOG.Error("create http client failed", zap.Any("err", e))
 			failedIPs = append(failedIPs, server.ManageIp)
 			return
 		}
-		defer ftpClient.Conn.Quit()
-		t.ftpConn = append(t.ftpConn, ftpClient.Conn)
-		if err = ftpClient.Upload(fileUpload, fileReader); err != nil {
-			global.GVA_LOG.Error("upload via ftp failed", zap.Any("err", err))
-			failedIPs = append(failedIPs, server.ManageIp)
-			return
-		}
-	} else if t.template.LogUploadServer.Mode == consts.LogServerModeSSH {
-		sshClientUpload, err := common.FillSSHClient(t.template.LogUploadServer.ManageIp, t.template.Secret.Name, t.template.Secret.Password, t.template.LogUploadServer.Port)
-		err = sshClientUpload.GenerateClient()
-		if err != nil {
-			global.GVA_LOG.Error("create ssh client failed: ", zap.String("server IP: ", server.ManageIp), zap.Any("err", err))
-			failedIPs = append(failedIPs, server.ManageIp)
-			return
-		}
-		defer sshClientUpload.Client.Close()
-		t.clients = append(t.clients, sshClientUpload.Client)
-		if err = sshClientUpload.Upload(fileReader, fileUpload); err != nil {
-			global.GVA_LOG.Error("upload via sftp failed", zap.Any("err", err))
+		e = c.Upload(fileReader, fileName, fileSize)
+		if e != nil {
+			global.GVA_LOG.Error("upload net disk failed", zap.Any("err", e))
 			failedIPs = append(failedIPs, server.ManageIp)
 			return
 		}
 	}
-	t.Log("upload "+fileUpload+" success", t.template.LogUploadServer.ManageIp)
 	return
 }
 

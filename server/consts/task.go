@@ -18,6 +18,7 @@ const (
 const (
 	LogOutputTypeDirect = iota + 1
 	LogOutputTypeUpload
+	LogOutputTypeNetDisk
 )
 
 const (

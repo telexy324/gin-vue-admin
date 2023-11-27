@@ -323,19 +323,19 @@
             </el-form-item>
           </el-col>
         </el-row>
-        <el-form-item v-if="!downloadDirectly" label="上传位置" prop="logDst">
+        <el-form-item v-if="!(downloadDirectly||downloadNetDisk)" label="上传位置" prop="logDst">
           <el-input v-model="logForm.logDst" autocomplete="off" />
         </el-form-item>
         <el-row>
           <el-col :span="12">
-            <el-form-item v-if="!downloadDirectly" label="日志服务器" prop="dstServerId">
+            <el-form-item v-if="!(downloadDirectly||downloadNetDisk)" label="日志服务器" prop="dstServerId">
               <el-select v-model="logForm.dstServerId" @change="changeServerId">
                 <el-option v-for="val in logServerOptions" :key="val.ID" :value="val.ID" :label="val.hostname" />
               </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item v-if="!downloadDirectly" label="上传用户" prop="secretId">
+            <el-form-item v-if="!(downloadDirectly||downloadNetDisk)" label="上传用户" prop="secretId">
               <el-select v-model="logForm.secretId">
                 <el-option v-for="val in logSecretOptionsFiltered" :key="val.ID" :value="val.ID" :label="val.name" />
               </el-select>
@@ -536,6 +536,18 @@
             :clearable="true"
           />
         </el-form-item>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item v-if="pendingTemplate.logOutput===3" label="用户名" prop="netDiskUser">
+              <el-input v-model="commandVarForm.netDiskUser" autocomplete="off" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item v-if="pendingTemplate.logOutput===3" label="密码" prop="netDiskPassword">
+              <el-input v-model="commandVarForm.netDiskPassword" autocomplete="off" />
+            </el-form-item>
+          </el-col>
+        </el-row>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
@@ -668,7 +680,7 @@ export default {
         logDst: '',
         dstServerId: '',
         secretId: '',
-        logSelect: ''
+        logSelect: '',
       },
       logRules: {
         name: [{ required: true, message: '请输入模板名', trigger: 'blur' }],
@@ -699,9 +711,11 @@ export default {
       hasDelete: true,
       logOutputOptions: [
         { ID: 1, name: '直接下载' },
-        { ID: 2, name: '上传服务器' }
+        { ID: 2, name: '上传服务器' },
+        { ID: 3, name: '上传网盘' }
       ],
       downloadDirectly: true,
+      downloadNetDisk: false,
       logServerOptions: [],
       logSecretOptions: [],
       logSecretOptionsFiltered: [],
@@ -747,6 +761,8 @@ export default {
       commandVarForm: {
         vars: [],
         targetIds: [],
+        netDiskUser: '',
+        netDiskPassword: '',
       },
       commandVarRules: {
         vars: [{ required: true, message: '请输入任务参数', trigger: 'blur' }],
@@ -757,6 +773,8 @@ export default {
       pendingTemplate: '',
       confirmed: false,
       targetIds: '',
+      netDiskUser: '',
+      netDiskPassword: '',
     }
   },
   computed: {
@@ -1414,13 +1432,17 @@ export default {
       const type = this.currentTemplate.logOutput
       const targetId = this.targetIds
       this.closeDownloadDialog()
-      if (type === 2) {
+      if (type !== 1) {
         const task = (await uploadLogServer({
           ID: id,
           file: item,
-          targetId: targetId
+          targetId: targetId,
+          netDiskUser: this.netDiskUser,
+          netDiskPassword: this.netDiskPassword,
         })).data.task
         this.dialogFormVisibleDownload = false
+        this.netDiskUser = ''
+        this.netDiskPassword = ''
         this.showTaskLog(task)
       } else {
         downloadFile(id, item, filename, targetId)
@@ -1457,7 +1479,20 @@ export default {
       }
     },
     logOutputChange(selectValue) {
-      selectValue === 1 ? this.downloadDirectly = true : this.downloadDirectly = false
+      switch (selectValue) {
+        case 1:
+          this.downloadDirectly = true
+          this.downloadNetDisk = false
+          break
+        case 3:
+          this.downloadDirectly = false
+          this.downloadNetDisk = true
+          break
+        default:
+          this.downloadDirectly = false
+          this.downloadNetDisk = false
+          break
+      }
     },
     logSelectChange(selectValue) {
       selectValue === 1 ? this.downloadDirectly = true : this.downloadDirectly = false
@@ -1691,11 +1726,13 @@ export default {
         if (valid) {
           const row = this.pendingTemplate
           if (row.executeType === 2 && row.logSelect === 2) {
-            if (row.logOutput === 2) {
+            if (row.logOutput === 2 || row.logOutput === 3) {
               const task = (await uploadLogServer({
                 ID: row.ID,
                 file: row.logPath,
-                targetId: this.commandVarForm.targetIds
+                targetId: this.commandVarForm.targetIds,
+                netDiskUser: this.commandVarForm.netDiskUser,
+                netDiskPassword: this.commandVarForm.netDiskPassword,
               })).data.task
               this.dialogFormVisibleDownload = false
               this.closeCommandVarsDialog()
@@ -1708,6 +1745,8 @@ export default {
           } else if (row.executeType === 2) {
             this.currentTemplate = row
             this.targetIds = this.commandVarForm.targetIds
+            this.netDiskUser = this.commandVarForm.netDiskUser
+            this.netDiskPassword = this.commandVarForm.netDiskPassword
             this.closeCommandVarsDialog()
             await this.showFileList(row.logPath)
           } else if (row.executeType === 3) {

@@ -23,9 +23,11 @@ type AddSet struct {
 }
 
 type DownLoadFileRequest struct {
-	ID       float64 `json:"id" form:"id"` // 主键ID
-	File     string  `json:"file" form:"file"`
-	TargetId int     `json:"targetId" form:"targetId"`
+	ID              float64 `json:"id" form:"id"` // 主键ID
+	File            string  `json:"file" form:"file"`
+	TargetId        int     `json:"targetId" form:"targetId"`
+	NetDiskUser     string  `json:"netDiskUser" form:"netDiskUser"`
+	NetDiskPassword string  `json:"netDiskPassword" form:"netDiskPassword"`
 }
 
 type FileListRequest struct {
