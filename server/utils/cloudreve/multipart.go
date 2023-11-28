@@ -7,7 +7,6 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"io"
 	"io/ioutil"
-	"mime/multipart"
 	"net/http"
 	"strconv"
 	"time"
@@ -74,33 +73,35 @@ func (c *CloudreveClient) Upload(file io.Reader, fileName string, fileSize int64
 
 	var i int64
 	for i = 0; i < fileSize/respSession.Data.ChunkSize+1; i++ {
-		bodyBuffer := &bytes.Buffer{}
-		bodyWriter := multipart.NewWriter(bodyBuffer)
-
-		fileWriter, _ := bodyWriter.CreateFormFile("files", fileName)
+		//bodyBuffer := &bytes.Buffer{}
+		//bodyWriter := multipart.NewWriter(bodyBuffer)
+		//
+		//fileWriter, _ := bodyWriter.CreateFormFile("files", fileName)
 
 		n := respSession.Data.ChunkSize
 		if i == fileSize/respSession.Data.ChunkSize {
 			n = fileSize % respSession.Data.ChunkSize
 		}
-		_, err = io.CopyN(fileWriter, file, n)
+		bodyBuffer := &bytes.Buffer{}
+		_, err = io.CopyN(bodyBuffer, file, n)
 		if err != nil {
 			return
 		}
 		//contentType := bodyWriter.FormDataContentType()
-		_ = bodyWriter.Close()
 
-		reqUpload, e := http.NewRequest("POST", global.GVA_CONFIG.Cloudreve.Address+"/file/upload/"+sessionId+"/"+strconv.Itoa(int(i)), bytes.NewReader(body))
+		reqUpload, e := http.NewRequest("POST", global.GVA_CONFIG.Cloudreve.Address+"/file/upload/"+sessionId+"/"+strconv.Itoa(int(i)), bodyBuffer)
 		if e != nil {
 			return e
 		}
 
-		reqUpload.Header.Add("Content-Length", strconv.Itoa(int(n)))
+		//reqUpload.Header.Add("Content-Length", strconv.Itoa(int(n)))
+		reqUpload.ContentLength = n
 		respUpload, e := c.HttpClient.Do(reqUpload)
 
 		if e != nil {
 			return e
 		}
+		//_ = bodyWriter.Close()
 
 		if respUpload.StatusCode != 200 {
 			return fmt.Errorf("error http code %d", respUpload.StatusCode)
