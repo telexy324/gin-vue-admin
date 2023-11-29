@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/cookiejar"
 )
@@ -53,7 +53,7 @@ func NewCloudreveClient(username, password string) (c *CloudreveClient, err erro
 		return nil, fmt.Errorf("error http code %d", respLogin.StatusCode)
 	}
 
-	respLoginBody, err := ioutil.ReadAll(respLogin.Body)
+	respLoginBody, err := io.ReadAll(respLogin.Body)
 
 	if err != nil {
 		return nil, err

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strconv"
 	"time"
@@ -19,10 +18,22 @@ type Session struct {
 }
 
 type Directory struct {
-	Policy Policy `json:"policy"`
+	Objects []Object `json:"objects"`
+	Policy  Policy   `json:"policy"`
 }
 type Policy struct {
 	ID string `json:"id"`
+}
+type Object struct {
+	ID            string    `json:"id"`
+	Name          string    `json:"name"`
+	Path          string    `json:"path"`
+	Thumb         bool      `json:"thumb"`
+	Size          int       `json:"size"`
+	Type          string    `json:"type"`
+	Date          time.Time `json:"date"`
+	CreateDate    time.Time `json:"create_date"`
+	SourceEnabled bool      `json:"source_enabled"`
 }
 
 func (c *CloudreveClient) Upload(file io.Reader, fileName string, fileSize int64) (err error) {
@@ -46,7 +57,7 @@ func (c *CloudreveClient) Upload(file io.Reader, fileName string, fileSize int64
 		return fmt.Errorf("error http code %d", respPolicy.StatusCode)
 	}
 
-	respPolicyBody, err := ioutil.ReadAll(respPolicy.Body)
+	respPolicyBody, err := io.ReadAll(respPolicy.Body)
 
 	if err != nil {
 		return err
@@ -95,7 +106,7 @@ func (c *CloudreveClient) Upload(file io.Reader, fileName string, fileSize int64
 		return fmt.Errorf("error http code %d", resp.StatusCode)
 	}
 
-	respBody, err := ioutil.ReadAll(resp.Body)
+	respBody, err := io.ReadAll(resp.Body)
 
 	if err != nil {
 		return
@@ -149,7 +160,7 @@ func (c *CloudreveClient) Upload(file io.Reader, fileName string, fileSize int64
 		if respUpload.StatusCode != 200 {
 			return fmt.Errorf("error http code %d", respUpload.StatusCode)
 		}
-		respUploadBody, e := ioutil.ReadAll(respUpload.Body)
+		respUploadBody, e := io.ReadAll(respUpload.Body)
 
 		if e != nil {
 			return e
