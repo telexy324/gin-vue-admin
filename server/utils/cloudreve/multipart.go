@@ -12,23 +12,63 @@ import (
 	"time"
 )
 
-type RespSessionStruct struct {
-	Code int     `json:"code"`
-	Data Session `json:"data"`
-	Msg  string  `json:"msg"`
-}
 type Session struct {
 	SessionID string `json:"sessionID"`
 	ChunkSize int64  `json:"chunkSize"`
 	Expires   int    `json:"expires"`
 }
 
+type Directory struct {
+	Policy Policy `json:"policy"`
+}
+type Policy struct {
+	ID string `json:"id"`
+}
+
 func (c *CloudreveClient) Upload(file io.Reader, fileName string, fileSize int64) (err error) {
+	reqPolicy, err := http.NewRequest("GET", global.GVA_CONFIG.Cloudreve.Address+"/directory%2F", bytes.NewReader([]byte{}))
+
+	if err != nil {
+		return err
+	}
+
+	respPolicy, err := c.HttpClient.Do(reqPolicy)
+
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		_ = respPolicy.Body.Close()
+	}()
+
+	if respPolicy.StatusCode != 200 {
+		return fmt.Errorf("error http code %d", respPolicy.StatusCode)
+	}
+
+	respPolicyBody, err := ioutil.ReadAll(respPolicy.Body)
+
+	if err != nil {
+		return err
+	}
+
+	respDirectoryStruct := &RespStruct{
+		Data: &Directory{},
+	}
+
+	if err = json.Unmarshal(respPolicyBody, &respDirectoryStruct); err != nil {
+		return err
+	}
+	if respDirectoryStruct.Code != 0 {
+		return fmt.Errorf("error response code %d", respDirectoryStruct.Code)
+	}
+	directory, _ := respDirectoryStruct.Data.(*Directory)
+	policy := directory.Policy.ID
 	body, err := json.Marshal(map[string]interface{}{
 		"path":          "/",
 		"size":          fileSize,
 		"name":          fileName,
-		"policy_id":     c.Policy,
+		"policy_id":     policy,
 		"last_modified": time.Now().UnixMilli(),
 		//"mime_type":
 	})
@@ -61,7 +101,9 @@ func (c *CloudreveClient) Upload(file io.Reader, fileName string, fileSize int64
 		return
 	}
 
-	respSession := &RespSessionStruct{}
+	respSession := &RespStruct{
+		Data: &Session{},
+	}
 	if err = json.Unmarshal(respBody, respSession); err != nil {
 		return err
 	}
@@ -69,18 +111,19 @@ func (c *CloudreveClient) Upload(file io.Reader, fileName string, fileSize int64
 		return fmt.Errorf("error response code %d", respSession.Code)
 	}
 
-	sessionId := respSession.Data.SessionID
+	session, _ := respSession.Data.(*Session)
+	sessionId := session.SessionID
 
 	var i int64
-	for i = 0; i < fileSize/respSession.Data.ChunkSize+1; i++ {
+	for i = 0; i < fileSize/session.ChunkSize+1; i++ {
 		//bodyBuffer := &bytes.Buffer{}
 		//bodyWriter := multipart.NewWriter(bodyBuffer)
 		//
 		//fileWriter, _ := bodyWriter.CreateFormFile("files", fileName)
 
-		n := respSession.Data.ChunkSize
-		if i == fileSize/respSession.Data.ChunkSize {
-			n = fileSize % respSession.Data.ChunkSize
+		n := session.ChunkSize
+		if i == fileSize/session.ChunkSize {
+			n = fileSize % session.ChunkSize
 		}
 		bodyBuffer := &bytes.Buffer{}
 		_, err = io.CopyN(bodyBuffer, file, n)
@@ -112,7 +155,7 @@ func (c *CloudreveClient) Upload(file io.Reader, fileName string, fileSize int64
 			return e
 		}
 
-		respUploadStruct := &RespSessionStruct{}
+		respUploadStruct := &RespStruct{}
 		if err = json.Unmarshal(respUploadBody, respUploadStruct); err != nil {
 			return err
 		}

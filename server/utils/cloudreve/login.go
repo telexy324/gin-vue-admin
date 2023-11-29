@@ -10,24 +10,17 @@ import (
 	"net/http/cookiejar"
 )
 
+type RespStruct struct {
+	Code int         `json:"code"`
+	Data interface{} `json:"data"`
+	Msg  string      `json:"msg"`
+}
+
 type CloudreveClient struct {
 	Username   string
 	Password   string
 	HttpClient *http.Client
-	Policy     string
 	UserId     int
-}
-
-type RespStruct struct {
-	Code int      `json:"code"`
-	Data RespData `json:"data"`
-	Msg  string   `json:"msg"`
-}
-type RespData struct {
-	Policy Policy `json:"policy"`
-}
-type Policy struct {
-	ID string `json:"id"`
 }
 
 func NewCloudreveClient(username, password string) (c *CloudreveClient, err error) {
@@ -74,40 +67,5 @@ func NewCloudreveClient(username, password string) (c *CloudreveClient, err erro
 		return nil, fmt.Errorf("error response code %d", respCommon.Code)
 	}
 
-	reqPolicy, err := http.NewRequest("GET", global.GVA_CONFIG.Cloudreve.Address+"/directory%2F", bytes.NewReader([]byte{}))
-
-	if err != nil {
-		return nil, err
-	}
-
-	respPolicy, err := c.HttpClient.Do(reqPolicy)
-
-	if err != nil {
-		return nil, err
-	}
-
-	defer func() {
-		_ = respPolicy.Body.Close()
-	}()
-
-	if respPolicy.StatusCode != 200 {
-		return nil, fmt.Errorf("error http code %d", respPolicy.StatusCode)
-	}
-
-	respPolicyBody, err := ioutil.ReadAll(respPolicy.Body)
-
-	if err != nil {
-		return nil, err
-	}
-
-	respPolicyStruct := &RespStruct{}
-
-	if err = json.Unmarshal(respPolicyBody, &respPolicyStruct); err != nil {
-		return nil, err
-	}
-	if respPolicyStruct.Code != 0 {
-		return nil, fmt.Errorf("error response code %d", respPolicyStruct.Code)
-	}
-	c.Policy = respPolicyStruct.Data.Policy.ID
 	return
 }
