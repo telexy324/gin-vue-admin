@@ -311,7 +311,7 @@ func (c *SSHClient) Upload(file io.Reader, remotePath string) (err error) {
 }
 
 // Download file from remote server!
-func (c *SSHClient) Download(remotePath string) (fileBytes []byte, err error) {
+func (c *SSHClient) Download(remotePath string) (remote io.ReadCloser, err error) {
 	//
 	//local, err := os.Create(localPath)
 	//if err != nil {
@@ -323,15 +323,12 @@ func (c *SSHClient) Download(remotePath string) (fileBytes []byte, err error) {
 	if err != nil {
 		return
 	}
-	defer ftp.Close()
+	//defer ftp.Close()
 
-	remote, err := ftp.Open(remotePath)
-	if err != nil {
-		return
-	}
-	defer remote.Close()
-
-	return io.ReadAll(remote)
+	return ftp.Open(remotePath)
+	//defer remote.Close()
+	//
+	//return
 	//if _, err = io.Copy(local, remote); err != nil {
 	//	return
 	//}

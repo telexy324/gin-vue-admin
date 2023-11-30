@@ -352,14 +352,14 @@ func (a *TemplateApi) DownloadScript(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	fileBytes, err := templateService.DownloadScript(info.ID, server)
+	fio, err := templateService.DownloadScript(info.ID, server)
 
 	//c.Writer.Header().Add("success", "true")
 	c.Header("Content-Type", "application/octet-stream")
 	c.Header("Content-Disposition", "attachment; filename="+"serverTemplate.xlsx")
 	c.Header("Content-Transfer-Encoding", "binary")
 	c.Header("success", "true")
-	if _, err = c.Writer.Write(fileBytes); err != nil {
+	if _, err = io.Copy(c.Writer, fio); err != nil {
 		global.GVA_LOG.Error("下载脚本失败!", zap.Any("err", err))
 	}
 }
@@ -883,7 +883,8 @@ func (a *TemplateApi) DownloadFile(c *gin.Context) {
 		response.FailWithMessage("create ssh client failed", c)
 		return
 	}
-	fileBytes, err := sshClient.Download(info.File)
+	defer sshClient.Client.Close()
+	fio, err := sshClient.Download(info.File)
 	if err != nil {
 		global.GVA_LOG.Error("download file failed", zap.Any("err", err))
 		response.FailWithMessage("download file failed", c)
@@ -902,7 +903,7 @@ func (a *TemplateApi) DownloadFile(c *gin.Context) {
 	//if _, err = c.Writer.Write(fileBytes); err != nil {
 	//	global.GVA_LOG.Error("下载文件失败!", zap.Any("err", err))
 	//}
-	if _, err = c.Writer.Write(fileBytes); err != nil {
+	if _, err = io.Copy(c.Writer, fio); err != nil {
 		global.GVA_LOG.Error("下载文件失败!", zap.Any("err", err))
 		response.FailWithMessage("download file failed", c)
 	}

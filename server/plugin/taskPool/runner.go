@@ -1,7 +1,6 @@
 package taskPool
 
 import (
-	"bytes"
 	"crypto/md5"
 	"database/sql"
 	"encoding/json"
@@ -933,7 +932,7 @@ func (t *TaskRunner) runUploadTask() (failedIPs []string) {
 //}
 
 func (t *TaskRunner) runDeployTask() (failedIPs []string) {
-	var fb []byte
+	//var fb []byte
 	manageIps := make([]string, 0, len(t.template.TargetServers))
 	var manageIpString string
 	for _, s := range t.template.TargetServers {
@@ -1017,8 +1016,9 @@ func (t *TaskRunner) runDeployTask() (failedIPs []string) {
 			defer ftpClient.Conn.Quit()
 			t.ftpConn = append(t.ftpConn, ftpClient.Conn)
 			for _, deployInfo := range t.template.TaskDeployInfos {
-				if fb, err = ftpClient.Download(deployInfo.DownloadSource); err != nil {
-					global.GVA_LOG.Error("upload via ftp failed", zap.Any("err", err))
+				fio, e := ftpClient.Download(deployInfo.DownloadSource)
+				if e != nil {
+					global.GVA_LOG.Error("upload via ftp failed", zap.Any("err", e))
 					failedIPs = manageIps
 					return
 				}
@@ -1050,7 +1050,6 @@ func (t *TaskRunner) runDeployTask() (failedIPs []string) {
 						}
 						defer sshClient.Client.Close()
 						t.clients = append(t.clients, sshClient.Client)
-						fio := bytes.NewReader(fb)
 						if err = sshClient.Upload(fio, deployInfo.DeployPath); err != nil {
 							global.GVA_LOG.Error("run task failed on upload deploy file: ", zap.Uint("task ID: ", t.task.ID), zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
 							f <- s.ManageIp
@@ -1077,8 +1076,9 @@ func (t *TaskRunner) runDeployTask() (failedIPs []string) {
 			defer sshClientUpload.Client.Close()
 			t.clients = append(t.clients, sshClientUpload.Client)
 			for _, deployInfo := range t.template.TaskDeployInfos {
-				if fb, err = sshClientUpload.Download(deployInfo.DownloadSource); err != nil {
-					global.GVA_LOG.Error("upload via sftp failed", zap.Any("err", err))
+				fio, e := sshClientUpload.Download(deployInfo.DownloadSource)
+				if e != nil {
+					global.GVA_LOG.Error("upload via sftp failed", zap.Any("err", e))
 					failedIPs = manageIps
 					return
 				}
@@ -1110,7 +1110,6 @@ func (t *TaskRunner) runDeployTask() (failedIPs []string) {
 						}
 						defer sshClient.Client.Close()
 						t.clients = append(t.clients, sshClient.Client)
-						fio := bytes.NewReader(fb)
 						if err = sshClient.Upload(fio, deployInfo.DeployPath); err != nil {
 							global.GVA_LOG.Error("run task failed on upload deploy file: ", zap.Uint("task ID: ", t.task.ID), zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
 							f <- s.ManageIp
