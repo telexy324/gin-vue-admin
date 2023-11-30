@@ -31,6 +31,18 @@
             :clearable="true"
           />
         </el-form-item>
+        <el-row v-if="netDisk">
+          <el-col :span="12">
+            <el-form-item label="用户名" prop="netDiskUser">
+              <el-input v-model="commandVarForm.netDiskUser" autocomplete="off" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="密码" prop="netDiskPassword">
+              <el-input v-model="commandVarForm.netDiskPassword" autocomplete="off" />
+            </el-form-item>
+          </el-col>
+        </el-row>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
@@ -84,6 +96,7 @@ export default {
       confirmVisible: false,
       confirmed: false,
       checkedServerOptions: [],
+      netDisk: false,
     }
   },
   async created() {
@@ -117,6 +130,7 @@ export default {
         this.runningTemplateId = this.setTask.templates[this.setTask.currentStep].ID
         this.CommandVarFormVisible = true
       }
+      this.setTask.templates[this.setTask.currentStep].deployType === 2 ? this.netDisk = true : this.netDisk = false
     },
     showTaskLog(task) {
       emitter.emit('i-show-task', task)
@@ -160,6 +174,8 @@ export default {
             ID: this.setTask.ID,
             commandVars: this.commandVarForm.vars,
             targetIds: this.commandVarForm.targetIds,
+            netDiskUser: this.commandVarForm.netDiskUser,
+            netDiskPassword: this.commandVarForm.netDiskPassword,
           })).data.task
           this.closeCommandVarsDialog()
           this.showTaskLog(task)
