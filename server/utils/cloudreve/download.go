@@ -21,7 +21,7 @@ func (c *CloudreveClient) Download(filePath string) (err error, file io.ReadClos
 	path := filePath[:lastIndex+1]
 	pathUrl := "/directory%2F"
 	if lastIndex != -1 {
-		pathUrl = strings.ReplaceAll(path, "/", "%2F")
+		pathUrl = "/directory" + strings.ReplaceAll(path, "/", "%2F")
 	}
 	reqPolicy, err := http.NewRequest("GET", global.GVA_CONFIG.Cloudreve.Address+pathUrl, bytes.NewReader([]byte{}))
 
@@ -120,5 +120,5 @@ func (c *CloudreveClient) Download(filePath string) (err error, file io.ReadClos
 	if respDownload.StatusCode != 200 {
 		return fmt.Errorf("error http code %d", respDownload.StatusCode), nil
 	}
-	return nil, reqDownload.Body
+	return nil, respDownload.Body
 }

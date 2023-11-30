@@ -354,6 +354,7 @@ func (p *TaskPool) AddTask(taskObj taskMdl.Task, userID int, setTaskId int) (new
 			return
 		}
 	}
+	newTask.NetDiskUser, newTask.NetDiskPassword = taskObj.NetDiskUser, taskObj.NetDiskPassword
 
 	taskRunner := TaskRunner{
 		task: newTask,

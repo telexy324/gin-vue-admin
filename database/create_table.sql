@@ -162,7 +162,7 @@ create table `application_task_templates`
     `deleted_at`          datetime(0) NULL DEFAULT NULL,
     `name`                varchar(100) not null,
     `description`         text,
-    target_server_ids     text,
+    `target_server_ids`   text,
     `mode`                tinyint(2) NOT NULL DEFAULT '0' COMMENT '运行方式 0 未定义 1 命令 2 脚本',
     `command`             text,
     `script_path`         varchar(255) NOT NULL DEFAULT '',
@@ -182,6 +182,7 @@ create table `application_task_templates`
     `interactive`         tinyint(2) NOT NULL DEFAULT '0' COMMENT '交互执行 0 非交互 1 交互',
     `command_var_numbers` int          NOT NULL DEFAULT '0',
     `log_select`          tinyint(2) NOT NULL DEFAULT '0' COMMENT '日志选择 1 可选 2 不可选',
+    `deploy_type`         tinyint(2) NOT NULL DEFAULT '0' COMMENT '程序包下载 1 ftp/sftp 2 网盘',
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

@@ -43,3 +43,8 @@ const (
 )
 
 const Replacer = "${}"
+
+const (
+	DeployTypeFtpSftp = iota + 1
+	DeployTypeNetDisk
+)

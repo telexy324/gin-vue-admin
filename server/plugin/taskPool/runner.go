@@ -949,18 +949,17 @@ func (t *TaskRunner) runDeployTask() (failedIPs []string) {
 	for _, id := range t.task.TargetIds {
 		servers = append(servers, serverMap[id])
 	}
-	if t.template.LogUploadServer.Mode == consts.LogServerModeFtp {
-		ftpClient, err := common.NewFtpClient(t.template.LogUploadServer.ManageIp, t.template.LogUploadServer.Port, t.template.Secret.Name, t.template.Secret.Password)
+	if t.template.DeployType == consts.DeployTypeNetDisk {
+		c, err := cloudreve.NewCloudreveClient(t.task.NetDiskUser, t.task.NetDiskPassword)
 		if err != nil {
-			global.GVA_LOG.Error("create ftp client failed", zap.Any("err", err))
+			global.GVA_LOG.Error("create http client failed", zap.Any("err", err))
 			failedIPs = manageIps
 			return
 		}
-		defer ftpClient.Conn.Quit()
-		t.ftpConn = append(t.ftpConn, ftpClient.Conn)
 		for _, deployInfo := range t.template.TaskDeployInfos {
-			if fb, err = ftpClient.Download(deployInfo.DownloadSource); err != nil {
-				global.GVA_LOG.Error("upload via ftp failed", zap.Any("err", err))
+			e, file := c.Download(deployInfo.DownloadSource)
+			if e != nil {
+				global.GVA_LOG.Error("upload net disk failed", zap.Any("err", e))
 				failedIPs = manageIps
 				return
 			}
@@ -992,8 +991,7 @@ func (t *TaskRunner) runDeployTask() (failedIPs []string) {
 					}
 					defer sshClient.Client.Close()
 					t.clients = append(t.clients, sshClient.Client)
-					fio := bytes.NewReader(fb)
-					if err = sshClient.Upload(fio, deployInfo.DeployPath); err != nil {
+					if err = sshClient.Upload(file, deployInfo.DeployPath); err != nil {
 						global.GVA_LOG.Error("run task failed on upload deploy file: ", zap.Uint("task ID: ", t.task.ID), zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
 						f <- s.ManageIp
 						return
@@ -1008,65 +1006,126 @@ func (t *TaskRunner) runDeployTask() (failedIPs []string) {
 			}
 			t.Log("deploy "+deployInfo.DeployPath+" success", manageIpString)
 		}
-	} else if t.template.LogUploadServer.Mode == consts.LogServerModeSSH {
-		sshClientUpload, err := common.FillSSHClient(t.template.LogUploadServer.ManageIp, t.template.Secret.Name, t.template.Secret.Password, t.template.LogUploadServer.Port)
-		err = sshClientUpload.GenerateClient()
-		if err != nil {
-			global.GVA_LOG.Error("create ssh client failed: ", zap.Any("err", err))
-			failedIPs = manageIps
-			return
-		}
-		defer sshClientUpload.Client.Close()
-		t.clients = append(t.clients, sshClientUpload.Client)
-		for _, deployInfo := range t.template.TaskDeployInfos {
-			if fb, err = sshClientUpload.Download(deployInfo.DownloadSource); err != nil {
-				global.GVA_LOG.Error("upload via sftp failed", zap.Any("err", err))
+	} else {
+		if t.template.LogUploadServer.Mode == consts.LogServerModeFtp {
+			ftpClient, err := common.NewFtpClient(t.template.LogUploadServer.ManageIp, t.template.LogUploadServer.Port, t.template.Secret.Name, t.template.Secret.Password)
+			if err != nil {
+				global.GVA_LOG.Error("create ftp client failed", zap.Any("err", err))
 				failedIPs = manageIps
 				return
 			}
-			t.Log("download "+deployInfo.DownloadSource+" success", t.template.LogUploadServer.ManageIp)
-			//if t.template.TargetServers == nil || len(t.template.TargetServers) <= 0 {
-			//	global.GVA_LOG.Error("run task failed on nil target server: ", zap.Uint("task ID: ", t.task.ID))
-			//	return
-			//}
-			//global.GVA_LOG.Info("run ", zap.Uint("task ID: ", t.task.ID))
-			//servers := t.template.TargetServers
-			wg := &sync.WaitGroup{}
-			failedChan := make(chan string, len(servers))
-			t.clients = make([]*ssh.Client, 0, len(servers))
-			for _, server := range servers {
-				wg.Add(1)
-				go func(w *sync.WaitGroup, s application.ApplicationServer, f chan string) {
-					defer w.Done()
-					sshClient, err := common.FillSSHClient(s.ManageIp, t.template.SysUser, "", s.SshPort)
-					if err != nil {
-						global.GVA_LOG.Error("run task failed on create ssh client: ", zap.Uint("task ID: ", t.task.ID), zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
-						f <- s.ManageIp
-						return
-					}
-					err = sshClient.GenerateClient()
-					if err != nil {
-						global.GVA_LOG.Error("run task failed on generate ssh client: ", zap.Uint("task ID: ", t.task.ID), zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
-						f <- s.ManageIp
-						return
-					}
-					defer sshClient.Client.Close()
-					t.clients = append(t.clients, sshClient.Client)
-					fio := bytes.NewReader(fb)
-					if err = sshClient.Upload(fio, deployInfo.DeployPath); err != nil {
-						global.GVA_LOG.Error("run task failed on upload deploy file: ", zap.Uint("task ID: ", t.task.ID), zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
-						f <- s.ManageIp
-						return
-					}
+			defer ftpClient.Conn.Quit()
+			t.ftpConn = append(t.ftpConn, ftpClient.Conn)
+			for _, deployInfo := range t.template.TaskDeployInfos {
+				if fb, err = ftpClient.Download(deployInfo.DownloadSource); err != nil {
+					global.GVA_LOG.Error("upload via ftp failed", zap.Any("err", err))
+					failedIPs = manageIps
 					return
-				}(wg, server, failedChan)
+				}
+				t.Log("download "+deployInfo.DownloadSource+" success", t.template.LogUploadServer.ManageIp)
+				//if t.template.TargetServers == nil || len(t.template.TargetServers) <= 0 {
+				//	global.GVA_LOG.Error("run task failed on nil target server: ", zap.Uint("task ID: ", t.task.ID))
+				//	return
+				//}
+				//global.GVA_LOG.Info("run ", zap.Uint("task ID: ", t.task.ID))
+				//servers := t.template.TargetServers
+				wg := &sync.WaitGroup{}
+				failedChan := make(chan string, len(servers))
+				t.clients = make([]*ssh.Client, 0, len(servers))
+				for _, server := range servers {
+					wg.Add(1)
+					go func(w *sync.WaitGroup, s application.ApplicationServer, f chan string) {
+						defer w.Done()
+						sshClient, err := common.FillSSHClient(s.ManageIp, t.template.SysUser, "", s.SshPort)
+						if err != nil {
+							global.GVA_LOG.Error("run task failed on create ssh client: ", zap.Uint("task ID: ", t.task.ID), zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
+							f <- s.ManageIp
+							return
+						}
+						err = sshClient.GenerateClient()
+						if err != nil {
+							global.GVA_LOG.Error("run task failed on generate ssh client: ", zap.Uint("task ID: ", t.task.ID), zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
+							f <- s.ManageIp
+							return
+						}
+						defer sshClient.Client.Close()
+						t.clients = append(t.clients, sshClient.Client)
+						fio := bytes.NewReader(fb)
+						if err = sshClient.Upload(fio, deployInfo.DeployPath); err != nil {
+							global.GVA_LOG.Error("run task failed on upload deploy file: ", zap.Uint("task ID: ", t.task.ID), zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
+							f <- s.ManageIp
+							return
+						}
+						return
+					}(wg, server, failedChan)
+				}
+				wg.Wait()
+				close(failedChan)
+				for ip := range failedChan {
+					failedIPs = append(failedIPs, ip)
+				}
+				t.Log("deploy "+deployInfo.DeployPath+" success", manageIpString)
 			}
-			wg.Wait()
-			close(failedChan)
-			for ip := range failedChan {
-				failedIPs = append(failedIPs, ip)
+		} else if t.template.LogUploadServer.Mode == consts.LogServerModeSSH {
+			sshClientUpload, err := common.FillSSHClient(t.template.LogUploadServer.ManageIp, t.template.Secret.Name, t.template.Secret.Password, t.template.LogUploadServer.Port)
+			err = sshClientUpload.GenerateClient()
+			if err != nil {
+				global.GVA_LOG.Error("create ssh client failed: ", zap.Any("err", err))
+				failedIPs = manageIps
+				return
 			}
-			t.Log("deploy "+deployInfo.DeployPath+" success", manageIpString)
+			defer sshClientUpload.Client.Close()
+			t.clients = append(t.clients, sshClientUpload.Client)
+			for _, deployInfo := range t.template.TaskDeployInfos {
+				if fb, err = sshClientUpload.Download(deployInfo.DownloadSource); err != nil {
+					global.GVA_LOG.Error("upload via sftp failed", zap.Any("err", err))
+					failedIPs = manageIps
+					return
+				}
+				t.Log("download "+deployInfo.DownloadSource+" success", t.template.LogUploadServer.ManageIp)
+				//if t.template.TargetServers == nil || len(t.template.TargetServers) <= 0 {
+				//	global.GVA_LOG.Error("run task failed on nil target server: ", zap.Uint("task ID: ", t.task.ID))
+				//	return
+				//}
+				//global.GVA_LOG.Info("run ", zap.Uint("task ID: ", t.task.ID))
+				//servers := t.template.TargetServers
+				wg := &sync.WaitGroup{}
+				failedChan := make(chan string, len(servers))
+				t.clients = make([]*ssh.Client, 0, len(servers))
+				for _, server := range servers {
+					wg.Add(1)
+					go func(w *sync.WaitGroup, s application.ApplicationServer, f chan string) {
+						defer w.Done()
+						sshClient, err := common.FillSSHClient(s.ManageIp, t.template.SysUser, "", s.SshPort)
+						if err != nil {
+							global.GVA_LOG.Error("run task failed on create ssh client: ", zap.Uint("task ID: ", t.task.ID), zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
+							f <- s.ManageIp
+							return
+						}
+						err = sshClient.GenerateClient()
+						if err != nil {
+							global.GVA_LOG.Error("run task failed on generate ssh client: ", zap.Uint("task ID: ", t.task.ID), zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
+							f <- s.ManageIp
+							return
+						}
+						defer sshClient.Client.Close()
+						t.clients = append(t.clients, sshClient.Client)
+						fio := bytes.NewReader(fb)
+						if err = sshClient.Upload(fio, deployInfo.DeployPath); err != nil {
+							global.GVA_LOG.Error("run task failed on upload deploy file: ", zap.Uint("task ID: ", t.task.ID), zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
+							f <- s.ManageIp
+							return
+						}
+						return
+					}(wg, server, failedChan)
+				}
+				wg.Wait()
+				close(failedChan)
+				for ip := range failedChan {
+					failedIPs = append(failedIPs, ip)
+				}
+				t.Log("deploy "+deployInfo.DeployPath+" success", manageIpString)
+			}
 		}
 	}
 	return

@@ -462,6 +462,15 @@
 <!--        </el-form-item>-->
         <el-row>
           <el-col :span="12">
+            <el-form-item label="程序包下载方式" prop="deployType">
+              <el-select v-model="deployForm.deployType">
+                <el-option v-for="val in deployTypeOptions" :key="val.ID" :value="val.ID" :label="val.name" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row v-if="deployForm.deployType===1">
+          <el-col :span="12">
             <el-form-item label="ftp/sftp服务器" prop="dstServerId">
               <el-select v-model="deployForm.dstServerId" @change="changeServerId">
                 <el-option v-for="val in logServerOptions" :key="val.ID" :value="val.ID" :label="val.hostname" />
@@ -536,14 +545,14 @@
             :clearable="true"
           />
         </el-form-item>
-        <el-row>
+        <el-row v-if="pendingTemplate.logOutput===3||pendingTemplate.deployType===2">
           <el-col :span="12">
-            <el-form-item v-if="pendingTemplate.logOutput===3" label="用户名" prop="netDiskUser">
+            <el-form-item label="用户名" prop="netDiskUser">
               <el-input v-model="commandVarForm.netDiskUser" autocomplete="off" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item v-if="pendingTemplate.logOutput===3" label="密码" prop="netDiskPassword">
+            <el-form-item label="密码" prop="netDiskPassword">
               <el-input v-model="commandVarForm.netDiskPassword" autocomplete="off" />
             </el-form-item>
           </el-col>
@@ -740,6 +749,7 @@ export default {
         secretId: '',
         deployInfos: '',
         taskDeployInfos: [],
+        deployType: '',
       },
       deployRules: {
         name: [{ required: true, message: '请输入模板名', trigger: 'blur' }],
@@ -775,6 +785,10 @@ export default {
       targetIds: '',
       netDiskUser: '',
       netDiskPassword: '',
+      deployTypeOptions: [
+        { ID: 1, name: 'ftp/sftp' },
+        { ID: 2, name: '网盘' }
+      ],
     }
   },
   computed: {
@@ -1752,7 +1766,9 @@ export default {
           } else if (row.executeType === 3) {
             const task = (await deployServer({
               templateId: row.ID,
-              targetIds: this.commandVarForm.targetIds
+              targetIds: this.commandVarForm.targetIds,
+              netDiskUser: this.commandVarForm.netDiskUser,
+              netDiskPassword: this.commandVarForm.netDiskPassword,
             })).data.task
             this.closeCommandVarsDialog()
             this.showTaskLog(task)
