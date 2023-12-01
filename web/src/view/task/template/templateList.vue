@@ -1346,7 +1346,7 @@ export default {
             case 'addLogTemplate':
               {
                 this.logForm.ID = 0
-                if (this.logForm.logOutput === 1) {
+                if (this.logForm.logOutput === 1 || this.logForm.logOutput === 3) {
                   this.logForm.dstServerId = 0
                   this.logForm.secretId = 0
                 }
@@ -1571,6 +1571,10 @@ export default {
             case 'addDeployTemplate':
               {
                 this.deployForm.ID = 0
+                if (this.deployForm.deployType === 2) {
+                  this.deployForm.dstServerId = 0
+                  this.deployForm.secretId = 0
+                }
                 const res = await addTemplate(this.deployForm)
                 if (res.code === 0) {
                   this.$message({
