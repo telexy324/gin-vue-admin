@@ -270,7 +270,7 @@ func (templateService *TaskTemplatesService) CheckScriptDetail(sshClient *common
 	return sshClient.CommandSingle(command)
 }
 
-func (templateService *TaskTemplatesService) DownloadScript(ID float64, server application.ApplicationServer) (fileBytes []byte, err error) {
+func (templateService *TaskTemplatesService) DownloadScript(ID float64, server application.ApplicationServer) (fio io.ReadCloser, err error) {
 	template, err := templateService.GetTaskTemplate(ID)
 	if err != nil {
 		return

@@ -29,11 +29,7 @@ func (f *FtpClient) Upload(path string, file io.Reader) error {
 	return f.Conn.Stor(path, file)
 }
 
-func (f *FtpClient) Download(path string) (fileBytes []byte, err error) {
-	response, err := f.Conn.Retr(path)
-	if err != nil {
-		return
-	}
-	defer response.Close()
-	return io.ReadAll(response)
+func (f *FtpClient) Download(path string) (response io.ReadCloser, err error) {
+	return f.Conn.Retr(path)
+	//defer response.Close()
 }
