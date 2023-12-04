@@ -614,7 +614,7 @@ func (t *TaskRunner) runTask() (failedIPs []string) {
 		wg.Add(1)
 		go func(w *sync.WaitGroup, s application.ApplicationServer, f chan string) {
 			defer w.Done()
-			sshClient, err := common.FillSSHClient(s.ManageIp, t.template.SysUser, "", s.SshPort)
+			sshClient, err := common.FillSSHClient(s.ManageIp, "root", "", s.SshPort)
 			if err != nil {
 				global.GVA_LOG.Error("run task failed on create ssh client: ", zap.Uint("task ID: ", t.task.ID), zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
 				f <- s.ManageIp
@@ -716,9 +716,9 @@ func (t *TaskRunner) runTask() (failedIPs []string) {
 				//	f <- s.ManageIp
 				//	return
 				//}
-				var shellType = "bash -se"
+				var shellType = "sudo -H -n -u " + t.template.SysUser + " bash -se"
 				if t.template.ShellType == consts.ShellTypeBash {
-					shellType = "bash -s"
+					shellType = "sudo -H -n -u " + t.template.SysUser + " bash -s"
 				} else if t.template.ShellType == consts.ShellTypePython {
 					shellType = "python"
 				}
