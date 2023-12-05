@@ -716,9 +716,13 @@ func (t *TaskRunner) runTask() (failedIPs []string) {
 				//	f <- s.ManageIp
 				//	return
 				//}
-				var shellType = "sudo -H -n -u " + t.template.SysUser + " bash -se"
+				executeUser := t.template.BecomeUser
+				if t.template.SysUser != "root" && t.template.BecomeUser != t.template.SysUser {
+					executeUser = t.template.SysUser
+				}
+				var shellType = "sudo -H -n -u " + executeUser + " bash -se"
 				if t.template.ShellType == consts.ShellTypeBash {
-					shellType = "sudo -H -n -u " + t.template.SysUser + " bash -s"
+					shellType = "sudo -H -n -u " + executeUser + " bash -s"
 				} else if t.template.ShellType == consts.ShellTypePython {
 					shellType = "python"
 				}

@@ -183,6 +183,7 @@ create table `application_task_templates`
     `command_var_numbers` int          NOT NULL DEFAULT '0',
     `log_select`          tinyint(2) NOT NULL DEFAULT '0' COMMENT '日志选择 1 可选 2 不可选',
     `deploy_type`         tinyint(2) NOT NULL DEFAULT '0' COMMENT '程序包下载 1 ftp/sftp 2 网盘',
+    `become_user`         varchar(30)  NOT NULL DEFAULT '',
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

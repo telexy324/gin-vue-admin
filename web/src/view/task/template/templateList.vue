@@ -158,15 +158,31 @@
               </el-select>
             </el-form-item>
           </el-col>
+        </el-row>
+        <el-row>
           <el-col :span="12">
-            <el-form-item label="执行用户" prop="sysUser">
+            <el-form-item label="连接用户" prop="sysUser">
               <el-select
                 v-model="form.sysUser"
                 filterable
-                allow-create
                 default-first-option
                 placeholder="请先选择系统"
-                @blur="onTypeBlur($event)"
+                @change="changeSysUser"
+              >
+                <el-option v-for="(item, index) in currentSystem.sshUsers" :key="index" :value="item" :label="item" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="执行用户" prop="becomeUser">
+              <el-select
+                v-model="form.becomeUser"
+                :disabled="!allowCreateUser"
+                filterable
+                allow-create
+                default-first-option
+                placeholder="请先选择连接用户"
+                @blur="onInputBlur($event)"
               >
                 <el-option v-for="(item, index) in currentSystem.sshUsers" :key="index" :value="item" :label="item" />
               </el-select>
@@ -279,15 +295,32 @@
               </el-select>
             </el-form-item>
           </el-col>
+        </el-row>
+        <el-row>
           <el-col :span="12">
-            <el-form-item label="执行用户" prop="sysUser">
+            <el-form-item label="连接用户" prop="sysUser">
               <el-select
                 v-model="logForm.sysUser"
                 filterable
                 allow-create
                 default-first-option
                 placeholder="请先选择系统"
-                @blur="onTypeBlur($event)"
+                @change="changeSysUserLog"
+              >
+                <el-option v-for="(item, index) in currentSystem.sshUsers" :key="index" :value="item" :label="item" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="执行用户" prop="becomeUser">
+              <el-select
+                v-model="logForm.becomeUser"
+                :disabled="!allowCreateUser"
+                filterable
+                allow-create
+                default-first-option
+                placeholder="请先选择连接用户"
+                @blur="onInputBlurLog($event)"
               >
                 <el-option v-for="(item, index) in currentSystem.sshUsers" :key="index" :value="item" :label="item" />
               </el-select>
@@ -429,15 +462,32 @@
               </el-select>
             </el-form-item>
           </el-col>
+        </el-row>
+        <el-row>
           <el-col :span="12">
-            <el-form-item label="执行用户" prop="sysUser">
+            <el-form-item label="连接用户" prop="sysUser">
               <el-select
                 v-model="deployForm.sysUser"
                 filterable
                 allow-create
                 default-first-option
                 placeholder="请先选择系统"
-                @blur="onTypeBlur($event)"
+                @change="changeSysUserDeploy"
+              >
+                <el-option v-for="(item, index) in currentSystem.sshUsers" :key="index" :value="item" :label="item" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="执行用户" prop="becomeUser">
+              <el-select
+                v-model="deployForm.becomeUser"
+                :disabled="!allowCreateUser"
+                filterable
+                allow-create
+                default-first-option
+                placeholder="请先选择连接用户"
+                @blur="onInputBlurDeploy($event)"
               >
                 <el-option v-for="(item, index) in currentSystem.sshUsers" :key="index" :value="item" :label="item" />
               </el-select>
@@ -638,6 +688,7 @@ export default {
         shellVars: '',
         interactive: 0,
         commandVarNumbers: 0,
+        becomeUser: '',
       },
       type: '',
       rules: {
@@ -690,6 +741,7 @@ export default {
         dstServerId: '',
         secretId: '',
         logSelect: '',
+        becomeUser: '',
       },
       logRules: {
         name: [{ required: true, message: '请输入模板名', trigger: 'blur' }],
@@ -750,6 +802,7 @@ export default {
         deployInfos: '',
         taskDeployInfos: [],
         deployType: '',
+        becomeUser: '',
       },
       deployRules: {
         name: [{ required: true, message: '请输入模板名', trigger: 'blur' }],
@@ -789,6 +842,7 @@ export default {
         { ID: 1, name: 'ftp/sftp' },
         { ID: 2, name: '网盘' }
       ],
+      allowCreateUser: false,
     }
   },
   computed: {
@@ -863,6 +917,7 @@ export default {
         shellVars: '',
         interactive: 0,
         commandVarNumbers: 0,
+        becomeUser: '',
       }
     },
     closeDialog() {
@@ -872,6 +927,7 @@ export default {
       this.currentSystem = ''
       this.isCommand = false
       this.isScript = true
+      this.allowCreateUser = false
     },
     openDialog(type) {
       switch (type) {
@@ -899,16 +955,25 @@ export default {
         await this.setServerOptions(temp.systemId)
         // this.logForm.targetIds = this.logForm.targetIds[0]
         temp.logOutput === 2 ? this.downloadDirectly = false : this.downloadDirectly = true
+        if (this.logForm.sysUser === 'root') {
+          this.allowCreateUser = true
+        }
         await this.openLogDialog('edit')
       } else if (res.data.taskTemplate.executeType === 3) {
         const temp = res.data.taskTemplate
         this.deployForm = temp
         await this.setServerOptions(temp.systemId)
+        // if (this.deployForm.sysUser === 'root') {
+        //   this.allowCreateUser = true
+        // }
         await this.openDeployDialog('edit')
       } else {
         this.form = res.data.taskTemplate
         // this.commandChange(this.form.mode)
         await this.setServerOptions(this.form.systemId)
+        // if (this.form.sysUser === 'root') {
+        //   this.allowCreateUser = true
+        // }
         this.openDialog('edit')
       }
     },
@@ -1302,6 +1367,7 @@ export default {
       this.dialogLogFormVisible = false
       this.serverOptions = []
       this.currentSystem = ''
+      this.allowCreateUser = false
     },
     initLogForm() {
       this.$refs.templateLogForm.resetFields()
@@ -1314,6 +1380,7 @@ export default {
         targetIds: [],
         executeType: 2,
         logSelect: '',
+        becomeUser: '',
       }
     },
     async openLogDialog(type) {
@@ -1539,6 +1606,7 @@ export default {
         dstServerId: '',
         secretId: '',
         taskDeployInfos: [],
+        becomeUser: '',
       }
     },
     async openDeployDialog(type) {
@@ -1621,6 +1689,7 @@ export default {
       this.logServerOptions = []
       this.logSecretOptions = []
       this.currentSystem = ''
+      this.allowCreateUser = false
     },
     handleClose(index) {
       this.$refs[`popover-${index}`].hide()
@@ -1725,6 +1794,21 @@ export default {
         this.form.sysUser = e.target.value
       }
     },
+    onInputBlur(e) {
+      if ((e.target.value.trim() !== '')) {
+        this.form.becomeUser = e.target.value
+      }
+    },
+    onInputBlurLog(e) {
+      if ((e.target.value.trim() !== '')) {
+        this.logForm.becomeUser = e.target.value
+      }
+    },
+    onInputBlurDeploy(e) {
+      if ((e.target.value.trim() !== '')) {
+        this.deployForm.becomeUser = e.target.value
+      }
+    },
     isNum(rule, value, callback) {
       const n = /^[0-9]*$/
       if (!n.test(value)) {
@@ -1811,6 +1895,27 @@ export default {
       this.confirmVisible = false
       this.pendingTemplate = ''
     },
+    changeSysUser(selectedValue) {
+      if ((selectedValue.trim() !== '')) {
+        this.form.sysUser = selectedValue
+      }
+      this.allowCreateUser = this.form.sysUser === 'root'
+      this.form.becomeUser = this.form.sysUser
+    },
+    changeSysUserLog(selectedValue) {
+      if ((selectedValue.trim() !== '')) {
+        this.logForm.sysUser = selectedValue
+      }
+      // this.allowCreateUser = this.logForm.sysUser === 'root'
+      this.logForm.becomeUser = this.logForm.sysUser
+    },
+    changeSysUserDeploy(selectedValue) {
+      if ((selectedValue.trim() !== '')) {
+        this.deployForm.sysUser = selectedValue
+      }
+      // this.allowCreateUser = this.deployForm.sysUser === 'root'
+      this.deployForm.becomeUser = this.deployForm.sysUser
+    }
   }
 }
 </script>

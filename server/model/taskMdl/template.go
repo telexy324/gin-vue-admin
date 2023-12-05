@@ -34,6 +34,7 @@ type TaskTemplate struct {
 	CommandVarNumbers int                             `json:"commandVarNumbers" gorm:"type:int(5);not null;default:0;column:command_var_numbers"` // 命令参数个数
 	LogSelect         int                             `json:"logSelect" gorm:"type:tinyint(2);not null;default:0;column:log_select"`
 	DeployType        int                             `json:"deployType" gorm:"type:tinyint(2);not null;default:0;column:deploy_type"` // 下载方式 1 ftp/sftp 2 网盘
+	BecomeUser        string                          `json:"becomeUser" gorm:"type:varchar(30);not null;default:'';column:become_user"`
 	TaskDeployInfos   []TaskDeployInfo                `json:"taskDeployInfos" gorm:"-"`
 	TargetIds         []int                           `json:"targetIds" gorm:"-"`
 	TargetServers     []application.ApplicationServer `json:"targetServers" gorm:"-"`
