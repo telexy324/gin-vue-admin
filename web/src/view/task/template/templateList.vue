@@ -955,9 +955,9 @@ export default {
         await this.setServerOptions(temp.systemId)
         // this.logForm.targetIds = this.logForm.targetIds[0]
         temp.logOutput === 2 ? this.downloadDirectly = false : this.downloadDirectly = true
-        if (this.logForm.sysUser === 'root') {
-          this.allowCreateUser = true
-        }
+        // if (this.logForm.sysUser === 'root') {
+        //   this.allowCreateUser = true
+        // }
         await this.openLogDialog('edit')
       } else if (res.data.taskTemplate.executeType === 3) {
         const temp = res.data.taskTemplate
@@ -971,9 +971,9 @@ export default {
         this.form = res.data.taskTemplate
         // this.commandChange(this.form.mode)
         await this.setServerOptions(this.form.systemId)
-        // if (this.form.sysUser === 'root') {
-        //   this.allowCreateUser = true
-        // }
+        if (this.form.sysUser === 'root') {
+          this.allowCreateUser = true
+        }
         this.openDialog('edit')
       }
     },
