@@ -123,13 +123,11 @@ export default {
     },
     async processSetTask() {
       await this.setCheckedServerOptions(this.setTask.templates[this.setTask.currentStep])
-      if (this.setTask.templates[this.setTask.currentStep].commandVarNumbers > 0) {
-        for (let i = 0; i < this.setTask.templates[this.setTask.currentStep].commandVarNumbers; i++) {
-          this.commandVarForm.vars.push('')
-        }
-        this.runningTemplateId = this.setTask.templates[this.setTask.currentStep].ID
-        this.CommandVarFormVisible = true
+      for (let i = 0; i < this.setTask.templates[this.setTask.currentStep].commandVarNumbers; i++) {
+        this.commandVarForm.vars.push('')
       }
+      this.runningTemplateId = this.setTask.templates[this.setTask.currentStep].ID
+      this.CommandVarFormVisible = true
       this.setTask.templates[this.setTask.currentStep].deployType === 2 ? this.netDisk = true : this.netDisk = false
     },
     showTaskLog(task) {
