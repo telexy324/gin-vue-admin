@@ -1332,6 +1332,44 @@ var doc = `{
                 }
             }
         },
+        "/cmdb/createApplicationRecord": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ApplicationRecord"
+                ],
+                "summary": "创建ApplicationRecord",
+                "parameters": [
+                    {
+                        "description": "创建ApplicationRecord",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/application.ApplicationRecord"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\":true,\"data\":{},\"msg\":\"获取成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/cmdb/deleteAdmin": {
             "post": {
                 "security": [
@@ -1401,6 +1439,82 @@ var doc = `{
                 "responses": {
                     "200": {
                         "description": "{\"success\":true,\"data\":{},\"msg\":\"删除成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/cmdb/deleteApplicationRecord": {
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ApplicationRecord"
+                ],
+                "summary": "删除ApplicationRecord",
+                "parameters": [
+                    {
+                        "description": "ApplicationRecord模型",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/application.ApplicationRecord"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\":true,\"data\":{},\"msg\":\"删除成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/cmdb/deleteApplicationRecordByIds": {
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ApplicationRecord"
+                ],
+                "summary": "批量删除ApplicationRecord",
+                "parameters": [
+                    {
+                        "description": "批量删除ApplicationRecord",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.IdsReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\":true,\"data\":{},\"msg\":\"批量删除成功\"}",
                         "schema": {
                             "type": "string"
                         }
@@ -1584,6 +1698,41 @@ var doc = `{
                 }
             }
         },
+        "/cmdb/exportApplicationRecord": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "ApplicationRecord"
+                ],
+                "summary": "导出Excel",
+                "parameters": [
+                    {
+                        "description": "导出Excel文件信息",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.IdsReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/cmdb/exportExcel": {
             "post": {
                 "security": [
@@ -1615,6 +1764,95 @@ var doc = `{
                 "responses": {
                     "200": {
                         "description": ""
+                    }
+                }
+            }
+        },
+        "/cmdb/findApplicationRecord": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ApplicationRecord"
+                ],
+                "summary": "用id查询ApplicationRecord",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "请求路径",
+                        "name": "action",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "创建时间",
+                        "name": "createdAt",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "请求Body",
+                        "name": "detail",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "错误信息",
+                        "name": "errorMessage",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "主键ID",
+                        "name": "id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "请求ip",
+                        "name": "ip",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "用户id",
+                        "name": "logTime",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "请求状态",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "更新时间",
+                        "name": "updatedAt",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "用户id",
+                        "name": "userId",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\":true,\"data\":{},\"msg\":\"查询成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 }
             }
@@ -1824,6 +2062,107 @@ var doc = `{
                         "schema": {
                             "$ref": "#/definitions/request.PageInfo"
                         }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\":true,\"data\":{},\"msg\":\"获取成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/cmdb/getApplicationRecordList": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ApplicationRecord"
+                ],
+                "summary": "分页获取ApplicationRecord列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "请求路径",
+                        "name": "action",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "创建时间",
+                        "name": "createdAt",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "请求Body",
+                        "name": "detail",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "错误信息",
+                        "name": "errorMessage",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "主键ID",
+                        "name": "id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "请求ip",
+                        "name": "ip",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "用户id",
+                        "name": "logTime",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页大小",
+                        "name": "pageSize",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "请求状态",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "更新时间",
+                        "name": "updatedAt",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "用户id",
+                        "name": "userId",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -6324,6 +6663,44 @@ var doc = `{
                 }
             }
         },
+        "/task/template/setTaskForceCorrect": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Template"
+                ],
+                "summary": "模板集任务集强制运行",
+                "parameters": [
+                    {
+                        "description": "模板集任务集id",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.GetById"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\":true,\"data\":{},\"msg\":\"获取成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/task/template/updateSet": {
             "post": {
                 "security": [
@@ -6864,6 +7241,54 @@ var doc = `{
                 }
             }
         },
+        "application.ApplicationRecord": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "description": "请求路径",
+                    "type": "string"
+                },
+                "createdAt": {
+                    "description": "创建时间",
+                    "type": "string"
+                },
+                "detail": {
+                    "description": "请求Body",
+                    "type": "string"
+                },
+                "errorMessage": {
+                    "description": "错误信息",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "主键ID",
+                    "type": "integer"
+                },
+                "ip": {
+                    "description": "请求ip",
+                    "type": "string"
+                },
+                "logTime": {
+                    "description": "用户id",
+                    "type": "string"
+                },
+                "status": {
+                    "description": "请求状态",
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "description": "更新时间",
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/system.SysUser"
+                },
+                "userId": {
+                    "description": "用户id",
+                    "type": "integer"
+                }
+            }
+        },
         "application.ApplicationServer": {
             "type": "object",
             "properties": {
@@ -7166,6 +7591,14 @@ var doc = `{
                 }
             }
         },
+        "config.Cloudreve": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                }
+            }
+        },
         "config.Detail": {
             "type": "object",
             "properties": {
@@ -7360,6 +7793,9 @@ var doc = `{
                 },
                 "casbin": {
                     "$ref": "#/definitions/config.Casbin"
+                },
+                "cloudreve": {
+                    "$ref": "#/definitions/config.Cloudreve"
                 },
                 "email": {
                     "$ref": "#/definitions/config.Email"
@@ -7839,6 +8275,15 @@ var doc = `{
                 "id": {
                     "description": "主键ID",
                     "type": "number"
+                },
+                "netDiskPassword": {
+                    "type": "string"
+                },
+                "netDiskUser": {
+                    "type": "string"
+                },
+                "targetId": {
+                    "type": "integer"
                 }
             }
         },
@@ -7956,6 +8401,16 @@ var doc = `{
                     "type": "boolean"
                 },
                 "systemIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "targetId": {
+                    "type": "string"
+                },
+                "targetIds": {
+                    "description": "结束时间",
                     "type": "array",
                     "items": {
                         "type": "integer"
@@ -8096,6 +8551,12 @@ var doc = `{
                 "id": {
                     "description": "主键ID",
                     "type": "number"
+                },
+                "targetIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
                 }
             }
         },
@@ -8277,6 +8738,16 @@ var doc = `{
                 "id": {
                     "description": "主键ID",
                     "type": "integer"
+                },
+                "targetId": {
+                    "type": "string"
+                },
+                "targetIds": {
+                    "description": "结束时间",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
                 },
                 "templateId": {
                     "type": "integer"
@@ -8809,6 +9280,14 @@ var doc = `{
                     "description": "主键ID",
                     "type": "integer"
                 },
+                "netDiskPassword": {
+                    "description": "结束时间",
+                    "type": "string"
+                },
+                "netDiskUser": {
+                    "description": "结束时间",
+                    "type": "string"
+                },
                 "setTaskId": {
                     "description": "结束时间",
                     "type": "integer"
@@ -8828,6 +9307,17 @@ var doc = `{
                 "systemUserId": {
                     "description": "执行人",
                     "type": "integer"
+                },
+                "targetId": {
+                    "description": "结束时间",
+                    "type": "string"
+                },
+                "targetIds": {
+                    "description": "结束时间",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
                 },
                 "templateId": {
                     "description": "task id",
@@ -8855,6 +9345,9 @@ var doc = `{
         "taskMdl.TaskTemplate": {
             "type": "object",
             "properties": {
+                "becomeUser": {
+                    "type": "string"
+                },
                 "command": {
                     "description": "命令",
                     "type": "string"
@@ -8870,6 +9363,10 @@ var doc = `{
                 "deployInfos": {
                     "description": "服务器上传位置",
                     "type": "string"
+                },
+                "deployType": {
+                    "description": "下载方式 1 ftp/sftp 2 网盘",
+                    "type": "integer"
                 },
                 "description": {
                     "description": "task描述",
@@ -8911,7 +9408,6 @@ var doc = `{
                     "type": "string"
                 },
                 "logSelect": {
-                    "description": "日志目录可选择 1 可 2 不可",
                     "type": "integer"
                 },
                 "logUploadServer": {

@@ -21,7 +21,7 @@ type ApplicationRecordApi struct {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body system.ApplicationRecord true "创建ApplicationRecord"
+// @Param data body application.ApplicationRecord true "创建ApplicationRecord"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
 // @Router /cmdb/createApplicationRecord [post]
 func (s *ApplicationRecordApi) CreateApplicationRecord(c *gin.Context) {
@@ -40,7 +40,7 @@ func (s *ApplicationRecordApi) CreateApplicationRecord(c *gin.Context) {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body system.ApplicationRecord true "ApplicationRecord模型"
+// @Param data body application.ApplicationRecord true "ApplicationRecord模型"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"删除成功"}"
 // @Router /cmdb/deleteApplicationRecord [delete]
 func (s *ApplicationRecordApi) DeleteApplicationRecord(c *gin.Context) {
@@ -78,7 +78,7 @@ func (s *ApplicationRecordApi) DeleteApplicationRecordByIds(c *gin.Context) {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data query system.ApplicationRecord true "Id"
+// @Param data query application.ApplicationRecord true "Id"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"查询成功"}"
 // @Router /cmdb/findApplicationRecord [get]
 func (s *ApplicationRecordApi) FindApplicationRecord(c *gin.Context) {
@@ -125,7 +125,7 @@ func (s *ApplicationRecordApi) GetApplicationRecordList(c *gin.Context) {
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce  application/octet-stream
-// @Param data body request2.ExcelInfo true "导出Excel文件信息"
+// @Param data body request.IdsReq true "导出Excel文件信息"
 // @Success 200
 // @Router /cmdb/exportApplicationRecord [post]
 func (s *ApplicationRecordApi) ExportApplicationRecord(c *gin.Context) {

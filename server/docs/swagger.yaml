@@ -45,6 +45,41 @@ definitions:
         description: 版本
         type: string
     type: object
+  application.ApplicationRecord:
+    properties:
+      action:
+        description: 请求路径
+        type: string
+      createdAt:
+        description: 创建时间
+        type: string
+      detail:
+        description: 请求Body
+        type: string
+      errorMessage:
+        description: 错误信息
+        type: string
+      id:
+        description: 主键ID
+        type: integer
+      ip:
+        description: 请求ip
+        type: string
+      logTime:
+        description: 用户id
+        type: string
+      status:
+        description: 请求状态
+        type: integer
+      updatedAt:
+        description: 更新时间
+        type: string
+      user:
+        $ref: '#/definitions/system.SysUser'
+      userId:
+        description: 用户id
+        type: integer
+    type: object
   application.ApplicationServer:
     properties:
       appIds:
@@ -258,6 +293,11 @@ definitions:
         description: 存放casbin模型的相对路径
         type: string
     type: object
+  config.Cloudreve:
+    properties:
+      address:
+        type: string
+    type: object
   config.Detail:
     properties:
       compareField:
@@ -397,6 +437,8 @@ definitions:
         $ref: '#/definitions/config.Captcha'
       casbin:
         $ref: '#/definitions/config.Casbin'
+      cloudreve:
+        $ref: '#/definitions/config.Cloudreve'
       email:
         $ref: '#/definitions/config.Email'
       excel:
@@ -735,6 +777,12 @@ definitions:
       id:
         description: 主键ID
         type: number
+      netDiskPassword:
+        type: string
+      netDiskUser:
+        type: string
+      targetId:
+        type: integer
     type: object
   request.Empty:
     type: object
@@ -815,6 +863,13 @@ definitions:
       sortInverted:
         type: boolean
       systemIds:
+        items:
+          type: integer
+        type: array
+      targetId:
+        type: string
+      targetIds:
+        description: 结束时间
         items:
           type: integer
         type: array
@@ -914,6 +969,10 @@ definitions:
       id:
         description: 主键ID
         type: number
+      targetIds:
+        items:
+          type: integer
+        type: array
     type: object
   request.Register:
     properties:
@@ -1039,6 +1098,13 @@ definitions:
       id:
         description: 主键ID
         type: integer
+      targetId:
+        type: string
+      targetIds:
+        description: 结束时间
+        items:
+          type: integer
+        type: array
       templateId:
         type: integer
       updatedAt:
@@ -1425,6 +1491,12 @@ definitions:
       id:
         description: 主键ID
         type: integer
+      netDiskPassword:
+        description: 结束时间
+        type: string
+      netDiskUser:
+        description: 结束时间
+        type: string
       setTaskId:
         description: 结束时间
         type: integer
@@ -1440,6 +1512,14 @@ definitions:
       systemUserId:
         description: 执行人
         type: integer
+      targetId:
+        description: 结束时间
+        type: string
+      targetIds:
+        description: 结束时间
+        items:
+          type: integer
+        type: array
       templateId:
         description: task id
         type: integer
@@ -1458,6 +1538,8 @@ definitions:
     type: object
   taskMdl.TaskTemplate:
     properties:
+      becomeUser:
+        type: string
       command:
         description: 命令
         type: string
@@ -1470,6 +1552,9 @@ definitions:
       deployInfos:
         description: 服务器上传位置
         type: string
+      deployType:
+        description: 下载方式 1 ftp/sftp 2 网盘
+        type: integer
       description:
         description: task描述
         type: string
@@ -1500,7 +1585,6 @@ definitions:
         description: 日志位置
         type: string
       logSelect:
-        description: 日志目录可选择 1 可 2 不可
         type: integer
       logUploadServer:
         $ref: '#/definitions/logUploadMdl.Server'
@@ -2373,6 +2457,29 @@ paths:
       summary: 新增系统
       tags:
       - CmdbSystem
+  /cmdb/createApplicationRecord:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 创建ApplicationRecord
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/application.ApplicationRecord'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 创建ApplicationRecord
+      tags:
+      - ApplicationRecord
   /cmdb/deleteAdmin:
     post:
       consumes:
@@ -2419,6 +2526,52 @@ paths:
       summary: 删除应用
       tags:
       - CmdbServer
+  /cmdb/deleteApplicationRecord:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: ApplicationRecord模型
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/application.ApplicationRecord'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"删除成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 删除ApplicationRecord
+      tags:
+      - ApplicationRecord
+  /cmdb/deleteApplicationRecordByIds:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: 批量删除ApplicationRecord
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.IdsReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"批量删除成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 批量删除ApplicationRecord
+      tags:
+      - ApplicationRecord
   /cmdb/deleteServer:
     post:
       consumes:
@@ -2525,6 +2678,27 @@ paths:
       summary: 下载模板
       tags:
       - CmdbServer
+  /cmdb/exportApplicationRecord:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 导出Excel文件信息
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.IdsReq'
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: ""
+      security:
+      - ApiKeyAuth: []
+      summary: 导出Excel
+      tags:
+      - ApplicationRecord
   /cmdb/exportExcel:
     post:
       consumes:
@@ -2546,6 +2720,63 @@ paths:
       summary: 导出Excel
       tags:
       - CmdbServer
+  /cmdb/findApplicationRecord:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: 请求路径
+        in: query
+        name: action
+        type: string
+      - description: 创建时间
+        in: query
+        name: createdAt
+        type: string
+      - description: 请求Body
+        in: query
+        name: detail
+        type: string
+      - description: 错误信息
+        in: query
+        name: errorMessage
+        type: string
+      - description: 主键ID
+        in: query
+        name: id
+        type: integer
+      - description: 请求ip
+        in: query
+        name: ip
+        type: string
+      - description: 用户id
+        in: query
+        name: logTime
+        type: string
+      - description: 请求状态
+        in: query
+        name: status
+        type: integer
+      - description: 更新时间
+        in: query
+        name: updatedAt
+        type: string
+      - description: 用户id
+        in: query
+        name: userId
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"查询成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 用id查询ApplicationRecord
+      tags:
+      - ApplicationRecord
   /cmdb/getAdminById:
     post:
       consumes:
@@ -2677,6 +2908,71 @@ paths:
       summary: 分页获取基础app列表
       tags:
       - CmdbServer
+  /cmdb/getApplicationRecordList:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: 请求路径
+        in: query
+        name: action
+        type: string
+      - description: 创建时间
+        in: query
+        name: createdAt
+        type: string
+      - description: 请求Body
+        in: query
+        name: detail
+        type: string
+      - description: 错误信息
+        in: query
+        name: errorMessage
+        type: string
+      - description: 主键ID
+        in: query
+        name: id
+        type: integer
+      - description: 请求ip
+        in: query
+        name: ip
+        type: string
+      - description: 用户id
+        in: query
+        name: logTime
+        type: string
+      - description: 页码
+        in: query
+        name: page
+        type: integer
+      - description: 每页大小
+        in: query
+        name: pageSize
+        type: integer
+      - description: 请求状态
+        in: query
+        name: status
+        type: integer
+      - description: 更新时间
+        in: query
+        name: updatedAt
+        type: string
+      - description: 用户id
+        in: query
+        name: userId
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 分页获取ApplicationRecord列表
+      tags:
+      - ApplicationRecord
   /cmdb/getDepartmentAll:
     post:
       consumes:
@@ -5412,6 +5708,29 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: 更新模板集任务集
+      tags:
+      - Template
+  /task/template/setTaskForceCorrect:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 模板集任务集id
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetById'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 模板集任务集强制运行
       tags:
       - Template
   /task/template/updateSet:

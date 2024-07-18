@@ -246,6 +246,7 @@ create table `application_set_tasks`
     `current_step`     int(4) NOT NULL DEFAULT '0',
     `templates_string` text,
     `tasks_string`     text,
+    `force_correct`    tinyint(2) NOT NULL DEFAULT '0' COMMENT '强制运行 0 未强制 1 强制',
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

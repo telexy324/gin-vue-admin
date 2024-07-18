@@ -8,6 +8,7 @@ import (
 	"errors"
 	sockets "github.com/flipped-aurora/gin-vue-admin/server/api/v1/socket"
 	"github.com/flipped-aurora/gin-vue-admin/server/common"
+	"github.com/flipped-aurora/gin-vue-admin/server/consts"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/application"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
@@ -611,6 +612,7 @@ func (templateService *TaskTemplatesService) UpdateSetTask(setTask taskMdl.SetTa
 	upDateMap["current_task_id"] = setTask.CurrentTaskId
 	upDateMap["tasks_string"] = setTask.TasksString
 	upDateMap["current_step"] = setTask.CurrentStep
+	upDateMap["force_correct"] = setTask.ForceCorrect
 
 	db := global.GVA_DB.Where("id = ?", setTask.ID).Find(&oldSetTask)
 	err = db.Updates(upDateMap).Error
@@ -664,6 +666,18 @@ func (templateService *TaskTemplatesService) GetSetTaskList(info request2.SetTas
 	}
 
 	return err, setTaskList, total
+}
+
+func (templateService *TaskTemplatesService) SetTaskForceCorrect(id float64) (err error) {
+	var setTask taskMdl.SetTask
+	if err = global.GVA_DB.Where("id = ?", id).First(&setTask).Error; err != nil {
+		return
+	}
+	if setTask.ForceCorrect == consts.IsForceCorrect {
+		return errors.New("set task is force correct do not correct it again")
+	}
+	setTask.ForceCorrect = consts.IsForceCorrect
+	return templateService.UpdateSetTask(setTask)
 }
 
 func (templateService *TaskTemplatesService) GetFileList(sshClient *common.SSHClient, template taskMdl.TaskTemplate, selectedDirectory string) (fileInfos []response.FileInfo, isTop bool, err error) {

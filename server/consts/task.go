@@ -48,3 +48,8 @@ const (
 	DeployTypeFtpSftp = iota + 1
 	DeployTypeNetDisk
 )
+
+const (
+	NotForceCorrect = iota
+	IsForceCorrect
+)

@@ -128,8 +128,9 @@ type SetTask struct {
 	CurrentTaskId   int                   `json:"currentTaskId" gorm:"type:bigint;not null;default:0;column:current_task_id" `
 	TotalSteps      int                   `json:"totalSteps" gorm:"type:int(4);not null;default:0;column:total_steps" `
 	CurrentStep     int                   `json:"currentStep" gorm:"type:int(4);not null;default:0;column:current_step" `
-	TemplatesString string                `json:"templatesString" gorm:"type:text;column:templates_string"` // 关联服务器id
-	TasksString     string                `json:"tasksString" gorm:"type:text;column:tasks_string"`         // 关联服务器id
+	TemplatesString string                `json:"templatesString" gorm:"type:text;column:templates_string"`                    // 关联服务器id
+	TasksString     string                `json:"tasksString" gorm:"type:text;column:tasks_string"`                            // 关联服务器id
+	ForceCorrect    int                   `json:"forceCorrect" gorm:"type:tinyint(2);not null;default:0;column:force_correct"` // 关联服务器id
 	Templates       []TaskTemplateWithSeq `json:"templates" gorm:"-"`
 	Tasks           []Task                `json:"tasks" gorm:"-"`
 }

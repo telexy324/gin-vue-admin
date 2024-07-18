@@ -664,7 +664,7 @@ func (a *TemplateApi) ProcessSetTask(c *gin.Context) {
 		response.FailWithMessage("更新失败", c)
 		return
 	}
-	if setTask.Tasks != nil && len(setTask.Tasks) > 0 && setTask.Tasks[len(setTask.Tasks)-1].Status != taskMdl.TaskSuccessStatus {
+	if setTask.Tasks != nil && len(setTask.Tasks) > 0 && setTask.Tasks[len(setTask.Tasks)-1].Status != taskMdl.TaskSuccessStatus && setTask.ForceCorrect != consts.IsForceCorrect {
 		global.GVA_LOG.Error("任务未结束或存在异常!", zap.Any("err", err))
 		response.FailWithMessage("任务未结束或存在异常!", c)
 		return
@@ -774,6 +774,33 @@ func (a *TemplateApi) GetSetTaskList(c *gin.Context) {
 			Page:     pageInfo.Page,
 			PageSize: pageInfo.PageSize,
 		}, "获取成功", c)
+	}
+}
+
+// @Tags Template
+// @Summary 模板集任务集强制运行
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body request.GetById true "模板集任务集id"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
+// @Router /task/template/setTaskForceCorrect [post]
+func (a *TemplateApi) SetTaskForceCorrect(c *gin.Context) {
+	var idInfo request.GetById
+	if err := c.ShouldBindJSON(&idInfo); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err := utils.Verify(idInfo, utils.IdVerify); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err := templateService.SetTaskForceCorrect(idInfo.ID); err != nil {
+		global.GVA_LOG.Error("更新失败!", zap.Any("err", err))
+		response.FailWithMessage("更新失败失败", c)
+	} else {
+		response.OkWithMessage("更新成功", c)
 	}
 }
 

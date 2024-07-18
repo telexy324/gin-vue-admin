@@ -3,6 +3,7 @@
     <div class="gva-search-box">
       <div class="gva-btn-list">
         <el-button size="mini" type="primary" icon="el-icon-plus" style="margin-bottom: 12px;" :disabled="disabled" @click="processSetTask">下一步</el-button>
+        <el-button v-if="forceCorrectButton" size="mini" type="danger" icon="el-icon-plus" style="margin-bottom: 12px;" @click="forceCorrect">强制执行</el-button>
       </div>
 <!--      <el-steps :active="active" finish-status="success" :process-status="taskStatus">-->
       <el-steps>
@@ -63,7 +64,8 @@ import {
   // getSetById,
   // addSetTask,
   processSetTask,
-  getSetTaskById
+  getSetTaskById,
+  setTaskForceCorrect
 } from '@/api/template'
 import { getSystemServerIds } from '@/api/cmdb'
 import { emitter } from '@/utils/bus'
@@ -97,6 +99,7 @@ export default {
       confirmed: false,
       checkedServerOptions: [],
       netDisk: false,
+      forceCorrectButton: false,
     }
   },
   async created() {
@@ -117,7 +120,8 @@ export default {
       this.steps = this.setTask.templates
       this.active = this.setTask.currentStep
       // this.taskStatus = this.getStepStatus(this.setTask.currentTask.status)
-      if (this.setTask.currentStep === this.setTask.totalSteps || this.setTask.tasks[this.active - 1].status !== 'success' && this.setTask.tasks[this.active - 1].status !== '') {
+      this.isForceCorrectButton()
+      if (this.setTask.currentStep === this.setTask.totalSteps || this.setTask.tasks[this.active - 1].status !== 'success' && this.setTask.tasks[this.active - 1].status !== '' && this.setTask.forceCorrect === 0) {
         this.disabled = true
       }
     },
@@ -142,9 +146,7 @@ export default {
     //   }
     // },
     getStatus(seq) {
-      if (seq + 1 < this.active) {
-        return 'success'
-      } else if (seq + 1 === this.active) {
+      if (seq + 1 <= this.active) {
         const status = this.setTask.tasks[seq].status
         switch (status) {
           case 'success':
@@ -210,6 +212,19 @@ export default {
       }
       this.checkedServerOptions = serverOptions
     },
+    async forceCorrect() {
+      await setTaskForceCorrect({
+        ID: this.setTask.ID,
+      })
+      this.forceCorrectButton = false
+      this.disabled = false
+      await this.initSteps()
+    },
+    isForceCorrectButton() {
+      if (this.setTask.tasks[this.active - 1].status !== 'success' && this.setTask.forceCorrect === 0) {
+        this.forceCorrectButton = true
+      }
+    }
   }
 }
 </script>

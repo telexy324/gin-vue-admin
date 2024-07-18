@@ -254,6 +254,18 @@ export const getSetTaskList = (data) => {
   })
 }
 
+// @Summary 修改set
+// @Produce  application/json
+// @Param set Object
+// @Router /task/template/setTaskForceCorrect [post]
+export const setTaskForceCorrect = (data) => {
+  return service({
+    url: '/task/template/setTaskForceCorrect',
+    method: 'post',
+    data
+  })
+}
+
 // @Summary 获取文件列表
 // @Produce  application/json
 // @Param checkScript Object

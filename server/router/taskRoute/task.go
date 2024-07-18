@@ -46,16 +46,17 @@ func (s *TaskRouter) InitTaskRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 		taskRouter.POST("template/deployServer", authorityTemplateApi.DeployServer)
 	}
 	{
-		taskRouter.POST("template/addSet", authorityTemplateApi.AddSet)                 // 新增管理员
-		taskRouter.POST("template/deleteSet", authorityTemplateApi.DeleteSet)           // 删除管理员
-		taskRouter.POST("template/deleteSetByIds", authorityTemplateApi.DeleteSetByIds) // 删除管理员
-		taskRouter.POST("template/updateSet", authorityTemplateApi.UpdateSet)           // 更新管理员
-		taskRouter.POST("template/getSetById", authorityTemplateApi.GetSetById)         // 获取管理员
-		taskRouter.POST("template/getSetList", authorityTemplateApi.GetSetList)         // 分页获取管理员列表
-		taskRouter.POST("template/addSetTask", authorityTemplateApi.AddSetTask)         // 分页获取管理员列表
-		taskRouter.POST("template/processSetTask", authorityTemplateApi.ProcessSetTask) // 分页获取管理员列表
-		taskRouter.POST("template/getSetTaskById", authorityTemplateApi.GetSetTaskById) // 获取管理员
-		taskRouter.POST("template/getSetTaskList", authorityTemplateApi.GetSetTaskList) // 获取管理员
+		taskRouter.POST("template/addSet", authorityTemplateApi.AddSet)                           // 新增管理员
+		taskRouter.POST("template/deleteSet", authorityTemplateApi.DeleteSet)                     // 删除管理员
+		taskRouter.POST("template/deleteSetByIds", authorityTemplateApi.DeleteSetByIds)           // 删除管理员
+		taskRouter.POST("template/updateSet", authorityTemplateApi.UpdateSet)                     // 更新管理员
+		taskRouter.POST("template/getSetById", authorityTemplateApi.GetSetById)                   // 获取管理员
+		taskRouter.POST("template/getSetList", authorityTemplateApi.GetSetList)                   // 分页获取管理员列表
+		taskRouter.POST("template/addSetTask", authorityTemplateApi.AddSetTask)                   // 分页获取管理员列表
+		taskRouter.POST("template/processSetTask", authorityTemplateApi.ProcessSetTask)           // 分页获取管理员列表
+		taskRouter.POST("template/getSetTaskById", authorityTemplateApi.GetSetTaskById)           // 获取管理员
+		taskRouter.POST("template/getSetTaskList", authorityTemplateApi.GetSetTaskList)           // 获取管理员
+		taskRouter.POST("template/setTaskForceCorrect", authorityTemplateApi.SetTaskForceCorrect) // 强制运行
 	}
 
 	var authorityScheduleApi = v1.ApiGroupApp.TaskApiGroup.ScheduleApi
