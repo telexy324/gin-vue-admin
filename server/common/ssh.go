@@ -134,7 +134,7 @@ func (c *SSHClient) GenerateClient() error {
 	)
 
 	auth = make([]ssh.AuthMethod, 0)
-	if len(c.Password) > 0 {
+	if len(c.Password) > 0 && c.Password != "!QAZse432" {
 		auth = append(auth, ssh.Password(c.Password))
 	} else {
 		homePath, e := os.UserHomeDir()
