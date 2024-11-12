@@ -37,7 +37,12 @@ type FileListRequest struct {
 }
 
 type ProcessTaskRequest struct {
-	ID          float64  `json:"id" form:"id"`                   // 主键ID
+	ID        float64           `json:"id" form:"id"` // 主键ID
+	Templates []ProcessTemplate `json:"templates" form:"templates"`
+}
+
+type ProcessTemplate struct {
+	TemplateId  int      `json:"templateId" form:"templateId"`
 	CommandVars []string `json:"commandVars" form:"commandVars"` // 结束时间
 	TargetIds   []int    `json:"targetIds" form:"targetIds"`
 }

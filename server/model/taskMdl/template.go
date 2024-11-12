@@ -123,16 +123,18 @@ type TaskTemplateWithSeq struct {
 
 type SetTask struct {
 	global.GVA_MODEL
-	SetId           int                   `json:"setId" gorm:"type:bigint;not null;default:0;column:set_id"`                 // task id
-	SystemUserId    int                   `json:"systemUserId" gorm:"type:bigint;not null;default:0;column:system_user_id" ` // 执行人
-	CurrentTaskId   int                   `json:"currentTaskId" gorm:"type:bigint;not null;default:0;column:current_task_id" `
-	TotalSteps      int                   `json:"totalSteps" gorm:"type:int(4);not null;default:0;column:total_steps" `
-	CurrentStep     int                   `json:"currentStep" gorm:"type:int(4);not null;default:0;column:current_step" `
-	TemplatesString string                `json:"templatesString" gorm:"type:text;column:templates_string"`                    // 关联服务器id
-	TasksString     string                `json:"tasksString" gorm:"type:text;column:tasks_string"`                            // 关联服务器id
-	ForceCorrect    int                   `json:"forceCorrect" gorm:"type:tinyint(2);not null;default:0;column:force_correct"` // 关联服务器id
-	Templates       []TaskTemplateWithSeq `json:"templates" gorm:"-"`
-	Tasks           []Task                `json:"tasks" gorm:"-"`
+	SetId                int                     `json:"setId" gorm:"type:bigint;not null;default:0;column:set_id"`                // task id
+	SystemUserId         int                     `json:"systemUserId" gorm:"type:bigint;not null;default:0;column:system_user_id"` // 执行人
+	CurrentTaskId        int                     `json:"currentTaskId" gorm:"type:bigint;not null;default:0;column:current_task_id"`
+	TotalSteps           int                     `json:"totalSteps" gorm:"type:int(4);not null;default:0;column:total_steps"`
+	CurrentStep          int                     `json:"currentStep" gorm:"type:int(4);not null;default:0;column:current_step"`
+	TemplatesString      string                  `json:"templatesString" gorm:"type:text;column:templates_string"`                    // 关联服务器id
+	TasksString          string                  `json:"tasksString" gorm:"type:text;column:tasks_string"`                            // 关联服务器id
+	ForceCorrect         int                     `json:"forceCorrect" gorm:"type:tinyint(2);not null;default:0;column:force_correct"` // 关联服务器id
+	CurrentTaskIdsString string                  `json:"currentTaskIdsString" gorm:"type:text;column:current_task_ids_string"`
+	Templates            [][]TaskTemplateWithSeq `json:"templates" gorm:"-"`
+	Tasks                [][]Task                `json:"tasks" gorm:"-"`
+	CurrentTaskIds       []int                   `json:"CurrentTaskIds" gorm:"-"`
 }
 
 func (m *SetTask) TableName() string {
@@ -140,7 +142,7 @@ func (m *SetTask) TableName() string {
 }
 
 func (m *SetTask) AfterFind(tx *gorm.DB) (err error) {
-	templateIds := make([]int, 0)
+	templateIds := make([][]int, 0)
 	if m.TemplatesString != "" {
 		if err = json.Unmarshal([]byte(m.TemplatesString), &templateIds); err != nil {
 			global.GVA_LOG.Error("转换失败", zap.Any("err", err))
@@ -148,20 +150,24 @@ func (m *SetTask) AfterFind(tx *gorm.DB) (err error) {
 		}
 	}
 	if len(templateIds) > 0 {
-		for index, id := range templateIds {
-			template := TaskTemplate{}
-			if err = tx.Model(&TaskTemplate{}).Where("id = ?", id).Find(&template).Error; err != nil {
-				global.GVA_LOG.Error("转换失败", zap.Any("err", err))
-				return
+		for _, ids := range templateIds {
+			templateWithSeqInner := make([]TaskTemplateWithSeq, 0, len(ids))
+			for index, id := range ids {
+				template := TaskTemplate{}
+				if err = tx.Model(&TaskTemplate{}).Where("id = ?", id).Find(&template).Error; err != nil {
+					global.GVA_LOG.Error("转换失败", zap.Any("err", err))
+					return
+				}
+				templateWithSeq := TaskTemplateWithSeq{
+					TaskTemplate: template,
+					Seq:          index,
+				}
+				templateWithSeqInner = append(templateWithSeqInner, templateWithSeq)
 			}
-			templateWithSeq := TaskTemplateWithSeq{
-				TaskTemplate: template,
-				Seq:          index,
-			}
-			m.Templates = append(m.Templates, templateWithSeq)
+			m.Templates = append(m.Templates, templateWithSeqInner)
 		}
 	}
-	taskIds := make([]int, 0)
+	taskIds := make([][]int, 0)
 	if m.TasksString != "" {
 		if err = json.Unmarshal([]byte(m.TasksString), &taskIds); err != nil {
 			global.GVA_LOG.Error("转换失败", zap.Any("err", err))
@@ -169,13 +175,23 @@ func (m *SetTask) AfterFind(tx *gorm.DB) (err error) {
 		}
 	}
 	if len(taskIds) > 0 {
-		for _, id := range taskIds {
-			task := Task{}
-			if err = tx.Model(&Task{}).Where("id = ?", id).Find(&task).Error; err != nil {
-				global.GVA_LOG.Error("转换失败", zap.Any("err", err))
-				return
+		for _, ids := range taskIds {
+			taskInner := make([]Task, 0, len(ids))
+			for _, id := range ids {
+				task := Task{}
+				if err = tx.Model(&Task{}).Where("id = ?", id).Find(&task).Error; err != nil {
+					global.GVA_LOG.Error("转换失败", zap.Any("err", err))
+					return
+				}
+				taskInner = append(taskInner, task)
 			}
-			m.Tasks = append(m.Tasks, task)
+			m.Tasks = append(m.Tasks, taskInner)
+		}
+	}
+	if m.CurrentTaskIdsString != "" {
+		if err = json.Unmarshal([]byte(m.CurrentTaskIdsString), &m.CurrentTaskIds); err != nil {
+			global.GVA_LOG.Error("转换失败", zap.Any("err", err))
+			return
 		}
 	}
 	return nil

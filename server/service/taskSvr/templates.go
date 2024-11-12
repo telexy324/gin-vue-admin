@@ -588,15 +588,17 @@ func (templateService *TaskTemplatesService) AddSetTask(addSetTaskRequest taskMd
 		return
 	}
 	ids := make([]int, 0)
+	stepsMap := make(map[int]bool)
 	for _, t := range templates {
 		ids = append(ids, t.TemplateId)
+		stepsMap[t.Seq] = true
 	}
 	idBytes, err := json.Marshal(ids)
 	if err != nil {
 		return
 	}
 	addSetTaskRequest.TemplatesString = string(idBytes)
-	addSetTaskRequest.TotalSteps = len(ids)
+	addSetTaskRequest.TotalSteps = len(stepsMap)
 	return global.GVA_DB.Create(&addSetTaskRequest).Error
 }
 
@@ -609,7 +611,7 @@ func (templateService *TaskTemplatesService) AddSetTask(addSetTaskRequest taskMd
 func (templateService *TaskTemplatesService) UpdateSetTask(setTask taskMdl.SetTask) (err error) {
 	var oldSetTask taskMdl.SetTask
 	upDateMap := make(map[string]interface{})
-	upDateMap["current_task_id"] = setTask.CurrentTaskId
+	upDateMap["current_task_ids_string"] = setTask.CurrentTaskIdsString
 	upDateMap["tasks_string"] = setTask.TasksString
 	upDateMap["current_step"] = setTask.CurrentStep
 	upDateMap["force_correct"] = setTask.ForceCorrect

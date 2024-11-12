@@ -664,7 +664,19 @@ func (a *TemplateApi) ProcessSetTask(c *gin.Context) {
 		response.FailWithMessage("更新失败", c)
 		return
 	}
-	if setTask.Tasks != nil && len(setTask.Tasks) > 0 && setTask.Tasks[len(setTask.Tasks)-1].Status != taskMdl.TaskSuccessStatus && setTask.ForceCorrect != consts.IsForceCorrect {
+	if setTask.Tasks != nil && len(setTask.Tasks) > 0 && setTask.ForceCorrect != consts.IsForceCorrect {
+		global.GVA_LOG.Error("任务未结束或存在异常!", zap.Any("err", err))
+		response.FailWithMessage("任务未结束或存在异常!", c)
+		return
+	}
+	var failed bool
+	for _, t := range setTask.Tasks[len(setTask.Tasks)-1] {
+		if t.Status != taskMdl.TaskSuccessStatus {
+			failed = true
+			break
+		}
+	}
+	if failed {
 		global.GVA_LOG.Error("任务未结束或存在异常!", zap.Any("err", err))
 		response.FailWithMessage("任务未结束或存在异常!", c)
 		return
@@ -680,16 +692,57 @@ func (a *TemplateApi) ProcessSetTask(c *gin.Context) {
 		response.FailWithMessage("非创建人!", c)
 		return
 	}
-	var task taskMdl.Task
-	task.TemplateId = int(setTask.Templates[setTask.CurrentStep].ID)
-	task.CommandVars = processTaskRequest.CommandVars
-	task.TargetIds = processTaskRequest.TargetIds
-	newTask, err := taskPool.TPool.AddTask(task, userID, int(setTask.ID))
-	if err != nil {
-		global.GVA_LOG.Error("添加任务失败!", zap.Any("err", err))
-		response.FailWithMessage("更新失败", c)
-		return
+	//var task taskMdl.Task
+	//task.TemplateId = int(setTask.Templates[setTask.CurrentStep].ID)
+	//task.CommandVars = processTaskRequest.CommandVars
+	//task.TargetIds = processTaskRequest.TargetIds
+	//newTask, err := taskPool.TPool.AddTask(task, userID, int(setTask.ID))
+	//if err != nil {
+	//	global.GVA_LOG.Error("添加任务失败!", zap.Any("err", err))
+	//	response.FailWithMessage("更新失败", c)
+	//	return
+	//}
+	//setTask.CurrentStep += 1
+	//setTask.Tasks = append(setTask.Tasks, newTask)
+	//taskIds := make([]int, 0, len(setTask.Tasks))
+	//for _, t := range setTask.Tasks {
+	//	taskIds = append(taskIds, int(t.ID))
+	//}
+	//s, err := json.Marshal(taskIds)
+	//if err != nil {
+	//	global.GVA_LOG.Error("更新失败!", zap.Any("err", err))
+	//	response.FailWithMessage("更新失败", c)
+	//	return
+	//}
+	//setTask.TasksString = string(s)
+	//setTask.CurrentTaskId = int(newTask.ID)
+	//if err = templateService.UpdateSetTask(setTask); err != nil {
+	//	global.GVA_LOG.Error("更新失败!", zap.Any("err", err))
+	//	response.FailWithMessage("更新失败", c)
+	//} else {
+	//	response.OkWithDetailed(templateRes.TaskResponse{
+	//		Task: newTask,
+	//	}, "添加成功", c)
+	//}
+	taskTemplateMap := make(map[int]templateReq.ProcessTemplate)
+	for _, p := range processTaskRequest.Templates {
+		taskTemplateMap[p.TemplateId] = p
 	}
+	tasks := make([]taskMdl.Task, 0)
+	for _, temp := range setTask.Templates[setTask.CurrentStep] {
+		var task taskMdl.Task
+		task.TemplateId = int(temp.ID)
+		task.CommandVars = taskTemplateMap[temp.ID].CommandVars
+		task.TargetIds = processTaskRequest.TargetIds
+		newTask, err := taskPool.TPool.AddTask(task, userID, int(setTask.ID))
+		if err != nil {
+			global.GVA_LOG.Error("添加任务失败!", zap.Any("err", err))
+			response.FailWithMessage("更新失败", c)
+			return
+		}
+		tasks = append(tasks, newTask)
+	}
+
 	setTask.CurrentStep += 1
 	setTask.Tasks = append(setTask.Tasks, newTask)
 	taskIds := make([]int, 0, len(setTask.Tasks))
