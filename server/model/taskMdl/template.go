@@ -118,7 +118,8 @@ func (m *TaskTemplateSetTemplate) TableName() string {
 
 type TaskTemplateWithSeq struct {
 	TaskTemplate
-	Seq int `json:"seq"`
+	Seq      int `json:"seq"`
+	SeqInner int `json:"seqInner"`
 }
 
 type SetTask struct {
@@ -131,7 +132,7 @@ type SetTask struct {
 	TemplatesString      string                  `json:"templatesString" gorm:"type:text;column:templates_string"`                    // 关联服务器id
 	TasksString          string                  `json:"tasksString" gorm:"type:text;column:tasks_string"`                            // 关联服务器id
 	ForceCorrect         int                     `json:"forceCorrect" gorm:"type:tinyint(2);not null;default:0;column:force_correct"` // 关联服务器id
-	CurrentTaskIdsString string                  `json:"currentTaskIdsString" gorm:"type:text;column:current_task_ids_string"`
+	CurrentTaskIdsString string                  `json:"currentTaskIdsString" gorm:"type:bigint;not null;default:0;column:current_task_ids_string" `
 	Templates            [][]TaskTemplateWithSeq `json:"templates" gorm:"-"`
 	Tasks                [][]Task                `json:"tasks" gorm:"-"`
 	CurrentTaskIds       []int                   `json:"CurrentTaskIds" gorm:"-"`
@@ -142,29 +143,64 @@ func (m *SetTask) TableName() string {
 }
 
 func (m *SetTask) AfterFind(tx *gorm.DB) (err error) {
-	templateIds := make([][]int, 0)
+	//templateIds := make([][]int, 0)
+	//if m.TemplatesString != "" {
+	//	if err = json.Unmarshal([]byte(m.TemplatesString), &templateIds); err != nil {
+	//		global.GVA_LOG.Error("转换失败", zap.Any("err", err))
+	//		return
+	//	}
+	//}
+	//if len(templateIds) > 0 {
+	//	for _, ids := range templateIds {
+	//		templateWithSeqInner := make([]TaskTemplateWithSeq, 0)
+	//		for index, id := range ids {
+	//			template := TaskTemplate{}
+	//			if err = tx.Model(&TaskTemplate{}).Where("id = ?", id).Find(&template).Error; err != nil {
+	//				global.GVA_LOG.Error("转换失败", zap.Any("err", err))
+	//				return
+	//			}
+	//			templateWithSeq := TaskTemplateWithSeq{
+	//				TaskTemplate: template,
+	//				Seq:          index,
+	//			}
+	//			templateWithSeqInner = append(templateWithSeqInner, templateWithSeq)
+	//		}
+	//		m.Templates = append(m.Templates, templateWithSeqInner)
+	//	}
+	//}
+	setTemplates := make([]TaskTemplateSetTemplate, 0)
 	if m.TemplatesString != "" {
-		if err = json.Unmarshal([]byte(m.TemplatesString), &templateIds); err != nil {
+		if err = json.Unmarshal([]byte(m.TemplatesString), &setTemplates); err != nil {
 			global.GVA_LOG.Error("转换失败", zap.Any("err", err))
 			return
 		}
 	}
-	if len(templateIds) > 0 {
-		for _, ids := range templateIds {
-			templateWithSeqInner := make([]TaskTemplateWithSeq, 0, len(ids))
-			for index, id := range ids {
-				template := TaskTemplate{}
-				if err = tx.Model(&TaskTemplate{}).Where("id = ?", id).Find(&template).Error; err != nil {
-					global.GVA_LOG.Error("转换失败", zap.Any("err", err))
-					return
-				}
-				templateWithSeq := TaskTemplateWithSeq{
-					TaskTemplate: template,
-					Seq:          index,
-				}
-				templateWithSeqInner = append(templateWithSeqInner, templateWithSeq)
+	if len(setTemplates) > 0 {
+		templateInner := make([]TaskTemplateWithSeq, 0)
+		var currentSeq int
+		for i, setTemplate := range setTemplates {
+			template := TaskTemplate{}
+			if err = tx.Model(&TaskTemplate{}).Where("id = ?", setTemplate.TemplateId).Find(&template).Error; err != nil {
+				global.GVA_LOG.Error("查找失败", zap.Any("err", err))
+				return
 			}
-			m.Templates = append(m.Templates, templateWithSeqInner)
+			templateWithSeq := TaskTemplateWithSeq{
+				TaskTemplate: template,
+				Seq:          setTemplate.Seq,
+				SeqInner:     int(setTemplate.ID),
+			}
+			if setTemplate.Seq != currentSeq && setTemplate.Seq > 0 && currentSeq > 0 && i != len(setTemplates)-1 {
+				copySlice := make([]TaskTemplateWithSeq, len(templateInner)) // 创建一个与原切片长度相同的切片
+				copy(copySlice, templateInner)
+				m.Templates = append(m.Templates, copySlice)
+				templateInner = templateInner[:0]
+			}
+			if i == len(setTemplates)-1 {
+				m.Templates = append(m.Templates, templateInner)
+				break
+			}
+			templateInner = append(templateInner, templateWithSeq)
+			currentSeq = setTemplate.Seq
 		}
 	}
 	taskIds := make([][]int, 0)
@@ -176,11 +212,11 @@ func (m *SetTask) AfterFind(tx *gorm.DB) (err error) {
 	}
 	if len(taskIds) > 0 {
 		for _, ids := range taskIds {
-			taskInner := make([]Task, 0, len(ids))
+			taskInner := make([]Task, 0)
 			for _, id := range ids {
 				task := Task{}
 				if err = tx.Model(&Task{}).Where("id = ?", id).Find(&task).Error; err != nil {
-					global.GVA_LOG.Error("转换失败", zap.Any("err", err))
+					global.GVA_LOG.Error("查找失败", zap.Any("err", err))
 					return
 				}
 				taskInner = append(taskInner, task)

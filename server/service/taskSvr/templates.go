@@ -584,20 +584,18 @@ func (templateService *TaskTemplatesService) GetSetList(info request2.TaskTempla
 
 func (templateService *TaskTemplatesService) AddSetTask(addSetTaskRequest taskMdl.SetTask) (err error) {
 	templates := make([]taskMdl.TaskTemplateSetTemplate, 0)
-	if err = global.GVA_DB.Where("set_id = ?", addSetTaskRequest.SetId).Order("seq").Find(&templates).Error; err != nil {
+	if err = global.GVA_DB.Where("set_id = ?", addSetTaskRequest.SetId).Order("seq, id").Find(&templates).Error; err != nil {
 		return
 	}
-	ids := make([]int, 0)
 	stepsMap := make(map[int]bool)
 	for _, t := range templates {
-		ids = append(ids, t.TemplateId)
-		stepsMap[t.Seq] = true
+		stepsMap[t.SetId] = true
 	}
-	idBytes, err := json.Marshal(ids)
+	templatesBytes, err := json.Marshal(templates)
 	if err != nil {
 		return
 	}
-	addSetTaskRequest.TemplatesString = string(idBytes)
+	addSetTaskRequest.TemplatesString = string(templatesBytes)
 	addSetTaskRequest.TotalSteps = len(stepsMap)
 	return global.GVA_DB.Create(&addSetTaskRequest).Error
 }
