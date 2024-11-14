@@ -7,9 +7,26 @@
       </div>
 <!--      <el-steps :active="active" finish-status="success" :process-status="taskStatus">-->
       <el-steps>
-        <el-step v-for="item in steps" :key="item.seq" :title="item.name" :status="getStatus(item.seq)" @click.enter="show(item.seq)"/>
+        <el-step v-for="(item, index) in steps" :key="index" :title="'步骤 ' + index" :status="getStatus(index)" @click.enter="show(index)"/>
       </el-steps>
     </div>
+    <el-dialog v-model="VarListVisible" :before-close="closeVarsDialog" title="参数列表">
+      <ul class="file-name">
+        <li
+          v-for="(item,index) in setTask.templates[setTask.currentStep]"
+          :key="index"
+          class="file"
+          @click="processFile(item.directory, index)"
+        >
+          <pre>{{ item.name }}</pre>
+        </li>
+      </ul>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button size="small" @click="closeVarsDialog">取 消</el-button>
+        </div>
+      </template>
+    </el-dialog>
     <el-dialog v-model="CommandVarFormVisible" :before-close="closeCommandVarsDialog" title="参数">
       <warning-bar title="请输入任务参数" />
       <el-form ref="CommandVarForm" :model="commandVarForm" :rules="commandVarRules" label-width="80px">
@@ -100,6 +117,8 @@ export default {
       checkedServerOptions: [],
       netDisk: false,
       forceCorrectButton: false,
+      VarListVisible: false,
+      varList: [],
     }
   },
   async created() {
@@ -147,13 +166,11 @@ export default {
     // },
     getStatus(seq) {
       if (seq + 1 <= this.active) {
-        const status = this.setTask.tasks[seq].status
-        switch (status) {
-          case 'success':
-            return 'success'
-          default:
-            return 'error'
+        const tasks = this.setTask.tasks[seq]
+        if (tasks.every(task => task.status === 'success')) {
+          return 'success'
         }
+        return 'error'
       } else {
         return 'wait'
       }
@@ -224,7 +241,15 @@ export default {
       if (this.setTask.tasks[this.active - 1].status !== 'success' && this.setTask.forceCorrect === 0) {
         this.forceCorrectButton = true
       }
-    }
+    },
+    closeVarsDialog() {
+      this.VarListVisible = false
+      this.initVarsList()
+    },
+    initVarsList() {
+      this.varList = []
+    },
+
   }
 }
 </script>
@@ -240,6 +265,34 @@ export default {
   padding: 10px 20px;
   .el-button {
     float: right;
+  }
+}
+.file-name {
+  width: 100%;
+  height: 100%;
+  text-align: left;
+  li {
+    width: 100%;
+    white-space:nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    i {
+      margin-right: 8px;
+    }
+    padding: 10px 0;
+    font-size: 16px;
+    font-weight: 400;
+    //color: #0154ff;
+  }
+  .directory {
+    color: #01ff80;
+  }
+  .file {
+    color: #0154ff;
+  }
+  li:hover {
+    background: #f2f2f2;
+    cursor: pointer;
   }
 }
 </style>
