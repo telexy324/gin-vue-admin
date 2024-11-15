@@ -13,12 +13,12 @@
     <el-dialog v-model="VarListVisible" :before-close="closeVarsDialog" title="参数列表">
       <ul class="file-name">
         <li
-          v-for="(item,index) in setTask.templates[setTask.currentStep]"
-          :key="index"
+          v-for="item in setTask.templates[setTask.currentStep]"
+          :key="item.innerSeq"
           class="file"
-          @click="processFile(item.directory, index)"
+          @click="checkVars(item.innerSeq)"
         >
-          <pre>{{ item.name }}</pre>
+          <pre>{{ item.innerSeq }} {{ item.name }}</pre>
         </li>
       </ul>
       <template #footer>
@@ -118,7 +118,10 @@ export default {
       netDisk: false,
       forceCorrectButton: false,
       VarListVisible: false,
-      varList: [],
+      varMap: [],
+      serverOptionsMap: [],
+      netDiskMap: [],
+      innerSeq: 0,
     }
   },
   async created() {
@@ -132,6 +135,9 @@ export default {
     emitter.on('i-close-task', () => {
       this.initSteps()
     })
+    this.serverOptionsMap = new Map()
+    this.varMap = new Map()
+    this.netDiskMap = new Map()
   },
   methods: {
     async initSteps() {
@@ -203,6 +209,7 @@ export default {
       this.CommandVarFormVisible = false
       this.initCommandVarsForm()
       this.runningTemplateId = ''
+      this.closeCheckVars()
     },
     enterConfirm() {
       this.confirmVisible = false
@@ -247,10 +254,59 @@ export default {
       this.initVarsList()
     },
     initVarsList() {
-      this.varList = []
+      this.varMap = []
     },
-
-  }
+    async enterVars() {
+      this.setTask.templates[this.setTask.currentStep].forEach(template => {
+        const innerCommandVarForm = {
+          vars: [],
+          targetIds: [],
+        }
+        innerCommandVarForm.targetIds = this.setCheckedServerOptionsNew(template)
+        for (let i = 0; i < template.commandVarNumbers; i++) {
+          innerCommandVarForm.vars.push('')
+        }
+        // this.runningTemplateId = this.setTask.templates[this.setTask.currentStep].ID
+        // this.CommandVarFormVisible = true
+        if (template.deployType === 2) {
+          this.netDiskMap.set(template.innerSeq, true)
+        }
+      })
+      this.VarListVisible = true
+    },
+    async setCheckedServerOptionsNew(template) {
+      const res = await getSystemServerIds({
+        ID: template.systemId
+      })
+      const serverOptions = res.data
+      const innerTargetIds = []
+      if (template.executeType !== 2) {
+        serverOptions[0].children = serverOptions[0].children.filter((item) => {
+          if (template.targetServerIds.includes(item.ID)) {
+            innerTargetIds.push(item.ID)
+            return true
+          }
+          return false
+        })
+      }
+      this.serverOptionsMap.set(template.innerSeq, serverOptions)
+      return innerTargetIds
+    },
+    checkVars(innerSeq) {
+      this.commandVarForm = this.varMap.get(innerSeq)
+      this.serverOptions = this.serverOptionsMap.get(innerSeq)
+      this.netDisk = this.netDiskMap.get(innerSeq)
+      this.CommandVarFormVisible = true
+    },
+    closeCheckVars(innerSeq) {
+      this.varMap.set(innerSeq, this.commandVarForm)
+      this.commandVarForm = []
+      this.serverOptionsMap.set(innerSeq, this.serverOptions)
+      this.serverOptions = []
+      this.netDiskMap.set(innerSeq, this.netDisk)
+      this.netDisk = []
+    },
+  },
 }
 </script>
 
