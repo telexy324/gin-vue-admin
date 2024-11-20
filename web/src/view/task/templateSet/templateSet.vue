@@ -480,19 +480,22 @@ export default {
       if (!n.test(value)) {
         callback(new Error('只能为数字'))
       } else {
-        // this.form.templates.forEach(item => {
-        //   if (item.seq === value) {
-        //     callback(new Error('执行顺序不可重复'))
-        //   }
-        // })
-        const newListLength = new Set(this.form.templates.map(item => item.seq)).size
-        const listLength = this.form.templates.length
-        if (listLength > newListLength) {
-          callback(new Error('执行顺序不可重复'))
-        } else {
-          callback()
-        }
+        callback()
       }
+      // } else {
+      //   // this.form.templates.forEach(item => {
+      //   //   if (item.seq === value) {
+      //   //     callback(new Error('执行顺序不可重复'))
+      //   //   }
+      //   // })
+      //   const newListLength = new Set(this.form.templates.map(item => item.seq)).size
+      //   const listLength = this.form.templates.length
+      //   if (listLength > newListLength) {
+      //     callback(new Error('执行顺序不可重复'))
+      //   } else {
+      //     callback()
+      //   }
+      // }
     }
   }
 }

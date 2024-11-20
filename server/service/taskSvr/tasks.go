@@ -1,12 +1,14 @@
 package taskSvr
 
 import (
+	"errors"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl/response"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
+	"sort"
 	"strconv"
 	"time"
 )
@@ -198,4 +200,58 @@ func (taskService *TaskService) GetTaskDashboardInfo() (output []response.TaskDa
 		})
 	}
 	return
+}
+
+func (taskService *TaskService) GetSetTasks(info request.GetTaskBySetTaskIdWithSeq) (err error, list interface{}, total int64) {
+	var Tasks []taskMdl.Task
+	//var TaskWithTpls []task.TaskWithTpl
+	if info.SetTaskId <= 0 {
+		err = errors.New("set task 不能为空")
+		return
+	}
+	limit := info.PageSize
+	offset := info.PageSize * (info.Page - 1)
+	db := global.GVA_DB.Model(&taskMdl.Task{}) //.Preload("User")
+	db = db.Where("set_task_id = ? and set_task_outer_seq = ?", info.SetTaskId, info.CurrentSeq)
+	err = db.Count(&total).Error
+	if err != nil {
+		return
+	}
+	if total <= 0 {
+		//setTaskTemplates := make([]taskMdl.TaskTemplateSetTemplate, 0)
+		//if err = global.GVA_DB.Where("seq = ?", info.CurrentSeq).Find(&setTaskTemplates).Error; err != nil {
+		//	return
+		//}
+		//for _, setTaskTemplate := range setTaskTemplates {
+		//
+		//}
+		var setTask taskMdl.SetTask
+		if err = global.GVA_DB.Where("id = ?", info.SetTaskId).First(&setTask).Error; err != nil {
+			return
+		}
+		sort.Slice(setTask.Templates[info.CurrentSeq], func(i, j int) bool {
+			return setTask.Templates[info.CurrentSeq][i].SeqInner < setTask.Templates[info.CurrentSeq][j].SeqInner
+		})
+		total = int64(len(setTask.Templates[info.CurrentSeq]))
+		if int64(offset) <= total {
+			var targetTemplates []taskMdl.TaskTemplateWithSeq
+			if int64(offset+limit) > total {
+				targetTemplates = setTask.Templates[info.CurrentSeq][offset : total-1]
+			} else {
+				targetTemplates = setTask.Templates[info.CurrentSeq][offset : offset+limit-1]
+			}
+			for _, template := range targetTemplates {
+				Tasks = append(Tasks, taskMdl.Task{
+					TemplateId:      int(template.ID),
+					SetTaskInnerSeq: template.SeqInner,
+					SetTaskOuterSeq: template.Seq,
+				})
+			}
+		}
+		return nil, Tasks, total
+	}
+	//err = db.Limit(limit).Offset(offset).Find(&Tasks).Error
+	db = db.Limit(limit).Offset(offset)
+	err = db.Order("id").Find(&Tasks).Error
+	return err, Tasks, total
 }

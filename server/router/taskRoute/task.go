@@ -18,8 +18,9 @@ func (s *TaskRouter) InitTaskRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 		taskRouter.POST("deleteTask", authorityTaskApi.DeleteTask) // 删除Task
 	}
 	{
-		taskRouter.POST("getTaskById", authorityTaskApi.GetTaskById) // 获取Task
-		taskRouter.POST("getTaskList", authorityTaskApi.GetTaskList) // 分页获取Task
+		taskRouter.POST("getTaskById", authorityTaskApi.GetTaskById)                       // 获取Task
+		taskRouter.POST("getTaskList", authorityTaskApi.GetTaskList)                       // 分页获取Task
+		taskRouter.POST("getTaskListBySetTaskId", authorityTaskApi.GetTaskListBySetTaskId) // 分页获取Task
 	}
 	{
 		taskRouter.POST("getTaskOutputs", authorityTaskApi.GetTaskOutputs)             // 获取Task输出

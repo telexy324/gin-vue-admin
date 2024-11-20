@@ -289,3 +289,39 @@ func (a *TaskApi) GetTaskDashboardInfo(c *gin.Context) {
 		TaskDashboardInfos: taskService.GetTaskDashboardInfo(),
 	}, "获取成功", c)
 }
+
+// @Tags Task
+// @Summary 分页获取基础Task列表
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body request.GetTaskBySetTaskIdWithSeq true "页码, 每页大小"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
+// @Router /task/getTaskListBySetTaskId [post]
+func (a *TaskApi) GetTaskListBySetTaskId(c *gin.Context) {
+	var pageInfo taskReq.GetTaskBySetTaskIdWithSeq
+	if err := c.ShouldBindJSON(&pageInfo); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err := utils.Verify(pageInfo.PageInfo, utils.PageInfoVerify); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err := utils.Verify(pageInfo.PageInfo, utils.SetTaskVerify); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err, tasks, total := taskService.GetSetTasks(pageInfo); err != nil {
+		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
+		response.FailWithMessage("获取失败", c)
+	} else {
+		response.OkWithDetailed(response.PageResult{
+			List:     tasks,
+			Total:    total,
+			Page:     pageInfo.Page,
+			PageSize: pageInfo.PageSize,
+		}, "获取成功", c)
+	}
+}

@@ -132,7 +132,7 @@ type SetTask struct {
 	TemplatesString      string                  `json:"templatesString" gorm:"type:text;column:templates_string"`                    // 关联服务器id
 	TasksString          string                  `json:"tasksString" gorm:"type:text;column:tasks_string"`                            // 关联服务器id
 	ForceCorrect         int                     `json:"forceCorrect" gorm:"type:tinyint(2);not null;default:0;column:force_correct"` // 关联服务器id
-	CurrentTaskIdsString string                  `json:"currentTaskIdsString" gorm:"type:bigint;not null;default:0;column:current_task_ids_string" `
+	CurrentTaskIdsString string                  `json:"currentTaskIdsString" gorm:"type:text;column:current_task_ids_string"`
 	Templates            [][]TaskTemplateWithSeq `json:"templates" gorm:"-"`
 	Tasks                [][]Task                `json:"tasks" gorm:"-"`
 	CurrentTaskIds       []int                   `json:"CurrentTaskIds" gorm:"-"`

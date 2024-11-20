@@ -98,3 +98,18 @@ export const getTaskDashboardInfo = (data) => {
     data
   })
 }
+
+// @Summary 获取task列表
+// @Produce  application/json
+// @Param {
+//  page     int
+//	pageSize int
+// }
+// @Router /task/getTaskListBySetTaskId [post]
+export const getTaskListBySetTaskId = (data) => {
+  return service({
+    url: '/task/getTaskListBySetTaskId',
+    method: 'post',
+    data
+  })
+}

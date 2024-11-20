@@ -701,6 +701,8 @@ func (a *TemplateApi) ProcessSetTask(c *gin.Context) {
 		task.TemplateId = int(currentTemplates[int(requestVar.ID)].ID)
 		task.CommandVars = requestVar.CommandVars
 		task.TargetIds = requestVar.TargetIds
+		task.SetTaskOuterSeq = setTask.CurrentStep
+		task.SetTaskInnerSeq = int(requestVar.ID)
 		newTask, err := taskPool.TPool.AddTask(task, userID, int(setTask.ID))
 		if err != nil {
 			global.GVA_LOG.Error("添加任务失败!", zap.Any("err", err))

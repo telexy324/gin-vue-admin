@@ -30,4 +30,5 @@ var (
 	LogServerVerify           = Rules{"HostName": {NotEmpty()}, "ManageIp": {NotEmpty()}}
 	LogSecretVerify           = Rules{"Name": {NotEmpty()}, "Password": {NotEmpty()}}
 	TaskFileListVerify        = Rules{"Directory": {NotEmpty()}}
+	SetTaskVerify             = Rules{"SetTaskId": {NotEmpty()}}
 )

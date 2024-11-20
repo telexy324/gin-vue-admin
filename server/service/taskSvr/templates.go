@@ -589,7 +589,7 @@ func (templateService *TaskTemplatesService) AddSetTask(addSetTaskRequest taskMd
 	}
 	stepsMap := make(map[int]bool)
 	for _, t := range templates {
-		stepsMap[t.SetId] = true
+		stepsMap[t.Seq] = true
 	}
 	templatesBytes, err := json.Marshal(templates)
 	if err != nil {

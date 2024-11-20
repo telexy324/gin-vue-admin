@@ -65,3 +65,9 @@ type SetTaskSearch struct {
 	OrderKey string `json:"orderKey"` // 排序
 	Desc     bool   `json:"desc"`     // 排序方式:升序false(默认)|降序true
 }
+
+type GetTaskBySetTaskIdWithSeq struct {
+	SetTaskId  float64 `json:"setTaskId" form:"setTaskId"`
+	CurrentSeq int     `json:"currentSeq" form:"currentSeq"`
+	request.PageInfo
+}

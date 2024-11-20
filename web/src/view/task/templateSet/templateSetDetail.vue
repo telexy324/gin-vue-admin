@@ -2,7 +2,7 @@
   <div>
     <div class="gva-search-box">
       <div class="gva-btn-list">
-        <el-button size="mini" type="primary" icon="el-icon-plus" style="margin-bottom: 12px;" :disabled="disabled" @click="processSetTask">下一步</el-button>
+        <el-button size="mini" type="primary" icon="el-icon-plus" style="margin-bottom: 12px;" :disabled="disabled" @click="enterVars">下一步</el-button>
         <el-button v-if="forceCorrectButton" size="mini" type="danger" icon="el-icon-plus" style="margin-bottom: 12px;" @click="forceCorrect">强制执行</el-button>
       </div>
 <!--      <el-steps :active="active" finish-status="success" :process-status="taskStatus">-->
@@ -11,21 +11,56 @@
       </el-steps>
     </div>
     <el-dialog v-model="VarListVisible" :before-close="closeVarsDialog" title="参数列表">
-      <ul class="file-name">
-        <li
-          v-for="item in setTask.templates[setTask.currentStep]"
-          :key="item.innerSeq"
-          class="file"
-          @click="checkVars(item.innerSeq)"
-        >
-          <pre>{{ item.innerSeq }} {{ item.name }}</pre>
-        </li>
-      </ul>
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button size="small" @click="closeVarsDialog">取 消</el-button>
-        </div>
-      </template>
+<!--      <ul class="file-name">-->
+<!--        <li-->
+<!--          v-for="item in setTask.templates[setTask.currentStep]"-->
+<!--          :key="item.innerSeq"-->
+<!--          class="file"-->
+<!--          @click="checkVars(item.innerSeq)"-->
+<!--        >-->
+<!--          <pre>{{ item.innerSeq }} {{ item.name }}</pre>-->
+<!--        </li>-->
+<!--      </ul>-->
+<!--      <template #footer>-->
+<!--        <div class="dialog-footer">-->
+<!--          <el-button size="small" @click="closeVarsDialog">取 消</el-button>-->
+<!--          <el-button size="small" type="primary" @click="enterVarsDialog">确 定</el-button>-->
+<!--        </div>-->
+<!--      </template>-->
+      <el-table :data="tableData" @sort-change="sortChange" @selection-change="handleSelectionChange">
+        <el-table-column align="left" label="id" min-width="60" prop="id" sortable="custom">
+          <template v-slot="scope">
+            <el-button
+              type="text"
+              link
+              @click="showTaskLog(scope.row)"
+            >#{{ scope.row.ID }}</el-button>
+            <!--            <a @click="showTaskLog(scope.row)">{{ scope.row.ID }}</a>-->
+          </template>
+        </el-table-column>
+        <el-table-column align="left" label="模板名" min-width="150" prop="templateId" sortable="custom">
+          <template #default="scope">
+            <div>{{ filterTemplateName(scope.row.templateId) }}</div>
+          </template>
+        </el-table-column>
+        <el-table-column align="left" label="状态" min-width="150">
+          <template v-slot="scope">
+            <TaskStatus :status="scope.row.status" />
+          </template>
+        </el-table-column>
+        <el-table-column align="left" label="开始时间" min-width="150" prop="beginTime.Time" sortable="custom" :formatter="dateFormatter1" />
+        <el-table-column align="left" label="结束时间" min-width="150" prop="endTime.Time" sortable="custom" :formatter="dateFormatter2" />
+        <el-table-column align="right" label="参数" min-width="60" prop="id" sortable="custom">
+          <template v-slot="scope">
+            <el-button
+              type="text"
+              link
+              @click="checkVars(scope.row.setTaskInnerSeq)"
+            >参数</el-button>
+            <!--            <a @click="showTaskLog(scope.row)">{{ scope.row.ID }}</a>-->
+          </template>
+        </el-table-column>
+      </el-table>
     </el-dialog>
     <el-dialog v-model="CommandVarFormVisible" :before-close="closeCommandVarsDialog" title="参数">
       <warning-bar title="请输入任务参数" />
@@ -80,19 +115,23 @@ const path = import.meta.env.VITE_BASE_API
 import {
   // getSetById,
   // addSetTask,
-  processSetTask,
-  getSetTaskById,
-  setTaskForceCorrect
+  processSetTask, getSetTaskById, setTaskForceCorrect, getTemplateList
 } from '@/api/template'
+import { getTaskListBySetTaskId } from '@/api/task'
 import { getSystemServerIds } from '@/api/cmdb'
 import { emitter } from '@/utils/bus'
 import warningBar from '@/components/warningBar/warningBar.vue'
+import infoList from '@/mixins/infoList'
+import TaskStatus from '@/components/task/TaskStatus.vue'
+import { formatTimeToStr } from '@/utils/date'
 
 export default {
   name: 'TemplateSetDetail',
-  components: { warningBar },
+  components: { TaskStatus, warningBar },
+  mixins: [infoList],
   data() {
     return {
+      listApi: getTaskListBySetTaskId,
       setTaskId: '',
       path: path,
       steps: [],
@@ -122,6 +161,7 @@ export default {
       serverOptionsMap: [],
       netDiskMap: [],
       innerSeq: 0,
+      templateOptions: [],
     }
   },
   async created() {
@@ -130,6 +170,11 @@ export default {
     await this.$nextTick(() => {
       this.initSteps()
     })
+    const res = await getTemplateList({
+      page: 1,
+      pageSize: 99999
+    })
+    this.setOptions(res.data.list)
   },
   mounted() {
     emitter.on('i-close-task', () => {
@@ -257,6 +302,9 @@ export default {
       this.varMap = []
     },
     async enterVars() {
+      this.searchInfo.setTaskId = Number(this.setTaskId)
+      this.searchInfo.currentSeq = Number(this.setTask.currentStep)
+      await this.getTableData()
       this.setTask.templates[this.setTask.currentStep].forEach(template => {
         const innerCommandVarForm = {
           vars: [],
@@ -271,6 +319,7 @@ export default {
         if (template.deployType === 2) {
           this.netDiskMap.set(template.innerSeq, true)
         }
+        this.varMap.set(template.innerSeq, innerCommandVarForm)
       })
       this.VarListVisible = true
     },
@@ -296,15 +345,60 @@ export default {
       this.commandVarForm = this.varMap.get(innerSeq)
       this.serverOptions = this.serverOptionsMap.get(innerSeq)
       this.netDisk = this.netDiskMap.get(innerSeq)
+      this.VarListVisible = false
       this.CommandVarFormVisible = true
     },
     closeCheckVars(innerSeq) {
-      this.varMap.set(innerSeq, this.commandVarForm)
-      this.commandVarForm = []
-      this.serverOptionsMap.set(innerSeq, this.serverOptions)
-      this.serverOptions = []
-      this.netDiskMap.set(innerSeq, this.netDisk)
-      this.netDisk = []
+      this.$refs.CommandVarForm.validate(async valid => {
+        if (valid) {
+          this.varMap.set(innerSeq, this.commandVarForm)
+          this.commandVarForm = []
+          this.serverOptionsMap.set(innerSeq, this.serverOptions)
+          this.serverOptions = []
+          this.netDiskMap.set(innerSeq, this.netDisk)
+          this.netDisk = []
+        }
+      })
+    },
+    async enterVarsDialog() {
+      const data = []
+      this.varMap.forEach((index, value) => {
+        data.push({
+          ID: index,
+          commandVars: value.commandVarForm.vars,
+          targetIds: value.commandVarForm.targetIds,
+          netDiskUser: value.commandVarForm.netDiskUser,
+          netDiskPassword: value.commandVarForm.netDiskPassword,
+        })
+      })
+      await processSetTask({
+        ID: this.setTask.ID,
+        processTaskRequestVars: data
+      })
+      this.closeCommandVarsDialog()
+    },
+    filterTemplateName(value) {
+      const rowLabel = this.templateOptions.filter(item => item.ID === value)
+      return rowLabel && rowLabel[0] && rowLabel[0].name
+    },
+    setOptions(data) {
+      this.templateOptions = data
+    },
+    dateFormatter1(row) {
+      if (row.beginTime.Time !== null && row.beginTime.Time !== '') {
+        var date = new Date(row.beginTime.Time)
+        return formatTimeToStr(date, 'yyyy-MM-dd hh:mm:ss')
+      } else {
+        return ''
+      }
+    },
+    dateFormatter2(row) {
+      if (row.endTime.Time !== null && row.endTime.Time !== '') {
+        const date = new Date(row.endTime.Time)
+        return formatTimeToStr(date, 'yyyy-MM-dd hh:mm:ss')
+      } else {
+        return ''
+      }
     },
   },
 }
