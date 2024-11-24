@@ -61,6 +61,12 @@
           </template>
         </el-table-column>
       </el-table>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button size="small" @click="closeVarsDialog">取 消</el-button>
+          <el-button size="small" type="primary" @click="enterVarsDialog">确 定</el-button>
+        </div>
+      </template>
     </el-dialog>
     <el-dialog v-model="CommandVarFormVisible" :before-close="closeCommandVarsDialog" title="参数">
       <warning-bar title="请输入任务参数" />
@@ -100,7 +106,7 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button size="small" @click="closeCommandVarsDialog">取 消</el-button>
-          <el-button size="small" type="primary" @click="enterCommandVarsDialog">确 定</el-button>
+          <el-button size="small" type="primary" @click="enterCheckVars">确 定</el-button>
         </div>
       </template>
     </el-dialog>
@@ -157,9 +163,9 @@ export default {
       netDisk: false,
       forceCorrectButton: false,
       VarListVisible: false,
-      varMap: [],
-      serverOptionsMap: [],
-      netDiskMap: [],
+      varMap: new Map(),
+      serverOptionsMap: new Map(),
+      netDiskMap: new Map(),
       innerSeq: 0,
       templateOptions: [],
     }
@@ -254,7 +260,7 @@ export default {
       this.CommandVarFormVisible = false
       this.initCommandVarsForm()
       this.runningTemplateId = ''
-      this.closeCheckVars()
+      this.VarListVisible = true
     },
     enterConfirm() {
       this.confirmVisible = false
@@ -317,9 +323,9 @@ export default {
         // this.runningTemplateId = this.setTask.templates[this.setTask.currentStep].ID
         // this.CommandVarFormVisible = true
         if (template.deployType === 2) {
-          this.netDiskMap.set(template.innerSeq, true)
+          this.netDiskMap.set(template.seqInner, true)
         }
-        this.varMap.set(template.innerSeq, innerCommandVarForm)
+        this.varMap.set(template.seqInner, innerCommandVarForm)
       })
       this.VarListVisible = true
     },
@@ -338,17 +344,17 @@ export default {
           return false
         })
       }
-      this.serverOptionsMap.set(template.innerSeq, serverOptions)
+      this.serverOptionsMap.set(template.seqInner, serverOptions)
       return innerTargetIds
     },
     checkVars(innerSeq) {
       this.commandVarForm = this.varMap.get(innerSeq)
-      this.serverOptions = this.serverOptionsMap.get(innerSeq)
+      this.checkedServerOptions = this.serverOptionsMap.get(innerSeq)
       this.netDisk = this.netDiskMap.get(innerSeq)
       this.VarListVisible = false
       this.CommandVarFormVisible = true
     },
-    closeCheckVars(innerSeq) {
+    enterCheckVars(innerSeq) {
       this.$refs.CommandVarForm.validate(async valid => {
         if (valid) {
           this.varMap.set(innerSeq, this.commandVarForm)
@@ -359,16 +365,17 @@ export default {
           this.netDisk = []
         }
       })
+      this.closeCommandVarsDialog()
     },
     async enterVarsDialog() {
       const data = []
-      this.varMap.forEach((index, value) => {
+      this.varMap.forEach((value, index) => {
         data.push({
-          ID: index,
-          commandVars: value.commandVarForm.vars,
-          targetIds: value.commandVarForm.targetIds,
-          netDiskUser: value.commandVarForm.netDiskUser,
-          netDiskPassword: value.commandVarForm.netDiskPassword,
+          ID: Number(index),
+          commandVars: value.vars,
+          targetIds: value.targetIds,
+          netDiskUser: value.netDiskUser ? value.netDiskUser : '',
+          netDiskPassword: value.netDiskPassword ? value.netDiskPassword : '',
         })
       })
       await processSetTask({

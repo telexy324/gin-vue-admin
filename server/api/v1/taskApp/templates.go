@@ -693,7 +693,7 @@ func (a *TemplateApi) ProcessSetTask(c *gin.Context) {
 	}
 	//todo 确定current step 的步数
 	currentTemplates := make(map[int]taskMdl.TaskTemplateWithSeq)
-	for _, t := range setTask.Templates[setTask.CurrentStep-1] {
+	for _, t := range setTask.Templates[setTask.CurrentStep] {
 		currentTemplates[t.SeqInner] = t
 	}
 	for _, requestVar := range processTaskRequest.ProcessTaskRequestVars {

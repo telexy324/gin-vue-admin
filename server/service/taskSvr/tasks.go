@@ -236,9 +236,9 @@ func (taskService *TaskService) GetSetTasks(info request.GetTaskBySetTaskIdWithS
 		if int64(offset) <= total {
 			var targetTemplates []taskMdl.TaskTemplateWithSeq
 			if int64(offset+limit) > total {
-				targetTemplates = setTask.Templates[info.CurrentSeq][offset : total-1]
+				targetTemplates = setTask.Templates[info.CurrentSeq][offset:total]
 			} else {
-				targetTemplates = setTask.Templates[info.CurrentSeq][offset : offset+limit-1]
+				targetTemplates = setTask.Templates[info.CurrentSeq][offset : offset+limit]
 			}
 			for _, template := range targetTemplates {
 				Tasks = append(Tasks, taskMdl.Task{

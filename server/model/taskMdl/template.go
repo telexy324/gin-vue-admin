@@ -189,17 +189,16 @@ func (m *SetTask) AfterFind(tx *gorm.DB) (err error) {
 				Seq:          setTemplate.Seq,
 				SeqInner:     int(setTemplate.ID),
 			}
-			if setTemplate.Seq != currentSeq && setTemplate.Seq > 0 && currentSeq > 0 && i != len(setTemplates)-1 {
+			if setTemplate.Seq != currentSeq && setTemplate.Seq > 0 && currentSeq > 0 {
 				copySlice := make([]TaskTemplateWithSeq, len(templateInner)) // 创建一个与原切片长度相同的切片
 				copy(copySlice, templateInner)
 				m.Templates = append(m.Templates, copySlice)
 				templateInner = templateInner[:0]
 			}
+			templateInner = append(templateInner, templateWithSeq)
 			if i == len(setTemplates)-1 {
 				m.Templates = append(m.Templates, templateInner)
-				break
 			}
-			templateInner = append(templateInner, templateWithSeq)
 			currentSeq = setTemplate.Seq
 		}
 	}
