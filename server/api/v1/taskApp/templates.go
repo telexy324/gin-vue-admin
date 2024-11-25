@@ -696,6 +696,12 @@ func (a *TemplateApi) ProcessSetTask(c *gin.Context) {
 	for _, t := range setTask.Templates[setTask.CurrentStep] {
 		currentTemplates[t.SeqInner] = t
 	}
+	if setTask.Tasks == nil {
+		setTask.Tasks = make([][]taskMdl.Task, 0)
+	}
+	if len(setTask.Tasks) <= setTask.CurrentStep+1 {
+		setTask.Tasks = append(setTask.Tasks, []taskMdl.Task{})
+	}
 	for _, requestVar := range processTaskRequest.ProcessTaskRequestVars {
 		var task taskMdl.Task
 		task.TemplateId = int(currentTemplates[int(requestVar.ID)].ID)

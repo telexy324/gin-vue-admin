@@ -149,6 +149,7 @@ export default {
       taskVars: [],
       CommandVarFormVisible: false,
       commandVarForm: {
+        setTaskInnerSeq: 0,
         vars: [],
         targetIds: [],
       },
@@ -237,6 +238,7 @@ export default {
     },
     initCommandVarsForm() {
       this.commandVarForm = {
+        setTaskInnerSeq: 0,
         vars: [],
         targetIds: [],
       }
@@ -313,6 +315,7 @@ export default {
       await this.getTableData()
       this.setTask.templates[this.setTask.currentStep].forEach(template => {
         const innerCommandVarForm = {
+          setTaskInnerSeq: template.seqInner,
           vars: [],
           targetIds: [],
         }
@@ -354,9 +357,10 @@ export default {
       this.VarListVisible = false
       this.CommandVarFormVisible = true
     },
-    enterCheckVars(innerSeq) {
+    enterCheckVars() {
       this.$refs.CommandVarForm.validate(async valid => {
         if (valid) {
+          const innerSeq = this.commandVarForm.setTaskInnerSeq
           this.varMap.set(innerSeq, this.commandVarForm)
           this.commandVarForm = []
           this.serverOptionsMap.set(innerSeq, this.serverOptions)

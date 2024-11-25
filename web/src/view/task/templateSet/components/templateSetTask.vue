@@ -12,9 +12,9 @@
           </template>
         </el-table-column>
         <el-table-column align="left" label="状态" min-width="150" >
-          <template v-slot="scope">
-            <TaskStatus :status="getCurrentStatus(scope.row)" />
-          </template>
+<!--          <template v-slot="scope">-->
+<!--            <TaskStatus :status="getCurrentStatus(scope.row)" />-->
+<!--          </template>-->
         </el-table-column>
         <el-table-column align="left" label="创建人" min-width="200" prop="systemUserId" sortable="custom">
           <template #default="scope">
