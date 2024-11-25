@@ -7,7 +7,7 @@
       </div>
 <!--      <el-steps :active="active" finish-status="success" :process-status="taskStatus">-->
       <el-steps>
-        <el-step v-for="(item, index) in steps" :key="index" :title="'步骤 ' + index" :status="getStatus(index)" @click.enter="show(index)"/>
+        <el-step v-for="(item, index) in steps" :key="index" :title="'步骤 ' + index" :status="getStatus(index)" @click.enter="showTasks(index)"/>
       </el-steps>
     </div>
     <el-dialog v-model="VarListVisible" :before-close="closeVarsDialog" title="参数列表">
@@ -64,7 +64,7 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button size="small" @click="closeVarsDialog">取 消</el-button>
-          <el-button size="small" type="primary" @click="enterVarsDialog">确 定</el-button>
+          <el-button v-if="canExecute" size="small" type="primary" @click="enterVarsDialog">确 定</el-button>
         </div>
       </template>
     </el-dialog>
@@ -169,6 +169,7 @@ export default {
       netDiskMap: new Map(),
       innerSeq: 0,
       templateOptions: [],
+      canExecute: true,
     }
   },
   async created() {
@@ -331,6 +332,7 @@ export default {
         this.varMap.set(template.seqInner, innerCommandVarForm)
       })
       this.VarListVisible = true
+      this.canExecute = true
     },
     async setCheckedServerOptionsNew(template) {
       const res = await getSystemServerIds({
@@ -386,7 +388,8 @@ export default {
         ID: this.setTask.ID,
         processTaskRequestVars: data
       })
-      this.closeCommandVarsDialog()
+      this.closeVarsDialog()
+      await this.initSteps()
     },
     filterTemplateName(value) {
       const rowLabel = this.templateOptions.filter(item => item.ID === value)
@@ -410,6 +413,13 @@ export default {
       } else {
         return ''
       }
+    },
+    async showTasks(seq) {
+      this.searchInfo.setTaskId = Number(this.setTaskId)
+      this.searchInfo.currentSeq = seq
+      await this.getTableData()
+      this.VarListVisible = true
+      this.canExecute = false
     },
   },
 }
