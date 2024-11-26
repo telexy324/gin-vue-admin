@@ -665,9 +665,9 @@ func (a *TemplateApi) ProcessSetTask(c *gin.Context) {
 		return
 	}
 	if setTask.Tasks != nil && len(setTask.Tasks) > 0 && setTask.CurrentStep > 0 {
-		if setTask.Tasks[setTask.CurrentStep] != nil && len(setTask.Tasks[setTask.CurrentStep]) > 0 {
+		if setTask.Tasks[setTask.CurrentStep-1] != nil && len(setTask.Tasks[setTask.CurrentStep-1]) > 0 {
 			var failed bool
-			for _, task := range setTask.Tasks[setTask.CurrentStep] {
+			for _, task := range setTask.Tasks[setTask.CurrentStep-1] {
 				if task.Status != taskMdl.TaskSuccessStatus {
 					failed = true
 					break

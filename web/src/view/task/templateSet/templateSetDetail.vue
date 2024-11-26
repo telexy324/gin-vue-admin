@@ -130,6 +130,7 @@ import warningBar from '@/components/warningBar/warningBar.vue'
 import infoList from '@/mixins/infoList'
 import TaskStatus from '@/components/task/TaskStatus.vue'
 import { formatTimeToStr } from '@/utils/date'
+import socket from '@/socket'
 
 export default {
   name: 'TemplateSetDetail',
@@ -183,6 +184,7 @@ export default {
       pageSize: 99999
     })
     this.setOptions(res.data.list)
+    socket.addListener((data) => this.onWebsocketDataReceived(data))
   },
   mounted() {
     emitter.on('i-close-task', () => {
@@ -199,7 +201,7 @@ export default {
       this.active = this.setTask.currentStep
       // this.taskStatus = this.getStepStatus(this.setTask.currentTask.status)
       this.isForceCorrectButton()
-      if (this.setTask.currentStep === this.setTask.totalSteps || this.setTask.tasks[this.active - 1].status !== 'success' && this.setTask.tasks[this.active - 1].status !== '' && this.setTask.forceCorrect === 0) {
+      if (this.setTask.currentStep === this.setTask.totalSteps || this.getStatus(this.active - 1) !== 'success' && this.getStatus(this.active - 1) !== '' && this.setTask.forceCorrect === 0) {
         this.disabled = true
       }
     },
@@ -228,8 +230,11 @@ export default {
         const tasks = this.setTask.tasks[seq]
         if (tasks.every(task => task.status === 'success')) {
           return 'success'
+        } else if (tasks.every(task => (task.status === 'success' || task.status === 'waiting'))) {
+          return 'process'
+        } else {
+          return 'error'
         }
-        return 'error'
       } else {
         return 'wait'
       }
@@ -299,7 +304,7 @@ export default {
       await this.initSteps()
     },
     isForceCorrectButton() {
-      if (this.setTask.tasks[this.active - 1].status !== 'success' && this.setTask.forceCorrect === 0) {
+      if (this.getStatus(this.active - 1) !== 'success' && this.setTask.forceCorrect === 0) {
         this.forceCorrectButton = true
       }
     },
@@ -420,6 +425,15 @@ export default {
       await this.getTableData()
       this.VarListVisible = true
       this.canExecute = false
+    },
+    onWebsocketDataReceived(data) {
+      this.tableData.forEach((value, index, array) => {
+        if (data.taskId === value.ID && data.type === 'update') {
+          array[index].status = data.status
+          array[index].beginTime = data.beginTime
+          array[index].endTime = data.endTime
+        }
+      })
     },
   },
 }

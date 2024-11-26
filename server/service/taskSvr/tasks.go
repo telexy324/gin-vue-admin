@@ -229,6 +229,10 @@ func (taskService *TaskService) GetSetTasks(info request.GetTaskBySetTaskIdWithS
 		if err = global.GVA_DB.Where("id = ?", info.SetTaskId).First(&setTask).Error; err != nil {
 			return
 		}
+		if setTask.TotalSteps == setTask.CurrentStep {
+			err = errors.New("任务已结束")
+			return
+		}
 		sort.Slice(setTask.Templates[info.CurrentSeq], func(i, j int) bool {
 			return setTask.Templates[info.CurrentSeq][i].SeqInner < setTask.Templates[info.CurrentSeq][j].SeqInner
 		})
