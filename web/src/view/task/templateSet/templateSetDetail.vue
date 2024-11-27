@@ -319,13 +319,13 @@ export default {
       this.searchInfo.setTaskId = Number(this.setTaskId)
       this.searchInfo.currentSeq = Number(this.setTask.currentStep)
       await this.getTableData()
-      this.setTask.templates[this.setTask.currentStep].forEach(template => {
+      for (const template of this.setTask.templates[this.setTask.currentStep]) {
         const innerCommandVarForm = {
           setTaskInnerSeq: template.seqInner,
           vars: [],
           targetIds: [],
         }
-        innerCommandVarForm.targetIds = this.setCheckedServerOptionsNew(template)
+        innerCommandVarForm.targetIds = await this.setCheckedServerOptionsNew(template)
         for (let i = 0; i < template.commandVarNumbers; i++) {
           innerCommandVarForm.vars.push('')
         }
@@ -335,7 +335,7 @@ export default {
           this.netDiskMap.set(template.seqInner, true)
         }
         this.varMap.set(template.seqInner, innerCommandVarForm)
-      })
+      }
       this.VarListVisible = true
       this.canExecute = true
     },
