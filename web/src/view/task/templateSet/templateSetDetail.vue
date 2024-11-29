@@ -187,6 +187,9 @@ export default {
     socket.addListener((data) => this.onWebsocketDataReceived(data))
   },
   mounted() {
+    if (!socket.isRunning()) {
+      socket.start()
+    }
     emitter.on('i-close-task', () => {
       this.initSteps()
     })
@@ -393,8 +396,8 @@ export default {
         ID: this.setTask.ID,
         processTaskRequestVars: data
       })
-      this.closeVarsDialog()
       await this.initSteps()
+      this.closeVarsDialog()
     },
     filterTemplateName(value) {
       const rowLabel = this.templateOptions.filter(item => item.ID === value)
@@ -428,10 +431,11 @@ export default {
     },
     onWebsocketDataReceived(data) {
       this.tableData.forEach((value, index, array) => {
-        if (data.taskId === value.ID && data.type === 'update') {
+        if (data.setTaskId === value.setTaskId && data.setTaskOuterSeq === value.setTaskOuterSeq - 1 && data.setTaskInnerSeq === value.setTaskInnerSeq && data.type === 'update') {
           array[index].status = data.status
           array[index].beginTime = data.beginTime
           array[index].endTime = data.endTime
+          this.getStatus(data.setTaskOuterSeq)
         }
       })
     },

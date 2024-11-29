@@ -42,7 +42,7 @@
             <div>{{ filterSystemName(scope.row.systemId) }}</div>
           </template>
         </el-table-column>
-        <el-table-column align="left" fixed="right" label="操作" width="250">
+        <el-table-column align="left" label="操作" width="250">
           <template #default="scope">
             <el-button
               icon="el-icon-edit"

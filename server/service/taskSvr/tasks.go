@@ -247,6 +247,7 @@ func (taskService *TaskService) GetSetTasks(info request.GetTaskBySetTaskIdWithS
 			for _, template := range targetTemplates {
 				Tasks = append(Tasks, taskMdl.Task{
 					TemplateId:      int(template.ID),
+					SetTaskId:       int(info.SetTaskId),
 					SetTaskInnerSeq: template.SeqInner,
 					SetTaskOuterSeq: template.Seq,
 				})
