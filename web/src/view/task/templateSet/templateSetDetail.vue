@@ -6,8 +6,8 @@
         <el-button v-if="forceCorrectButton" size="mini" type="danger" icon="el-icon-plus" style="margin-bottom: 12px;" @click="forceCorrect">强制执行</el-button>
       </div>
 <!--      <el-steps :active="active" finish-status="success" :process-status="taskStatus">-->
-      <el-steps>
-        <el-step v-for="(item, index) in steps" :key="index" :title="'步骤 ' + index" :status="getStatus(index)" @click.enter="showTasks(index)"/>
+      <el-steps :active="active" finish-status="success">
+        <el-step v-for="(item, index) in steps" :key="index" :title="'步骤 ' + index" :status="item.status" @click.enter="showTasks(item[0].seq)"/>
       </el-steps>
     </div>
     <el-dialog v-model="VarListVisible" :before-close="closeVarsDialog" title="参数列表">
@@ -202,8 +202,18 @@ export default {
       this.setTask = (await getSetTaskById({ 'ID': Number(this.setTaskId) })).data
       this.steps = this.setTask.templates
       this.active = this.setTask.currentStep
+      for (let i = 0; i < this.steps.length; i++) {
+        this.steps[i].status = this.getStatus(i)
+      }
+      // for (const index in this.steps) {
+      //   this.steps[index].status = this.getStatus(index)
+      // }
       // this.taskStatus = this.getStepStatus(this.setTask.currentTask.status)
       this.isForceCorrectButton()
+      if (this.active < 1) {
+        this.disabled = false
+        return
+      }
       if (this.setTask.currentStep === this.setTask.totalSteps || this.getStatus(this.active - 1) !== 'success' && this.getStatus(this.active - 1) !== '' && this.setTask.forceCorrect === 0) {
         this.disabled = true
       }
@@ -233,7 +243,7 @@ export default {
         const tasks = this.setTask.tasks[seq]
         if (tasks.every(task => task.status === 'success')) {
           return 'success'
-        } else if (tasks.every(task => (task.status === 'success' || task.status === 'waiting'))) {
+        } else if (tasks.every(task => (task.status === 'success' || task.status === 'waiting' || task.status === 'running'))) {
           return 'process'
         } else {
           return 'error'
@@ -307,8 +317,14 @@ export default {
       await this.initSteps()
     },
     isForceCorrectButton() {
+      if (this.active < 1) {
+        this.forceCorrectButton = false
+        return
+      }
       if (this.getStatus(this.active - 1) !== 'success' && this.setTask.forceCorrect === 0) {
         this.forceCorrectButton = true
+      } else {
+        this.forceCorrectButton = false
       }
     },
     closeVarsDialog() {
@@ -321,6 +337,7 @@ export default {
     async enterVars() {
       this.searchInfo.setTaskId = Number(this.setTaskId)
       this.searchInfo.currentSeq = Number(this.setTask.currentStep)
+      this.searchInfo.currentIndex = Number(this.active)
       await this.getTableData()
       for (const template of this.setTask.templates[this.setTask.currentStep]) {
         const innerCommandVarForm = {
@@ -431,11 +448,11 @@ export default {
     },
     onWebsocketDataReceived(data) {
       this.tableData.forEach((value, index, array) => {
-        if (data.setTaskId === value.setTaskId && data.setTaskOuterSeq === value.setTaskOuterSeq - 1 && data.setTaskInnerSeq === value.setTaskInnerSeq && data.type === 'update') {
-          array[index].status = data.status
-          array[index].beginTime = data.beginTime
-          array[index].endTime = data.endTime
-          this.getStatus(data.setTaskOuterSeq)
+        if (data.setTaskId === value.setTaskId && data.setTaskOuterSeq === value.setTaskOuterSeq && data.setTaskInnerSeq === value.setTaskInnerSeq && data.type === 'update') {
+          // array[index].status = data.status
+          // array[index].beginTime = data.beginTime
+          // array[index].endTime = data.endTime
+          this.initSteps()
         }
       })
     },

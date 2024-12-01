@@ -67,7 +67,8 @@ type SetTaskSearch struct {
 }
 
 type GetTaskBySetTaskIdWithSeq struct {
-	SetTaskId  float64 `json:"setTaskId" form:"setTaskId"`
-	CurrentSeq int     `json:"currentSeq" form:"currentSeq"`
+	SetTaskId    float64 `json:"setTaskId" form:"setTaskId"`
+	CurrentSeq   int     `json:"currentSeq" form:"currentSeq"`
+	CurrentIndex int     `json:"currentIndex" form:"currentIndex"`
 	request.PageInfo
 }

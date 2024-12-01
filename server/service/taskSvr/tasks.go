@@ -233,16 +233,16 @@ func (taskService *TaskService) GetSetTasks(info request.GetTaskBySetTaskIdWithS
 			err = errors.New("任务已结束")
 			return
 		}
-		sort.Slice(setTask.Templates[info.CurrentSeq], func(i, j int) bool {
-			return setTask.Templates[info.CurrentSeq][i].SeqInner < setTask.Templates[info.CurrentSeq][j].SeqInner
+		sort.Slice(setTask.Templates[info.CurrentIndex], func(i, j int) bool {
+			return setTask.Templates[info.CurrentIndex][i].SeqInner < setTask.Templates[info.CurrentIndex][j].SeqInner
 		})
-		total = int64(len(setTask.Templates[info.CurrentSeq]))
+		total = int64(len(setTask.Templates[info.CurrentIndex]))
 		if int64(offset) <= total {
 			var targetTemplates []taskMdl.TaskTemplateWithSeq
 			if int64(offset+limit) > total {
-				targetTemplates = setTask.Templates[info.CurrentSeq][offset:total]
+				targetTemplates = setTask.Templates[info.CurrentIndex][offset:total]
 			} else {
-				targetTemplates = setTask.Templates[info.CurrentSeq][offset : offset+limit]
+				targetTemplates = setTask.Templates[info.CurrentIndex][offset : offset+limit]
 			}
 			for _, template := range targetTemplates {
 				Tasks = append(Tasks, taskMdl.Task{

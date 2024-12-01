@@ -617,7 +617,11 @@ func (t *TaskRunner) runTask() (failedIPs []string) {
 		wg.Add(1)
 		go func(w *sync.WaitGroup, s application.ApplicationServer, f chan string) {
 			defer w.Done()
-			sshClient, err := common.FillSSHClient(s.ManageIp, "root", "", s.SshPort)
+			username := "root"
+			if s.SshUser != "" {
+				username = s.SshUser
+			}
+			sshClient, err := common.FillSSHClient(s.ManageIp, username, "", s.SshPort)
 			if err != nil {
 				global.GVA_LOG.Error("run task failed on create ssh client: ", zap.Uint("task ID: ", t.task.ID), zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
 				f <- s.ManageIp

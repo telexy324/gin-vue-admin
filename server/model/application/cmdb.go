@@ -21,6 +21,7 @@ type ApplicationServer struct {
 	Apps         []App  `json:"apps" gorm:"-"`                                                               // 安装应用列表
 	SshPort      int    `json:"sshPort" gorm:"type:int(5);not null;default:0;column:ssh_port"`               // ssh端口、
 	DisplayName  string `json:"displayName" gorm:"type:varchar(50);not null;default:'';column:display_name"` // 展示名
+	SshUser      string `json:"sshUser" gorm:"type:varchar(50);not null;default:'';column:ssh_user"`
 }
 
 func (m *ApplicationServer) AfterFind(tx *gorm.DB) (err error) {
