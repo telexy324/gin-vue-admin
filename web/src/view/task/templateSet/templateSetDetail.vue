@@ -217,6 +217,8 @@ export default {
       }
       if (this.setTask.currentStep === this.setTask.totalSteps || this.getStatus(this.active - 1) !== 'success' && this.getStatus(this.active - 1) !== '' && this.setTask.forceCorrect === 0) {
         this.disabled = true
+      } else {
+        this.disabled = false
       }
     },
     async processSetTask() {
@@ -333,11 +335,11 @@ export default {
       this.initVarsList()
     },
     initVarsList() {
-      this.varMap = []
+      this.varMap = new Map()
     },
     async enterVars() {
       this.searchInfo.setTaskId = Number(this.setTaskId)
-      this.searchInfo.currentSeq = Number(this.setTask.currentStep)
+      this.searchInfo.currentSeq = Number(this.setTask.templates[this.setTask.currentStep][0].seq)
       this.searchInfo.currentIndex = Number(this.active)
       await this.getTableData()
       for (const template of this.setTask.templates[this.setTask.currentStep]) {

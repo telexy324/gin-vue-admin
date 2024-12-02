@@ -134,7 +134,7 @@ export default {
       emitter.emit('i-show-task', t)
     },
     dateFormatter1(row) {
-      if (row.beginTime.Time !== null && row.beginTime.Time !== '') {
+      if (row.beginTime.Time !== null && row.beginTime.Time !== '' && row.beginTime.Valid === true) {
         var date = new Date(row.beginTime.Time)
         return formatTimeToStr(date, 'yyyy-MM-dd hh:mm:ss')
       } else {
@@ -142,7 +142,7 @@ export default {
       }
     },
     dateFormatter2(row) {
-      if (row.endTime.Time !== null && row.endTime.Time !== '') {
+      if (row.endTime.Time !== null && row.endTime.Time !== '' && row.endTime.Valid === true) {
         const date = new Date(row.endTime.Time)
         return formatTimeToStr(date, 'yyyy-MM-dd hh:mm:ss')
       } else {
