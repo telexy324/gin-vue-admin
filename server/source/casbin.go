@@ -248,6 +248,9 @@ var carbines = []gormadapter.CasbinRule{
 	{PType: "p", V0: "888", V1: "/cmdb/findApplicationRecord", V2: "GET"},
 	{PType: "p", V0: "888", V1: "/cmdb/getApplicationRecordList", V2: "GET"},
 	{PType: "p", V0: "888", V1: "/cmdb/deleteApplicationRecordByIds", V2: "POST"},
+	{PType: "p", V0: "888", V1: "/cmdb/exportApplicationRecord", V2: "GET"},
+	{PType: "p", V0: "888", V1: "/task/template/setTaskForceCorrect", V2: "POST"},
+	{PType: "p", V0: "888", V1: "/task/getTaskListBySetTaskId", V2: "POST"},
 	{PType: "p", V0: "9527", V1: "/base/login", V2: "POST"},
 	{PType: "p", V0: "9527", V1: "/user/register", V2: "POST"},
 	{PType: "p", V0: "9527", V1: "/user/changePassword", V2: "POST"},
@@ -335,6 +338,8 @@ var carbines = []gormadapter.CasbinRule{
 	{PType: "p", V0: "9527", V1: "/logUpload/getSecretById", V2: "POST"},
 	{PType: "p", V0: "9527", V1: "/logUpload/getSecretList", V2: "POST"},
 	{PType: "p", V0: "9527", V1: "/task/template/deployServer", V2: "POST"},
+	{PType: "p", V0: "9527", V1: "/task/template/setTaskForceCorrect", V2: "POST"},
+	{PType: "p", V0: "9527", V1: "/task/getTaskListBySetTaskId", V2: "POST"},
 	{PType: "p", V0: "9529", V1: "/base/login", V2: "POST"},
 	{PType: "p", V0: "9529", V1: "/user/register", V2: "POST"},
 	{PType: "p", V0: "9529", V1: "/user/changePassword", V2: "POST"},
@@ -381,6 +386,8 @@ var carbines = []gormadapter.CasbinRule{
 	{PType: "p", V0: "9529", V1: "/logUpload/getSecretById", V2: "POST"},
 	{PType: "p", V0: "9529", V1: "/logUpload/getSecretList", V2: "POST"},
 	{PType: "p", V0: "9529", V1: "/task/template/deployServer", V2: "POST"},
+	{PType: "p", V0: "9529", V1: "/task/template/setTaskForceCorrect", V2: "POST"},
+	{PType: "p", V0: "9529", V1: "/task/getTaskListBySetTaskId", V2: "POST"},
 }
 
 // @author: [SliverHorn](https://github.com/SliverHorn)

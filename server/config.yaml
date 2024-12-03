@@ -7,7 +7,7 @@ aliyun-oss:
   base-path: yourBasePath
 autocode:
   transfer-restart: true
-  root: ""
+  root: /Users/yangxu/Downloads/myproj/gin-vue-admin
   server: /server
   server-api: /api/v1/autocode
   server-initialize: /initialize
@@ -25,6 +25,8 @@ captcha:
   img-height: 80
 casbin:
   model-path: ./resource/rbac_model.conf
+cloudreve:
+  address: http://localhost:5212/api/v3
 email:
   to: xxx@qq.com
   port: 465
@@ -39,7 +41,7 @@ jwt:
   buffer-time: 86400
   expires-time: 604800
   issuer: qmPlus
-  signing-key: 04f39483-6cee-4d28-b4ec-d6a3a7f899e8
+  signing-key: 0d9bf393-085a-401c-b81e-10765480a027
 local:
   path: uploads/file
 mysql:
@@ -72,6 +74,9 @@ system:
   use-multipoint: false
   iplimit-count: 15000
   iplimit-time: 3600
+task:
+  tmp_path: /tmp
+  max_parallel_tasks: 8
 tencent-cos:
   bucket: xxxxx-10005608
   region: ap-shanghai
@@ -83,23 +88,18 @@ timer:
   start: true
   spec: '@daily'
   detail:
-    - tableName: sys_operation_records
-      compareField: created_at
-      interval: 2160h
-    - tableName: jwt_blacklists
-      compareField: created_at
-      interval: 168h
+  - tableName: sys_operation_records
+    compareField: created_at
+    interval: 2160h
+  - tableName: jwt_blacklists
+    compareField: created_at
+    interval: 168h
 zap:
   level: info
   format: console
   prefix: '[github.com/flipped-aurora/gin-vue-admin/server]'
   director: log
-  showLine: true
+  showLine: false
   encode-level: LowercaseColorLevelEncoder
   stacktrace-key: stacktrace
   log-in-console: true
-task:
-  tmp_path: /tmp
-  max_parallel_tasks: 8
-cloudreve:
-  address: http://localhost:5212/api/v3

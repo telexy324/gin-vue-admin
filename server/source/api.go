@@ -173,6 +173,8 @@ var apis = []system.SysApi{
 	{global.GVA_MODEL{ID: 169, CreatedAt: time.Now(), UpdatedAt: time.Now()}, "/cmdb/getApplicationRecordList", "获取操作记录列表", "applicationRecord", "GET"},
 	{global.GVA_MODEL{ID: 170, CreatedAt: time.Now(), UpdatedAt: time.Now()}, "/cmdb/deleteApplicationRecordByIds", "批量删除操作记录", "applicationRecord", "POST"},
 	{global.GVA_MODEL{ID: 171, CreatedAt: time.Now(), UpdatedAt: time.Now()}, "/cmdb/exportApplicationRecord", "下载操作记录", "applicationRecord", "GET"},
+	{global.GVA_MODEL{ID: 172, CreatedAt: time.Now(), UpdatedAt: time.Now()}, "/task/template/setTaskForceCorrect", "强制继续摸板集", "template", "POST"},
+	{global.GVA_MODEL{ID: 173, CreatedAt: time.Now(), UpdatedAt: time.Now()}, "/task/getTaskListBySetTaskId", "获取摸板集task列表", "task", "POST"},
 }
 
 // @author: [SliverHorn](https://github.com/SliverHorn)
