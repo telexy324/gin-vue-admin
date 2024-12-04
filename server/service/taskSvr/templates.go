@@ -673,9 +673,9 @@ func (templateService *TaskTemplatesService) SetTaskForceCorrect(id float64) (er
 	if err = global.GVA_DB.Where("id = ?", id).First(&setTask).Error; err != nil {
 		return
 	}
-	if setTask.ForceCorrect == consts.IsForceCorrect {
-		return errors.New("set task is force correct do not correct it again")
-	}
+	//if setTask.ForceCorrect == consts.IsForceCorrect {
+	//	return errors.New("set task is force correct do not correct it again")
+	//}
 	setTask.ForceCorrect = consts.IsForceCorrect
 	return templateService.UpdateSetTask(setTask)
 }

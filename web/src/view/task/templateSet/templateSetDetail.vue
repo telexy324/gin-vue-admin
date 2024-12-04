@@ -324,7 +324,7 @@ export default {
         this.forceCorrectButton = false
         return
       }
-      if (this.getStatus(this.active - 1) !== 'success' && this.setTask.forceCorrect === 0) {
+      if (this.getStatus(this.active - 1) !== 'success') {
         this.forceCorrectButton = true
       } else {
         this.forceCorrectButton = false
