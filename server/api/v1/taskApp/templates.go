@@ -735,6 +735,7 @@ func (a *TemplateApi) ProcessSetTask(c *gin.Context) {
 		return
 	}
 	setTask.TasksString = string(s)
+	setTask.ForceCorrect = consts.NotForceCorrect
 	if err = templateService.UpdateSetTask(setTask); err != nil {
 		global.GVA_LOG.Error("更新失败!", zap.Any("err", err))
 		response.FailWithMessage("更新失败", c)

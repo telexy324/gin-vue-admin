@@ -28,6 +28,10 @@
 <!--        </div>-->
 <!--      </template>-->
       <el-table :data="tableData" @sort-change="sortChange" @selection-change="handleSelectionChange">
+        <el-table-column
+            type="selection"
+            width="55"
+        />
         <el-table-column align="left" label="id" min-width="60" prop="id" sortable="custom">
           <template v-slot="scope">
             <el-button
@@ -65,7 +69,7 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button size="small" @click="closeVarsDialog">取 消</el-button>
-          <el-button v-if="canExecute" size="small" type="primary" @click="enterVarsDialog">确 定</el-button>
+          <el-button v-if="canExecute" size="small" type="primary" :disabled="!tasks.length" @click="enterVarsDialog">确 定</el-button>
         </div>
       </template>
     </el-dialog>
@@ -116,6 +120,8 @@
 
 <script>
 
+import {toSQLLine} from "@/utils/stringFun";
+
 const path = import.meta.env.VITE_BASE_API
 // 获取列表内容封装在mixins内部  getTableData方法 初始化已封装完成 条件搜索时候 请把条件安好后台定制的结构体字段 放到 this.searchInfo 中即可实现条件搜索
 
@@ -142,6 +148,7 @@ export default {
       listApi: getTaskListBySetTaskId,
       setTaskId: '',
       path: path,
+      tasks: [],
       steps: [],
       active: 0,
       setTask: '',
@@ -199,6 +206,16 @@ export default {
     this.netDiskMap = new Map()
   },
   methods: {
+    handleSelectionChange(val) {
+      this.tasks = val
+    },
+    sortChange({ prop, order }) {
+      if (prop) {
+        this.searchInfo.orderKey = toSQLLine(prop)
+        this.searchInfo.desc = order === 'descending'
+      }
+      this.getTableData()
+    },
     async initSteps() {
       this.setTask = (await getSetTaskById({ 'ID': Number(this.setTaskId) })).data
       this.steps = this.setTask.templates
@@ -324,7 +341,7 @@ export default {
         this.forceCorrectButton = false
         return
       }
-      if (this.getStatus(this.active - 1) !== 'success') {
+      if (this.getStatus(this.active - 1) !== 'success' && this.setTask.forceCorrect === 0) {
         this.forceCorrectButton = true
       } else {
         this.forceCorrectButton = false
@@ -336,6 +353,7 @@ export default {
     },
     initVarsList() {
       this.varMap = new Map()
+      this.tasks = []
     },
     async enterVars() {
       this.searchInfo.setTaskId = Number(this.setTaskId)
@@ -404,13 +422,17 @@ export default {
     async enterVarsDialog() {
       const data = []
       this.varMap.forEach((value, index) => {
-        data.push({
-          ID: Number(index),
-          commandVars: value.vars,
-          targetIds: value.targetIds,
-          netDiskUser: value.netDiskUser ? value.netDiskUser : '',
-          netDiskPassword: value.netDiskPassword ? value.netDiskPassword : '',
-        })
+        if (this.tasks.some(task => {
+          task.setTaskInnerSeq === index
+        })) {
+          data.push({
+            ID: Number(index),
+            commandVars: value.vars,
+            targetIds: value.targetIds,
+            netDiskUser: value.netDiskUser ? value.netDiskUser : '',
+            netDiskPassword: value.netDiskPassword ? value.netDiskPassword : '',
+          })
+        }
       })
       await processSetTask({
         ID: this.setTask.ID,

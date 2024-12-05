@@ -153,6 +153,7 @@ func (initDBService *InitDBService) InitDB(conf request.InitDB) error {
 		application.ApplicationSystemEditRelation{},
 		application.Admin{},
 		application.Department{},
+		application.ApplicationRecord{},
 		taskMdl.Task{},
 		taskMdl.TaskTemplate{},
 		taskMdl.TaskOutput{},

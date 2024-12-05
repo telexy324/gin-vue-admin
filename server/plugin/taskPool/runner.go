@@ -1201,6 +1201,7 @@ func (t *TaskRunner) runDiscoverTask() (failedIPs []string) {
 				ManageIp: s,
 				SystemId: t.task.SystemId,
 				SshPort:  sshPort,
+				SshUser:  t.task.SshUser,
 			}
 			var output string
 			if output, err = sshClient.CommandSingle("hostname"); err != nil {

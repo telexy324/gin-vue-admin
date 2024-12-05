@@ -136,3 +136,7 @@ type ApplicationRecord struct {
 	LogTime      time.Time      `json:"logTime" form:"logTime" gorm:"column:log_time;comment:记录时间"`                // 用户id
 	User         system.SysUser `json:"user"`
 }
+
+func (m *ApplicationRecord) TableName() string {
+	return "application_records"
+}
