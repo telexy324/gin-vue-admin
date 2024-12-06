@@ -27,7 +27,7 @@
 <!--          <el-button size="small" type="primary" @click="enterVarsDialog">确 定</el-button>-->
 <!--        </div>-->
 <!--      </template>-->
-      <el-table :data="tableData" @sort-change="sortChange" @selection-change="handleSelectionChange">
+      <el-table ref="table" :data="tableData" @sort-change="sortChange" @selection-change="handleSelectionChange">
         <el-table-column
             type="selection"
             width="55"
@@ -60,6 +60,7 @@
             <el-button
               type="text"
               link
+              :disabled="!canExecute"
               @click="checkVars(scope.row.setTaskInnerSeq)"
             >参数</el-button>
             <!--            <a @click="showTaskLog(scope.row)">{{ scope.row.ID }}</a>-->
@@ -378,6 +379,11 @@ export default {
         this.varMap.set(template.seqInner, innerCommandVarForm)
       }
       this.VarListVisible = true
+      await this.$nextTick(() => {
+        if (this.$refs.table) {
+          this.$refs.table.toggleAllSelection();
+        }
+      })
       this.canExecute = true
     },
     async setCheckedServerOptionsNew(template) {
