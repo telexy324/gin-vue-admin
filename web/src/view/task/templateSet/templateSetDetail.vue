@@ -422,9 +422,8 @@ export default {
     async enterVarsDialog() {
       const data = []
       this.varMap.forEach((value, index) => {
-        if (this.tasks.some(task => {
-          task.setTaskInnerSeq === index
-        })) {
+        if (this.tasks.some(task => task.setTaskInnerSeq === index
+        )) {
           data.push({
             ID: Number(index),
             commandVars: value.vars,
