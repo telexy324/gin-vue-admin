@@ -4,6 +4,7 @@
       <div class="gva-btn-list">
         <el-button size="mini" type="primary" icon="el-icon-plus" style="margin-bottom: 12px;" :disabled="disabled" @click="enterVars">下一步</el-button>
         <el-button v-if="forceCorrectButton" size="mini" type="danger" icon="el-icon-plus" style="margin-bottom: 12px;" @click="forceCorrect">强制执行</el-button>
+        <el-button v-if="redoButton" size="mini" type="warning" icon="el-icon-plus" style="margin-bottom: 12px;" @click="redo">重做</el-button>
       </div>
 <!--      <el-steps :active="active" finish-status="success" :process-status="taskStatus">-->
       <el-steps :active="active" finish-status="success">
@@ -121,8 +122,6 @@
 
 <script>
 
-import {toSQLLine} from "@/utils/stringFun";
-
 const path = import.meta.env.VITE_BASE_API
 // 获取列表内容封装在mixins内部  getTableData方法 初始化已封装完成 条件搜索时候 请把条件安好后台定制的结构体字段 放到 this.searchInfo 中即可实现条件搜索
 
@@ -136,6 +135,7 @@ import { getSystemServerIds } from '@/api/cmdb'
 import { emitter } from '@/utils/bus'
 import warningBar from '@/components/warningBar/warningBar.vue'
 import infoList from '@/mixins/infoList'
+import { toSQLLine } from '@/utils/stringFun'
 import TaskStatus from '@/components/task/TaskStatus.vue'
 import { formatTimeToStr } from '@/utils/date'
 import socket from '@/socket'
@@ -180,6 +180,7 @@ export default {
       innerSeq: 0,
       templateOptions: [],
       canExecute: true,
+      redoButton: false,
     }
   },
   async created() {
@@ -229,6 +230,7 @@ export default {
       // }
       // this.taskStatus = this.getStepStatus(this.setTask.currentTask.status)
       this.isForceCorrectButton()
+      this.isRedoButton()
       if (this.active < 1) {
         this.disabled = false
         return
@@ -381,7 +383,7 @@ export default {
       this.VarListVisible = true
       await this.$nextTick(() => {
         if (this.$refs.table) {
-          this.$refs.table.toggleAllSelection();
+          this.$refs.table.toggleAllSelection()
         }
       })
       this.canExecute = true
@@ -485,6 +487,25 @@ export default {
           this.initSteps()
         }
       })
+    },
+    async redo() {
+      await setTaskForceCorrect({
+        ID: this.setTask.ID,
+      })
+      this.forceCorrectButton = false
+      this.disabled = false
+      await this.initSteps()
+    },
+    isRedoButton() {
+      if (this.active < 1) {
+        this.redoButton = false
+        return
+      }
+      if (this.getStatus(this.active - 1) !== 'success' && this.setTask.forceCorrect === 0) {
+        this.redoButton = true
+      } else {
+        this.redoButton = false
+      }
     },
   },
 }

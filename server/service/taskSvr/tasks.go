@@ -209,6 +209,10 @@ func (taskService *TaskService) GetSetTasks(info request.GetTaskBySetTaskIdWithS
 		err = errors.New("set task 不能为空")
 		return
 	}
+	var setTask taskMdl.SetTask
+	if err = global.GVA_DB.Where("id = ?", info.SetTaskId).First(&setTask).Error; err != nil {
+		return
+	}
 	limit := info.PageSize
 	offset := info.PageSize * (info.Page - 1)
 	db := global.GVA_DB.Model(&taskMdl.Task{}) //.Preload("User")
@@ -217,7 +221,18 @@ func (taskService *TaskService) GetSetTasks(info request.GetTaskBySetTaskIdWithS
 	if err != nil {
 		return
 	}
-	if total <= 0 {
+	db = db.Limit(limit).Offset(offset)
+	err = db.Order("id").Find(&Tasks).Error
+	var lastStatusError bool
+	if len(Tasks) > 0 {
+		for _, task := range Tasks {
+			if task.Status == taskMdl.TaskStoppedStatus || task.Status == taskMdl.TaskStoppingStatus {
+				lastStatusError = true
+				break
+			}
+		}
+	}
+	if total <= 0 && !info.Redo {
 		//setTaskTemplates := make([]taskMdl.TaskTemplateSetTemplate, 0)
 		//if err = global.GVA_DB.Where("seq = ?", info.CurrentSeq).Find(&setTaskTemplates).Error; err != nil {
 		//	return
@@ -225,10 +240,6 @@ func (taskService *TaskService) GetSetTasks(info request.GetTaskBySetTaskIdWithS
 		//for _, setTaskTemplate := range setTaskTemplates {
 		//
 		//}
-		var setTask taskMdl.SetTask
-		if err = global.GVA_DB.Where("id = ?", info.SetTaskId).First(&setTask).Error; err != nil {
-			return
-		}
 		if setTask.TotalSteps == setTask.CurrentStep {
 			err = errors.New("任务已结束")
 			return
@@ -255,8 +266,8 @@ func (taskService *TaskService) GetSetTasks(info request.GetTaskBySetTaskIdWithS
 		}
 		return nil, Tasks, total
 	}
-	//err = db.Limit(limit).Offset(offset).Find(&Tasks).Error
-	db = db.Limit(limit).Offset(offset)
-	err = db.Order("id").Find(&Tasks).Error
+	if info.Redo && int(total) < setTask.TotalSteps || lastStatusError {
+
+	}
 	return err, Tasks, total
 }
