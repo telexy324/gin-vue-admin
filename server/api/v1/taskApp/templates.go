@@ -1136,3 +1136,106 @@ func (a *TemplateApi) DeployServer(c *gin.Context) {
 		}, "添加成功", c)
 	}
 }
+
+// @Tags Template
+// @Summary 重做模板集任务集
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body templateReq.RedoTaskRequest true "模板集id"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"更新成功"}"
+// @Router /task/template/redoSetTask [post]
+func (a *TemplateApi) RedoSetTask(c *gin.Context) {
+	var processTaskRequest templateReq.ProcessTaskRequest
+	if err := c.ShouldBindJSON(&processTaskRequest); err != nil {
+		global.GVA_LOG.Info("error", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err := utils.Verify(processTaskRequest, utils.IdVerify); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	err, setTask := templateService.GetSetTaskById(processTaskRequest.ID)
+	if err != nil {
+		global.GVA_LOG.Error("更新失败!", zap.Any("err", err))
+		response.FailWithMessage("更新失败", c)
+		return
+	}
+	if len(setTask.Tasks) == 0 || setTask.CurrentStep <= 0 {
+		response.FailWithMessage("任务集未开始", c)
+		return
+	}
+	if setTask.Tasks[setTask.CurrentStep-1] != nil && len(setTask.Tasks[setTask.CurrentStep-1]) > 0 && len(setTask.Tasks[setTask.CurrentStep-1]) == len(setTask.Templates[setTask.CurrentStep-1]) {
+		var failed bool
+		for _, task := range setTask.Tasks[setTask.CurrentStep-1] {
+			if task.Status == taskMdl.TaskFailStatus || task.Status == taskMdl.TaskStoppedStatus || task.Status == taskMdl.TaskStoppingStatus {
+				failed = true
+				break
+			}
+		}
+		if !failed {
+			response.FailWithMessage("成功无需重做", c)
+			return
+		}
+	}
+	userID := int(utils.GetUserID(c))
+	if setTask.SystemUserId != userID {
+		global.GVA_LOG.Error("非创建人!", zap.Any("err", err))
+		response.FailWithMessage("非创建人!", c)
+		return
+	}
+	//todo 确定current step 的步数
+	currentTemplates := make(map[int]taskMdl.TaskTemplateWithSeq)
+	for _, t := range setTask.Templates[setTask.CurrentStep] {
+		currentTemplates[t.SeqInner] = t
+	}
+	if setTask.Tasks == nil {
+		setTask.Tasks = make([][]taskMdl.Task, 0)
+	}
+	if len(setTask.Tasks) <= setTask.CurrentStep+1 {
+		setTask.Tasks = append(setTask.Tasks, []taskMdl.Task{})
+	}
+	for _, requestVar := range processTaskRequest.ProcessTaskRequestVars {
+		var task taskMdl.Task
+		task.TemplateId = int(currentTemplates[int(requestVar.ID)].ID)
+		task.CommandVars = requestVar.CommandVars
+		task.TargetIds = requestVar.TargetIds
+		task.SetTaskOuterSeq = setTask.Templates[setTask.CurrentStep][0].Seq
+		task.SetTaskInnerSeq = int(requestVar.ID)
+		newTask, err := taskPool.TPool.AddTask(task, userID, int(setTask.ID))
+		if err != nil {
+			global.GVA_LOG.Error("添加任务失败!", zap.Any("err", err))
+			response.FailWithMessage("更新失败", c)
+			return
+		}
+		setTask.Tasks[setTask.CurrentStep] = append(setTask.Tasks[setTask.CurrentStep], newTask)
+		setTask.CurrentTaskIds = append(setTask.CurrentTaskIds, int(newTask.ID))
+	}
+
+	setTask.CurrentStep += 1
+	taskIds := make([][]int, 0)
+	if setTask.TasksString != "" {
+		if err = json.Unmarshal([]byte(setTask.TasksString), &taskIds); err != nil {
+			global.GVA_LOG.Error("转换失败", zap.Any("err", err))
+			return
+		}
+	}
+	taskIds = append(taskIds, setTask.CurrentTaskIds)
+	s, err := json.Marshal(taskIds)
+	if err != nil {
+		global.GVA_LOG.Error("更新失败!", zap.Any("err", err))
+		response.FailWithMessage("更新失败", c)
+		return
+	}
+	setTask.TasksString = string(s)
+	setTask.ForceCorrect = consts.NotForceCorrect
+	if err = templateService.UpdateSetTask(setTask); err != nil {
+		global.GVA_LOG.Error("更新失败!", zap.Any("err", err))
+		response.FailWithMessage("更新失败", c)
+	} else {
+		response.OkWithDetailed(templateRes.TasksResponse{
+			Tasks: setTask.Tasks[setTask.CurrentStep-1],
+		}, "添加成功", c)
+	}
+}

@@ -224,13 +224,22 @@ func (taskService *TaskService) GetSetTasks(info request.GetTaskBySetTaskIdWithS
 	db = db.Limit(limit).Offset(offset)
 	err = db.Order("id").Find(&Tasks).Error
 	var lastStatusError bool
+	didTask := make(map[int]bool)
 	if len(Tasks) > 0 {
 		for _, task := range Tasks {
 			if task.Status == taskMdl.TaskStoppedStatus || task.Status == taskMdl.TaskStoppingStatus {
 				lastStatusError = true
-				break
+			} else {
+				didTask[task.SetTaskInnerSeq] = true
 			}
 		}
+	}
+	toRedo := make([]taskMdl.TaskTemplateWithSeq, 0, len(setTask.Templates))
+	for _, template := range setTask.Templates[info.CurrentIndex] {
+		if didTask[template.SeqInner] {
+			continue
+		}
+		toRedo = append(toRedo, template)
 	}
 	if total <= 0 && !info.Redo {
 		//setTaskTemplates := make([]taskMdl.TaskTemplateSetTemplate, 0)
@@ -266,8 +275,32 @@ func (taskService *TaskService) GetSetTasks(info request.GetTaskBySetTaskIdWithS
 		}
 		return nil, Tasks, total
 	}
-	if info.Redo && int(total) < setTask.TotalSteps || lastStatusError {
-
+	if info.Redo {
+		if total <= 0 || !lastStatusError {
+			err = errors.New("无法重做")
+			return
+		}
+		sort.Slice(toRedo, func(i, j int) bool {
+			return toRedo[i].SeqInner < toRedo[j].SeqInner
+		})
+		total = int64(len(toRedo))
+		if int64(offset) <= total {
+			var targetTemplates []taskMdl.TaskTemplateWithSeq
+			if int64(offset+limit) > total {
+				targetTemplates = toRedo[offset:total]
+			} else {
+				targetTemplates = toRedo[offset : offset+limit]
+			}
+			for _, template := range targetTemplates {
+				Tasks = append(Tasks, taskMdl.Task{
+					TemplateId:      int(template.ID),
+					SetTaskId:       int(info.SetTaskId),
+					SetTaskInnerSeq: template.SeqInner,
+					SetTaskOuterSeq: template.Seq,
+				})
+			}
+		}
+		return nil, Tasks, total
 	}
 	return err, Tasks, total
 }

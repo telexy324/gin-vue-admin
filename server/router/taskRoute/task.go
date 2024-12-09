@@ -58,6 +58,7 @@ func (s *TaskRouter) InitTaskRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 		taskRouter.POST("template/getSetTaskById", authorityTemplateApi.GetSetTaskById)           // 获取管理员
 		taskRouter.POST("template/getSetTaskList", authorityTemplateApi.GetSetTaskList)           // 获取管理员
 		taskRouter.POST("template/setTaskForceCorrect", authorityTemplateApi.SetTaskForceCorrect) // 强制运行
+		taskRouter.POST("template/redoSetTask", authorityTemplateApi.RedoSetTask)                 // 重做模版集任务集
 	}
 
 	var authorityScheduleApi = v1.ApiGroupApp.TaskApiGroup.ScheduleApi
