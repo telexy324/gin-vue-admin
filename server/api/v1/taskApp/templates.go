@@ -1190,18 +1190,23 @@ func (a *TemplateApi) RedoSetTask(c *gin.Context) {
 	for _, t := range setTask.Templates[setTask.CurrentStep] {
 		currentTemplates[t.SeqInner] = t
 	}
-	if setTask.Tasks == nil {
-		setTask.Tasks = make([][]taskMdl.Task, 0)
-	}
-	if len(setTask.Tasks) <= setTask.CurrentStep+1 {
-		setTask.Tasks = append(setTask.Tasks, []taskMdl.Task{})
-	}
+	//err, tasks, _ := taskService.GetSetTasks(templateReq.GetTaskBySetTaskIdWithSeq{
+	//	SetTaskId:    float64(setTask.ID),
+	//	CurrentSeq:   setTask.Tasks[setTask.CurrentStep-1][0].SetTaskOuterSeq,
+	//	CurrentIndex: setTask.CurrentStep - 1,
+	//	Redo:         true,
+	//})
+	//if err != nil {
+	//	global.GVA_LOG.Error("重做失败!", zap.Any("err", err))
+	//	response.FailWithMessage("重做失败!", c)
+	//	return
+	//}
 	for _, requestVar := range processTaskRequest.ProcessTaskRequestVars {
 		var task taskMdl.Task
 		task.TemplateId = int(currentTemplates[int(requestVar.ID)].ID)
 		task.CommandVars = requestVar.CommandVars
 		task.TargetIds = requestVar.TargetIds
-		task.SetTaskOuterSeq = setTask.Templates[setTask.CurrentStep][0].Seq
+		task.SetTaskOuterSeq = setTask.Templates[setTask.CurrentStep-1][0].Seq
 		task.SetTaskInnerSeq = int(requestVar.ID)
 		newTask, err := taskPool.TPool.AddTask(task, userID, int(setTask.ID))
 		if err != nil {
@@ -1209,7 +1214,7 @@ func (a *TemplateApi) RedoSetTask(c *gin.Context) {
 			response.FailWithMessage("更新失败", c)
 			return
 		}
-		setTask.Tasks[setTask.CurrentStep] = append(setTask.Tasks[setTask.CurrentStep], newTask)
+		setTask.Tasks[setTask.CurrentStep-1] = append(setTask.Tasks[setTask.CurrentStep], newTask)
 		setTask.CurrentTaskIds = append(setTask.CurrentTaskIds, int(newTask.ID))
 	}
 
