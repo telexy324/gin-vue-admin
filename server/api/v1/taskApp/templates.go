@@ -1187,7 +1187,7 @@ func (a *TemplateApi) RedoSetTask(c *gin.Context) {
 	}
 	//todo 确定current step 的步数
 	currentTemplates := make(map[int]taskMdl.TaskTemplateWithSeq)
-	for _, t := range setTask.Templates[setTask.CurrentStep] {
+	for _, t := range setTask.Templates[setTask.CurrentStep-1] {
 		currentTemplates[t.SeqInner] = t
 	}
 	//err, tasks, _ := taskService.GetSetTasks(templateReq.GetTaskBySetTaskIdWithSeq{
@@ -1214,11 +1214,25 @@ func (a *TemplateApi) RedoSetTask(c *gin.Context) {
 			response.FailWithMessage("更新失败", c)
 			return
 		}
-		setTask.Tasks[setTask.CurrentStep-1] = append(setTask.Tasks[setTask.CurrentStep], newTask)
+		var changed uint
+		for i, didTask := range setTask.Tasks[setTask.CurrentStep-1] {
+			if didTask.SetTaskInnerSeq == int(requestVar.ID) {
+				changed = didTask.ID
+				setTask.Tasks[setTask.CurrentStep-1] = append(setTask.Tasks[setTask.CurrentStep-1][:i], setTask.Tasks[setTask.CurrentStep-1][i+1:]...)
+				break
+			}
+		}
+		setTask.Tasks[setTask.CurrentStep-1] = append(setTask.Tasks[setTask.CurrentStep-1], newTask)
+		if changed > 0 {
+			for i, id := range setTask.CurrentTaskIds {
+				if id == int(changed) {
+					setTask.CurrentTaskIds = append(setTask.CurrentTaskIds[:i], setTask.CurrentTaskIds[i+1:]...)
+					break
+				}
+			}
+		}
 		setTask.CurrentTaskIds = append(setTask.CurrentTaskIds, int(newTask.ID))
 	}
-
-	setTask.CurrentStep += 1
 	taskIds := make([][]int, 0)
 	if setTask.TasksString != "" {
 		if err = json.Unmarshal([]byte(setTask.TasksString), &taskIds); err != nil {
@@ -1226,7 +1240,7 @@ func (a *TemplateApi) RedoSetTask(c *gin.Context) {
 			return
 		}
 	}
-	taskIds = append(taskIds, setTask.CurrentTaskIds)
+	taskIds = append(taskIds[:len(taskIds)-1], setTask.CurrentTaskIds)
 	s, err := json.Marshal(taskIds)
 	if err != nil {
 		global.GVA_LOG.Error("更新失败!", zap.Any("err", err))
