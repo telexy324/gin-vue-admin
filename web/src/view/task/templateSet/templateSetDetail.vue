@@ -128,7 +128,7 @@ const path = import.meta.env.VITE_BASE_API
 import {
   // getSetById,
   // addSetTask,
-  processSetTask, getSetTaskById, setTaskForceCorrect, getTemplateList
+  processSetTask, getSetTaskById, setTaskForceCorrect, getTemplateList, redoSetTask
 } from '@/api/template'
 import { getTaskListBySetTaskId } from '@/api/task'
 import { getSystemServerIds } from '@/api/cmdb'
@@ -489,12 +489,34 @@ export default {
       })
     },
     async redo() {
-      await setTaskForceCorrect({
-        ID: this.setTask.ID,
+      this.searchInfo.setTaskId = Number(this.setTaskId)
+      this.searchInfo.currentSeq = Number(this.setTask.templates[this.setTask.currentStep-1][0].seq)
+      this.searchInfo.currentIndex = Number(this.active-1)
+      await this.getTableData()
+      for (const template of this.setTask.templates[this.setTask.currentStep]) {
+        const innerCommandVarForm = {
+          setTaskInnerSeq: template.seqInner,
+          vars: [],
+          targetIds: [],
+        }
+        innerCommandVarForm.targetIds = await this.setCheckedServerOptionsNew(template)
+        for (let i = 0; i < template.commandVarNumbers; i++) {
+          innerCommandVarForm.vars.push('')
+        }
+        // this.runningTemplateId = this.setTask.templates[this.setTask.currentStep].ID
+        // this.CommandVarFormVisible = true
+        if (template.deployType === 2) {
+          this.netDiskMap.set(template.seqInner, true)
+        }
+        this.varMap.set(template.seqInner, innerCommandVarForm)
+      }
+      this.VarListVisible = true
+      await this.$nextTick(() => {
+        if (this.$refs.table) {
+          this.$refs.table.toggleAllSelection()
+        }
       })
-      this.forceCorrectButton = false
-      this.disabled = false
-      await this.initSteps()
+      this.canExecute = true
     },
     isRedoButton() {
       if (this.active < 1) {

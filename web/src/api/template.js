@@ -316,3 +316,15 @@ export const deployServer = (data) => {
   })
 }
 
+// @Summary 修改set
+// @Produce  application/json
+// @Param set Object
+// @Router /task/template/redoSetTask [post]
+export const redoSetTask = (data) => {
+  return service({
+    url: '/task/template/redoSetTask',
+    method: 'post',
+    data
+  })
+}
+
