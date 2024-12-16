@@ -498,9 +498,11 @@ export default {
       })
     },
     async redo() {
+      this.isRedo = true
       this.searchInfo.setTaskId = Number(this.setTaskId)
       this.searchInfo.currentSeq = Number(this.setTask.templates[this.setTask.currentStep-1][0].seq)
       this.searchInfo.currentIndex = Number(this.active - 1)
+      this.searchInfo.redo = this.isRedo
       await this.getTableData()
       for (const template of this.setTask.templates[this.setTask.currentStep]) {
         const innerCommandVarForm = {
@@ -519,7 +521,6 @@ export default {
         }
         this.varMap.set(template.seqInner, innerCommandVarForm)
       }
-      this.isRedo = true
       this.VarListVisible = true
       // await this.$nextTick(() => {
       //   if (this.$refs.table) {

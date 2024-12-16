@@ -227,7 +227,7 @@ func (taskService *TaskService) GetSetTasks(info request.GetTaskBySetTaskIdWithS
 	didTask := make(map[int]bool)
 	if len(Tasks) > 0 {
 		for _, task := range Tasks {
-			if task.Status == taskMdl.TaskStoppedStatus || task.Status == taskMdl.TaskStoppingStatus {
+			if task.Status == taskMdl.TaskStoppedStatus || task.Status == taskMdl.TaskStoppingStatus || task.Status == taskMdl.TaskFailStatus {
 				lastStatusError = true
 			} else {
 				didTask[task.SetTaskInnerSeq] = true
