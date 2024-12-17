@@ -500,11 +500,11 @@ export default {
     async redo() {
       this.isRedo = true
       this.searchInfo.setTaskId = Number(this.setTaskId)
-      this.searchInfo.currentSeq = Number(this.setTask.templates[this.setTask.currentStep-1][0].seq)
+      this.searchInfo.currentSeq = Number(this.setTask.templates[this.setTask.currentStep - 1][0].seq)
       this.searchInfo.currentIndex = Number(this.active - 1)
       this.searchInfo.redo = this.isRedo
       await this.getTableData()
-      for (const template of this.setTask.templates[this.setTask.currentStep]) {
+      for (const template of this.setTask.templates[this.setTask.currentStep - 1]) {
         const innerCommandVarForm = {
           setTaskInnerSeq: template.seqInner,
           vars: [],

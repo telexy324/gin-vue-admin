@@ -276,6 +276,7 @@ func (taskService *TaskService) GetSetTasks(info request.GetTaskBySetTaskIdWithS
 		return nil, Tasks, total
 	}
 	if info.Redo {
+		var redoTasks []taskMdl.Task
 		if total <= 0 || !lastStatusError {
 			err = errors.New("无法重做")
 			return
@@ -292,7 +293,7 @@ func (taskService *TaskService) GetSetTasks(info request.GetTaskBySetTaskIdWithS
 				targetTemplates = toRedo[offset : offset+limit]
 			}
 			for _, template := range targetTemplates {
-				Tasks = append(Tasks, taskMdl.Task{
+				redoTasks = append(redoTasks, taskMdl.Task{
 					TemplateId:      int(template.ID),
 					SetTaskId:       int(info.SetTaskId),
 					SetTaskInnerSeq: template.SeqInner,
@@ -300,7 +301,7 @@ func (taskService *TaskService) GetSetTasks(info request.GetTaskBySetTaskIdWithS
 				})
 			}
 		}
-		return nil, Tasks, total
+		return nil, redoTasks, total
 	}
 	return err, Tasks, total
 }
