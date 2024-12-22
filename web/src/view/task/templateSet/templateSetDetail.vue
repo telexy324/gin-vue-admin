@@ -68,6 +68,17 @@
           </template>
         </el-table-column>
       </el-table>
+      <div class="gva-pagination">
+        <el-pagination
+          :current-page="page"
+          :page-size="pageSize"
+          :page-sizes="[10, 30, 50, 100]"
+          :total="total"
+          layout="total, sizes, prev, pager, next, jumper"
+          @current-change="handleCurrentChange"
+          @size-change="handleSizeChange"
+        />
+      </div>
       <template #footer>
         <div class="dialog-footer">
           <el-button size="small" @click="closeVarsDialog">取 消</el-button>
@@ -542,6 +553,15 @@ export default {
       } else {
         this.redoButton = false
       }
+    },
+    async handleCurrentChange(val) {
+      this.page = val
+      await this.getTableData()
+      await this.$nextTick(() => {
+        if (this.$refs.table) {
+          this.$refs.table.toggleAllSelection()
+        }
+      })
     },
   },
 }
