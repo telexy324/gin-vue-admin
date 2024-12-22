@@ -358,6 +358,8 @@ export default {
     initVarsList() {
       this.varMap = new Map()
       this.tasks = []
+      this.isRedo = false
+      this.searchInfo.redo = this.isRedo
     },
     async enterVars() {
       this.searchInfo.setTaskId = Number(this.setTaskId)
@@ -448,6 +450,7 @@ export default {
           processTaskRequestVars: data
         })
         this.isRedo = false
+        this.searchInfo.redo = this.isRedo
       } else {
         await processSetTask({
           ID: this.setTask.ID,
