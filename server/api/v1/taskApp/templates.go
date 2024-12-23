@@ -658,7 +658,7 @@ func (a *TemplateApi) ProcessSetTask(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	err, setTask := templateService.GetSetTaskById(processTaskRequest.ID)
+	err, setTask := templateService.GetSetTaskById(processTaskRequest.ID, false)
 	if err != nil {
 		global.GVA_LOG.Error("更新失败!", zap.Any("err", err))
 		response.FailWithMessage("更新失败", c)
@@ -765,7 +765,7 @@ func (a *TemplateApi) GetSetTaskById(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err, setTask := templateService.GetSetTaskById(idInfo.ID); err != nil {
+	if err, setTask := templateService.GetSetTaskById(idInfo.ID, true); err != nil {
 		global.GVA_LOG.Error("更新失败!", zap.Any("err", err))
 		response.FailWithMessage("更新失败", c)
 	} else {
@@ -1156,7 +1156,7 @@ func (a *TemplateApi) RedoSetTask(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	err, setTask := templateService.GetSetTaskById(processTaskRequest.ID)
+	err, setTask := templateService.GetSetTaskById(processTaskRequest.ID, false)
 	if err != nil {
 		global.GVA_LOG.Error("更新失败!", zap.Any("err", err))
 		response.FailWithMessage("更新失败", c)

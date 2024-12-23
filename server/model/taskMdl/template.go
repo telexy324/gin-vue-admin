@@ -136,6 +136,7 @@ type SetTask struct {
 	Templates            [][]TaskTemplateWithSeq `json:"templates" gorm:"-"`
 	Tasks                [][]Task                `json:"tasks" gorm:"-"`
 	CurrentTaskIds       []int                   `json:"CurrentTaskIds" gorm:"-"`
+	NeedRedo             int                     `json:"needRedo" gorm:"-"`
 }
 
 func (m *SetTask) TableName() string {

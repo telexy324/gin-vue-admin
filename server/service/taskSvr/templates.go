@@ -629,9 +629,36 @@ func (templateService *TaskTemplatesService) UpdateSetTask(setTask taskMdl.SetTa
 //@param: id float64
 //@return: err error, set taskMdl.SetTask
 
-func (templateService *TaskTemplatesService) GetSetTaskById(id float64) (err error, setTask taskMdl.SetTask) {
-	if err = global.GVA_DB.Where("id = ?", id).First(&setTask).Error; err != nil {
+func (templateService *TaskTemplatesService) GetSetTaskById(id float64, needRedo bool) (err error, setTask taskMdl.SetTask) {
+	err = global.GVA_DB.Where("id = ?", id).First(&setTask).Error
+	if err != nil || !needRedo {
 		return
+	}
+
+	var Tasks []taskMdl.Task
+	db := global.GVA_DB.Model(&taskMdl.Task{}) //.Preload("User")
+	db = db.Where("set_task_id = ? and set_task_outer_seq = ?", id, setTask.Templates[setTask.CurrentStep][0].Seq)
+	err = db.Order("id").Find(&Tasks).Error
+	var lastStatusError bool
+	didTask := make(map[int]bool)
+	if len(Tasks) > 0 {
+		for _, task := range Tasks {
+			if task.Status == taskMdl.TaskStoppedStatus || task.Status == taskMdl.TaskStoppingStatus || task.Status == taskMdl.TaskFailStatus {
+				lastStatusError = true
+			} else {
+				didTask[task.SetTaskInnerSeq] = true
+			}
+		}
+	}
+	toRedo := make([]taskMdl.TaskTemplateWithSeq, 0, len(setTask.Templates))
+	for _, template := range setTask.Templates[setTask.CurrentStep] {
+		if didTask[template.SeqInner] {
+			continue
+		}
+		toRedo = append(toRedo, template)
+	}
+	if len(toRedo) > 0 || lastStatusError && setTask.ForceCorrect == consts.NotForceCorrect {
+		setTask.NeedRedo = 1
 	}
 	return
 }
