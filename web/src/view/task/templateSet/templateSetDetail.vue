@@ -544,15 +544,16 @@ export default {
       this.canExecute = true
     },
     isRedoButton() {
-      if (this.active < 1) {
-        this.redoButton = false
-        return
-      }
-      if (this.getStatus(this.active - 1) !== 'success' && this.setTask.forceCorrect === 0) {
-        this.redoButton = true
-      } else {
-        this.redoButton = false
-      }
+      // if (this.active < 1) {
+      //   this.redoButton = false
+      //   return
+      // }
+      // if (this.getStatus(this.active - 1) !== 'success' && this.setTask.forceCorrect === 0) {
+      //   this.redoButton = true
+      // } else {
+      //   this.redoButton = false
+      // }
+      this.redoButton = this.setTask.needRedo === 1
     },
     async handleCurrentChange(val) {
       this.page = val

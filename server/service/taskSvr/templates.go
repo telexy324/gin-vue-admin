@@ -635,29 +635,31 @@ func (templateService *TaskTemplatesService) GetSetTaskById(id float64, needRedo
 		return
 	}
 
+	if setTask.CurrentStep < 1 {
+		return
+	}
 	var Tasks []taskMdl.Task
 	db := global.GVA_DB.Model(&taskMdl.Task{}) //.Preload("User")
-	db = db.Where("set_task_id = ? and set_task_outer_seq = ?", id, setTask.Templates[setTask.CurrentStep][0].Seq)
+	db = db.Where("set_task_id = ? and set_task_outer_seq = ?", id, setTask.Templates[setTask.CurrentStep-1][0].Seq)
 	err = db.Order("id").Find(&Tasks).Error
-	var lastStatusError bool
 	didTask := make(map[int]bool)
 	if len(Tasks) > 0 {
 		for _, task := range Tasks {
 			if task.Status == taskMdl.TaskStoppedStatus || task.Status == taskMdl.TaskStoppingStatus || task.Status == taskMdl.TaskFailStatus {
-				lastStatusError = true
+				continue
 			} else {
 				didTask[task.SetTaskInnerSeq] = true
 			}
 		}
 	}
 	toRedo := make([]taskMdl.TaskTemplateWithSeq, 0, len(setTask.Templates))
-	for _, template := range setTask.Templates[setTask.CurrentStep] {
+	for _, template := range setTask.Templates[setTask.CurrentStep-1] {
 		if didTask[template.SeqInner] {
 			continue
 		}
 		toRedo = append(toRedo, template)
 	}
-	if len(toRedo) > 0 || lastStatusError && setTask.ForceCorrect == consts.NotForceCorrect {
+	if len(toRedo) > 0 {
 		setTask.NeedRedo = 1
 	}
 	return
