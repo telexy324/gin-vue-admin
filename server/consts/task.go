@@ -53,3 +53,8 @@ const (
 	NotForceCorrect = iota
 	IsForceCorrect
 )
+
+const (
+	NoNeedRedo = iota
+	NeedRedo
+)

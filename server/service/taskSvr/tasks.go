@@ -277,7 +277,7 @@ func (taskService *TaskService) GetSetTasks(info request.GetTaskBySetTaskIdWithS
 	}
 	if info.Redo {
 		var redoTasks []taskMdl.Task
-		if total <= 0 || !lastStatusError {
+		if total <= 0 || !lastStatusError && len(toRedo) <= 0 {
 			err = errors.New("无法重做")
 			return
 		}

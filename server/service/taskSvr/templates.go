@@ -659,8 +659,8 @@ func (templateService *TaskTemplatesService) GetSetTaskById(id float64, needRedo
 		}
 		toRedo = append(toRedo, template)
 	}
-	if len(toRedo) > 0 {
-		setTask.NeedRedo = 1
+	if len(toRedo) > 0 && setTask.ForceCorrect == consts.NotForceCorrect {
+		setTask.NeedRedo = consts.NeedRedo
 	}
 	return
 }
