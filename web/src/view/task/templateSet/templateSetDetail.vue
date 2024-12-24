@@ -518,6 +518,7 @@ export default {
       this.searchInfo.currentSeq = Number(this.setTask.templates[this.setTask.currentStep - 1][0].seq)
       this.searchInfo.currentIndex = Number(this.active - 1)
       this.searchInfo.redo = this.isRedo
+      this.searchInfo.action = this.isRedo
       this.page = 1
       await this.getTableData()
       for (const template of this.setTask.templates[this.setTask.currentStep - 1]) {

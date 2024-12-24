@@ -58,3 +58,9 @@ const (
 	NoNeedRedo = iota
 	NeedRedo
 )
+
+const (
+	Show = iota
+	Process
+	Redo
+)

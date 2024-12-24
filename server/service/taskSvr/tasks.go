@@ -2,6 +2,7 @@ package taskSvr
 
 import (
 	"errors"
+	"github.com/flipped-aurora/gin-vue-admin/server/consts"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl/request"
@@ -221,8 +222,12 @@ func (taskService *TaskService) GetSetTasks(info request.GetTaskBySetTaskIdWithS
 	if err != nil {
 		return
 	}
-	db = db.Limit(limit).Offset(offset)
-	err = db.Order("id").Find(&Tasks).Error
+	if info.Action == consts.Show {
+		db = db.Limit(limit).Offset(offset)
+		err = db.Order("id").Find(&Tasks).Error
+		return
+	}
+	err = db.Find(&Tasks).Error
 	var lastStatusError bool
 	didTask := make(map[int]bool)
 	if len(Tasks) > 0 {
@@ -241,7 +246,7 @@ func (taskService *TaskService) GetSetTasks(info request.GetTaskBySetTaskIdWithS
 		}
 		toRedo = append(toRedo, template)
 	}
-	if total <= 0 && !info.Redo {
+	if total <= 0 && info.Action == consts.Process {
 		//setTaskTemplates := make([]taskMdl.TaskTemplateSetTemplate, 0)
 		//if err = global.GVA_DB.Where("seq = ?", info.CurrentSeq).Find(&setTaskTemplates).Error; err != nil {
 		//	return
@@ -275,7 +280,7 @@ func (taskService *TaskService) GetSetTasks(info request.GetTaskBySetTaskIdWithS
 		}
 		return nil, Tasks, total
 	}
-	if info.Redo {
+	if info.Action == consts.Redo {
 		var redoTasks []taskMdl.Task
 		if total <= 0 || !lastStatusError && len(toRedo) <= 0 {
 			err = errors.New("无法重做")
@@ -303,5 +308,6 @@ func (taskService *TaskService) GetSetTasks(info request.GetTaskBySetTaskIdWithS
 		}
 		return nil, redoTasks, total
 	}
-	return err, Tasks, total
+	err = errors.New("查询不支持")
+	return
 }
