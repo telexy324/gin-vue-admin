@@ -225,7 +225,7 @@ func (taskService *TaskService) GetSetTasks(info request.GetTaskBySetTaskIdWithS
 	if info.Action == consts.Show {
 		db = db.Limit(limit).Offset(offset)
 		err = db.Order("id").Find(&Tasks).Error
-		return
+		return nil, Tasks, total
 	}
 	err = db.Find(&Tasks).Error
 	var lastStatusError bool

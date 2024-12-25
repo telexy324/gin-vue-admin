@@ -192,7 +192,7 @@ export default {
       templateOptions: [],
       canExecute: true,
       redoButton: false,
-      isRedo: false,
+      action: 0,
     }
   },
   async created() {
@@ -369,13 +369,15 @@ export default {
     initVarsList() {
       this.varMap = new Map()
       this.tasks = []
-      this.isRedo = false
-      this.searchInfo.redo = this.isRedo
+      this.action = 0
+      this.searchInfo.action = this.action
     },
     async enterVars() {
+      this.action = 1
       this.searchInfo.setTaskId = Number(this.setTaskId)
       this.searchInfo.currentSeq = Number(this.setTask.templates[this.setTask.currentStep][0].seq)
       this.searchInfo.currentIndex = Number(this.active)
+      this.searchInfo.action = this.action
       this.page = 1
       await this.getTableData()
       for (const template of this.setTask.templates[this.setTask.currentStep]) {
@@ -456,19 +458,19 @@ export default {
           })
         }
       })
-      if (this.isRedo) {
+      if (this.action === 2) {
         await redoSetTask({
           ID: this.setTask.ID,
           processTaskRequestVars: data
         })
-        this.isRedo = false
-        this.searchInfo.redo = this.isRedo
-      } else {
+      } else if (this.action === 1) {
         await processSetTask({
           ID: this.setTask.ID,
           processTaskRequestVars: data
         })
       }
+      this.action = 0
+      this.searchInfo.action = this.action
       await this.initSteps()
       this.closeVarsDialog()
     },
@@ -513,12 +515,11 @@ export default {
       })
     },
     async redo() {
-      this.isRedo = true
+      this.action = 2
       this.searchInfo.setTaskId = Number(this.setTaskId)
       this.searchInfo.currentSeq = Number(this.setTask.templates[this.setTask.currentStep - 1][0].seq)
       this.searchInfo.currentIndex = Number(this.active - 1)
-      this.searchInfo.redo = this.isRedo
-      this.searchInfo.action = this.isRedo
+      this.searchInfo.action = this.action
       this.page = 1
       await this.getTableData()
       for (const template of this.setTask.templates[this.setTask.currentStep - 1]) {
