@@ -23,12 +23,17 @@ type CheckScriptResponse struct {
 
 type TaskTemplateSetResponse struct {
 	taskMdl.TaskTemplateSet
-	Templates []TaskTemplateSetTemplateResponse `json:"templates"`
+	TemplatesInner []TaskTemplateSetResponseInner `json:"templatesInner"`
 }
 
 type TaskTemplateSetTemplateResponse struct {
 	taskMdl.TaskTemplateSetTemplate
 	TemplateName string `json:"templateName"`
+}
+
+type TaskTemplateSetResponseInner struct {
+	Seq       int                               `json:"seq"`
+	Templates []TaskTemplateSetTemplateResponse `json:"templates"`
 }
 
 type TemplateFileListResponse struct {

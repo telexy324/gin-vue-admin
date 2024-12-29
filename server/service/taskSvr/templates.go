@@ -492,7 +492,7 @@ func (templateService *TaskTemplatesService) UpdateSet(addSetRequest request2.Ad
 //@param: id float64
 //@return: err error, set taskMdl.TaskTemplateSet
 
-func (templateService *TaskTemplatesService) GetSetById(id float64) (err error, set taskMdl.TaskTemplateSet, templateRes []response.TaskTemplateSetTemplateResponse) {
+func (templateService *TaskTemplatesService) GetSetById(id float64) (err error, set taskMdl.TaskTemplateSet, templateRes []response.TaskTemplateSetResponseInner) {
 	if err = global.GVA_DB.Where("id = ?", id).First(&set).Error; err != nil {
 		return
 	}
@@ -500,7 +500,7 @@ func (templateService *TaskTemplatesService) GetSetById(id float64) (err error, 
 	if err = global.GVA_DB.Where("set_id = ?", id).Order("seq").Find(&templates).Error; err != nil {
 		return
 	}
-	templateRes = make([]response.TaskTemplateSetTemplateResponse, 0)
+	templateTempMap := make(map[int][]response.TaskTemplateSetTemplateResponse)
 	for _, t := range templates {
 		var template taskMdl.TaskTemplate
 		if err = global.GVA_DB.Where("id = ?", t.TemplateId).Find(&template).Error; err != nil {
@@ -510,7 +510,13 @@ func (templateService *TaskTemplatesService) GetSetById(id float64) (err error, 
 			TaskTemplateSetTemplate: t,
 			TemplateName:            template.Name,
 		}
-		templateRes = append(templateRes, res)
+		templateTempMap[t.Seq] = append(templateTempMap[t.Seq], res)
+	}
+	for k, v := range templateTempMap {
+		templateRes = append(templateRes, response.TaskTemplateSetResponseInner{
+			Seq:       k,
+			Templates: v,
+		})
 	}
 	return
 }
@@ -556,7 +562,8 @@ func (templateService *TaskTemplatesService) GetSetList(info request2.TaskTempla
 		if err = global.GVA_DB.Where("set_id = ?", set.ID).Find(&setTemplates).Error; err != nil {
 			return
 		}
-		ress := make([]response.TaskTemplateSetTemplateResponse, 0)
+		templateTempMap := make(map[int][]response.TaskTemplateSetTemplateResponse)
+		templateRes := make([]response.TaskTemplateSetResponseInner, 0)
 		for _, t := range setTemplates {
 			var template taskMdl.TaskTemplate
 			if err = global.GVA_DB.Where("id = ?", t.TemplateId).Find(&template).Error; err != nil {
@@ -566,11 +573,17 @@ func (templateService *TaskTemplatesService) GetSetList(info request2.TaskTempla
 				TaskTemplateSetTemplate: t,
 				TemplateName:            template.Name,
 			}
-			ress = append(ress, res)
+			templateTempMap[t.Seq] = append(templateTempMap[t.Seq], res)
+		}
+		for k, v := range templateTempMap {
+			templateRes = append(templateRes, response.TaskTemplateSetResponseInner{
+				Seq:       k,
+				Templates: v,
+			})
 		}
 		setInfoList = append(setInfoList, response.TaskTemplateSetResponse{
 			TaskTemplateSet: set,
-			Templates:       ress,
+			TemplatesInner:  templateRes,
 		})
 	}
 	return err, setInfoList, total

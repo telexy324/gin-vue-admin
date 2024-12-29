@@ -95,23 +95,30 @@
             <el-option v-for="val in systemOptions" :key="val.ID" :value="val.ID" :label="val.name" />
           </el-select>
         </el-form-item>
-        <div v-for="(item, index) in form.templates" :key="index">
+        <div v-for="(item, index) in form.templatesInner" :key="index">
           <el-row>
             <el-col :span="10">
               <el-form-item
                 label="模板名"
-                :prop="'templates.' + index + '.templateId'"
-                :rules="rules.templateId"
+                :prop="'templatesInner.' + index + '.templates'"
               >
                 <el-select v-model="item.templateId">
                   <el-option v-for="val in systemTemplateOptions" :key="val.ID" :value="val.ID" :label="val.name" />
                 </el-select>
+                <el-cascader
+                  v-model="commandVarForm.targetIds"
+                  style="width:100%"
+                  :options="checkedServerOptions"
+                  :show-all-levels="false"
+                  :props="{ multiple:true,checkStrictly: false,label:'name',value:'ID',disabled:'disabled',emitPath:false}"
+                  :clearable="true"
+                />
               </el-form-item>
             </el-col>
             <el-col :span="10">
               <el-form-item
                 label="序号"
-                :prop="'templates.' + index + '.seq'"
+                :prop="'templatesInner.' + index + '.seq'"
                 :rules="rules.seq"
               >
                 <el-input v-model.number="item.seq" />
@@ -186,7 +193,7 @@ export default {
         ID: 0,
         name: '',
         systemId: '',
-        templates: [],
+        templatesInner: [],
       },
       type: '',
       rules: {
@@ -406,9 +413,10 @@ export default {
       return rowLabel && rowLabel[0] && rowLabel[0].name
     },
     addItem() {
-      this.form.templates.push({
-        setId: this.form.ID ? this.form.ID : 0,
-        templateId: '',
+      this.form.templatesInner.push({
+        // setId: this.form.ID ? this.form.ID : 0,
+        // templateId: '',
+        templates: [],
         seq: 99
       })
     },

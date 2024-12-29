@@ -30,8 +30,8 @@
 <!--      </template>-->
       <el-table ref="table" :data="tableData" @sort-change="sortChange" @selection-change="handleSelectionChange">
         <el-table-column
-            type="selection"
-            width="55"
+          type="selection"
+          width="55"
         />
         <el-table-column align="left" label="id" min-width="60" prop="id" sortable="custom">
           <template v-slot="scope">
