@@ -95,20 +95,17 @@
             <el-option v-for="val in systemOptions" :key="val.ID" :value="val.ID" :label="val.name" />
           </el-select>
         </el-form-item>
-        <div v-for="(item, index) in form.templatesInner" :key="index">
+        <div v-for="(item, index) in form.templates" :key="index">
           <el-row>
             <el-col :span="10">
               <el-form-item
                 label="模板名"
-                :prop="'templatesInner.' + index + '.templates'"
+                :prop="'templates.' + index + '.templates'"
               >
-                <el-select v-model="item.templateId">
-                  <el-option v-for="val in systemTemplateOptions" :key="val.ID" :value="val.ID" :label="val.name" />
-                </el-select>
                 <el-cascader
-                  v-model="commandVarForm.targetIds"
+                  v-model="form.templates[index].templates"
                   style="width:100%"
-                  :options="checkedServerOptions"
+                  :options="systemTemplateOptions"
                   :show-all-levels="false"
                   :props="{ multiple:true,checkStrictly: false,label:'name',value:'ID',disabled:'disabled',emitPath:false}"
                   :clearable="true"
@@ -118,7 +115,7 @@
             <el-col :span="10">
               <el-form-item
                 label="序号"
-                :prop="'templatesInner.' + index + '.seq'"
+                :prop="'templates.' + index + '.seq'"
                 :rules="rules.seq"
               >
                 <el-input v-model.number="item.seq" />
@@ -193,7 +190,7 @@ export default {
         ID: 0,
         name: '',
         systemId: '',
-        templatesInner: [],
+        templates: [],
       },
       type: '',
       rules: {
@@ -413,7 +410,7 @@ export default {
       return rowLabel && rowLabel[0] && rowLabel[0].name
     },
     addItem() {
-      this.form.templatesInner.push({
+      this.form.templates.push({
         // setId: this.form.ID ? this.form.ID : 0,
         // templateId: '',
         templates: [],

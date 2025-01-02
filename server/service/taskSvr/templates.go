@@ -377,20 +377,24 @@ func (templateService *TaskTemplatesService) AddSet(addSetRequest request2.AddSe
 			return txErr
 		}
 		if addSetRequest.Templates != nil && len(addSetRequest.Templates) > 0 {
-			for _, t := range addSetRequest.Templates {
-				template := &taskMdl.TaskTemplate{}
-				template.ID = uint(t.TemplateId)
-				if err = global.GVA_DB.Find(template).Error; err != nil {
-					global.GVA_LOG.Error("模板不存在", zap.Any("err", err))
-					continue
-				}
-				setTemplate := &taskMdl.TaskTemplateSetTemplate{
-					TemplateId: t.TemplateId,
-					SetId:      int(setMdl.ID),
-					Seq:        t.Seq,
-				}
-				if err = global.GVA_DB.Create(&setTemplate).Error; err != nil {
-					global.GVA_LOG.Error("添加模板集模板失败", zap.Any("err", err))
+			for _, ti := range addSetRequest.Templates {
+				if ti.Templates != nil && len(ti.Templates) > 0 {
+					for _, t := range ti.Templates {
+						template := &taskMdl.TaskTemplate{}
+						template.ID = uint(t.TemplateId)
+						if err = global.GVA_DB.Find(template).Error; err != nil {
+							global.GVA_LOG.Error("模板不存在", zap.Any("err", err))
+							continue
+						}
+						setTemplate := &taskMdl.TaskTemplateSetTemplate{
+							TemplateId: t.TemplateId,
+							SetId:      int(setMdl.ID),
+							Seq:        ti.Seq,
+						}
+						if err = global.GVA_DB.Create(&setTemplate).Error; err != nil {
+							global.GVA_LOG.Error("添加模板集模板失败", zap.Any("err", err))
+						}
+					}
 				}
 			}
 		}
@@ -471,13 +475,17 @@ func (templateService *TaskTemplatesService) UpdateSet(addSetRequest request2.Ad
 				return txErr
 			}
 
-			for _, tmp := range addSetRequest.Templates {
-				if txErr = tx.Create(&taskMdl.TaskTemplateSetTemplate{
-					TemplateId: tmp.TemplateId,
-					SetId:      tmp.SetId,
-					Seq:        tmp.Seq,
-				}).Error; txErr != nil {
-					return txErr
+			for _, ti := range addSetRequest.Templates {
+				if ti.Templates != nil && len(ti.Templates) > 0 {
+					for _, t := range ti.Templates {
+						if txErr = tx.Create(&taskMdl.TaskTemplateSetTemplate{
+							TemplateId: t.TemplateId,
+							SetId:      t.SetId,
+							Seq:        ti.Seq,
+						}).Error; txErr != nil {
+							return txErr
+						}
+					}
 				}
 			}
 		}

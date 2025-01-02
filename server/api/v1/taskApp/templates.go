@@ -552,7 +552,7 @@ func (a *TemplateApi) GetSetById(c *gin.Context) {
 	}
 	response.OkWithDetailed(templateRes.TaskTemplateSetResponse{
 		TaskTemplateSet: set,
-		Templates:       templates,
+		TemplatesInner:  templates,
 	}, "获取成功", c)
 }
 

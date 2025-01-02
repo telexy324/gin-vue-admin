@@ -2,6 +2,7 @@ package request
 
 import (
 	"github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/taskMdl/response"
 )
 
 //// Find by id and project_id structure
@@ -19,7 +20,7 @@ type TemplateScriptRequest struct {
 
 type AddSet struct {
 	taskMdl.TaskTemplateSet
-	Templates []taskMdl.TaskTemplateSetTemplate `json:"templates"`
+	Templates []response.TaskTemplateSetResponseInner `json:"templates"`
 }
 
 type DownLoadFileRequest struct {
