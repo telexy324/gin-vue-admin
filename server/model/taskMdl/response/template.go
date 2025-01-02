@@ -32,8 +32,9 @@ type TaskTemplateSetTemplateResponse struct {
 }
 
 type TaskTemplateSetResponseInner struct {
-	Seq       int                               `json:"seq"`
-	Templates []TaskTemplateSetTemplateResponse `json:"templates"`
+	Seq         int                               `json:"seq"`
+	Templates   []TaskTemplateSetTemplateResponse `json:"templates"`
+	TemplateIds []int                             `json:"templateIds"`
 }
 
 type TemplateFileListResponse struct {

@@ -100,10 +100,10 @@
             <el-col :span="10">
               <el-form-item
                 label="模板名"
-                :prop="'templates.' + index + '.templates'"
+                :prop="'templates.' + index + '.templateIds'"
               >
                 <el-cascader
-                  v-model="form.templates[index].templates"
+                  v-model="form.templates[index].templateIds"
                   style="width:100%"
                   :options="systemTemplateOptions"
                   :show-all-levels="false"
@@ -414,6 +414,7 @@ export default {
         // setId: this.form.ID ? this.form.ID : 0,
         // templateId: '',
         templates: [],
+        templateIds: [],
         seq: 99
       })
     },
@@ -485,22 +486,19 @@ export default {
       if (!n.test(value)) {
         callback(new Error('只能为数字'))
       } else {
-        callback()
+        // this.form.templates.forEach(item => {
+        //   if (item.seq === value) {
+        //     callback(new Error('执行顺序不可重复'))
+        //   }
+        // })
+        const newListLength = new Set(this.form.templates.map(item => item.seq)).size
+        const listLength = this.form.templates.length
+        if (listLength > newListLength) {
+          callback(new Error('执行顺序不可重复'))
+        } else {
+          callback()
+        }
       }
-      // } else {
-      //   // this.form.templates.forEach(item => {
-      //   //   if (item.seq === value) {
-      //   //     callback(new Error('执行顺序不可重复'))
-      //   //   }
-      //   // })
-      //   const newListLength = new Set(this.form.templates.map(item => item.seq)).size
-      //   const listLength = this.form.templates.length
-      //   if (listLength > newListLength) {
-      //     callback(new Error('执行顺序不可重复'))
-      //   } else {
-      //     callback()
-      //   }
-      // }
     }
   }
 }

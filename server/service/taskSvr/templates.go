@@ -378,16 +378,16 @@ func (templateService *TaskTemplatesService) AddSet(addSetRequest request2.AddSe
 		}
 		if addSetRequest.Templates != nil && len(addSetRequest.Templates) > 0 {
 			for _, ti := range addSetRequest.Templates {
-				if ti.Templates != nil && len(ti.Templates) > 0 {
-					for _, t := range ti.Templates {
+				if ti.TemplateIds != nil && len(ti.TemplateIds) > 0 {
+					for _, id := range ti.TemplateIds {
 						template := &taskMdl.TaskTemplate{}
-						template.ID = uint(t.TemplateId)
+						template.ID = uint(id)
 						if err = global.GVA_DB.Find(template).Error; err != nil {
 							global.GVA_LOG.Error("模板不存在", zap.Any("err", err))
 							continue
 						}
 						setTemplate := &taskMdl.TaskTemplateSetTemplate{
-							TemplateId: t.TemplateId,
+							TemplateId: id,
 							SetId:      int(setMdl.ID),
 							Seq:        ti.Seq,
 						}
@@ -476,11 +476,11 @@ func (templateService *TaskTemplatesService) UpdateSet(addSetRequest request2.Ad
 			}
 
 			for _, ti := range addSetRequest.Templates {
-				if ti.Templates != nil && len(ti.Templates) > 0 {
-					for _, t := range ti.Templates {
+				if ti.TemplateIds != nil && len(ti.TemplateIds) > 0 {
+					for _, id := range ti.TemplateIds {
 						if txErr = tx.Create(&taskMdl.TaskTemplateSetTemplate{
-							TemplateId: t.TemplateId,
-							SetId:      t.SetId,
+							TemplateId: id,
+							SetId:      int(addSetRequest.ID),
 							Seq:        ti.Seq,
 						}).Error; txErr != nil {
 							return txErr
@@ -521,9 +521,14 @@ func (templateService *TaskTemplatesService) GetSetById(id float64) (err error, 
 		templateTempMap[t.Seq] = append(templateTempMap[t.Seq], res)
 	}
 	for k, v := range templateTempMap {
+		templateIds := make([]int, 0, len(v))
+		for _, vi := range v {
+			templateIds = append(templateIds, vi.TemplateId)
+		}
 		templateRes = append(templateRes, response.TaskTemplateSetResponseInner{
-			Seq:       k,
-			Templates: v,
+			Seq:         k,
+			Templates:   v,
+			TemplateIds: templateIds,
 		})
 	}
 	return
@@ -584,9 +589,14 @@ func (templateService *TaskTemplatesService) GetSetList(info request2.TaskTempla
 			templateTempMap[t.Seq] = append(templateTempMap[t.Seq], res)
 		}
 		for k, v := range templateTempMap {
+			templateIds := make([]int, 0, len(v))
+			for _, vi := range v {
+				templateIds = append(templateIds, vi.TemplateId)
+			}
 			templateRes = append(templateRes, response.TaskTemplateSetResponseInner{
-				Seq:       k,
-				Templates: v,
+				Seq:         k,
+				Templates:   v,
+				TemplateIds: templateIds,
 			})
 		}
 		setInfoList = append(setInfoList, response.TaskTemplateSetResponse{
