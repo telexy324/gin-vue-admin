@@ -23,7 +23,7 @@ type CheckScriptResponse struct {
 
 type TaskTemplateSetResponse struct {
 	taskMdl.TaskTemplateSet
-	TemplatesInner []TaskTemplateSetResponseInner `json:"templatesInner"`
+	TemplatesInner []TaskTemplateSetResponseInner `json:"templates"`
 }
 
 type TaskTemplateSetTemplateResponse struct {
