@@ -540,11 +540,11 @@ export default {
         this.varMap.set(template.seqInner, innerCommandVarForm)
       }
       this.VarListVisible = true
-      // await this.$nextTick(() => {
-      //   if (this.$refs.table) {
-      //     this.$refs.table.toggleAllSelection()
-      //   }
-      // })
+      await this.$nextTick(() => {
+        if (this.$refs.table) {
+          this.$refs.table.toggleAllSelection()
+        }
+      })
       this.canExecute = true
     },
     isRedoButton() {
