@@ -8,6 +8,8 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/response"
 	"github.com/flipped-aurora/gin-vue-admin/server/utils"
+	"io"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -389,6 +391,41 @@ func (a *CmdbServerApi) ServerRelations(c *gin.Context) {
 			Path: path,
 		}, "获取成功", c)
 	}
+}
+
+// @Tags Template
+// @Summary 上传文件
+// @Security ApiKeyAuth
+// @accept multipart/form-data
+// @Produce  application/json
+// @Param file formData file true "上传文件"
+// @Param int query int false "int valid"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"导入成功"}"
+// @Router /cmdb/uploadFile [post]
+func (a *CmdbServerApi) UploadFile(c *gin.Context) {
+	file, _, err := c.Request.FormFile("file")
+	if err != nil {
+		global.GVA_LOG.Error("接收文件失败!", zap.Any("err", err))
+		response.FailWithMessage("接收文件失败", c)
+		return
+	}
+	idStr := c.Request.FormValue("ID")
+	ID, err := strconv.Atoi(idStr)
+	if err != nil {
+		global.GVA_LOG.Error("接收文件失败!", zap.Any("err", err))
+		response.FailWithMessage("接收文件失败", c)
+		return
+	}
+	userID := utils.GetUserID(c)
+	scriptPath := c.Request.FormValue("scriptPath")
+	file.Seek(0, io.SeekStart)
+	err = cmdbServerService.UploadFile(ID, file, scriptPath, userID)
+	if err != nil {
+		global.GVA_LOG.Error("上传脚本失败!", zap.Any("err", err))
+		response.FailWithMessage("上传脚本失败", c)
+		return
+	}
+	response.OkWithMessage("获取成功", c)
 }
 
 // @Tags CmdbServer

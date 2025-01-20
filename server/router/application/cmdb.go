@@ -36,6 +36,9 @@ func (s *CmdbRouter) InitCmdbRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 		cmdbRouter.GET("downloadTemplate", authorityServerApi.DownloadTemplate) // 下载模板文件
 	}
 	{
+		cmdbRouter.POST("uploadFile", authorityServerApi.UploadFile) // 获取应用
+	}
+	{
 		cmdbRouter.POST("addApp", authorityServerApi.AddApp)       // 新增应用
 		cmdbRouter.POST("deleteApp", authorityServerApi.DeleteApp) // 删除应用
 		cmdbRouter.POST("updateApp", authorityServerApi.UpdateApp) // 更新应用

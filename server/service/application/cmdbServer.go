@@ -1,9 +1,12 @@
 package application
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
+	sockets "github.com/flipped-aurora/gin-vue-admin/server/api/v1/socket"
+	"github.com/flipped-aurora/gin-vue-admin/server/common"
 	"github.com/flipped-aurora/gin-vue-admin/server/consts"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/application"
@@ -12,6 +15,7 @@ import (
 	"github.com/xuri/excelize/v2"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
+	"io"
 	"mime/multipart"
 	"strconv"
 	"strings"
@@ -321,6 +325,52 @@ func (cmdbServerService *CmdbServerService) ServerRelations(id float64) (err err
 				}
 			}
 		}
+	}
+	return
+}
+
+func (cmdbServerService *CmdbServerService) UploadFile(ID int, file multipart.File, scriptPath string, userID uint) (err error) {
+	err, server := cmdbServerService.GetServerById(float64(ID))
+	if err != nil {
+		return
+	}
+	fileByte, _ := io.ReadAll(file)
+	var sshClient common.SSHClient
+	defer func() {
+		if sshClient.Client != nil {
+			sshClient.Client.Close()
+		}
+	}()
+	defer func() {
+		var status string
+		if err == nil {
+			status = "success"
+		} else {
+			status = "exception"
+		}
+		b, e := json.Marshal(&map[string]interface{}{
+			"type":     "uploadScript",
+			"manageIp": server.ManageIp,
+			"ID":       server.ID,
+			"status":   status,
+		})
+		if e != nil {
+			global.GVA_LOG.Error(err.Error())
+			return
+		}
+		sockets.Message(int(userID), b)
+	}()
+	sshClient, err = common.FillSSHClient(server.ManageIp, server.SshUser, "", server.SshPort)
+	err = sshClient.GenerateClient()
+	if err != nil {
+		global.GVA_LOG.Error("upload script failed on create ssh client: ", zap.String("server IP: ", server.ManageIp), zap.Any("err", err))
+		return
+	}
+	copied := bytes.NewBuffer(fileByte)
+	err = sshClient.Upload(copied, scriptPath)
+	if err != nil {
+		global.GVA_LOG.Error("upload script failed on upload: ", zap.String("server IP: ", server.ManageIp), zap.Any("err", err))
+		return
 	}
 	return
 }

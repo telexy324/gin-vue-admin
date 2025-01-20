@@ -87,6 +87,13 @@
               :disabled="!hasSsh"
               @click="runSsh(scope.row)"
             >执行</el-button>
+            <el-button
+                icon="el-icon-orange"
+                size="small"
+                type="text"
+                :disabled="!hasSsh"
+                @click="runUpload(scope.row)"
+            >上传</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -179,6 +186,38 @@
     <div class="term1">
       <div ref="terminalBox" style="height: 60vh;"></div>
     </div>
+    <el-dialog v-model="dialogFormVisibleScript" :before-close="closeScriptDialog" title="上传模板">
+      <el-form ref="scriptForm" :model="scriptForm" :rules="rules" label-width="80px">
+        <el-form-item label="脚本位置" prop="scriptPath">
+          <el-input v-model="scriptForm.scriptPath" autocomplete="off" :disabled="true" />
+        </el-form-item>
+        <el-form-item>
+          <el-upload
+            ref="upload"
+            action=""
+            class="upload-demo"
+            :http-request="httpRequest"
+            :multiple="false"
+            :limit="1"
+            :auto-upload="false"
+            :file-list="fileList"
+          >
+            <el-button size="small" type="primary">选择脚本</el-button>
+          </el-upload>
+          <el-progress v-if="uploading" class="progress" :percentage="progressPercent" />
+          <div v-for="(item, index) in scriptForm.items" :key="index">
+            {{ item.manageIp }}
+            <el-progress v-if="uploadingServer" class="progress-server" :percentage="100" :status="item.status" :indeterminate="item.indeterminate" :duration="2" />
+          </div>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button size="small" @click="closeScriptDialog">取 消</el-button>
+          <el-button :disabled="uploadingDisable" size="small" type="primary" @click="submitUpload">确 定</el-button>
+        </div>
+      </template>
+    </el-dialog>
     <el-drawer v-if="drawer" v-model="drawer" :with-header="false" size="40%" title="请选择系统">
       <Systems ref="systems" @checked="getCheckedServers" />
     </el-drawer>
@@ -205,6 +244,10 @@ import warningBar from '@/components/warningBar/warningBar.vue'
 import { exportExcel, downloadTemplate } from '@/api/cmdb'
 import { mapGetters } from 'vuex'
 import Systems from '@/components/task/systems.vue'
+import { ElMessage } from 'element-plus'
+import service from '@/utils/request'
+import Axios from 'axios'
+import socket from '@/socket'
 
 export default {
   name: 'Server',
@@ -280,6 +323,19 @@ export default {
         password: [
           { required: true, message: '请输入密码', trigger: 'blur' }
         ],
+      },
+      dialogFormVisibleScript: false,
+      fileList: [],
+      progressPercent: 0,
+      uploading: false,
+      uploadingServer: false,
+      uploadingStatus: false,
+      uploadingDisable: false,
+      scriptForm: {
+        ID: '',
+        scriptPath: '',
+        file: '',
+        items: []
       },
     }
   },
@@ -415,6 +471,11 @@ export default {
       this.sshForm.server = res.data.server
       this.openSSHDialog()
     },
+    async runUpload(row) {
+      const res = await getServerById({ id: row.ID })
+      this.sshForm.server = res.data.server
+      this.openSSHDialog()
+    },
     openSSHDialog() {
       this.dialogSSHFormVisible = true
     },
@@ -532,7 +593,164 @@ export default {
       } else {
         callback()
       }
-    }
+    },
+    async uploadScript(row) {
+      const res = await getTemplateById({ id: row.ID })
+      this.scriptForm = res.data.taskTemplate
+      this.scriptForm.items = []
+      for (let i = 0; i < res.data.taskTemplate.targetServers.length; i++) {
+        const item = { ID: res.data.taskTemplate.targetServers[i].ID, manageIp: res.data.taskTemplate.targetServers[i].manageIp, status: 'warning', indeterminate: 'true' }
+        this.scriptForm.items.push(item)
+      }
+      this.dialogFormVisibleScript = true
+    },
+    initScriptForm() {
+      this.$refs.scriptForm.resetFields()
+      this.scriptForm = {
+        ID: '',
+        scriptPath: '',
+        file: '',
+        items: [],
+      }
+    },
+    closeScriptDialog() {
+      this.progressPercent = 0
+      this.uploading = false
+      this.uploadingServer = false
+      this.initScriptForm()
+      this.dialogFormVisibleScript = false
+      this.uploadingDisable = false
+      this.currentSystem = ''
+    },
+    handleRemove(file, fileList) {
+      if (!fileList.length) {
+        this.hasFile = false
+      }
+      this.scriptForm.file = null
+    },
+    handleChange(file, fileList) {
+      if (fileList.length >= 2) {
+        return
+      }
+      if (fileList.length === 1) {
+        this.hasFile = true
+      }
+      this.scriptForm.file = file
+    },
+    submitUpload() {
+      this.$refs.scriptForm.validate(valid => {
+        if (valid) {
+          this.$refs.upload.submit()
+          this.uploading = true
+        }
+      })
+      this.uploadingDisable = true
+    },
+    httpRequest(param) {
+      this.progressPercent = 0
+      const fd = new FormData()
+      fd.append('file', param.file)
+      fd.append('scriptPath', this.scriptForm.scriptPath)
+      fd.append('ID', this.scriptForm.ID)
+      // console.log(this.token)
+      // console.log(this.userInfo)
+      // const res = await service({
+      //   url: '/task/template/uploadScript',
+      //   method: 'post',
+      //   // headers: { 'Content-Type': 'multipart/form-data', 'x-token': this.token, 'x-user-id': this.user.ID },
+      //   formData: fd
+      // })
+      // console.log(res.code)
+      // if (res.code === 0) {
+      //   this.$message({
+      //     type: 'success',
+      //     message: res.msg
+      //   })
+      // }
+      // console.log('hahaha')
+      // const config = {
+      //   headers: {
+      //     'Content-Type': 'multipart/form-data',
+      //     'x-token': this.token,
+      //     'x-user-id': this.user.ID,
+      //   },
+      //   timeout: 99999,
+      // }
+      Axios.post(import.meta.env.VITE_BASE_API + '/task/template/uploadScript', fd, {
+        headers: {
+          // 'Content-Type': 'multipart/form-data',
+          'x-token': this.token,
+          // 'x-user-id': this.user.ID,
+        },
+        // headers: { 'Content-Type': 'multipart/form-data', 'x-token': this.token, 'x-user-id': this.user.ID },
+        timeout: 999999,
+        onUploadProgress: (progressEvent) => {
+          this.progressPercent = Math.floor((progressEvent.loaded * 100) / progressEvent.total)
+          if (this.progressPercent >= 100) {
+            this.uploadingServer = true
+          }
+        },
+      }).then(response => {
+        if (response.data.code === 0 || response.headers.success === 'true') {
+          let message = '上传成功'
+          if (response.data.data.failedIps.length > 0) {
+            message = '上传部分成功, 失败的服务器: ' + response.data.data.failedIps.toString()
+          }
+          ElMessage({
+            showClose: true,
+            message: message,
+            type: 'success'
+          })
+          this.closeScriptDialog()
+        } else {
+          ElMessage({
+            showClose: true,
+            message: response.data.msg,
+            type: 'error'
+          })
+        }
+      }).catch(err => {
+        ElMessage({
+          showClose: true,
+          message: err,
+          type: 'error'
+        })
+      })
+    },
+    onWebsocketDataReceived(data) {
+      if (data.templateID !== this.scriptForm.ID) {
+        return
+      }
+      if (data.type !== 'uploadScript') {
+        return
+      }
+      for (let i = 0; i < this.scriptForm.items.length; i++) {
+        if (this.scriptForm.items[i].ID === data.ID) {
+          switch (data.status) {
+            case 'success':
+              this.scriptForm.items[i].status = 'success'
+              this.scriptForm.items[i].indeterminate = this.uploadingStatus
+              break
+            case 'exception':
+              this.scriptForm.items[i].status = 'exception'
+              this.scriptForm.items[i].indeterminate = this.uploadingStatus
+              break
+            default:
+              break
+          }
+        }
+      }
+      if (this.scriptForm.items.every((item) => {
+        return item.status === 'success'
+      })) {
+        ElMessage({
+          showClose: true,
+          message: '上传成功',
+          type: 'success'
+        })
+        this.closeScriptDialog()
+      }
+    },
   }
 }
 </script>
