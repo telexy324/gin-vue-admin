@@ -88,11 +88,11 @@
               @click="runSsh(scope.row)"
             >执行</el-button>
             <el-button
-                icon="el-icon-orange"
-                size="small"
-                type="text"
-                :disabled="!hasSsh"
-                @click="runUpload(scope.row)"
+              icon="el-icon-orange"
+              size="small"
+              type="text"
+              :disabled="!hasSsh"
+              @click="uploadFile(scope.row)"
             >上传</el-button>
           </template>
         </el-table-column>
@@ -189,7 +189,7 @@
     <el-dialog v-model="dialogFormVisibleScript" :before-close="closeScriptDialog" title="上传模板">
       <el-form ref="scriptForm" :model="scriptForm" :rules="rules" label-width="80px">
         <el-form-item label="脚本位置" prop="scriptPath">
-          <el-input v-model="scriptForm.scriptPath" autocomplete="off" :disabled="true" />
+          <el-input v-model="scriptForm.scriptPath" autocomplete="off" />
         </el-form-item>
         <el-form-item>
           <el-upload
@@ -205,10 +205,7 @@
             <el-button size="small" type="primary">选择脚本</el-button>
           </el-upload>
           <el-progress v-if="uploading" class="progress" :percentage="progressPercent" />
-          <div v-for="(item, index) in scriptForm.items" :key="index">
-            {{ item.manageIp }}
-            <el-progress v-if="uploadingServer" class="progress-server" :percentage="100" :status="item.status" :indeterminate="item.indeterminate" :duration="2" />
-          </div>
+          <el-progress v-if="uploadingServer" class="progress-server" :percentage="100" :status="item.status" :indeterminate="item.indeterminate" :duration="2" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -332,10 +329,11 @@ export default {
       uploadingStatus: false,
       uploadingDisable: false,
       scriptForm: {
-        ID: '',
         scriptPath: '',
         file: '',
-        items: []
+        server: {},
+        status: '',
+        indeterminate: '',
       },
     }
   },
@@ -343,6 +341,7 @@ export default {
     ...mapGetters('user', ['userInfo', 'token'])
   },
   async created() {
+    socket.addListener((data) => this.onWebsocketDataReceived(data))
     this.archs = await this.getDict('architecture')
     this.oss = await this.getDict('osVersion')
     this.systemOptions = (await getAllServerIds()).data
@@ -471,11 +470,6 @@ export default {
       this.sshForm.server = res.data.server
       this.openSSHDialog()
     },
-    async runUpload(row) {
-      const res = await getServerById({ id: row.ID })
-      this.sshForm.server = res.data.server
-      this.openSSHDialog()
-    },
     openSSHDialog() {
       this.dialogSSHFormVisible = true
     },
@@ -594,23 +588,20 @@ export default {
         callback()
       }
     },
-    async uploadScript(row) {
-      const res = await getTemplateById({ id: row.ID })
-      this.scriptForm = res.data.taskTemplate
-      this.scriptForm.items = []
-      for (let i = 0; i < res.data.taskTemplate.targetServers.length; i++) {
-        const item = { ID: res.data.taskTemplate.targetServers[i].ID, manageIp: res.data.taskTemplate.targetServers[i].manageIp, status: 'warning', indeterminate: 'true' }
-        this.scriptForm.items.push(item)
-      }
+    async uploadFile(row) {
+      this.scriptForm.server = row
+      this.scriptForm.status = 'warning'
+      this.scriptForm.indeterminate = 'true'
       this.dialogFormVisibleScript = true
     },
     initScriptForm() {
       this.$refs.scriptForm.resetFields()
       this.scriptForm = {
-        ID: '',
         scriptPath: '',
         file: '',
-        items: [],
+        server: {},
+        status: '',
+        indeterminate: '',
       }
     },
     closeScriptDialog() {
@@ -651,7 +642,7 @@ export default {
       const fd = new FormData()
       fd.append('file', param.file)
       fd.append('scriptPath', this.scriptForm.scriptPath)
-      fd.append('ID', this.scriptForm.ID)
+      fd.append('ID', this.scriptForm.server.ID)
       // console.log(this.token)
       // console.log(this.userInfo)
       // const res = await service({
@@ -676,7 +667,7 @@ export default {
       //   },
       //   timeout: 99999,
       // }
-      Axios.post(import.meta.env.VITE_BASE_API + '/task/template/uploadScript', fd, {
+      Axios.post(import.meta.env.VITE_BASE_API + '/cmdb/uploadFile', fd, {
         headers: {
           // 'Content-Type': 'multipart/form-data',
           'x-token': this.token,
@@ -693,9 +684,6 @@ export default {
       }).then(response => {
         if (response.data.code === 0 || response.headers.success === 'true') {
           let message = '上传成功'
-          if (response.data.data.failedIps.length > 0) {
-            message = '上传部分成功, 失败的服务器: ' + response.data.data.failedIps.toString()
-          }
           ElMessage({
             showClose: true,
             message: message,
@@ -718,31 +706,25 @@ export default {
       })
     },
     onWebsocketDataReceived(data) {
-      if (data.templateID !== this.scriptForm.ID) {
+      if (data.ID !== this.scriptForm.ID) {
         return
       }
-      if (data.type !== 'uploadScript') {
+      if (data.type !== 'uploadFile') {
         return
       }
-      for (let i = 0; i < this.scriptForm.items.length; i++) {
-        if (this.scriptForm.items[i].ID === data.ID) {
-          switch (data.status) {
-            case 'success':
-              this.scriptForm.items[i].status = 'success'
-              this.scriptForm.items[i].indeterminate = this.uploadingStatus
-              break
-            case 'exception':
-              this.scriptForm.items[i].status = 'exception'
-              this.scriptForm.items[i].indeterminate = this.uploadingStatus
-              break
-            default:
-              break
-          }
-        }
+      switch (data.status) {
+        case 'success':
+          this.scriptForm.status = 'success'
+          this.scriptForm.indeterminate = this.uploadingStatus
+          break
+        case 'exception':
+          this.scriptForm.status = 'exception'
+          this.scriptForm.indeterminate = this.uploadingStatus
+          break
+        default:
+          break
       }
-      if (this.scriptForm.items.every((item) => {
-        return item.status === 'success'
-      })) {
+      if (this.scriptForm.status === 'success') {
         ElMessage({
           showClose: true,
           message: '上传成功',

@@ -349,7 +349,7 @@ func (cmdbServerService *CmdbServerService) UploadFile(ID int, file multipart.Fi
 			status = "exception"
 		}
 		b, e := json.Marshal(&map[string]interface{}{
-			"type":     "uploadScript",
+			"type":     "uploadFile",
 			"manageIp": server.ManageIp,
 			"ID":       server.ID,
 			"status":   status,
