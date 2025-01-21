@@ -202,10 +202,10 @@
             :auto-upload="false"
             :file-list="fileList"
           >
-            <el-button size="small" type="primary">选择脚本</el-button>
+            <el-button size="small" type="primary">选择文件</el-button>
           </el-upload>
           <el-progress v-if="uploading" class="progress" :percentage="progressPercent" />
-          <el-progress v-if="uploadingServer" class="progress-server" :percentage="100" :status="item.status" :indeterminate="item.indeterminate" :duration="2" />
+          <el-progress v-if="uploadingServer" class="progress-server" :percentage="100" :status="scriptForm.status" :indeterminate="scriptForm.indeterminate" :duration="2" />
         </el-form-item>
       </el-form>
       <template #footer>
