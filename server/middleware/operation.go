@@ -44,7 +44,8 @@ func OperationRecord() gin.HandlerFunc {
 			userId = id
 		}
 		var record system.SysOperationRecord
-		if c.Request.RequestURI == "/task/template/uploadScript" {
+		if c.Request.RequestURI == "/task/template/uploadScript" ||
+			c.Request.RequestURI == "/cmdb/uploadFile" {
 			record = system.SysOperationRecord{
 				Ip:     c.ClientIP(),
 				Method: c.Request.Method,
@@ -81,7 +82,8 @@ func OperationRecord() gin.HandlerFunc {
 		record.Status = c.Writer.Status()
 		record.Latency = latency
 		respBody := writer.body
-		if c.Request.URL.Path != "/task/template/downloadFile" && c.Request.URL.Path != "/task/template/checkScript" {
+		if c.Request.URL.Path != "/task/template/downloadFile" &&
+			c.Request.URL.Path != "/task/template/checkScript" {
 			record.Resp = respBody.String()
 		}
 
