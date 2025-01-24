@@ -46,7 +46,7 @@
         />
 <!--        <el-table-column align="left" label="id" min-width="60" prop="ID" sortable="custom" />-->
         <el-table-column align="left" label="服务器名" min-width="150" prop="hostname" sortable="custom" />
-        <el-table-column align="left" label="展示名" min-width="150" prop="displayName" sortable="custom" />
+        <el-table-column align="left" label="展示名" min-width="100" prop="displayName" sortable="custom" />
         <el-table-column align="left" label="架构" min-width="80" prop="architecture" sortable="custom">
           <template #default="scope">
             <div>{{ filterDict(scope.row.architecture, 'architecture') }}</div>
@@ -64,7 +64,7 @@
             <div>{{ filterSystemName(scope.row.systemId) }}</div>
           </template>
         </el-table-column>
-        <el-table-column align="left" fixed="right" label="操作" width="200">
+        <el-table-column align="left" fixed="right" label="操作" width="240">
           <template #default="scope">
             <el-button
               icon="el-icon-edit"
@@ -88,7 +88,7 @@
               @click="runSsh(scope.row)"
             >执行</el-button>
             <el-button
-              icon="el-icon-orange"
+              icon="el-icon-upload"
               size="small"
               type="text"
               :disabled="!hasSsh"
@@ -603,6 +603,7 @@ export default {
         status: '',
         indeterminate: '',
       }
+      this.fileList = []
     },
     closeScriptDialog() {
       this.progressPercent = 0
@@ -696,6 +697,7 @@ export default {
             message: response.data.msg,
             type: 'error'
           })
+          this.closeScriptDialog()
         }
       }).catch(err => {
         ElMessage({
@@ -703,6 +705,7 @@ export default {
           message: err,
           type: 'error'
         })
+        this.closeScriptDialog()
       })
     },
     onWebsocketDataReceived(data) {
@@ -727,7 +730,7 @@ export default {
       if (this.scriptForm.status === 'success') {
         ElMessage({
           showClose: true,
-          message: '上传成功',
+          message: '上传服务器成功',
           type: 'success'
         })
         this.closeScriptDialog()
