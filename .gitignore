@@ -31,5 +31,6 @@ yarn-error.log*
 /server/server
 /server/serverx86
 /server/serverarm
+/server/uploads/
 
 *.iml

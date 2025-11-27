@@ -425,18 +425,48 @@ func (cmdbSystemService *CmdbSystemService) GetSystemList(info request2.SystemSe
 // @function: GetSystemServers
 // @description: 获取系统内全部服务器
 // @return: err error, systemList []application.ApplicationSystem
+//
+//	func (cmdbSystemService *CmdbSystemService) GetAdminSystems(adminID uint) (err error, systemList []application.ApplicationSystem) {
+//		sysAdmins := make([]application.ApplicationSystemSysAdmin, 0)
+//		if err = global.GVA_DB.Where("admin_id = ?", adminID).Find(&sysAdmins).Error; err != nil {
+//			return
+//		}
+//		for _, admin := range sysAdmins {
+//			system := application.ApplicationSystem{}
+//			if err = global.GVA_DB.Model(&application.ApplicationSystem{}).Where("id = ?", admin.SystemId).Find(&system).Error; err != nil {
+//				return
+//			}
+//			systemList = append(systemList, system)
+//		}
+//		return
+//	}
 func (cmdbSystemService *CmdbSystemService) GetAdminSystems(adminID uint) (err error, systemList []application.ApplicationSystem) {
+	// 1. 查出 adminID 对应的所有 system_id
 	sysAdmins := make([]application.ApplicationSystemSysAdmin, 0)
-	if err = global.GVA_DB.Where("admin_id = ?", adminID).Find(&sysAdmins).Error; err != nil {
+	if err = global.GVA_DB.
+		Where("admin_id = ?", adminID).
+		Find(&sysAdmins).Error; err != nil {
 		return
 	}
-	for _, admin := range sysAdmins {
-		system := application.ApplicationSystem{}
-		if err = global.GVA_DB.Model(&application.ApplicationSystem{}).Where("id = ?", admin.SystemId).Find(&system).Error; err != nil {
-			return
-		}
-		systemList = append(systemList, system)
+
+	if len(sysAdmins) == 0 {
+		systemList = []application.ApplicationSystem{}
+		return
 	}
+
+	// 提取所有 system_id
+	systemIDs := make([]uint, 0, len(sysAdmins))
+	for _, sa := range sysAdmins {
+		systemIDs = append(systemIDs, uint(sa.SystemId))
+	}
+
+	// 2. 一次性查所有系统信息
+	if err = global.GVA_DB.
+		Where("id IN ?", systemIDs).
+		Find(&systemList).Error; err != nil {
+		return
+	}
+
 	return
 }
 

@@ -128,7 +128,8 @@ func (templateService *TaskTemplatesService) GetTaskTemplates(info request2.Task
 		}
 		err = db.Order(OrderStr).Find(&templates).Error
 	} else {
-		err = db.Order("id").Find(&templates).Error
+		//err = db.Order("id").Find(&templates).Error
+		err = db.Find(&templates).Error
 	}
 	if err != nil {
 		return
@@ -539,72 +540,276 @@ func (templateService *TaskTemplatesService) GetSetById(id float64) (err error, 
 //@description: 获取系统分页
 //@return: err error, list interface{}, total int64
 
+//	func (templateService *TaskTemplatesService) GetSetList(info request2.TaskTemplateSetSearch) (err error, list interface{}, total int64) {
+//		limit := info.PageSize
+//		offset := info.PageSize * (info.Page - 1)
+//		var setList []taskMdl.TaskTemplateSet
+//		db := global.GVA_DB.Model(&taskMdl.TaskTemplateSet{})
+//		if info.Name != "" {
+//			name := strings.Trim(info.Name, " ")
+//			db = db.Where("`name` LIKE ?", "%"+name+"%")
+//		}
+//		if len(info.SystemIDs) > 0 {
+//			db = db.Where("`system_id` IN ?", info.SystemIDs)
+//		}
+//		err = db.Count(&total).Error
+//		if err != nil {
+//			return
+//		}
+//		//err = db.Limit(limit).Offset(offset).Find(&setList).Error
+//		db = db.Limit(limit).Offset(offset)
+//		if info.OrderKey != "" {
+//			var OrderStr string
+//			if info.Desc {
+//				OrderStr = info.OrderKey + " desc"
+//			} else {
+//				OrderStr = info.OrderKey
+//			}
+//			err = db.Order(OrderStr).Find(&setList).Error
+//		} else {
+//			err = db.Order("id").Find(&setList).Error
+//		}
+//
+//		//setInfoList := make([]response.TaskTemplateSetResponse, 0, len(setList))
+//		//for _, set := range setList {
+//		//	setTemplates := make([]taskMdl.TaskTemplateSetTemplate, 0)
+//		//	if err = global.GVA_DB.Where("set_id = ?", set.ID).Find(&setTemplates).Error; err != nil {
+//		//		return
+//		//	}
+//		//	templateTempMap := make(map[int][]response.TaskTemplateSetTemplateResponse)
+//		//	templateRes := make([]response.TaskTemplateSetResponseInner, 0)
+//		//	for _, t := range setTemplates {
+//		//		var template taskMdl.TaskTemplate
+//		//		if err = global.GVA_DB.Where("id = ?", t.TemplateId).Find(&template).Error; err != nil {
+//		//			return
+//		//		}
+//		//		res := response.TaskTemplateSetTemplateResponse{
+//		//			TaskTemplateSetTemplate: t,
+//		//			TemplateName:            template.Name,
+//		//		}
+//		//		templateTempMap[t.Seq] = append(templateTempMap[t.Seq], res)
+//		//	}
+//		//	for k, v := range templateTempMap {
+//		//		templateIds := make([]int, 0, len(v))
+//		//		for _, vi := range v {
+//		//			templateIds = append(templateIds, vi.TemplateId)
+//		//		}
+//		//		templateRes = append(templateRes, response.TaskTemplateSetResponseInner{
+//		//			Seq:         k,
+//		//			Templates:   v,
+//		//			TemplateIds: templateIds,
+//		//		})
+//		//	}
+//		//	setInfoList = append(setInfoList, response.TaskTemplateSetResponse{
+//		//		TaskTemplateSet: set,
+//		//		TemplatesInner:  templateRes,
+//		//	})
+//		//}
+//		setInfoList := make([]response.TaskTemplateSetResponse, 0, len(setList))
+//
+//		for _, set := range setList {
+//			// 1. 先查出 set 下所有的关系记录
+//			setTemplates := make([]taskMdl.TaskTemplateSetTemplate, 0)
+//			if err = global.GVA_DB.Where("set_id = ?", set.ID).Find(&setTemplates).Error; err != nil {
+//				return
+//			}
+//
+//			// 2. 收集所有 TemplateId，准备批量查询
+//			templateIds := make([]int, 0, len(setTemplates))
+//			for _, t := range setTemplates {
+//				templateIds = append(templateIds, t.TemplateId)
+//			}
+//
+//			// 如果没有模板，直接构造空的
+//			if len(templateIds) == 0 {
+//				setInfoList = append(setInfoList, response.TaskTemplateSetResponse{
+//					TaskTemplateSet: set,
+//					TemplatesInner:  []response.TaskTemplateSetResponseInner{},
+//				})
+//				continue
+//			}
+//
+//			// 3. 一次性批量查询所有模板
+//			templateList := make([]taskMdl.TaskTemplate, 0)
+//			if err = global.GVA_DB.Where("id IN ?", templateIds).Find(&templateList).Error; err != nil {
+//				return
+//			}
+//
+//			// 4. 建立模板映射表，方便快速查找
+//			templateMap := make(map[int]taskMdl.TaskTemplate, len(templateList))
+//			for _, tpl := range templateList {
+//				templateMap[int(tpl.ID)] = tpl
+//			}
+//
+//			// 5. 按 Seq 进行分组
+//			templateTempMap := make(map[int][]response.TaskTemplateSetTemplateResponse)
+//			for _, t := range setTemplates {
+//				tpl := templateMap[t.TemplateId] // 批量查询后的映射
+//				res := response.TaskTemplateSetTemplateResponse{
+//					TaskTemplateSetTemplate: t,
+//					TemplateName:            tpl.Name,
+//				}
+//				templateTempMap[t.Seq] = append(templateTempMap[t.Seq], res)
+//			}
+//
+//			// 6. 组装最终结构
+//			templateRes := make([]response.TaskTemplateSetResponseInner, 0, len(templateTempMap))
+//			for k, v := range templateTempMap {
+//				ids := make([]int, 0, len(v))
+//				for _, vi := range v {
+//					ids = append(ids, vi.TemplateId)
+//				}
+//				templateRes = append(templateRes, response.TaskTemplateSetResponseInner{
+//					Seq:         k,
+//					Templates:   v,
+//					TemplateIds: ids,
+//				})
+//			}
+//
+//			setInfoList = append(setInfoList, response.TaskTemplateSetResponse{
+//				TaskTemplateSet: set,
+//				TemplatesInner:  templateRes,
+//			})
+//		}
+//		return err, setInfoList, total
+//	}
 func (templateService *TaskTemplatesService) GetSetList(info request2.TaskTemplateSetSearch) (err error, list interface{}, total int64) {
 	limit := info.PageSize
 	offset := info.PageSize * (info.Page - 1)
 	var setList []taskMdl.TaskTemplateSet
+
+	// ----------------------
+	// 1) 查询 Set 列表 + 分页
+	// ----------------------
 	db := global.GVA_DB.Model(&taskMdl.TaskTemplateSet{})
 	if info.Name != "" {
 		name := strings.Trim(info.Name, " ")
-		db = db.Where("`name` LIKE ?", "%"+name+"%")
+		db = db.Where("name LIKE ?", "%"+name+"%")
 	}
 	if len(info.SystemIDs) > 0 {
-		db = db.Where("`system_id` IN ?", info.SystemIDs)
-	}
-	err = db.Count(&total).Error
-	if err != nil {
-		return
-	}
-	//err = db.Limit(limit).Offset(offset).Find(&setList).Error
-	db = db.Limit(limit).Offset(offset)
-	if info.OrderKey != "" {
-		var OrderStr string
-		if info.Desc {
-			OrderStr = info.OrderKey + " desc"
-		} else {
-			OrderStr = info.OrderKey
-		}
-		err = db.Order(OrderStr).Find(&setList).Error
-	} else {
-		err = db.Order("id").Find(&setList).Error
+		db = db.Where("system_id IN ?", info.SystemIDs)
 	}
 
-	setInfoList := make([]response.TaskTemplateSetResponse, 0, len(setList))
+	// COUNT
+	if err = db.Count(&total).Error; err != nil {
+		return
+	}
+
+	// ORDER + LIMIT
+	if info.OrderKey != "" {
+		orderStr := info.OrderKey
+		if info.Desc {
+			orderStr += " desc"
+		}
+		db = db.Order(orderStr)
+	} else {
+		db = db.Order("id desc")
+	}
+
+	// 查 set 列表
+	if err = db.Limit(limit).Offset(offset).Find(&setList).Error; err != nil {
+		return
+	}
+
+	if len(setList) == 0 {
+		return nil, []response.TaskTemplateSetResponse{}, total
+	}
+
+	// 收集所有 set_id
+	setIDs := make([]int, 0, len(setList))
 	for _, set := range setList {
-		setTemplates := make([]taskMdl.TaskTemplateSetTemplate, 0)
-		if err = global.GVA_DB.Where("set_id = ?", set.ID).Find(&setTemplates).Error; err != nil {
-			return
-		}
-		templateTempMap := make(map[int][]response.TaskTemplateSetTemplateResponse)
-		templateRes := make([]response.TaskTemplateSetResponseInner, 0)
-		for _, t := range setTemplates {
-			var template taskMdl.TaskTemplate
-			if err = global.GVA_DB.Where("id = ?", t.TemplateId).Find(&template).Error; err != nil {
-				return
-			}
-			res := response.TaskTemplateSetTemplateResponse{
-				TaskTemplateSetTemplate: t,
-				TemplateName:            template.Name,
-			}
-			templateTempMap[t.Seq] = append(templateTempMap[t.Seq], res)
-		}
-		for k, v := range templateTempMap {
-			templateIds := make([]int, 0, len(v))
-			for _, vi := range v {
-				templateIds = append(templateIds, vi.TemplateId)
-			}
-			templateRes = append(templateRes, response.TaskTemplateSetResponseInner{
-				Seq:         k,
-				Templates:   v,
-				TemplateIds: templateIds,
+		setIDs = append(setIDs, int(set.ID))
+	}
+
+	// ----------------------
+	// 2) 一次性查询所有关系表记录
+	// ----------------------
+	var allSetTemplates []taskMdl.TaskTemplateSetTemplate
+	if err = global.GVA_DB.
+		Where("set_id IN ?", setIDs).
+		Find(&allSetTemplates).Error; err != nil {
+		return
+	}
+
+	// 如果没有模板关系，直接返回空结构
+	if len(allSetTemplates) == 0 {
+		result := make([]response.TaskTemplateSetResponse, 0, len(setList))
+		for _, set := range setList {
+			result = append(result, response.TaskTemplateSetResponse{
+				TaskTemplateSet: set,
+				TemplatesInner:  []response.TaskTemplateSetResponseInner{},
 			})
 		}
-		setInfoList = append(setInfoList, response.TaskTemplateSetResponse{
+		return nil, result, total
+	}
+
+	// 收集所有 TemplateId
+	templateIDs := make([]int, 0, len(allSetTemplates))
+	for _, st := range allSetTemplates {
+		templateIDs = append(templateIDs, st.TemplateId)
+	}
+
+	// ----------------------
+	// 3) 一次性查询所有模板信息
+	// ----------------------
+	var templateList []taskMdl.TaskTemplate
+	if err = global.GVA_DB.Where("id IN ?", templateIDs).Find(&templateList).Error; err != nil {
+		return
+	}
+
+	// 建映射
+	templateMap := make(map[int]taskMdl.TaskTemplate, len(templateList))
+	for _, tpl := range templateList {
+		templateMap[int(tpl.ID)] = tpl
+	}
+
+	// ----------------------
+	// 4) 按 set_id 分组关系
+	// ----------------------
+	setRelations := make(map[int][]taskMdl.TaskTemplateSetTemplate, len(setIDs))
+	for _, rel := range allSetTemplates {
+		setRelations[rel.SetId] = append(setRelations[rel.SetId], rel)
+	}
+
+	// ----------------------
+	// 5) 构建输出结构
+	// ----------------------
+	result := make([]response.TaskTemplateSetResponse, 0, len(setList))
+
+	for _, set := range setList {
+		relations := setRelations[int(set.ID)]
+
+		seqMap := make(map[int][]response.TaskTemplateSetTemplateResponse)
+
+		for _, r := range relations {
+			tpl := templateMap[r.TemplateId]
+			seqMap[r.Seq] = append(seqMap[r.Seq], response.TaskTemplateSetTemplateResponse{
+				TaskTemplateSetTemplate: r,
+				TemplateName:            tpl.Name,
+			})
+		}
+
+		// 转为最终结构
+		inner := make([]response.TaskTemplateSetResponseInner, 0, len(seqMap))
+		for seq, items := range seqMap {
+			ids := make([]int, 0, len(items))
+			for _, it := range items {
+				ids = append(ids, it.TemplateId)
+			}
+			inner = append(inner, response.TaskTemplateSetResponseInner{
+				Seq:         seq,
+				Templates:   items,
+				TemplateIds: ids,
+			})
+		}
+
+		result = append(result, response.TaskTemplateSetResponse{
 			TaskTemplateSet: set,
-			TemplatesInner:  templateRes,
+			TemplatesInner:  inner,
 		})
 	}
-	return err, setInfoList, total
+
+	return nil, result, total
 }
 
 //@author: [telexy324](https://github.com/telexy324)
