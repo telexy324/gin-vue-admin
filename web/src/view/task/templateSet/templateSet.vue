@@ -92,7 +92,7 @@
         </el-row>
         <el-form-item label="所属系统" prop="systemId">
           <el-select v-model="form.systemId" @change="setTemplate">
-            <el-option v-for="val in systemOptions" :key="val.ID" :value="val.ID" :label="val.name" />
+            <el-option v-for="val in systemOptions" :key="val.system.ID" :value="val.system.ID" :label="val.system.name" />
           </el-select>
         </el-form-item>
         <div v-for="(item, index) in form.templates" :key="index">
@@ -160,7 +160,7 @@ import {
   addSetTask,
 } from '@/api/template'
 import { addTask } from '@/api/task'
-import { getAllServerIds } from '@/api/cmdb'
+import { getSystemList } from '@/api/cmdb'
 import { getPolicyPathByAuthorityId } from '@/api/casbin'
 import infoList from '@/mixins/infoList'
 import { toSQLLine } from '@/utils/stringFun'
@@ -232,9 +232,9 @@ export default {
       this.searchInfo.systemIds = this.formRouterParam(this.$route.params.systemIds)
     }
     await this.getTableData()
-    const res = await getAllServerIds()
-    this.setSystemOptions(res.data)
-    await this.setTemplateOptions()
+    const res = await getSystemList({ page: 1, pageSize: 99999 })
+    this.setSystemOptions(res.data.list)
+    // await this.setTemplateOptions()
   },
   mounted() {
     this.authorities()
@@ -306,6 +306,7 @@ export default {
     },
     async editSet(row) {
       const res = await getSetById({ id: row.ID })
+      this.setTemplate(row.systemId)
       this.form = res.data
       this.setDisabled = false
       this.openDialog('edit')
@@ -406,8 +407,8 @@ export default {
       return systemIDs
     },
     filterSystemName(value) {
-      const rowLabel = this.systemOptions.filter(item => item.ID === value)
-      return rowLabel && rowLabel[0] && rowLabel[0].name
+      const rowLabel = this.systemOptions.filter(item => item.system.ID === value)
+      return rowLabel && rowLabel[0] && rowLabel[0].system.name
     },
     addItem() {
       this.form.templates.push({
