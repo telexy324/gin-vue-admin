@@ -42,7 +42,12 @@ export default {
   methods: {
     initTerm() {
       const term = new Terminal({
-        rendererType: 'canvas', cursorBlink: true, cursorStyle: 'bar', convertEol: true, scrollback: 1000
+        rendererType: 'canvas',
+        cursorBlink: true,
+        cursorStyle: 'bar',
+        scrollback: 1000,
+        disableStdin: false,
+        wrapAround: true
       })
       const fitAddon = new FitAddon()
       term.loadAddon(fitAddon)
@@ -75,6 +80,9 @@ export default {
           // console.log(data)
           _this.socket.send(data)
           // console.log(data)
+        })
+        this.$nextTick(() => {
+          this.sendResize()
         })
         // ElMessage.success("会话成功连接！")
         const jsonStrRaw = { manageIp: this.manageIp, sshPort: Number(this.sshPort), username: this.username, password: this.password }
