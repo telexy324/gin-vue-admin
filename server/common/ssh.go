@@ -5,11 +5,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/flipped-aurora/gin-vue-admin/server/global"
-	"github.com/gorilla/websocket"
-	"github.com/pkg/sftp"
-	"go.uber.org/zap"
-	"golang.org/x/crypto/ssh"
 	"io"
 	"os"
 	"path"
@@ -17,6 +12,12 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/flipped-aurora/gin-vue-admin/server/global"
+	"github.com/gorilla/websocket"
+	"github.com/pkg/sftp"
+	"go.uber.org/zap"
+	"golang.org/x/crypto/ssh"
 )
 
 const _hex = "0123456789abcdef"
@@ -581,9 +582,9 @@ func (ssConn *SshConn) ReceiveWsMsg(wsConn *websocket.Conn, logBuff *bytes.Buffe
 				Rows: 50,
 				Cols: 180,
 			}
-			//if err := json.Unmarshal(wsData, &msgObj); err != nil {
-			//	logrus.WithError(err).WithField("wsData", string(wsData)).Error("unmarshal websocket message failed")
-			//}
+			if err = json.Unmarshal(wsData, &msgObj); err != nil {
+				global.GVA_LOG.Error("unmarshal websocket message failed", zap.Any("err ", err))
+			}
 			switch msgObj.Type {
 			case wsMsgResize:
 				//handle xterm.js size change

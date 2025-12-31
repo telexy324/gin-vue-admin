@@ -1,6 +1,6 @@
 <template>
   <div class="term1">
-    <div ref="terminalBox" style="height: 60vh;"></div>
+    <div ref="terminalBox" style="height: 75vh;"></div>
   </div>
 </template>
 
@@ -42,7 +42,7 @@ export default {
   methods: {
     initTerm() {
       const term = new Terminal({
-        rendererType: 'canvas', cursorBlink: true, cursorStyle: 'bar'
+        rendererType: 'canvas', cursorBlink: true, cursorStyle: 'bar', convertEol: true, scrollback: 1000
       })
       const fitAddon = new FitAddon()
       term.loadAddon(fitAddon)
@@ -50,6 +50,11 @@ export default {
       fitAddon.fit()
       this.term = term
       this.term.write('正在连接...\r\n')
+
+      window.addEventListener('resize', () => {
+        fitAddon.fit()
+        this.sendResize()
+      })
     },
     initSocket() {
       this.socket = new WebSocket('ws://' + location.hostname + ':' + import.meta.env.VITE_WS_PORT + '/ssh/run')
@@ -100,6 +105,15 @@ export default {
           this.console.log('unsupport data', recv.data)
         }
       }
+    },
+    sendResize() {
+      if (!this.term || !this.socket) return
+      const { cols, rows } = this.term
+      this.socket.send(JSON.stringify({
+        type: 'resize',
+        cols,
+        rows
+      }))
     },
   }
 }
