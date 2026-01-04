@@ -582,9 +582,7 @@ func (ssConn *SshConn) ReceiveWsMsg(wsConn *websocket.Conn, logBuff *bytes.Buffe
 				Rows: 50,
 				Cols: 180,
 			}
-			if err = json.Unmarshal(wsData, &msgObj); err != nil {
-				global.GVA_LOG.Error("unmarshal websocket message failed", zap.Any("err ", err))
-			}
+			_ = json.Unmarshal(wsData, &msgObj)
 			switch msgObj.Type {
 			case wsMsgResize:
 				//handle xterm.js size change
@@ -597,9 +595,6 @@ func (ssConn *SshConn) ReceiveWsMsg(wsConn *websocket.Conn, logBuff *bytes.Buffe
 				//handle xterm.js stdin
 				//decodeBytes, err := base64.StdEncoding.DecodeString(msgObj.Cmd)
 				decodeBytes := wsData
-				if err != nil {
-					global.GVA_LOG.Error("websock cmd string base64 decoding failed", zap.Any("err ", err))
-				}
 				if _, err = ssConn.StdinPipe.Write(decodeBytes); err != nil {
 					global.GVA_LOG.Error("ws cmd bytes write to ssh.stdin pipe failed", zap.Any("err ", err))
 				}
