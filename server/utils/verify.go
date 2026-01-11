@@ -31,4 +31,5 @@ var (
 	LogSecretVerify           = Rules{"Name": {NotEmpty()}, "Password": {NotEmpty()}}
 	TaskFileListVerify        = Rules{"Directory": {NotEmpty()}}
 	SetTaskVerify             = Rules{"SetTaskId": {NotEmpty()}}
+	TokenVerify               = Rules{"Token": {NotEmpty()}}
 )
