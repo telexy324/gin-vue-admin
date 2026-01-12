@@ -7,3 +7,4 @@ type ApiGroup struct {
 }
 
 var jumpServerService = service.ServiceGroupApp.JumpServerServiceGroup.JumpServerService
+var applicationServerService = service.ServiceGroupApp.ApplicationServiceGroup.CmdbServerService
