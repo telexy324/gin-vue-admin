@@ -33,7 +33,7 @@ func RunWindowsServer() {
 	tPool := taskPool.CreateTaskPool()
 	schedules.CreateSchedulePool(&tPool)
 	recordPool.CreateRecordPool()
-	jumpServer.Init()
+	go jumpServer.Init()
 	go sockets.StartWS()
 
 	Router := initialize.Routers()
