@@ -8,6 +8,7 @@ import (
 	"net"
 	"os"
 	"path"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -110,6 +111,9 @@ const (
 	maxSessionTimeDefault = 2 * time.Hour
 )
 
+var targetPool sync.Map // map[string]*ssh.Client
+var sftpPool sync.Map   // key: targetName, value: *sftp.Client
+
 func Init() {
 	// 1. SSH Server 配置
 	homePath, err := os.UserHomeDir()
@@ -209,10 +213,8 @@ func handleConn(nConn net.Conn, config *ssh.ServerConfig) {
 
 				case "subsystem":
 					if string(req.Payload[4:]) == "sftp" {
-						log.Println("starting sftp subsystem")
 						req.Reply(true, nil)
-
-						startSFTPServer(srcChannel, targetClient)
+						startSFTPServer(srcChannel, targetClient, targetName)
 						return
 					}
 					req.Reply(false, nil)
@@ -230,6 +232,22 @@ func handleConn(nConn net.Conn, config *ssh.ServerConfig) {
 }
 
 func connectTarget(targetName string) (*ssh.Client, error) {
+	// 🍀 尝试复用
+	if val, ok := targetPool.Load(targetName); ok {
+		client := val.(*ssh.Client)
+		// 测试是否还活着
+		_, _, err := client.SendRequest("keepalive@golang.org", true, nil)
+		if err == nil {
+			global.GVA_LOG.Info("[reuse] reuse ssh client for ", zap.String("target", targetName))
+			return client, nil
+		}
+
+		// 已失效，关闭并删掉
+		client.Close()
+		targetPool.Delete(targetName)
+	}
+
+	// 🍀 建立新连接
 	homePath, err := os.UserHomeDir()
 	if err != nil {
 		return nil, err
@@ -247,9 +265,20 @@ func connectTarget(targetName string) (*ssh.Client, error) {
 		User:            "root",
 		Auth:            []ssh.AuthMethod{ssh.PublicKeys(signer)},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+		Timeout:         10 * time.Second,
 	}
+
 	addr := fmt.Sprintf("%s:%d", targetName, 1122)
-	return ssh.Dial("tcp", addr, cfg)
+	client, err := ssh.Dial("tcp", addr, cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	// 🍀 放入复用池
+	targetPool.Store(targetName, client)
+	global.GVA_LOG.Info("[new] new ssh client connected: ", zap.String("target", targetName))
+
+	return client, nil
 }
 
 func newSession(user, target string) *Session {
@@ -304,19 +333,40 @@ func monitorSession(sess *Session) {
 	}
 }
 
+func getSftpClient(targetName string, targetClient *ssh.Client) (*sftp.Client, error) {
+	if val, ok := sftpPool.Load(targetName); ok {
+		cli := val.(*sftp.Client)
+		// 测试是否存活
+		_, err := cli.ReadDir("/")
+		if err == nil {
+			return cli, nil
+		}
+
+		cli.Close()
+		sftpPool.Delete(targetName)
+	}
+
+	cli, err := sftp.NewClient(targetClient)
+	if err != nil {
+		return nil, err
+	}
+
+	sftpPool.Store(targetName, cli)
+	return cli, nil
+}
+
 func startSFTPServer(
 	channel ssh.Channel,
 	targetClient *ssh.Client,
+	targetName string,
 ) {
 	defer channel.Close()
-	defer targetClient.Close()
 
-	targetSftp, err := sftp.NewClient(targetClient)
+	targetSftp, err := getSftpClient(targetName, targetClient)
 	if err != nil {
-		global.GVA_LOG.Error("create target sftp client failed: ", zap.Any("jump server", err))
+		global.GVA_LOG.Error("get target sftp client failed: ", zap.Any("jump server", err))
 		return
 	}
-	defer targetSftp.Close()
 
 	handler := &ProxySFTPHandler{
 		client: targetSftp,
@@ -332,11 +382,9 @@ func startSFTPServer(
 		},
 	)
 
-	log.Println("sftp proxy started")
+	global.GVA_LOG.Info("sftp proxy started for ", zap.String("target", targetName))
 
 	if err = server.Serve(); err != nil && err != io.EOF {
 		global.GVA_LOG.Error("sftp serve error: ", zap.Any("jump server", err))
 	}
-
-	global.GVA_LOG.Info("sftp proxy closed")
 }
