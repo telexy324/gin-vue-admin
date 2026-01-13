@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 	sockets "github.com/flipped-aurora/gin-vue-admin/server/api/v1/socket"
+	"github.com/flipped-aurora/gin-vue-admin/server/plugin/jumpServer"
 	"github.com/flipped-aurora/gin-vue-admin/server/plugin/recordPool"
 	schedules "github.com/flipped-aurora/gin-vue-admin/server/plugin/schedulePool"
 	"github.com/flipped-aurora/gin-vue-admin/server/plugin/taskPool"
@@ -32,6 +33,7 @@ func RunWindowsServer() {
 	tPool := taskPool.CreateTaskPool()
 	schedules.CreateSchedulePool(&tPool)
 	recordPool.CreateRecordPool()
+	jumpServer.Init()
 	go sockets.StartWS()
 
 	Router := initialize.Routers()

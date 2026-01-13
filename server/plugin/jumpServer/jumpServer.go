@@ -11,8 +11,10 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/google/uuid"
 	"github.com/pkg/sftp"
+	"go.uber.org/zap"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -31,16 +33,6 @@ type activityWriter struct {
 	rw      io.ReadWriter
 	session *Session
 }
-
-//func (a *activityWriter) Write(p []byte) (int, error) {
-//	a.session.LastActiveAt.Store(time.Now().Unix())
-//	return a.rw.Write(p)
-//}
-//
-//func (a *activityWriter) Read(p []byte) (int, error) {
-//	a.session.LastActiveAt.Store(time.Now().Unix())
-//	return a.rw.Read(p)
-//}
 
 func (a *activityWriter) Write(p []byte) (int, error) {
 	n, err := a.rw.Write(p)
@@ -114,17 +106,24 @@ func (l *fileInfoLister) ListAt(dst []os.FileInfo, offset int64) (int, error) {
 }
 
 const (
-	idleTimeout    = 10 * time.Minute
-	maxSessionTime = 2 * time.Hour
+	idleTimeoutDefault    = 10 * time.Minute
+	maxSessionTimeDefault = 2 * time.Hour
 )
 
-func main() {
+func Init() {
 	// 1. SSH Server 配置
-	privateBytes, err := os.ReadFile("server_host_key")
+	homePath, err := os.UserHomeDir()
 	if err != nil {
-		log.Fatal(err)
+		global.GVA_LOG.Fatal("get home path fail", zap.Any("jump server", err))
 	}
-	private, _ := ssh.ParsePrivateKey(privateBytes)
+	privateBytes, err := os.ReadFile(path.Join(homePath, ".ssh", "id_rsa"))
+	if err != nil {
+		global.GVA_LOG.Fatal("get private key file fail", zap.Any("jump server", err))
+	}
+	private, err := ssh.ParsePrivateKey(privateBytes)
+	if err != nil {
+		global.GVA_LOG.Fatal("parse private key fail", zap.Any("jump server", err))
+	}
 
 	config := &ssh.ServerConfig{
 		NoClientAuth: true, // 简化示例（生产请做认证）
@@ -132,11 +131,16 @@ func main() {
 	config.AddHostKey(private)
 
 	// 2. 监听 22（或其他端口）
-	listener, err := net.Listen("tcp", ":44488")
-	if err != nil {
-		log.Fatal(err)
+	port := 22
+	if global.GVA_CONFIG.JumpServer.Port > 0 {
+		port = global.GVA_CONFIG.JumpServer.Port
 	}
-	log.Println("Jump server listening on :44488")
+	addr := fmt.Sprintf(":%d", port)
+	listener, err := net.Listen("tcp", addr)
+	if err != nil {
+		global.GVA_LOG.Fatal("server listen fail", zap.Any("jump server", err))
+	}
+	global.GVA_LOG.Info("Jump server listening on ", zap.String("addr", addr))
 
 	for {
 		conn, _ := listener.Accept()
@@ -147,7 +151,7 @@ func main() {
 func handleConn(nConn net.Conn, config *ssh.ServerConfig) {
 	sshConn, chans, reqs, err := ssh.NewServerConn(nConn, config)
 	if err != nil {
-		log.Println("handshake failed:", err)
+		global.GVA_LOG.Error("handshake failed: ", zap.Any("jump server", err))
 		return
 	}
 	defer sshConn.Close()
@@ -158,7 +162,7 @@ func handleConn(nConn net.Conn, config *ssh.ServerConfig) {
 	// 3. 连接目标服务器
 	targetClient, err := connectTarget(targetName)
 	if err != nil {
-		log.Println("target connect failed:", err)
+		global.GVA_LOG.Error("target connect failed: ", zap.Any("jump server", err))
 		return
 	}
 	defer targetClient.Close()
@@ -174,6 +178,7 @@ func handleConn(nConn net.Conn, config *ssh.ServerConfig) {
 		srcChannel, srcRequests, _ := ch.Accept()
 		dstSession, err := targetClient.NewSession()
 		if err != nil {
+			global.GVA_LOG.Error("create session failed: ", zap.Any("jump server", err))
 			srcChannel.Close()
 			continue
 		}
@@ -265,6 +270,13 @@ func newSession(user, target string) *Session {
 func monitorSession(sess *Session) {
 	ticker := time.NewTicker(30 * time.Second)
 	defer ticker.Stop()
+	var maxSessionTime, idleTimeout = maxSessionTimeDefault, idleTimeoutDefault
+	if global.GVA_CONFIG.JumpServer.MaxSessionTime > 0 {
+		maxSessionTime = time.Duration(global.GVA_CONFIG.JumpServer.MaxSessionTime) * time.Hour
+	}
+	if global.GVA_CONFIG.JumpServer.IdleTimeout > 0 {
+		idleTimeout = time.Duration(global.GVA_CONFIG.JumpServer.IdleTimeout) * time.Minute
+	}
 
 	for {
 		select {
@@ -276,7 +288,7 @@ func monitorSession(sess *Session) {
 
 			// 最大会话时长
 			if now.Sub(sess.StartedAt) > maxSessionTime {
-				log.Println("session max time reached:", sess.ID)
+				global.GVA_LOG.Info("session max time reached: ", zap.String("jump server", sess.ID))
 				sess.Cancel()
 				return
 			}
@@ -284,7 +296,7 @@ func monitorSession(sess *Session) {
 			// 空闲超时
 			last := time.Unix(sess.LastActiveAt.Load(), 0)
 			if now.Sub(last) > idleTimeout {
-				log.Println("session idle timeout:", sess.ID)
+				global.GVA_LOG.Info("session idle timeout: ", zap.String("jump server", sess.ID))
 				sess.Cancel()
 				return
 			}
@@ -301,7 +313,7 @@ func startSFTPServer(
 
 	targetSftp, err := sftp.NewClient(targetClient)
 	if err != nil {
-		log.Println("create target sftp client failed:", err)
+		global.GVA_LOG.Error("create target sftp client failed: ", zap.Any("jump server", err))
 		return
 	}
 	defer targetSftp.Close()
@@ -322,9 +334,9 @@ func startSFTPServer(
 
 	log.Println("sftp proxy started")
 
-	if err := server.Serve(); err != nil && err != io.EOF {
-		log.Println("sftp serve error:", err)
+	if err = server.Serve(); err != nil && err != io.EOF {
+		global.GVA_LOG.Error("sftp serve error: ", zap.Any("jump server", err))
 	}
 
-	log.Println("sftp proxy closed")
+	global.GVA_LOG.Info("sftp proxy closed")
 }

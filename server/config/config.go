@@ -21,4 +21,5 @@ type Server struct {
 	Timer      Timer      `mapstructure:"timer" json:"timer" yaml:"timer"`
 	Task       Task       `mapstructure:"task" json:"task" yaml:"task"`
 	Cloudreve  Cloudreve  `mapstructure:"cloudreve" json:"cloudreve" yaml:"cloudreve"`
+	JumpServer JumpServer `mapstructure:"jump-server" json:"jumpServer" yaml:"jumpServer"`
 }
