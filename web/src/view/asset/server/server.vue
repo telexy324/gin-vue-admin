@@ -92,8 +92,8 @@
               size="small"
               type="text"
               :disabled="!hasSsh"
-              @click="uploadFile(scope.row)"
-            >上传</el-button>
+              @click="requestToken(scope.row)"
+            >crt</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -235,6 +235,7 @@ import {
   deleteServerByIds
 } from '@/api/cmdb'
 import { getPolicyPathByAuthorityId } from '@/api/casbin'
+import { getToken } from '@/api/jumpServer'
 import infoList from '@/mixins/infoList'
 import { toSQLLine } from '@/utils/stringFun'
 import warningBar from '@/components/warningBar/warningBar.vue'
@@ -242,7 +243,7 @@ import { exportExcel, downloadTemplate } from '@/api/cmdb'
 import { mapGetters } from 'vuex'
 import Systems from '@/components/task/systems.vue'
 import { ElMessage } from 'element-plus'
-import service from '@/utils/request'
+// import service from '@/utils/request'
 import Axios from 'axios'
 import socket from '@/socket'
 
@@ -684,7 +685,7 @@ export default {
         },
       }).then(response => {
         if (response.data.code === 0 || response.headers.success === 'true') {
-          let message = '上传成功'
+          const message = '上传成功'
           ElMessage({
             showClose: true,
             message: message,
@@ -735,6 +736,9 @@ export default {
         })
         this.closeScriptDialog()
       }
+    },
+    requestToken(row) {
+      getToken(row.id)
     },
   }
 }

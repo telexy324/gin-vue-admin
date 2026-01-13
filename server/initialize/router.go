@@ -45,6 +45,7 @@ func Routers() *gin.Engine {
 	taskRouter := router.RouterGroupApp.Task
 	taskSocketRouter := router.RouterGroupApp.TaskSocket
 	logUploadRouter := router.RouterGroupApp.LogUpload
+	jumpServerRouter := router.RouterGroupApp.JumpServer
 	PublicGroup := Router.Group("")
 	{
 		// 健康监测
@@ -87,6 +88,7 @@ func Routers() *gin.Engine {
 		//sshRouter.InitSshRouter(PrivateGroup)
 		taskRouter.InitTaskRouter(PrivateGroup)
 		logUploadRouter.InitLogUploadRouter(PrivateGroup)
+		jumpServerRouter.InitJumpServerRouter(PrivateGroup)
 	}
 
 	InstallPlugin(PublicGroup, PrivateGroup) // 安装插件

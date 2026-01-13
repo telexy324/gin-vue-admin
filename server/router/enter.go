@@ -4,6 +4,7 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/router/application"
 	"github.com/flipped-aurora/gin-vue-admin/server/router/autocode"
 	"github.com/flipped-aurora/gin-vue-admin/server/router/example"
+	"github.com/flipped-aurora/gin-vue-admin/server/router/jumpServerRoute"
 	"github.com/flipped-aurora/gin-vue-admin/server/router/logUploadRoute"
 	"github.com/flipped-aurora/gin-vue-admin/server/router/ssh"
 	"github.com/flipped-aurora/gin-vue-admin/server/router/system"
@@ -20,6 +21,7 @@ type RouterGroup struct {
 	Task        taskRoute.TaskRouter
 	TaskSocket  taskSocketRoute.TaskSocketRouter
 	LogUpload   logUploadRoute.RouterGroup
+	JumpServer  jumpServerRoute.RouterGroup
 }
 
 var RouterGroupApp = new(RouterGroup)
