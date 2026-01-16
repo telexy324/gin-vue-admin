@@ -5,6 +5,14 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"io"
+	"os"
+	"regexp"
+	"strconv"
+	"strings"
+	"sync"
+	"time"
+
 	sockets "github.com/flipped-aurora/gin-vue-admin/server/api/v1/socket"
 	"github.com/flipped-aurora/gin-vue-admin/server/common"
 	"github.com/flipped-aurora/gin-vue-admin/server/consts"
@@ -20,12 +28,6 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/crypto/ssh"
 	"gorm.io/gorm"
-	"io"
-	"os"
-	"strconv"
-	"strings"
-	"sync"
-	"time"
 )
 
 type TaskRunner struct {
@@ -727,9 +729,9 @@ func (t *TaskRunner) runTask() (failedIPs []string) {
 				if t.template.SysUser != "root" && t.template.BecomeUser != t.template.SysUser {
 					executeUser = t.template.SysUser
 				}
-				var shellType = "sudo -H -n -u " + executeUser + " bash -se"
+				var shellType = "sudo -H -n -u " + executeUser + " -- bash -i -se"
 				if t.template.ShellType == consts.ShellTypeBash {
-					shellType = "sudo -H -n -u " + executeUser + " bash -s"
+					shellType = "sudo -H -n -u " + executeUser + " -- bash -i -s"
 				} else if t.template.ShellType == consts.ShellTypePython {
 					shellType = "python"
 				}
@@ -1323,4 +1325,14 @@ func checkTmpDir(path string) error {
 		}
 	}
 	return err
+}
+
+func shellEscape(s string) string {
+	// 仅允许：字母、数字、下划线、横线
+	if regexp.MustCompile(`^[a-zA-Z0-9_\-]+$`).MatchString(s) {
+		return s
+	}
+
+	// 否则进行强转义
+	return "'" + strings.ReplaceAll(s, "'", "'\\''") + "'"
 }
