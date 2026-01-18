@@ -100,7 +100,7 @@ func (a *JumpServerApi) GetServer(c *gin.Context) {
 		Port:     server.SshPort,
 		User:     server.SshUser,
 		//Protocol: "",
-		//Client:   "",
-		//Password: "",
+		Client:   "securecrt",
+		Password: "!QAZse432",
 	}, "获取成功", c)
 }

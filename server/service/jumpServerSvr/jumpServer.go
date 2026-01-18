@@ -2,9 +2,10 @@ package jumpServerSvr
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/flipped-aurora/gin-vue-admin/server/model/jumpServerMdl"
 	"github.com/golang-jwt/jwt/v4"
-	"time"
 )
 
 type JumpServerService struct {

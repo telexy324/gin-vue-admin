@@ -737,8 +737,14 @@ export default {
         this.closeScriptDialog()
       }
     },
-    requestToken(row) {
-      getToken(row.id)
+    async requestToken(row) {
+      const resp = await getToken({
+        ID: row.ID
+      })
+      console.log(resp)
+      if (resp.data.url) {
+        window.location.href = resp.data.url
+      }
     },
   }
 }
