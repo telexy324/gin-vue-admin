@@ -331,7 +331,12 @@ func handleNewChannel(
 			switch req.Type {
 
 			case "pty-req":
-				dstSession.RequestPty("xterm-256color", 40, 120, ssh.TerminalModes{})
+				//term := "xterm"
+				//w := binary.BigEndian.Uint32(req.Payload[4:])
+				//h := binary.BigEndian.Uint32(req.Payload[8:])
+				//dstSession.RequestPty(term, int(h), int(w), ssh.TerminalModes{})
+				//req.Reply(true, nil)
+				dstSession.SendRequest("pty-req", true, req.Payload)
 				req.Reply(true, nil)
 
 			case "shell":
@@ -355,6 +360,9 @@ func handleNewChannel(
 					startSFTPServer(srcChannel, targetClient, sess)
 					return
 				}
+				req.Reply(false, nil)
+			default:
+				global.GVA_LOG.Info("discard req: ", zap.Any("jump server", req.Type))
 				req.Reply(false, nil)
 			}
 		}
