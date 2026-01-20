@@ -741,7 +741,6 @@ export default {
       const resp = await getToken({
         ID: row.ID
       })
-      console.log(resp)
       if (resp.data.url) {
         window.location.href = resp.data.url
       }

@@ -95,12 +95,15 @@ func (a *JumpServerApi) GetServer(c *gin.Context) {
 	//	"jump_user":   jumpUser,
 	//	"session_id":  sessionID,
 	//})
+	var port = 22
+	if global.GVA_CONFIG.JumpServer.Port > 0 {
+		port = global.GVA_CONFIG.JumpServer.Port
+	}
 	response.OkWithDetailed(jumpServerMdl.ConnInfo{
 		JumpHost: server.ManageIp,
-		Port:     server.SshPort,
+		Port:     port,
 		User:     server.SshUser,
 		//Protocol: "",
-		Client:   "securecrt",
-		Password: "!QAZse432",
+		Client: "securecrt",
 	}, "获取成功", c)
 }
