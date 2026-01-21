@@ -141,3 +141,5 @@ jump-server:
   port: 22
   idle-time-out: 60
   max-session-time: 24
+  out-addr: 127.0.0.1
+  web-port: 8080

@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/response"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/jumpServerMdl"
 	request2 "github.com/flipped-aurora/gin-vue-admin/server/model/jumpServerMdl/request"
@@ -25,18 +24,18 @@ type JumpServerApi struct {
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
 // @Router /jumpServer/getToken [post]
 func (a *JumpServerApi) GetToken(c *gin.Context) {
-	var idInfo request.GetById
-	if err := c.ShouldBindJSON(&idInfo); err != nil {
+	var getToken request2.GetToken
+	if err := c.ShouldBindJSON(&getToken); err != nil {
 		global.GVA_LOG.Info("error", zap.Any("err", err))
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err := utils.Verify(idInfo, utils.IdVerify); err != nil {
+	if err := utils.Verify(getToken, utils.IdVerify); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
 	userID := int(utils.GetUserID(c))
-	if token, err := jumpServerService.GenerateJumpToken(userID, int(idInfo.ID)); err != nil {
+	if token, err := jumpServerService.GenerateJumpToken(userID, int(getToken.ID), getToken.Type); err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 		response.FailWithMessage("获取失败", c)
 	} else {

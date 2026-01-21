@@ -3,8 +3,10 @@ package jumpServerMdl
 import "github.com/golang-jwt/jwt/v4"
 
 type JumpClaims struct {
-	UserID   int `json:"user_id"`
-	TargetID int `json:"target_id"`
+	UserID   int    `json:"user_id"`
+	TargetID int    `json:"target_id"`
+	JumpType int    `json:"jump_type"`
+	Addr     string `json:"addr"`
 	jwt.RegisteredClaims
 }
 

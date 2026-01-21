@@ -66,3 +66,8 @@ var OsMapReverse = map[string]int64{
 const ManageIpPrefix = `220.2.*|10.21\d.*|212.2.*`
 
 const DiscoverSSHPort = 1122
+
+const (
+	JumpTypeSSH = iota + 1
+	JumpTypeSFTP
+)

@@ -87,13 +87,25 @@
               :disabled="!hasSsh"
               @click="runSsh(scope.row)"
             >执行</el-button>
-            <el-button
-              icon="el-icon-upload"
-              size="small"
-              type="text"
-              :disabled="!hasSsh"
-              @click="requestToken(scope.row)"
-            >crt</el-button>
+<!--            <el-button-->
+<!--              icon="el-icon-upload"-->
+<!--              size="small"-->
+<!--              type="text"-->
+<!--              :disabled="!hasSsh"-->
+<!--              @click="requestToken(scope.row)"-->
+<!--            >crt</el-button>-->
+            <el-popover :ref="`popover-${scope.$index}`" :disabled="!hasSsh" placement="top" width="160">
+              <div style="text-align: right; margin-top: 8px;">
+                <div style="text-align: right; margin-top: 10px;">
+                  <el-button size="mini" type="text" @click="handleClose(scope.$index)">取消</el-button>
+                  <el-button size="mini" type="primary" @click="requestTokenSSH(scope.row, scope.$index)">SSH</el-button>
+                  <el-button size="mini" type="primary" @click="requestTokenSFTP(scope.row, scope.$index)">SFTP</el-button>
+                </div>
+              </div>
+              <template #reference>
+                <el-button icon="el-icon-caret-right" size="small" type="text">连接</el-button>
+              </template>
+            </el-popover>
           </template>
         </el-table-column>
       </el-table>
@@ -745,6 +757,30 @@ export default {
         window.location.href = resp.data.url
       }
     },
+    async requestTokenSSH(row, index) {
+      const resp = await getToken({
+        ID: row.ID,
+        type: 1
+      })
+      this.handleClose(index)
+      if (resp.data.url) {
+        window.location.href = resp.data.url
+      }
+    },
+    async requestTokenSFTP(row, index) {
+      const resp = await getToken({
+        ID: row.ID,
+        type: 2
+      })
+      this.handleClose(index)
+      if (resp.data.url) {
+        window.location.href = resp.data.url
+      }
+    },
+    handleClose(index) {
+      this.$refs[`popover-${index}`].hide()
+      this.sshUser = ''
+    }
   }
 }
 </script>
