@@ -34,8 +34,13 @@ func (a *JumpServerApi) GetToken(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	userID := int(utils.GetUserID(c))
-	if token, err := jumpServerService.GenerateJumpToken(userID, int(getToken.ID), getToken.Type); err != nil {
+	err, server := applicationServerService.GetServerById(getToken.ID)
+	if err != nil {
+		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if token, _, err := jumpServerService.GenerateSession(server, getToken.Client); err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 		response.FailWithMessage("获取失败", c)
 	} else {

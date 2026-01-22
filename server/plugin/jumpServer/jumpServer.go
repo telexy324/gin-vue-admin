@@ -113,6 +113,8 @@ const (
 	maxSessionTime = 2 * time.Hour
 )
 
+var SessStore *MemoryStore
+
 func Init() {
 	// 1. SSH Server 配置
 	homePath, err := os.UserHomeDir()
@@ -144,6 +146,7 @@ func Init() {
 		global.GVA_LOG.Fatal("server listen fail", zap.Any("jump server", err))
 	}
 	global.GVA_LOG.Info("Jump server listening on ", zap.String("addr", addr))
+	SessStore = NewMemoryStore()
 
 	for {
 		conn, _ := listener.Accept()
