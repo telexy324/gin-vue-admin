@@ -97,9 +97,11 @@ func (s *JumpServerService) GenerateSession(server application.ApplicationServer
 		UserID:     0,
 		TargetHost: server.ManageIp,
 		TargetPort: server.SshPort,
-		ExpiresAt:  time.Time{},
+		ExpiresAt:  time.Now().Add(time.Minute),
 		Used:       false,
 	}
-	jumpServer.SessStore.Save(&sessRec)
+	if err = jumpServer.SessStore.Save(payload.Secret, &sessRec); err != nil {
+		return "", nil, err
+	}
 	return token, &payload, nil
 }
