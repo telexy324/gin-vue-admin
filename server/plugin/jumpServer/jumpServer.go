@@ -162,11 +162,16 @@ func handleConn(nConn net.Conn, config *ssh.ServerConfig) {
 	}
 	defer sshConn.Close()
 
-	targetName := sshConn.User()
-	parent := newParentSession("", targetName)
+	secret := sshConn.User()
+	SessRec, err := SessStore.Authenticate(secret)
+	if err != nil {
+		global.GVA_LOG.Error("get stored record failed: ", zap.Any("jump server", err))
+		return
+	}
+	parent := newParentSession("", SessRec.TargetHost)
 
 	// 3. 连接目标服务器
-	targetClient, err := connectTarget(targetName)
+	targetClient, err := connectTarget(SessRec.TargetHost)
 	if err != nil {
 		global.GVA_LOG.Error("target connect failed: ", zap.Any("jump server", err))
 		return

@@ -4,38 +4,30 @@ import (
 	"errors"
 	"sync"
 	"time"
+
+	"github.com/flipped-aurora/gin-vue-admin/server/model/jumpServerMdl"
 )
 
-type SessionRecord struct {
-	Secret     string
-	UserID     int64
-	TargetHost string
-	TargetPort int
-
-	ExpiresAt time.Time
-	Used      bool
-}
-
 type Store interface {
-	Get(secret string) (*SessionRecord, error)
+	Get(secret string) (*jumpServerMdl.SessionRecord, error)
 	MarkUsed(secret string) error
-	Save(sess *SessionRecord) error
+	Save(sess *jumpServerMdl.SessionRecord) error
 }
 
 var ErrNotFound = errors.New("session not found")
 
 type MemoryStore struct {
 	mu   sync.Mutex
-	data map[string]*SessionRecord
+	data map[string]*jumpServerMdl.SessionRecord
 }
 
 func NewMemoryStore() *MemoryStore {
 	return &MemoryStore{
-		data: make(map[string]*SessionRecord),
+		data: make(map[string]*jumpServerMdl.SessionRecord),
 	}
 }
 
-func (s *MemoryStore) Save(sess *SessionRecord) error {
+func (s *MemoryStore) Save(sess *jumpServerMdl.SessionRecord) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -43,7 +35,7 @@ func (s *MemoryStore) Save(sess *SessionRecord) error {
 	return nil
 }
 
-func (s *MemoryStore) Get(secret string) (*SessionRecord, error) {
+func (s *MemoryStore) Get(secret string) (*jumpServerMdl.SessionRecord, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -64,4 +56,31 @@ func (s *MemoryStore) MarkUsed(secret string) error {
 	}
 	sess.Used = true
 	return nil
+}
+
+var (
+	ErrInvalidSession = errors.New("invalid or expired session")
+)
+
+func (s *MemoryStore) Authenticate(username string) (*jumpServerMdl.SessionRecord, error) {
+	// username == secret
+	sess, err := s.Get(username)
+	if err != nil {
+		return nil, ErrInvalidSession
+	}
+
+	if sess.Used {
+		return nil, ErrInvalidSession
+	}
+
+	if time.Now().After(sess.ExpiresAt) {
+		return nil, ErrInvalidSession
+	}
+
+	// ⚠️ 这里立刻标记 Used，防止并发重放
+	if err := s.MarkUsed(username); err != nil {
+		return nil, ErrInvalidSession
+	}
+
+	return sess, nil
 }

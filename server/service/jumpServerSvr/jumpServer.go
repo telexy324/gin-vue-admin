@@ -12,6 +12,7 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/application"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/jumpServerMdl"
+	"github.com/flipped-aurora/gin-vue-admin/server/plugin/jumpServer"
 )
 
 type JumpServerService struct {
@@ -91,5 +92,14 @@ func (s *JumpServerService) GenerateSession(server application.ApplicationServer
 	sigB64 := base64.RawURLEncoding.EncodeToString(sig)
 
 	token := payloadB64 + "." + sigB64
+	sessRec := jumpServerMdl.SessionRecord{
+		Secret:     token,
+		UserID:     0,
+		TargetHost: server.ManageIp,
+		TargetPort: server.SshPort,
+		ExpiresAt:  time.Time{},
+		Used:       false,
+	}
+	jumpServer.SessStore.Save(&sessRec)
 	return token, &payload, nil
 }

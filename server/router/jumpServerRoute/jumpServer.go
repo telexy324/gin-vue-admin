@@ -18,11 +18,11 @@ func (s *JumpServerRouter) InitJumpServerRouter(Router *gin.RouterGroup) (R gin.
 	return jumpServerRouter
 }
 
-func (s *JumpServerRouter) InitJumpServerPubRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
-	jumpServerRouter := Router.Group("jumpServer")
-	var jumpServerApi = v1.ApiGroupApp.JumpServerApiGroup.JumpServerApi
-	{
-		jumpServerRouter.POST("getServer", jumpServerApi.GetServer) // 获取服务器
-	}
-	return jumpServerRouter
-}
+//func (s *JumpServerRouter) InitJumpServerPubRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
+//	jumpServerRouter := Router.Group("jumpServer")
+//	var jumpServerApi = v1.ApiGroupApp.JumpServerApiGroup.JumpServerApi
+//	{
+//		jumpServerRouter.POST("getServer", jumpServerApi.GetServer) // 获取服务器
+//	}
+//	return jumpServerRouter
+//}

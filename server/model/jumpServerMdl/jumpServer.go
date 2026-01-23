@@ -1,6 +1,10 @@
 package jumpServerMdl
 
-import "github.com/golang-jwt/jwt/v4"
+import (
+	"time"
+
+	"github.com/golang-jwt/jwt/v4"
+)
 
 type JumpClaims struct {
 	UserID   int    `json:"user_id"`
@@ -27,4 +31,14 @@ type SessionPayload struct {
 
 	IssuedAt int64 `json:"iat"`
 	ExpireAt int64 `json:"exp"`
+}
+
+type SessionRecord struct {
+	Secret     string
+	UserID     int64
+	TargetHost string
+	TargetPort int
+
+	ExpiresAt time.Time
+	Used      bool
 }
