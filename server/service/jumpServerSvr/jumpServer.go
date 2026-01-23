@@ -75,7 +75,7 @@ func (s *JumpServerService) GenerateSession(server application.ApplicationServer
 		Client:      client,
 		Secret:      genSecret(),
 		IssuedAt:    time.Now().Unix(),
-		ExpireAt:    time.Now().Add(60 * time.Second).Unix(),
+		ExpireAt:    time.Now().Add(24 * time.Hour).Unix(),
 	}
 
 	raw, err := json.Marshal(payload)
@@ -97,7 +97,7 @@ func (s *JumpServerService) GenerateSession(server application.ApplicationServer
 		UserID:     0,
 		TargetHost: server.ManageIp,
 		TargetPort: server.SshPort,
-		ExpiresAt:  time.Now().Add(time.Minute),
+		ExpiresAt:  time.Now().Add(24 * time.Hour),
 		Used:       false,
 	}
 	if err = jumpServer.SessStore.Save(payload.Secret, &sessRec); err != nil {

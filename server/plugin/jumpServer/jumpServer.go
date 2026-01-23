@@ -109,8 +109,8 @@ func (l *fileInfoLister) ListAt(dst []os.FileInfo, offset int64) (int, error) {
 }
 
 const (
-	idleTimeout    = 10 * time.Minute
-	maxSessionTime = 2 * time.Hour
+	idleTimeout    = 24 * time.Hour
+	maxSessionTime = 24 * time.Hour
 )
 
 var SessStore *MemoryStore

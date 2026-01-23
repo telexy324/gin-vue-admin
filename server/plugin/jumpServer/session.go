@@ -72,10 +72,10 @@ func (s *MemoryStore) Authenticate(username string) (*jumpServerMdl.SessionRecor
 		return nil, ErrInvalidSession
 	}
 
-	if sess.Used {
-		global.GVA_LOG.Error("session used", zap.String("username", username), zap.Error(err))
-		return nil, ErrInvalidSession
-	}
+	//if sess.Used {
+	//	global.GVA_LOG.Error("session used", zap.String("username", username), zap.Error(err))
+	//	return nil, ErrInvalidSession
+	//}
 
 	if time.Now().After(sess.ExpiresAt) {
 		global.GVA_LOG.Error("session expired", zap.String("username", username), zap.Error(err))
@@ -83,10 +83,10 @@ func (s *MemoryStore) Authenticate(username string) (*jumpServerMdl.SessionRecor
 	}
 
 	// ⚠️ 这里立刻标记 Used，防止并发重放
-	if err := s.MarkUsed(username); err != nil {
-		global.GVA_LOG.Error("session mark used", zap.String("username", username), zap.Error(err))
-		return nil, ErrInvalidSession
-	}
+	//if err := s.MarkUsed(username); err != nil {
+	//	global.GVA_LOG.Error("session mark used", zap.String("username", username), zap.Error(err))
+	//	return nil, ErrInvalidSession
+	//}
 
 	return sess, nil
 }
