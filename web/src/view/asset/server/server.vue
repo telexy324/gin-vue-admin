@@ -98,9 +98,9 @@
               <div style="text-align: right; margin-top: 8px;">
                 <div style="text-align: right; margin-top: 10px;">
                   <el-button size="mini" type="text" @click="handleClose(scope.$index)">取消</el-button>
-                  <el-button size="mini" type="primary" @click="requestTokenCRT(scope.row, scope.$index)">CRT</el-button>
-                  <el-button size="mini" type="warning" @click="requestTokenMOBA(scope.row, scope.$index)">MOBA</el-button>
-                  <el-button size="mini" type="danger" @click="requestTokenSFTP(scope.row, scope.$index)">SFTP</el-button>
+                  <el-button size="mini" type="primary" @click="requestToken(scope.row, scope.$index, 'securecrt')">CRT</el-button>
+                  <el-button size="mini" type="warning" @click="requestToken(scope.row, scope.$index, 'mobaxterm')">MOBA</el-button>
+                  <el-button size="mini" type="danger" @click="requestToken(scope.row, scope.$index, 'filezilla')">SFTP</el-button>
                 </div>
               </div>
               <template #reference>
@@ -750,38 +750,10 @@ export default {
         this.closeScriptDialog()
       }
     },
-    async requestToken(row) {
-      const resp = await getToken({
-        ID: row.ID
-      })
-      if (resp.data.url) {
-        window.location.href = resp.data.url
-      }
-    },
-    async requestTokenCRT(row, index) {
+    async requestToken(row, index, client) {
       const resp = await getToken({
         ID: row.ID,
-        client: 'securecrt'
-      })
-      this.handleClose(index)
-      if (resp.data.url) {
-        window.location.href = resp.data.url
-      }
-    },
-    async requestTokenMOBA(row, index) {
-      const resp = await getToken({
-        ID: row.ID,
-        client: 'mobaxterm'
-      })
-      this.handleClose(index)
-      if (resp.data.url) {
-        window.location.href = resp.data.url
-      }
-    },
-    async requestTokenSFTP(row, index) {
-      const resp = await getToken({
-        ID: row.ID,
-        client: 'filezilla'
+        client: client,
       })
       this.handleClose(index)
       if (resp.data.url) {

@@ -347,6 +347,20 @@ func handleNewChannel(
 				dstSession.SendRequest("pty-req", true, req.Payload)
 				req.Reply(true, nil)
 
+			case "window-change":
+				var win struct {
+					Columns uint32
+					Rows    uint32
+					Width   uint32
+					Height  uint32
+				}
+				ssh.Unmarshal(req.Payload, &win)
+				_ = dstSession.WindowChange(
+					int(win.Rows),
+					int(win.Columns),
+				)
+				req.Reply(true, nil)
+
 			case "shell":
 				dstSession.Stdout = &activityWriter{rw: srcChannel, session: sess}
 				dstSession.Stderr = &activityWriter{rw: srcChannel, session: sess}
@@ -369,6 +383,10 @@ func handleNewChannel(
 					return
 				}
 				req.Reply(false, nil)
+
+			case "x11-req":
+				req.Reply(false, nil)
+
 			default:
 				global.GVA_LOG.Info("discard req: ", zap.Any("jump server", req.Type))
 				req.Reply(false, nil)

@@ -43,9 +43,10 @@ func (a *JumpServerApi) GetToken(c *gin.Context) {
 		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 		response.FailWithMessage("获取失败", c)
 	} else {
-		c.JSON(200, gin.H{
-			"url": fmt.Sprintf("myjump://%s", token),
-		})
+		//c.JSON(200, gin.H{
+		//	"url": fmt.Sprintf("myjump://%s", token),
+		//})
+		response.OkWithDetailed(gin.H{"url": fmt.Sprintf("myjump://%s", token)}, "查询成功", c)
 	}
 }
 
