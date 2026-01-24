@@ -105,5 +105,6 @@ zap:
   log-in-console: true
 jump-server:
   port: 44488
+  idle-time-out: 1440
+  max-session-time: 1440
   out-addr: 127.0.0.1
-  web-port: 8080

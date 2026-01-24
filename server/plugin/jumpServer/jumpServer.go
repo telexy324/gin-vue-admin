@@ -108,11 +108,6 @@ func (l *fileInfoLister) ListAt(dst []os.FileInfo, offset int64) (int, error) {
 	return n, nil
 }
 
-const (
-	idleTimeout    = 24 * time.Hour
-	maxSessionTime = 24 * time.Hour
-)
-
 var SessStore *MemoryStore
 
 func Init() {
@@ -147,6 +142,7 @@ func Init() {
 	}
 	global.GVA_LOG.Info("Jump server listening on ", zap.String("addr", addr))
 	SessStore = NewMemoryStore()
+	SessStore.StartGC(30 * time.Second)
 
 	for {
 		conn, _ := listener.Accept()
@@ -241,7 +237,7 @@ func monitorSession(sess *Session) {
 			now := time.Now()
 
 			// 最大会话时长
-			if now.Sub(sess.StartedAt) > maxSessionTime {
+			if now.Sub(sess.StartedAt) > time.Duration(global.GVA_CONFIG.JumpServer.MaxSessionTime)*time.Minute {
 				global.GVA_LOG.Info("session max time reached: ", zap.String("jump server", sess.ID))
 				sess.End()
 				return
@@ -249,7 +245,7 @@ func monitorSession(sess *Session) {
 
 			// 空闲超时
 			last := time.Unix(sess.LastActiveAt.Load(), 0)
-			if now.Sub(last) > idleTimeout {
+			if now.Sub(last) > time.Duration(global.GVA_CONFIG.JumpServer.IdleTimeout)*time.Minute {
 				global.GVA_LOG.Info("session idle timeout: ", zap.String("jump server", sess.ID))
 				sess.End()
 				return

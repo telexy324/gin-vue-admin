@@ -97,7 +97,7 @@ func (s *JumpServerService) GenerateSession(server application.ApplicationServer
 		UserID:     0,
 		TargetHost: server.ManageIp,
 		TargetPort: server.SshPort,
-		ExpiresAt:  time.Now().Add(24 * time.Hour),
+		ExpiresAt:  time.Now().Add(time.Duration(global.GVA_CONFIG.JumpServer.MaxSessionTime) * time.Minute),
 		Used:       false,
 	}
 	if err = jumpServer.SessStore.Save(payload.Secret, &sessRec); err != nil {

@@ -82,11 +82,27 @@ func (s *MemoryStore) Authenticate(username string) (*jumpServerMdl.SessionRecor
 		return nil, ErrInvalidSession
 	}
 
-	// ⚠️ 这里立刻标记 Used，防止并发重放
+	//	⚠️ 这里立刻标记 Used，防止并发重放
 	//if err := s.MarkUsed(username); err != nil {
 	//	global.GVA_LOG.Error("session mark used", zap.String("username", username), zap.Error(err))
 	//	return nil, ErrInvalidSession
 	//}
 
 	return sess, nil
+}
+
+func (s *MemoryStore) StartGC(interval time.Duration) {
+	go func() {
+		ticker := time.NewTicker(interval)
+		for range ticker.C {
+			s.mu.Lock()
+			now := time.Now()
+			for k, v := range s.data {
+				if now.After(v.ExpiresAt) {
+					delete(s.data, k)
+				}
+			}
+			s.mu.Unlock()
+		}
+	}()
 }

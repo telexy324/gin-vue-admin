@@ -139,7 +139,6 @@ cloudreve:
 
 jump-server:
   port: 22
-  idle-time-out: 60
-  max-session-time: 24
+  idle-time-out: 1440
+  max-session-time: 1440
   out-addr: 127.0.0.1
-  web-port: 8080
