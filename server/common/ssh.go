@@ -1,6 +1,7 @@
 package common
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
@@ -973,4 +974,62 @@ func (c *SSHClient) CommandScript(command string, logger Logger, manageIP string
 	time.Sleep(time.Millisecond * time.Duration(250))
 	quitChan <- true
 	return
+}
+
+func (c *SSHClient) CommandScriptNew(
+	script string,
+	logger Logger,
+	manageIP string,
+	executor string,
+) error {
+
+	session, err := c.Client.NewSession()
+	if err != nil {
+		return err
+	}
+	defer session.Close()
+
+	stdin, err := session.StdinPipe()
+	if err != nil {
+		return err
+	}
+
+	stdout, err := session.StdoutPipe()
+	if err != nil {
+		return err
+	}
+
+	stderr, err := session.StderrPipe()
+	if err != nil {
+		return err
+	}
+
+	// 实时日志（像 Jenkins）
+	go streamLog(stdout, logger, manageIP)
+	go streamLog(stderr, logger, manageIP)
+
+	// 启动 executor
+	if err := session.Start(executor); err != nil {
+		return err
+	}
+
+	// 写入脚本
+	if _, err := io.WriteString(stdin, script); err != nil {
+		return err
+	}
+	stdin.Close()
+
+	// 等待完成
+	if err := session.Wait(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func streamLog(r io.Reader, logger Logger, ip string) {
+	scanner := bufio.NewScanner(r)
+	for scanner.Scan() {
+		logger.Log(scanner.Text(), ip)
+	}
 }

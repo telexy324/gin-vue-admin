@@ -708,39 +708,35 @@ func (t *TaskRunner) runTask() (failedIPs []string) {
 					f <- s.ManageIp
 				}
 			} else {
-				////command := "sh " + t.template.ScriptPath
-				//var shellType = "sh "
-				//if t.template.ShellType == consts.ShellTypeSh {
-				//	shellType = "sh "
-				//} else if t.template.ShellType == consts.ShellTypeBash {
-				//	shellType = "bash "
-				//}
-				//command := shellType + strings.Trim(t.template.ScriptPath, " ")
-				//if len(strings.Trim(t.template.ShellVars, " ")) > 0 {
-				//	command = command + " " + strings.Trim(t.template.ShellVars, " ")
-				//}
-				//err = sshClient.Commands(command, t, s.ManageIp)
-				//if err != nil {
-				//	global.GVA_LOG.Error("run task failed on exec command: ", zap.Uint("task ID: ", t.task.ID), zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
-				//	f <- s.ManageIp
-				//	return
-				//}
 				executeUser := t.template.BecomeUser
-				if t.template.SysUser != "root" && t.template.BecomeUser != t.template.SysUser {
-					executeUser = t.template.SysUser
-				}
-				var shellType = "sudo -H -n -u " + executeUser + " -- bash -i -se"
-				if t.template.ShellType == consts.ShellTypeBash {
-					shellType = "sudo -H -n -u " + executeUser + " -- bash -i -s"
-				} else if t.template.ShellType == consts.ShellTypePython {
-					shellType = "python"
-				}
-				if len(t.task.CommandVars) > 0 {
-					for _, v := range t.task.CommandVars {
-						shellType += " " + v
-					}
-				}
-				err = sshClient.CommandScript(formattedCommand, t, s.ManageIp, shellType)
+				//if t.template.SysUser != "root" && t.template.BecomeUser != t.template.SysUser {
+				//	executeUser = t.template.SysUser
+				//}
+				//var shellType = "sudo -H -n -u " + executeUser + " -- bash -i -se"
+				//if t.template.ShellType == consts.ShellTypeBash {
+				//	shellType = "sudo -H -n -u " + executeUser + " -- bash -i -s"
+				//} else if t.template.ShellType == consts.ShellTypePython {
+				//	shellType = "python"
+				//}
+				//if len(t.task.CommandVars) > 0 {
+				//	for _, v := range t.task.CommandVars {
+				//		shellType += " " + v
+				//	}
+				//}
+				//err = sshClient.CommandScript(formattedCommand, t, s.ManageIp, shellType)
+				executor := buildExecutor(
+					executeUser,
+					t.template.ShellType,
+					t.task.CommandVars,
+				)
+
+				err = sshClient.CommandScriptNew(
+					formattedCommand,
+					t,
+					s.ManageIp,
+					executor,
+				)
+
 				if err != nil {
 					global.GVA_LOG.Error("run task failed on exec command: ", zap.Uint("task ID: ", t.task.ID), zap.String("server IP: ", s.ManageIp), zap.Any("err", err))
 					f <- s.ManageIp
@@ -1335,4 +1331,17 @@ func shellEscape(s string) string {
 
 	// 否则进行强转义
 	return "'" + strings.ReplaceAll(s, "'", "'\\''") + "'"
+}
+
+func buildExecutor(user string, shellType int, vars []string) string {
+	switch shellType {
+	case consts.ShellTypePython:
+		return "sudo -H -n -u " + user + " -- python3"
+	default:
+		cmd := "sudo -H -n -u " + user + " -- /bin/bash -se"
+		if len(vars) > 0 {
+			cmd += " -- " + strings.Join(vars, " ")
+		}
+		return cmd
+	}
 }
