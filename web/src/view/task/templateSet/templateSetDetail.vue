@@ -436,8 +436,8 @@ export default {
           const innerSeq = this.commandVarForm.setTaskInnerSeq
           this.varMap.set(innerSeq, this.commandVarForm)
           this.commandVarForm = []
-          this.serverOptionsMap.set(innerSeq, this.serverOptions)
-          this.serverOptions = []
+          this.serverOptionsMap.set(innerSeq, this.checkedServerOptions)
+          this.checkedServerOptions = []
           this.netDiskMap.set(innerSeq, this.netDisk)
           this.netDisk = []
         }
