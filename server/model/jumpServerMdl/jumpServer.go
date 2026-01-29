@@ -34,7 +34,7 @@ type SessionPayload struct {
 }
 
 type SessionRecord struct {
-	Secret     string
+	//Secret     string
 	UserID     int64
 	TargetHost string
 	TargetPort int

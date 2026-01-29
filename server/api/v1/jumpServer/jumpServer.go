@@ -6,7 +6,6 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/response"
 	request2 "github.com/flipped-aurora/gin-vue-admin/server/model/jumpServerMdl/request"
-	"github.com/flipped-aurora/gin-vue-admin/server/utils"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
@@ -29,17 +28,17 @@ func (a *JumpServerApi) GetToken(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err := utils.Verify(getToken, utils.IdVerify); err != nil {
-		response.FailWithMessage(err.Error(), c)
-		return
-	}
-	err, server := applicationServerService.GetServerById(getToken.ID)
-	if err != nil {
-		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
-		response.FailWithMessage(err.Error(), c)
-		return
-	}
-	if token, _, err := jumpServerService.GenerateSession(server, getToken.Client); err != nil {
+	//if err := utils.Verify(getToken, utils.IdVerify); err != nil {
+	//	response.FailWithMessage(err.Error(), c)
+	//	return
+	//}
+	//err, server := applicationServerService.GetServerById(getToken.ID)
+	//if err != nil {
+	//	global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
+	//	response.FailWithMessage(err.Error(), c)
+	//	return
+	//}
+	if token, err := jumpServerService.GenerateSession(getToken.Servers, getToken.Client); err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 		response.FailWithMessage("获取失败", c)
 	} else {

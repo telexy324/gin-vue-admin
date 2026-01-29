@@ -64,23 +64,45 @@ func genSecret() string {
 
 var hmacKey = []byte("bastion-super-secret-key")
 
-func (s *JumpServerService) GenerateSession(server application.ApplicationServer, client string) (string, *jumpServerMdl.SessionPayload, error) {
+func (s *JumpServerService) GenerateSession(servers []application.ApplicationServer, client string) (string, error) {
 	bastionHost := "127.0.0.1"
 	if len(global.GVA_CONFIG.JumpServer.OutAddr) > 0 {
 		bastionHost = global.GVA_CONFIG.JumpServer.OutAddr
 	}
-	payload := jumpServerMdl.SessionPayload{
-		BastionHost: bastionHost,
-		BastionPort: global.GVA_CONFIG.JumpServer.Port,
-		Client:      client,
-		Secret:      genSecret(),
-		IssuedAt:    time.Now().Unix(),
-		ExpireAt:    time.Now().Add(24 * time.Hour).Unix(),
+	payloads := make([]jumpServerMdl.SessionPayload, 0)
+	for _, server := range servers {
+		payload := jumpServerMdl.SessionPayload{
+			BastionHost: bastionHost,
+			BastionPort: global.GVA_CONFIG.JumpServer.Port,
+			Client:      client,
+			Secret:      genSecret(),
+			IssuedAt:    time.Now().Unix(),
+			ExpireAt:    time.Now().Add(24 * time.Hour).Unix(),
+		}
+		payloads = append(payloads, payload)
+		sessRec := jumpServerMdl.SessionRecord{
+			UserID:     0,
+			TargetHost: server.ManageIp,
+			TargetPort: server.SshPort,
+			ExpiresAt:  time.Now().Add(time.Duration(global.GVA_CONFIG.JumpServer.MaxSessionTime) * time.Minute),
+			Used:       false,
+		}
+		if err := jumpServer.SessStore.Save(payload.Secret, &sessRec); err != nil {
+			return "", err
+		}
 	}
+	//payload := jumpServerMdl.SessionPayload{
+	//	BastionHost: bastionHost,
+	//	BastionPort: global.GVA_CONFIG.JumpServer.Port,
+	//	Client:      client,
+	//	Secret:      genSecret(),
+	//	IssuedAt:    time.Now().Unix(),
+	//	ExpireAt:    time.Now().Add(24 * time.Hour).Unix(),
+	//}
 
-	raw, err := json.Marshal(payload)
+	raw, err := json.Marshal(payloads)
 	if err != nil {
-		return "", nil, err
+		return "", err
 	}
 
 	payloadB64 := base64.RawURLEncoding.EncodeToString(raw)
@@ -92,16 +114,16 @@ func (s *JumpServerService) GenerateSession(server application.ApplicationServer
 	sigB64 := base64.RawURLEncoding.EncodeToString(sig)
 
 	token := payloadB64 + "." + sigB64
-	sessRec := jumpServerMdl.SessionRecord{
-		Secret:     token,
-		UserID:     0,
-		TargetHost: server.ManageIp,
-		TargetPort: server.SshPort,
-		ExpiresAt:  time.Now().Add(time.Duration(global.GVA_CONFIG.JumpServer.MaxSessionTime) * time.Minute),
-		Used:       false,
-	}
-	if err = jumpServer.SessStore.Save(payload.Secret, &sessRec); err != nil {
-		return "", nil, err
-	}
-	return token, &payload, nil
+	//sessRec := jumpServerMdl.SessionRecord{
+	//	Secret:     token,
+	//	UserID:     0,
+	//	TargetHost: server.ManageIp,
+	//	TargetPort: server.SshPort,
+	//	ExpiresAt:  time.Now().Add(time.Duration(global.GVA_CONFIG.JumpServer.MaxSessionTime) * time.Minute),
+	//	Used:       false,
+	//}
+	//if err = jumpServer.SessStore.Save(payload.Secret, &sessRec); err != nil {
+	//	return "", nil, err
+	//}
+	return token, nil
 }

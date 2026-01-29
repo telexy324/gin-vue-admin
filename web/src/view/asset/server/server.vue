@@ -27,6 +27,17 @@
             <el-button icon="el-icon-delete" size="mini" :disabled="!servers.length || !hasDelete" style="margin-left: 10px;">删除</el-button>
           </template>
         </el-popover>
+        <el-popover v-model:visible="multiOpenVisible" placement="top" width="160">
+          <div style="text-align: right; margin-top: 8px;">
+            <div style="text-align: right; margin-top: 10px;">
+              <el-button size="mini" type="primary" @click="requestTokenMulti('securecrt')">CRT</el-button>
+              <el-button size="mini" type="warning" @click="requestTokenMulti('mobaxterm')">MOBA</el-button>
+            </div>
+          </div>
+          <template #reference>
+            <el-button type="primary" icon="el-icon-top" size="mini" :disabled="!servers.length || !this.hasJumpServer" style="margin-left: 10px;">批量打开</el-button>
+          </template>
+        </el-popover>
         <el-upload
           class="excel-btn"
           :action="`${path}/cmdb/importExcel`"
@@ -326,6 +337,7 @@ export default {
       hasCreate: true,
       hasDelete: true,
       hasSsh: true,
+      hasJumpServer: true,
       disabledTemp: true,
       sshRules: {
         username: [
@@ -349,6 +361,7 @@ export default {
         status: '',
         indeterminate: '',
       },
+      multiOpenVisible: false,
     }
   },
   computed: {
@@ -593,6 +606,9 @@ export default {
       this.hasSsh = !!res.data.paths.some((item) => {
         return item.path === '/ssh/run'
       })
+      this.hasJumpServer = !!res.data.paths.some((item) => {
+        return item.path === '/jumpServer/getToken'
+      })
     },
     isNum(rule, value, callback) {
       const n = /^[0-9]*$/
@@ -752,7 +768,7 @@ export default {
     },
     async requestToken(row, index, client) {
       const resp = await getToken({
-        ID: row.ID,
+        servers: [row],
         client: client,
       })
       this.handleClose(index)
@@ -763,7 +779,17 @@ export default {
     handleClose(index) {
       this.$refs[`popover-${index}`].hide()
       this.sshUser = ''
-    }
+    },
+    async requestTokenMulti(client) {
+      const resp = await getToken({
+        servers: this.servers,
+        client: client,
+      })
+      this.multiOpenVisible = false
+      if (resp.data.url) {
+        window.location.href = resp.data.url
+      }
+    },
   }
 }
 </script>
