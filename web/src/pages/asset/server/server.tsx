@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { addServer, deleteServer, getServerById, getServerList, getSystemList, updateServer } from '@/api/cmdb'
-import { runSsh } from '@/api/ssh'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -22,6 +22,7 @@ type Server = {
 const emptyForm = { hostname: '', displayName: '', architecture: '', manageIp: '', sshPort: 22, os: '', osVersion: '', systemId: 0 }
 
 export default function ServerPage() {
+  const navigate = useNavigate()
   const [items, setItems] = useState<Server[]>([])
   const [systems, setSystems] = useState<any[]>([])
   const [search, setSearch] = useState({ hostname: '', manageIp: '' })
@@ -83,8 +84,9 @@ export default function ServerPage() {
     if (!username) return
     const password = window.prompt('输入 SSH 密码')
     if (!password) return
-    const res = await runSsh({ server: { manageIp: row.manageIp, sshPort: row.sshPort }, username, password })
-    if (res?.code === 0) toast.success('已发起执行')
+    navigate(
+      `/layout/asset/ssh/${encodeURIComponent(row.manageIp)}/${encodeURIComponent(username)}/${encodeURIComponent(password)}/${encodeURIComponent(String(row.sshPort))}`
+    )
   }
 
   const systemName = (id?: number) => systems.find((s) => s.ID === id)?.name || '-'

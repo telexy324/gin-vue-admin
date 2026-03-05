@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import TaskStatus from '@/components/task/TaskStatus'
 import { getTaskById, getTaskOutputs, stopTask } from '@/api/task'
 import { getUserById } from '@/api/user'
+import socket from '@/socket'
 
 type TaskLogViewProps = {
   itemId?: number
@@ -43,6 +44,24 @@ export default function TaskLogView({ itemId = 0, open = true, onClose }: TaskLo
     if (!outputRef.current) return
     outputRef.current.scrollTop = outputRef.current.scrollHeight
   }, [output])
+
+  useEffect(() => {
+    if (!visible || !itemId) return
+    if (!socket.isRunning()) {
+      socket.start()
+    }
+    const listenerId = socket.addListener((data: any) => {
+      if (!data || Number(data.taskId) !== Number(itemId)) return
+      if (data.type === 'update') {
+        setItem((prev: any) => ({ ...prev, ...data }))
+      } else if (data.type === 'log') {
+        setOutput((prev) => [...prev, data])
+      }
+    })
+    return () => {
+      socket.removeListener(listenerId)
+    }
+  }, [itemId, visible])
 
   const title = useMemo(() => {
     const id = item?.ID ? `Task #${item.ID}` : 'Task'
