@@ -167,7 +167,7 @@ func handleConn(nConn net.Conn, config *ssh.ServerConfig) {
 	parent := newParentSession("", SessRec.TargetHost)
 
 	// 3. 连接目标服务器
-	targetClient, err := connectTarget(SessRec.TargetHost)
+	targetClient, err := connectTarget(SessRec.TargetHost, SessRec.TargetPort)
 	if err != nil {
 		global.GVA_LOG.Error("target connect failed: ", zap.Any("jump server", err))
 		return
@@ -183,7 +183,7 @@ func handleConn(nConn net.Conn, config *ssh.ServerConfig) {
 
 }
 
-func connectTarget(targetName string) (*ssh.Client, error) {
+func connectTarget(targetName string, targetPort int) (*ssh.Client, error) {
 	homePath, err := os.UserHomeDir()
 	if err != nil {
 		return nil, err
@@ -204,7 +204,10 @@ func connectTarget(targetName string) (*ssh.Client, error) {
 		Timeout:         10 * time.Second,
 	}
 
-	addr := fmt.Sprintf("%s:%d", targetName, 1122)
+	if targetPort == 0 {
+		targetPort = 1122
+	}
+	addr := fmt.Sprintf("%s:%d", targetName, targetPort)
 
 	return ssh.Dial("tcp", addr, cfg)
 }
