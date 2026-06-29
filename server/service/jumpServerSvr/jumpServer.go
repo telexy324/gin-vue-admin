@@ -65,19 +65,27 @@ func genSecret() string {
 var hmacKey = []byte("bastion-super-secret-key")
 
 func (s *JumpServerService) GenerateSession(servers []application.ApplicationServer, client string) (string, error) {
+	jumpServer.EnsureReady()
+
 	bastionHost := "127.0.0.1"
 	if len(global.GVA_CONFIG.JumpServer.OutAddr) > 0 {
 		bastionHost = global.GVA_CONFIG.JumpServer.OutAddr
 	}
+	bastionPort := global.GVA_CONFIG.JumpServer.Port
+	if global.GVA_CONFIG.JumpServer.WebPort > 0 {
+		bastionPort = global.GVA_CONFIG.JumpServer.WebPort
+	}
 	payloads := make([]jumpServerMdl.SessionPayload, 0)
 	for _, server := range servers {
 		payload := jumpServerMdl.SessionPayload{
-			BastionHost: bastionHost,
-			BastionPort: global.GVA_CONFIG.JumpServer.Port,
-			Client:      client,
-			Secret:      genSecret(),
-			IssuedAt:    time.Now().Unix(),
-			ExpireAt:    time.Now().Add(24 * time.Hour).Unix(),
+			BastionHost:   bastionHost,
+			BastionPort:   bastionPort,
+			Client:        client,
+			WebSocketURL:  global.GVA_CONFIG.JumpServer.WebSocketURL,
+			WebSocketPath: global.GVA_CONFIG.JumpServer.WebSocketPath,
+			Secret:        genSecret(),
+			IssuedAt:      time.Now().Unix(),
+			ExpireAt:      time.Now().Add(24 * time.Hour).Unix(),
 		}
 		payloads = append(payloads, payload)
 		sessRec := jumpServerMdl.SessionRecord{

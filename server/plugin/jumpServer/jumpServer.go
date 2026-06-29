@@ -12,10 +12,12 @@ import (
 	"time"
 
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/pkg/sftp"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/ssh"
+	"nhooyr.io/websocket"
 )
 
 type Session struct {
@@ -108,27 +110,14 @@ func (l *fileInfoLister) ListAt(dst []os.FileInfo, offset int64) (int, error) {
 	return n, nil
 }
 
-var SessStore *MemoryStore
+var (
+	SessStore       *MemoryStore
+	sshServerConfig *ssh.ServerConfig
+	initOnce        sync.Once
+)
 
 func Init() {
-	// 1. SSH Server 配置
-	homePath, err := os.UserHomeDir()
-	if err != nil {
-		global.GVA_LOG.Fatal("get home path fail", zap.Any("jump server", err))
-	}
-	privateBytes, err := os.ReadFile(path.Join(homePath, ".ssh", "id_rsa"))
-	if err != nil {
-		global.GVA_LOG.Fatal("get private key file fail", zap.Any("jump server", err))
-	}
-	private, err := ssh.ParsePrivateKey(privateBytes)
-	if err != nil {
-		global.GVA_LOG.Fatal("parse private key fail", zap.Any("jump server", err))
-	}
-
-	config := &ssh.ServerConfig{
-		NoClientAuth: true, // 简化示例（生产请做认证）
-	}
-	config.AddHostKey(private)
+	initSSHServer()
 
 	// 2. 监听 22（或其他端口）
 	port := 22
@@ -141,13 +130,61 @@ func Init() {
 		global.GVA_LOG.Fatal("server listen fail", zap.Any("jump server", err))
 	}
 	global.GVA_LOG.Info("Jump server listening on ", zap.String("addr", addr))
-	SessStore = NewMemoryStore()
-	SessStore.StartGC(30 * time.Second)
 
 	for {
-		conn, _ := listener.Accept()
-		go handleConn(conn, config)
+		conn, err := listener.Accept()
+		if err != nil {
+			global.GVA_LOG.Error("jump server accept failed", zap.Any("jump server", err))
+			continue
+		}
+		go handleConn(conn, sshServerConfig)
 	}
+}
+
+func EnsureReady() {
+	initSSHServer()
+}
+
+func initSSHServer() {
+	initOnce.Do(func() {
+		// 1. SSH Server 配置
+		homePath, err := os.UserHomeDir()
+		if err != nil {
+			global.GVA_LOG.Fatal("get home path fail", zap.Any("jump server", err))
+		}
+		privateBytes, err := os.ReadFile(path.Join(homePath, ".ssh", "id_rsa"))
+		if err != nil {
+			global.GVA_LOG.Fatal("get private key file fail", zap.Any("jump server", err))
+		}
+		private, err := ssh.ParsePrivateKey(privateBytes)
+		if err != nil {
+			global.GVA_LOG.Fatal("parse private key fail", zap.Any("jump server", err))
+		}
+
+		config := &ssh.ServerConfig{
+			NoClientAuth: true, // 简化示例（生产请做认证）
+		}
+		config.AddHostKey(private)
+
+		sshServerConfig = config
+		SessStore = NewMemoryStore()
+		SessStore.StartGC(30 * time.Second)
+	})
+}
+
+func HandleWebSocket(c *gin.Context) {
+	initSSHServer()
+
+	wsConn, err := websocket.Accept(c.Writer, c.Request, &websocket.AcceptOptions{
+		InsecureSkipVerify: true,
+	})
+	if err != nil {
+		global.GVA_LOG.Error("jump server websocket accept failed", zap.Any("jump server", err))
+		return
+	}
+
+	nConn := websocket.NetConn(c.Request.Context(), wsConn, websocket.MessageBinary)
+	handleConn(nConn, sshServerConfig)
 }
 
 func handleConn(nConn net.Conn, config *ssh.ServerConfig) {

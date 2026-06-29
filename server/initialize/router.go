@@ -62,7 +62,7 @@ func Routers() *gin.Engine {
 		//taskRouter.InitTaskRouter(PublicGroup)
 		taskSocketRouter.InitTaskSocketRouter(PublicGroup)
 		//systemRouter.InitMenuRouter(PublicGroup)                   // 注册menu路由
-		//jumpServerRouter.InitJumpServerPubRouter(PublicGroup)
+		jumpServerRouter.InitJumpServerPubRouter(PublicGroup)
 	}
 	PrivateGroup := Router.Group("")
 	PrivateGroup.Use(middleware.JWTAuth()).Use(middleware.CasbinHandler())
