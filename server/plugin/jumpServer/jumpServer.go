@@ -21,17 +21,39 @@ import (
 )
 
 type Session struct {
-	ID           string
-	User         string
-	Target       string
-	Parent       *Session // null for parent
-	StartedAt    time.Time
-	LastActiveAt atomic.Int64
+	ID            string
+	User          string
+	Target        string
+	Parent        *Session // null for parent
+	StartedAt     time.Time
+	LastActiveAt  atomic.Int64
+	TransportLast *atomic.Int64
 
 	Ctx    context.Context
 	Cancel context.CancelFunc
 
 	children sync.Map // childID -> *Session
+}
+
+type activityConn struct {
+	net.Conn
+	last *atomic.Int64
+}
+
+func (c *activityConn) Read(p []byte) (int, error) {
+	n, err := c.Conn.Read(p)
+	if n > 0 {
+		c.last.Store(time.Now().Unix())
+	}
+	return n, err
+}
+
+func (c *activityConn) Write(p []byte) (int, error) {
+	n, err := c.Conn.Write(p)
+	if n > 0 {
+		c.last.Store(time.Now().Unix())
+	}
+	return n, err
 }
 
 type activityWriter struct {
@@ -41,7 +63,7 @@ type activityWriter struct {
 
 func (a *activityWriter) Write(p []byte) (int, error) {
 	n, err := a.rw.Write(p)
-	a.session.LastActiveAt.Store(time.Now().Unix())
+	a.session.Touch()
 	if err != nil {
 		a.session.End()
 	}
@@ -50,7 +72,7 @@ func (a *activityWriter) Write(p []byte) (int, error) {
 
 func (a *activityWriter) Read(p []byte) (int, error) {
 	n, err := a.rw.Read(p)
-	a.session.LastActiveAt.Store(time.Now().Unix())
+	a.session.Touch()
 	if err != nil {
 		a.session.End()
 	}
@@ -58,21 +80,25 @@ func (a *activityWriter) Read(p []byte) (int, error) {
 }
 
 type ProxySFTPHandler struct {
-	client *sftp.Client
+	client  *sftp.Client
+	session *Session
 }
 
 /******** FileReader ********/
 func (h *ProxySFTPHandler) Fileread(r *sftp.Request) (io.ReaderAt, error) {
+	h.session.Touch()
 	return h.client.Open(r.Filepath)
 }
 
 /******** FileWriter ********/
 func (h *ProxySFTPHandler) Filewrite(r *sftp.Request) (io.WriterAt, error) {
+	h.session.Touch()
 	return h.client.Create(r.Filepath)
 }
 
 /******** FileCmder ********/
 func (h *ProxySFTPHandler) Filecmd(r *sftp.Request) error {
+	h.session.Touch()
 	switch r.Method {
 	case "Remove":
 		return h.client.Remove(r.Filepath)
@@ -91,6 +117,7 @@ func (h *ProxySFTPHandler) Filecmd(r *sftp.Request) error {
 
 /******** FileLister ********/
 func (h *ProxySFTPHandler) Filelist(r *sftp.Request) (sftp.ListerAt, error) {
+	h.session.Touch()
 	files, err := h.client.ReadDir(r.Filepath)
 	if err != nil {
 		return nil, err
@@ -188,7 +215,13 @@ func HandleWebSocket(c *gin.Context) {
 }
 
 func handleConn(nConn net.Conn, config *ssh.ServerConfig) {
-	sshConn, chans, reqs, err := ssh.NewServerConn(nConn, config)
+	var transportLast atomic.Int64
+	transportLast.Store(time.Now().Unix())
+
+	sshConn, chans, reqs, err := ssh.NewServerConn(&activityConn{
+		Conn: nConn,
+		last: &transportLast,
+	}, config)
 	if err != nil {
 		global.GVA_LOG.Error("handshake failed: ", zap.Any("jump server", err))
 		return
@@ -202,6 +235,7 @@ func handleConn(nConn net.Conn, config *ssh.ServerConfig) {
 		return
 	}
 	parent := newParentSession("", SessRec.TargetHost)
+	parent.TransportLast = &transportLast
 
 	// 3. 连接目标服务器
 	targetClient, err := connectTarget(SessRec.TargetHost, SessRec.TargetPort)
@@ -277,16 +311,22 @@ func monitorSession(sess *Session) {
 			now := time.Now()
 
 			// 最大会话时长
-			if now.Sub(sess.StartedAt) > time.Duration(global.GVA_CONFIG.JumpServer.MaxSessionTime)*time.Minute {
+			if global.GVA_CONFIG.JumpServer.MaxSessionTime > 0 &&
+				now.Sub(sess.StartedAt) > time.Duration(global.GVA_CONFIG.JumpServer.MaxSessionTime)*time.Minute {
 				global.GVA_LOG.Info("session max time reached: ", zap.String("jump server", sess.ID))
 				sess.End()
 				return
 			}
 
 			// 空闲超时
-			last := time.Unix(sess.LastActiveAt.Load(), 0)
-			if now.Sub(last) > time.Duration(global.GVA_CONFIG.JumpServer.IdleTimeout)*time.Minute {
-				global.GVA_LOG.Info("session idle timeout: ", zap.String("jump server", sess.ID))
+			last := time.Unix(sess.LastActivity(), 0)
+			if global.GVA_CONFIG.JumpServer.IdleTimeout > 0 &&
+				now.Sub(last) > time.Duration(global.GVA_CONFIG.JumpServer.IdleTimeout)*time.Minute {
+				global.GVA_LOG.Info("session idle timeout: ",
+					zap.String("jump server", sess.ID),
+					zap.Int("idleTimeoutMinutes", global.GVA_CONFIG.JumpServer.IdleTimeout),
+					zap.Time("lastActiveAt", last),
+				)
 				sess.End()
 				return
 			}
@@ -316,7 +356,8 @@ func startSFTPServer(
 	}
 
 	handler := &ProxySFTPHandler{
-		client: targetSftp,
+		client:  targetSftp,
+		session: sess,
 	}
 
 	server := sftp.NewRequestServer(
@@ -448,6 +489,26 @@ func (s *Session) NewChild() *Session {
 	child.LastActiveAt.Store(time.Now().Unix())
 	s.children.Store(child.ID, child)
 	return child
+}
+
+func (s *Session) Touch() {
+	s.LastActiveAt.Store(time.Now().Unix())
+}
+
+func (s *Session) LastActivity() int64 {
+	last := s.LastActiveAt.Load()
+
+	if s.TransportLast != nil {
+		if transportLast := s.TransportLast.Load(); transportLast > last {
+			last = transportLast
+		}
+	}
+	if s.Parent != nil {
+		if parentLast := s.Parent.LastActivity(); parentLast > last {
+			last = parentLast
+		}
+	}
+	return last
 }
 
 func (s *Session) RemoveChild(id string) {
