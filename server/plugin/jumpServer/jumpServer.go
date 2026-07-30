@@ -35,6 +35,11 @@ type Session struct {
 	children sync.Map // childID -> *Session
 }
 
+const (
+	websocketHeartbeatInterval = 10 * time.Second
+	websocketHeartbeatTimeout  = 5 * time.Second
+)
+
 type activityConn struct {
 	net.Conn
 	last *atomic.Int64
@@ -209,9 +214,42 @@ func HandleWebSocket(c *gin.Context) {
 		global.GVA_LOG.Error("jump server websocket accept failed", zap.Any("jump server", err))
 		return
 	}
+	defer wsConn.Close(websocket.StatusNormalClosure, "")
 
-	nConn := websocket.NetConn(c.Request.Context(), wsConn, websocket.MessageBinary)
+	ctx, cancel := context.WithCancel(c.Request.Context())
+	nConn := websocket.NetConn(ctx, wsConn, websocket.MessageBinary)
+	var closeOnce sync.Once
+	closeTunnel := func() {
+		closeOnce.Do(func() {
+			cancel()
+			_ = nConn.Close()
+		})
+	}
+	defer closeTunnel()
+
+	go runWebSocketHeartbeat(ctx, wsConn, closeTunnel)
 	handleConn(nConn, sshServerConfig)
+}
+
+func runWebSocketHeartbeat(ctx context.Context, wsConn *websocket.Conn, closeTunnel func()) {
+	ticker := time.NewTicker(websocketHeartbeatInterval)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			pingCtx, cancel := context.WithTimeout(ctx, websocketHeartbeatTimeout)
+			err := wsConn.Ping(pingCtx)
+			cancel()
+			if err != nil {
+				global.GVA_LOG.Warn("jump server websocket heartbeat failed", zap.Error(err))
+				closeTunnel()
+				return
+			}
+		}
+	}
 }
 
 func handleConn(nConn net.Conn, config *ssh.ServerConfig) {
